@@ -1,5 +1,3 @@
-//Borrowed from https://github.com/Polymer/observe-js
-
 function isIndex(s) {
   return +s === s >>> 0;
 }

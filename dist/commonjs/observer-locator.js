@@ -11,6 +11,18 @@ var OoPropertyObserver = require('./property-observation').OoPropertyObserver;
 var ElementObserver = require('./property-observation').ElementObserver;
 
 
+if (typeof Object.getPropertyDescriptor !== "function") {
+  Object.getPropertyDescriptor = function (subject, name) {
+    var pd = Object.getOwnPropertyDescriptor(subject, name);
+    var proto = Object.getPrototypeOf(subject);
+    while (typeof pd === "undefined" && proto !== null) {
+      pd = Object.getOwnPropertyDescriptor(proto, name);
+      proto = Object.getPrototypeOf(proto);
+    }
+    return pd;
+  };
+}
+
 var hasObjectObserve = (function detectObjectObserve() {
   if (typeof Object.observe !== "function") {
     return false;

@@ -50,7 +50,6 @@ var Binding = (function () {
       info = this.sourceExpression.connect(this, source);
 
       if (info.observer) {
-        console.log("bind: " + this.sourceExpression.toString());
         this._disposeObserver = info.observer.subscribe(function (newValue) {
           var existing = targetProperty.getValue();
           if (newValue !== existing) {
@@ -81,7 +80,6 @@ var Binding = (function () {
 
   Binding.prototype.unbind = function () {
     if (this._disposeObserver) {
-      console.log("unbind: " + this.sourceExpression.toString());
       this._disposeObserver();
       this._disposeObserver = null;
     }

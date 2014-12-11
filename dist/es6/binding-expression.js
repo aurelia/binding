@@ -53,7 +53,6 @@ class Binding {
       info = this.sourceExpression.connect(this, source);
 
       if(info.observer){
-        console.log('bind: ' + this.sourceExpression.toString());
         this._disposeObserver = info.observer.subscribe(newValue =>{
           var existing = targetProperty.getValue();
           if(newValue !== existing){
@@ -84,7 +83,6 @@ class Binding {
 
   unbind(){
     if(this._disposeObserver){
-      console.log('unbind: ' + this.sourceExpression.toString());
       this._disposeObserver();
       this._disposeObserver = null;
     }

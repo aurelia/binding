@@ -2,8 +2,6 @@
 
 exports.calcSplices = calcSplices;
 exports.projectArraySplices = projectArraySplices;
-
-
 function isIndex(s) {
   return +s === s >>> 0;
 }
