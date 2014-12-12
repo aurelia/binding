@@ -1,3 +1,11 @@
+### 0.1.1 (2014-12-12)
+
+
+#### Features
+
+* **listener-expression:** add prevent default option for event listeners ([1adc75a7](http://github.com/aurelia/binding/commit/1adc75a7f517fea0658b2648acfff3451d8ba21b))
+
+
 ## 0.1.0 (2014-12-11)
 
 

@@ -2,16 +2,17 @@ define(["exports"], function (exports) {
   "use strict";
 
   var ListenerExpression = (function () {
-    var ListenerExpression = function ListenerExpression(eventManager, targetEvent, sourceExpression, delegate) {
+    var ListenerExpression = function ListenerExpression(eventManager, targetEvent, sourceExpression, delegate, preventDefault) {
       this.eventManager = eventManager;
       this.targetEvent = targetEvent;
       this.sourceExpression = sourceExpression;
       this.delegate = delegate;
       this.discrete = true;
+      this.preventDefault = preventDefault;
     };
 
     ListenerExpression.prototype.createBinding = function (target) {
-      return new Listener(this.eventManager, this.targetEvent, this.delegate, this.sourceExpression, target);
+      return new Listener(this.eventManager, this.targetEvent, this.delegate, this.sourceExpression, target, this.preventDefault);
     };
 
     return ListenerExpression;
@@ -19,12 +20,13 @@ define(["exports"], function (exports) {
 
   exports.ListenerExpression = ListenerExpression;
   var Listener = (function () {
-    var Listener = function Listener(eventManager, targetEvent, delegate, sourceExpression, target) {
+    var Listener = function Listener(eventManager, targetEvent, delegate, sourceExpression, target, preventDefault) {
       this.eventManager = eventManager;
       this.targetEvent = targetEvent;
       this.delegate = delegate;
       this.sourceExpression = sourceExpression;
       this.target = target;
+      this.preventDefault = preventDefault;
     };
 
     Listener.prototype.bind = function (source) {
@@ -43,6 +45,9 @@ define(["exports"], function (exports) {
         source.$event = event;
         var result = _this.sourceExpression.eval(source);
         source.$event = prevEvent;
+        if (_this.preventDefault) {
+          event.preventDefault();
+        }
         return result;
       }, this.delegate);
     };
