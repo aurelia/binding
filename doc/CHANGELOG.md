@@ -1,3 +1,11 @@
+### 0.1.2 (2014-12-17)
+
+
+#### Bug Fixes
+
+* **package:** update dependencies to latest ([e6e6deb9](http://github.com/aurelia/binding/commit/e6e6deb91084c7cf97e070bdd383edb6c9f562e1))
+
+
 ### 0.1.1 (2014-12-12)
 
 
