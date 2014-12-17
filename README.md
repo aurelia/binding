@@ -9,6 +9,13 @@ This library is part of the [Aurelia](http://www.aurelia.io/) platform and imple
 * [aurelia-metadata](https://github.com/aurelia/metadata)
 * [aurelia-task-queue](https://github.com/aurelia/task-queue)
 
+## Used By
+
+* [aurelia-framework](https://github.com/aurelia/framework)
+* [aurelia-templating](https://github.com/aurelia/templating)
+* [aurelia-templating-binding](https://github.com/aurelia/templating-binding)
+* [aurelia-templating-resources](https://github.com/aurelia/templating-resources)
+
 ## Platform Support
 
 This library can be used in the **browser** only.

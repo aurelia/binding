@@ -1,4 +1,4 @@
-import {ObserverLocator, EventManager, DirtyChecker} from '../lib/index';
+import {ObserverLocator, EventManager, DirtyChecker} from '../src/index';
 import {TaskQueue} from 'aurelia-task-queue';
 
 describe('observer locator', () => {
