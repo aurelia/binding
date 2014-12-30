@@ -2,12 +2,12 @@ import {ONE_WAY, TWO_WAY} from './binding-modes';
 
 export class BindingExpression {
   constructor(observerLocator, targetProperty, sourceExpression,
-    mode, filterLookupFunction, attribute){
+    mode, valueConverterLookupFunction, attribute){
     this.observerLocator = observerLocator;
     this.targetProperty = targetProperty;
     this.sourceExpression = sourceExpression;
     this.mode = mode;
-    this.filterLookupFunction = filterLookupFunction;
+    this.valueConverterLookupFunction = valueConverterLookupFunction;
     this.attribute = attribute;
     this.discrete = false;
   }
@@ -19,18 +19,18 @@ export class BindingExpression {
       target,
       this.targetProperty,
       this.mode,
-      this.filterLookupFunction
+      this.valueConverterLookupFunction
       );
   }
 }
 
 class Binding {
-  constructor(observerLocator, sourceExpression, target, targetProperty, mode, filterLookupFunction){
+  constructor(observerLocator, sourceExpression, target, targetProperty, mode, valueConverterLookupFunction){
     this.observerLocator = observerLocator;
     this.sourceExpression = sourceExpression;
     this.targetProperty = observerLocator.getObserver(target, targetProperty);
     this.mode = mode;
-    this.filterLookupFunction = filterLookupFunction;
+    this.valueConverterLookupFunction = valueConverterLookupFunction;
   }
 
   getObserver(obj, propertyName){
@@ -73,7 +73,7 @@ class Binding {
 
       this.source = source;
     }else{
-      var value = this.sourceExpression.eval(source, this.filterLookupFunction);
+      var value = this.sourceExpression.eval(source, this.valueConverterLookupFunction);
 
       if(value !== undefined){
         targetProperty.setValue(value);

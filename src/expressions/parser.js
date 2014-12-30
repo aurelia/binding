@@ -1,5 +1,5 @@
 import {Lexer,Token} from './lexer';
-import {Expression,ArrayOfExpression,Chain,Filter,Assign,
+import {Expression,ArrayOfExpression,Chain,ValueConverter,Assign,
         Conditional, AccessScope, AccessMember, AccessKeyed, 
         CallScope, CallFunction, CallMember, PrefixNot,
         Binary, LiteralPrimitive, LiteralArray, LiteralObject, LiteralString} from './ast';
@@ -44,22 +44,22 @@ export class ParserImplementation {
         this.error(`Unconsumed token ${this.peek.text}`);
       }
 
-      var expr = this.parseFilter();
+      var expr = this.parseValueConverter();
       expressions.push(expr);
 
       while (this.optional(';')) {
         isChain = true;
       }
 
-      if (isChain && expr instanceof Filter) {
-        this.error('cannot have a filter in a chain');
+      if (isChain && expr instanceof ValueConverter) {
+        this.error('cannot have a value converter in a chain');
       }
     }
 
     return (expressions.length == 1) ? expressions[0] : new Chain(expressions);
   }
 
-  parseFilter() {
+  parseValueConverter() {
     var result = this.parseExpression();
 
     while (this.optional('|')) {
@@ -73,7 +73,7 @@ export class ParserImplementation {
         args.push(this.parseExpression());
       }
 
-      result = new Filter(result, name, args, [result].concat(args));
+      result = new ValueConverter(result, name, args, [result].concat(args));
     }
 
     return result;

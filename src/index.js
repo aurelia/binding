@@ -3,7 +3,7 @@ patchAST();
 
 export {EventManager} from './event-manager';
 export {ObserverLocator} from './observer-locator';
-export {Filter} from './filter';
+export {ValueConverter} from './value-converter';
 export {calcSplices} from './array-change-records';
 export * from './binding-modes';
 export {Parser} from './expressions/parser';

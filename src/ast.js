@@ -1,7 +1,7 @@
 import {PathObserver} from './path-observer';
 import {CompositeObserver} from './composite-observer';
 import {
-  Filter,
+  ValueConverter,
   Assign,
   Conditional,
   AccessScope, 
@@ -19,7 +19,7 @@ import {
 } from './expressions/ast';
 
 export function patchAST(){
-  Filter.prototype.connect = function(binding, scope){
+  ValueConverter.prototype.connect = function(binding, scope){
     var observer,
         childObservers = [],
         i, ii, exp, expInfo;
@@ -35,18 +35,18 @@ export function patchAST(){
 
     if(childObservers.length){
       observer = new CompositeObserver(childObservers, () => {
-        return this.eval(scope, binding.filterLookupFunction);
+        return this.eval(scope, binding.valueConverterLookupFunction);
       });
     }
 
     return {
-      value:this.eval(scope, binding.filterLookupFunction),
+      value:this.eval(scope, binding.valueConverterLookupFunction),
       observer:observer
     };
   }
 
   Assign.prototype.connect = function(binding, scope){
-    return { value: this.eval(scope, binding.filterLookupFunction) };
+    return { value: this.eval(scope, binding.valueConverterLookupFunction) };
   };
 
   Conditional.prototype.connect = function(binding, scope){
@@ -70,7 +70,7 @@ export function patchAST(){
 
     if(childObservers.length){
       observer = new CompositeObserver(childObservers, () => {
-        return this.eval(scope, binding.filterLookupFunction);
+        return this.eval(scope, binding.valueConverterLookupFunction);
       });
     }
 
@@ -133,12 +133,12 @@ export function patchAST(){
 
     if(childObservers.length){
       observer = new CompositeObserver(childObservers, () => {
-        return this.eval(scope, binding.filterLookupFunction);
+        return this.eval(scope, binding.valueConverterLookupFunction);
       });
     }
 
     return {
-      value:this.eval(scope, binding.filterLookupFunction),
+      value:this.eval(scope, binding.valueConverterLookupFunction),
       observer:observer
     };
   }
@@ -159,12 +159,12 @@ export function patchAST(){
 
     if(childObservers.length){
       observer = new CompositeObserver(childObservers, () => {
-        return this.eval(scope, binding.filterLookupFunction);
+        return this.eval(scope, binding.valueConverterLookupFunction);
       });
     }
 
     return {
-      value:this.eval(scope, binding.filterLookupFunction),
+      value:this.eval(scope, binding.valueConverterLookupFunction),
       observer:observer
     };
   }
@@ -190,12 +190,12 @@ export function patchAST(){
 
     if(childObservers.length){
       observer = new CompositeObserver(childObservers, () => {
-        return this.eval(scope, binding.filterLookupFunction);
+        return this.eval(scope, binding.valueConverterLookupFunction);
       });
     }
 
     return {
-      value:this.eval(scope, binding.filterLookupFunction),
+      value:this.eval(scope, binding.valueConverterLookupFunction),
       observer:observer
     };
   }
@@ -221,12 +221,12 @@ export function patchAST(){
 
     if(childObservers.length){
       observer = new CompositeObserver(childObservers, () => {
-        return this.eval(scope, binding.filterLookupFunction);
+        return this.eval(scope, binding.valueConverterLookupFunction);
       });
     }
 
     return {
-      value:this.eval(scope, binding.filterLookupFunction),
+      value:this.eval(scope, binding.valueConverterLookupFunction),
       observer:observer
     };
   }
@@ -247,12 +247,12 @@ export function patchAST(){
 
     if(childObservers.length){
       observer = new CompositeObserver(childObservers, () => {
-        return this.eval(scope, binding.filterLookupFunction);
+        return this.eval(scope, binding.valueConverterLookupFunction);
       });
     }
 
     return {
-      value:this.eval(scope, binding.filterLookupFunction),
+      value:this.eval(scope, binding.valueConverterLookupFunction),
       observer:observer
     };
   }
@@ -263,7 +263,7 @@ export function patchAST(){
 
     if(info.observer){
       observer = new CompositeObserver([info.observer], () => {
-        return this.eval(scope, binding.filterLookupFunction);
+        return this.eval(scope, binding.valueConverterLookupFunction);
       });
     }
 
@@ -300,7 +300,7 @@ export function patchAST(){
 
     if(childObservers.length){
       observer = new CompositeObserver(childObservers, () => {
-        return this.eval(scope, binding.filterLookupFunction);
+        return this.eval(scope, binding.valueConverterLookupFunction);
       });
     }
 
@@ -331,7 +331,7 @@ export function patchAST(){
 
     if(childObservers.length){
       observer = new CompositeObserver(childObservers, () => {
-        return this.eval(scope, binding.filterLookupFunction);
+        return this.eval(scope, binding.valueConverterLookupFunction);
       });
     }
 

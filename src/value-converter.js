@@ -10,18 +10,18 @@ function hyphenate(name){
   return (name.charAt(0).toLowerCase() + name.slice(1)).replace(capitalMatcher, addHyphenAndLower);
 }
 
-export class Filter extends ResourceType {
+export class ValueConverter extends ResourceType {
   constructor(name){
     this.name = name;
   }
 
   static convention(name){
     if(name.endsWith('ValueConverter')){
-      return new Filter(hyphenate(name.substring(0, name.length-14)));
+      return new ValueConverter(hyphenate(name.substring(0, name.length-14)));
     }
   }
 
   register(registry, name){
-  	registry.registerFilter(name || this.name, target);
+  	registry.registerValueConverter(name || this.name, target);
   }
 }
