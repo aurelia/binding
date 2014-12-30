@@ -95,7 +95,24 @@ export class ValueConverter extends Expression {
       throw new Error(`No ValueConverter named "${this.name}" was found!`);
     }
 
-    return converter.toView.apply(converter, evalList(scope, this.allArgs, valueConverters));
+    if('toView' in converter){
+      return converter.toView.apply(converter, evalList(scope, this.allArgs, valueConverters));
+    }
+
+    return this.allArgs[0].eval(scope, valueConverters);
+  }
+
+  assign(scope, value, valueConverters=defaultValueConverterMap){
+    var converter = valueConverters(this.name);
+    if(!converter){
+      throw new Error(`No ValueConverter named "${this.name}" was found!`);
+    }
+
+    if('fromView' in converter){
+      value = converter.fromView.apply(converter, [value].concat(evalList(scope, this.args, valueConverters)));
+    }
+
+    return this.allArgs[0].assign(scope, value, valueConverters);
   }
   
   accept(visitor){

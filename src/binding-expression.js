@@ -67,7 +67,7 @@ class Binding {
 
       if(this.mode == TWO_WAY){
         this._disposeListener = targetProperty.subscribe(newValue => {
-          this.sourceExpression.assign(source, newValue);
+          this.sourceExpression.assign(source, newValue, this.valueConverterLookupFunction);
         });
       }
 
