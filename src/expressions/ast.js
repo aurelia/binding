@@ -95,7 +95,7 @@ export class ValueConverter extends Expression {
       throw new Error(`No ValueConverter named "${this.name}" was found!`);
     }
 
-    return converter.apply(null, evalList(scope, this.allArgs, valueConverters));
+    return converter.toView.apply(converter, evalList(scope, this.allArgs, valueConverters));
   }
   
   accept(visitor){
