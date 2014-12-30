@@ -61,10 +61,10 @@ export class Chain extends Expression {
     var result,
         expressions = this.expressions,
         length = expressions.length,
-        i;
+        i, last;
 
-    for (i = 0; i < length; i++) {
-      var last = expressions[i].eval(scope, filters);
+    for (i = 0; i < length; ++i) {
+      last = expressions[i].eval(scope, filters);
       
       if (last != null) {
         result = last;
@@ -398,7 +398,7 @@ export class LiteralArray extends Expression {
         result = [],
         i;
 
-    for(i = 0; i < length; i++){
+    for(i = 0; i < length; ++i){
       result[i] = elements[i].eval(scope, filters);
     }
 
@@ -425,7 +425,7 @@ export class LiteralObject extends Expression {
         length = keys.length,
         i;
 
-    for(i = 0; i < length; i++){
+    for(i = 0; i < length; ++i){
       instance[keys[i]] = values[i].eval(scope, filters);
     }
 
@@ -456,9 +456,11 @@ export class Unparser {
   }
 
   writeArgs(args) {
+    var i, length;
+
     this.write('(');
 
-    for (var i = 0, length = args.length; i < length; i++) {
+    for (i = 0, length = args.length; i < length; ++i) {
       if (i != 0) {
         this.write(',');
       }
@@ -474,7 +476,7 @@ export class Unparser {
         length = expressions.length,
         i;
 
-    for (i = 0; i < length; i++) {
+    for (i = 0; i < length; ++i) {
       if (i != 0) {
         this.write(';');
       }
@@ -492,7 +494,7 @@ export class Unparser {
     filter.expression.accept(this);
     this.write(`|${filter.name}`);
 
-    for (i = 0; i < length; i++) {
+    for (i = 0; i < length; ++i) {
       this.write(' :');
       args[i].accept(this);
     }
@@ -571,7 +573,7 @@ export class Unparser {
 
     this.write('[');
 
-    for (i = 0; i < length; i++) {
+    for (i = 0; i < length; ++i) {
       if (i != 0) {
         this.write(',');
       }
@@ -590,7 +592,7 @@ export class Unparser {
 
     this.write('{');
 
-    for (i = 0; i < length; i++) {
+    for (i = 0; i < length; ++i) {
       if (i != 0){
         this.write(',');
       }
@@ -616,15 +618,16 @@ var evalListCache = [[],[0],[0,0],[0,0,0],[0,0,0,0],[0,0,0,0,0]];
 
 /// Evaluate the [list] in context of the [scope].
 function evalList(scope, list, filters=defaultFilterMap) {
-  var length = list.length;
+  var length = list.length,
+      cacheLength, i;
 
-  for (var cacheLength = evalListCache.length; cacheLength <= length; cacheLength++) {
+  for (cacheLength = evalListCache.length; cacheLength <= length; ++cacheLength) {
     _evalListCache.push([]);
   }
 
   var result = evalListCache[length];
 
-  for (var i = 0; i < length; i++) {
+  for (i = 0; i < length; ++i) {
     result[i] = list[i].eval(scope, filters);
   }
 

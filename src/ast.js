@@ -20,12 +20,13 @@ import {
 
 export function patchAST(){
   Filter.prototype.connect = function(binding, scope){
-    var observer;
-    var childObservers = [];
+    var observer,
+        childObservers = [],
+        i, ii, exp, expInfo;
 
-    for(var i = 0, ii = this.allArgs.length; i<ii; i++){
-      var exp = this.allArgs[i],
-          expInfo = exp.connect(binding, scope);
+    for(i = 0, ii = this.allArgs.length; i<ii; ++i){
+      exp = this.allArgs[i]
+      expInfo = exp.connect(binding, scope);
           
       if(expInfo.observer){
         childObservers.push(expInfo.observer);
@@ -143,12 +144,13 @@ export function patchAST(){
   }
 
   CallScope.prototype.connect = function(binding, scope){
-    var observer;
-    var childObservers = [];
+    var observer,
+        childObservers = [],
+        i, ii, exp, expInfo;
 
-    for(var i = 0, ii = this.args.length; i<ii; i++){
-      var exp = this.args[i],
-          expInfo = exp.connect(binding, scope);
+    for(i = 0, ii = this.args.length; i<ii; ++i){
+      exp = this.args[i];
+      expInfo = exp.connect(binding, scope);
           
       if(expInfo.observer){
         childObservers.push(expInfo.observer);
@@ -170,15 +172,16 @@ export function patchAST(){
   CallMember.prototype.connect = function(binding, scope){
     var observer,
         objectInfo = this.object.connect(binding, scope),
-        childObservers = [];
+        childObservers = [],
+        i, ii, exp, expInfo;
 
     if(objectInfo.observer){
       childObservers.push(objectInfo.observer);
     }
 
-    for(var i = 0, ii = this.args.length; i<ii; i++){
-      var exp = this.args[i],
-          expInfo = exp.connect(binding, scope);
+    for(i = 0, ii = this.args.length; i<ii; ++i){
+      exp = this.args[i];
+      expInfo = exp.connect(binding, scope);
           
       if(expInfo.observer){
         childObservers.push(expInfo.observer);
@@ -200,15 +203,16 @@ export function patchAST(){
   CallFunction.prototype.connect = function(binding, scope){
     var observer,
         funcInfo = this.func.connect(binding, scope),
-        childObservers = [];
+        childObservers = [],
+        i, ii, exp, expInfo;
 
     if(funcInfo.observer){
       childObservers.push(funcInfo.observer);
     }
 
-    for(var i = 0, ii = this.args.length; i<ii; i++){
-      var exp = this.args[i],
-          expInfo = exp.connect(binding, scope);
+    for(i = 0, ii = this.args.length; i<ii; ++i){
+      exp = this.args[i];
+      expInfo = exp.connect(binding, scope);
           
       if(expInfo.observer){
         childObservers.push(expInfo.observer);
@@ -280,11 +284,12 @@ export function patchAST(){
   LiteralArray.prototype.connect = function(binding, value) {
     var observer,
         childObservers = [],
-        results = [];
+        results = [],
+        i, ii, exp, expInfo;
 
-    for(var i = 0, ii = this.elements.length; i<ii; i++){
-      var exp = this.elements[i],
-          expInfo = exp.connect(binding, scope);
+    for(i = 0, ii = this.elements.length; i<ii; ++i){
+      exp = this.elements[i];
+      expInfo = exp.connect(binding, scope);
           
       if(expInfo.observer){
         childObservers.push(expInfo.observer);
@@ -312,10 +317,10 @@ export function patchAST(){
         keys = this.keys,
         values = this.values,
         length = keys.length,
-        i;
+        i, valueInfo;
 
-    for(i = 0; i < length; i++){
-      var valueInfo = values[i].connect(binding, scope);
+    for(i = 0; i < length; ++i){
+      valueInfo = values[i].connect(binding, scope);
 
       if(valueInfo.observer){
         childObservers.push(valueInfo.observer);
