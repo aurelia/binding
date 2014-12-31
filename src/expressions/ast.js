@@ -304,13 +304,12 @@ export class Binary extends Expression {
 
   eval(scope, valueConverters=defaultValueConverterMap){
     var left = this.left.eval(scope);
-
-    switch (this.operation) {
-      case '&&': return !!left && !!this.right.eval(scope);
-      case '||': return !!left || !!this.right.eval(scope);
-    }
-
     var right = this.right.eval(scope);
+    
+    switch (this.operation) {
+      case '&&': return !!left && !!right;
+      case '||': return !!left || !!right;
+    }
 
     // Null check for the operations.
     if (left == null || right == null) {
