@@ -63,7 +63,7 @@ describe('dirty check property', () => {
 		expect(dirtyChecker.tracked.length).toBe(0);
 	});
 
-	it('ends tracking on when no other callbacks are registered', () => {
+	it('ends tracking if there are no callbacks', () => {
 		var dirtyCheckProperty = new DirtyCheckProperty(new DirtyChecker(), {}, 'foo');
 
 		var resultToExecute = dirtyCheckProperty.subscribe(function(){});	
@@ -73,7 +73,7 @@ describe('dirty check property', () => {
 		expect(dirtyCheckProperty.tracking).toBe(false);
 	});
 	
-	it('keeps tracking on when other callbacks are registered', () => {
+	it('keeps tracking if there are callbacks', () => {
 		var dirtyCheckProperty = new DirtyCheckProperty(new DirtyChecker(), {}, 'foo');
 		
 		dirtyCheckProperty.subscribe(function(){});
