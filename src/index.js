@@ -10,4 +10,5 @@ export {Parser} from './expressions/parser';
 export {BindingExpression} from './binding-expression';
 export {ListenerExpression} from './listener-expression';
 export {NameExpression} from './name-expression';
+export {CallExpression} from './call-expression';
 export {DirtyChecker} from './dirty-checking';

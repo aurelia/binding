@@ -12,40 +12,8 @@ export class Expression {
     throw new Error(`Cannot assign to ${this}`);
   }
 
-  bind(context, wrapper){
-    return new BoundExpression(this, context, wrapper);
-  }
-
   toString(){
     return Unparser.unparse(this);
-  }
-}
-
-export class BoundExpression {
-  constructor(expression, context, wrapper=null){
-    this.expression = expression;
-    this._context = context;
-    this._wrapper = wrapper;
-  }
-
-  eval(locals=null){
-    return this.expression.eval(this._computeContext(locals));
-  }
-
-  assign(value, locals=null){
-    return this.expression.assign(this._computeContext(locals), value);
-  }
-
-  _computeContext(locals){
-    if (locals==null) {
-      return this._context;
-    }
-
-    if (this._wrapper){
-      return this._wrapper(this._context, locals);
-    }
-
-    throw new Error(`Locals ${locals} provided, but missing wrapper.`);
   }
 }
 
@@ -57,7 +25,7 @@ export class Chain extends Expression {
     this.isChain = true;
   }
 
-  eval(scope, valueConverters=defaultValueConverterMap) {
+  eval(scope, valueConverters) {
     var result,
         expressions = this.expressions,
         length = expressions.length,
@@ -89,7 +57,7 @@ export class ValueConverter extends Expression {
     this.allArgs = allArgs;
   }
 
-  eval(scope, valueConverters=defaultValueConverterMap){
+  eval(scope, valueConverters){
     var converter = valueConverters(this.name);
     if(!converter){
       throw new Error(`No ValueConverter named "${this.name}" was found!`);
@@ -102,7 +70,7 @@ export class ValueConverter extends Expression {
     return this.allArgs[0].eval(scope, valueConverters);
   }
 
-  assign(scope, value, valueConverters=defaultValueConverterMap){
+  assign(scope, value, valueConverters){
     var converter = valueConverters(this.name);
     if(!converter){
       throw new Error(`No ValueConverter named "${this.name}" was found!`);
@@ -128,7 +96,7 @@ export class Assign extends Expression {
     this.value = value;
   }
 
-  eval(scope, valueConverters=defaultValueConverterMap){
+  eval(scope, valueConverters){
     return this.target.assign(scope, this.value.eval(scope, valueConverters));
   }
 
@@ -146,7 +114,7 @@ export class Conditional extends Expression {
     this.no = no;
   }
 
-  eval(scope, valueConverters=defaultValueConverterMap){
+  eval(scope, valueConverters){
     return (!!this.condition.eval(scope)) ? this.yes.eval(scope) : this.no.eval(scope);
   }
 
@@ -163,7 +131,7 @@ export class AccessScope extends Expression {
     this.isAssignable = true;
   }
 
-  eval(scope, valueConverters=defaultValueConverterMap){
+  eval(scope, valueConverters){
     return scope[this.name];
   }
 
@@ -185,7 +153,7 @@ export class AccessMember extends Expression {
     this.isAssignable = true;
   }
 
-  eval(scope, valueConverters=defaultValueConverterMap){
+  eval(scope, valueConverters){
     var instance = this.object.eval(scope, valueConverters);
     return instance == null ? null : instance[this.name];
   }
@@ -215,7 +183,7 @@ export class AccessKeyed extends Expression {
     this.isAssignable = true;
   }
 
-  eval(scope, valueConverters=defaultValueConverterMap){
+  eval(scope, valueConverters){
     var instance = this.object.eval(scope, valueConverters);
     var lookup = this.key.eval(scope, valueConverters);
     return getKeyed(instance, lookup);
@@ -240,8 +208,8 @@ export class CallScope extends Expression {
     this.args = args;
   }
 
-  eval(scope, valueConverters=defaultValueConverterMap){
-    var args = evalList(scope, this.args, valueConverters);
+  eval(scope, valueConverters, args){
+    args = args || evalList(scope, this.args, valueConverters);
     return ensureFunctionFromMap(scope, this.name).apply(scope, args);
   }
 
@@ -259,9 +227,9 @@ export class CallMember extends Expression {
     this.args = args;
   }
 
-  eval(scope, valueConverters=defaultValueConverterMap){
+  eval(scope, valueConverters, args){
     var instance = this.object.eval(scope, valueConverters);
-    var args = evalList(scope, this.args, valueConverters);
+    args = args || evalList(scope, this.args, valueConverters);
     return ensureFunctionFromMap(instance, this.name).apply(instance, args);
   }
 
@@ -278,13 +246,13 @@ export class CallFunction extends Expression {
     this.args = args;
   }
 
-  eval(scope, valueConverters=defaultValueConverterMap){
+  eval(scope, valueConverters, args){
     var func = this.func.eval(scope, valueConverters);
 
     if (typeof func != 'function') {
       throw new Error(`${this.func} is not a function`);
     } else {
-      return func.apply(null, evalList(scope, this.args, valueConverters));
+      return func.apply(null, args || evalList(scope, this.args, valueConverters));
     }
   }
 
@@ -302,7 +270,7 @@ export class Binary extends Expression {
     this.right = right;
   }
 
-  eval(scope, valueConverters=defaultValueConverterMap){
+  eval(scope, valueConverters){
     var left = this.left.eval(scope);
 
     switch (this.operation) {
@@ -361,7 +329,7 @@ export class PrefixNot extends Expression {
     this.expression = expression;
   }
 
-  eval(scope, valueConverters=defaultValueConverterMap){
+  eval(scope, valueConverters){
     return !this.expression.eval(scope);
   }
 
@@ -377,7 +345,7 @@ export class LiteralPrimitive extends Expression {
     this.value = value;
   }
 
-  eval(scope, valueConverters=defaultValueConverterMap){
+  eval(scope, valueConverters){
     return this.value;
   }
 
@@ -393,7 +361,7 @@ export class LiteralString extends Expression {
     this.value = value;
   }
 
-  eval(scope, valueConverters=defaultValueConverterMap){
+  eval(scope, valueConverters){
     return this.value;
   }
 
@@ -409,7 +377,7 @@ export class LiteralArray extends Expression {
     this.elements = elements;
   }
 
-  eval(scope, valueConverters=defaultValueConverterMap){
+  eval(scope, valueConverters){
     var elements = this.elements,
         length = elements.length,
         result = [],
@@ -435,7 +403,7 @@ export class LiteralObject extends Expression {
     this.values = values;
   }
 
-  eval(scope, valueConverters=defaultValueConverterMap){
+  eval(scope, valueConverters){
     var instance = {},
         keys = this.keys,
         values = this.values,
@@ -627,14 +595,10 @@ export class Unparser {
   }
 }
 
-function defaultValueConverterMap(name){
-  throw new Error(`No ValueConverter named "${name}" was found!`);
-}
-
 var evalListCache = [[],[0],[0,0],[0,0,0],[0,0,0,0],[0,0,0,0,0]];
 
 /// Evaluate the [list] in context of the [scope].
-function evalList(scope, list, valueConverters=defaultValueConverterMap) {
+function evalList(scope, list, valueConverters) {
   var length = list.length,
       cacheLength, i;
 
