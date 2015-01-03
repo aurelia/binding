@@ -35,12 +35,12 @@ class Call {
     }
 
     this.source = source;
-    targetProperty.setValue((...rest) => {
+    this.targetProperty.setValue((...rest) => {
       return this.sourceExpression.eval(source, this.valueConverterLookupFunction, rest);
     });
   }
 
   unbind(){
-    targetProperty.setValue(null);
+    this.targetProperty.setValue(null);
   }
 }
