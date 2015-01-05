@@ -5,21 +5,32 @@ function toUpperCase(match, char, index, str) {
 }
 
 export class NameExpression {
-  constructor(attribute){
+  constructor(attribute, value){
     this.attribute = attribute;
     this.property = attribute.replace(hyphenMatcher, toUpperCase); 
     this.discrete = true;
+    this.mode = (value || 'model').toLowerCase();
   }
 
   createBinding(target){
-    return new NameBinder(this.property, target);
+    return new NameBinder(this.property, target, this.mode);
   }
 }
 
 class NameBinder {
-  constructor(property, target){
+  constructor(property, target, mode){
     this.property = property;
-    this.target = target.primaryBehavior ? target.primaryBehavior.executionContext : target;
+
+    switch(mode){
+      case 'model':
+        this.target = target.primaryBehavior ? target.primaryBehavior.executionContext : target;
+        break;
+      case 'element':
+        this.target = target;
+        break;
+      default:
+        throw new Error('Name expressions do not support mode: ' + mode);
+    }
   }
 
   bind(source){
