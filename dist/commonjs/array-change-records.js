@@ -30,19 +30,22 @@ ArraySplice.prototype = {
     var rowCount = oldEnd - oldStart + 1;
     var columnCount = currentEnd - currentStart + 1;
     var distances = new Array(rowCount);
+    var i, j, north, west;
 
-    for (var i = 0; i < rowCount; i++) {
+    for (i = 0; i < rowCount; ++i) {
       distances[i] = new Array(columnCount);
       distances[i][0] = i;
     }
 
-    for (var j = 0; j < columnCount; j++) distances[0][j] = j;
+    for (j = 0; j < columnCount; ++j) {
+      distances[0][j] = j;
+    }
 
-    for (var i = 1; i < rowCount; i++) {
-      for (var j = 1; j < columnCount; j++) {
+    for (i = 1; i < rowCount; ++i) {
+      for (j = 1; j < columnCount; ++j) {
         if (this.equals(current[currentStart + j - 1], old[oldStart + i - 1])) distances[i][j] = distances[i - 1][j - 1];else {
-          var north = distances[i - 1][j] + 1;
-          var west = distances[i][j - 1] + 1;
+          north = distances[i - 1][j] + 1;
+          west = distances[i][j - 1] + 1;
           distances[i][j] = north < west ? north : west;
         }
       }
@@ -125,7 +128,7 @@ ArraySplice.prototype = {
     var splices = [];
     var index = currentStart;
     var oldIndex = oldStart;
-    for (var i = 0; i < ops.length; i++) {
+    for (var i = 0; i < ops.length; ++i) {
       switch (ops[i]) {
         case EDIT_LEAVE:
           if (splice) {
@@ -167,7 +170,7 @@ ArraySplice.prototype = {
   },
 
   sharedPrefix: function (current, old, searchLength) {
-    for (var i = 0; i < searchLength; i++) if (!this.equals(current[i], old[i])) return i;
+    for (var i = 0; i < searchLength; ++i) if (!this.equals(current[i], old[i])) return i;
     return searchLength;
   },
 

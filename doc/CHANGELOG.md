@@ -1,3 +1,21 @@
+## 0.2.0 (2015-01-06)
+
+
+#### Bug Fixes
+
+* **all:** rename Filter to ValueConverter ([7f5e5785](http://github.com/aurelia/binding/commit/7f5e5785a197f18884281308275e67d7ceadb9da))
+
+
+#### Features
+
+* **CallExpression:** enable passing function refs with call bindings ([1b333f0d](http://github.com/aurelia/binding/commit/1b333f0d7cf3e3d54df3812441f26ad460441aa6))
+* **build:** update compiler and switch to register module format ([b3a9c112](http://github.com/aurelia/binding/commit/b3a9c1128e82f2af622abf8309808a66e12d0ddc))
+* **name-expression:** support explicit ref binding modes ([c2954228](http://github.com/aurelia/binding/commit/c2954228c43d9a433898f0d700683f6245ebdb62))
+* **value-converter:**
+  * add fromView conversion ([8633d795](http://github.com/aurelia/binding/commit/8633d795123d52eca535c66627e6a9347a709782))
+  * add toView conversion ([2de3f053](http://github.com/aurelia/binding/commit/2de3f053b9a7abff07fe8e124082a52c89aef4e6))
+
+
 ### 0.1.2 (2014-12-17)
 
 

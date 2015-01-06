@@ -102,7 +102,7 @@ export class DirtyCheckProperty {
 
     return function(){
       callbacks.splice(callbacks.indexOf(callback), 1);
-      if(callback.length === 0){
+      if(callbacks.length === 0){
         that.endTracking();
       }
     };

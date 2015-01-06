@@ -12,40 +12,8 @@ export class Expression {
     throw new Error(`Cannot assign to ${this}`);
   }
 
-  bind(context, wrapper){
-    return new BoundExpression(this, context, wrapper);
-  }
-
   toString(){
     return Unparser.unparse(this);
-  }
-}
-
-export class BoundExpression {
-  constructor(expression, context, wrapper=null){
-    this.expression = expression;
-    this._context = context;
-    this._wrapper = wrapper;
-  }
-
-  eval(locals=null){
-    return this.expression.eval(this._computeContext(locals));
-  }
-
-  assign(value, locals=null){
-    return this.expression.assign(this._computeContext(locals), value);
-  }
-
-  _computeContext(locals){
-    if (locals==null) {
-      return this._context;
-    }
-
-    if (this._wrapper){
-      return this._wrapper(this._context, locals);
-    }
-
-    throw new Error(`Locals ${locals} provided, but missing wrapper.`);
   }
 }
 
@@ -57,14 +25,14 @@ export class Chain extends Expression {
     this.isChain = true;
   }
 
-  eval(scope, filters=defaultFilterMap) {
+  eval(scope, valueConverters) {
     var result,
         expressions = this.expressions,
         length = expressions.length,
-        i;
+        i, last;
 
-    for (i = 0; i < length; i++) {
-      var last = expressions[i].eval(scope, filters);
+    for (i = 0; i < length; ++i) {
+      last = expressions[i].eval(scope, valueConverters);
       
       if (last != null) {
         result = last;
@@ -79,7 +47,7 @@ export class Chain extends Expression {
   }
 }
 
-export class Filter extends Expression {
+export class ValueConverter extends Expression {
   constructor(expression, name, args, allArgs){
     super();
 
@@ -89,17 +57,34 @@ export class Filter extends Expression {
     this.allArgs = allArgs;
   }
 
-  eval(scope, filters=defaultFilterMap){
-    var filter = filters(this.name);
-    if(!filter){
-      throw new Error(`No Filter: ${this.name} found!`);
+  eval(scope, valueConverters){
+    var converter = valueConverters(this.name);
+    if(!converter){
+      throw new Error(`No ValueConverter named "${this.name}" was found!`);
     }
 
-    return filter.apply(null, evalList(scope, this.allArgs, filters));
+    if('toView' in converter){
+      return converter.toView.apply(converter, evalList(scope, this.allArgs, valueConverters));
+    }
+
+    return this.allArgs[0].eval(scope, valueConverters);
+  }
+
+  assign(scope, value, valueConverters){
+    var converter = valueConverters(this.name);
+    if(!converter){
+      throw new Error(`No ValueConverter named "${this.name}" was found!`);
+    }
+
+    if('fromView' in converter){
+      value = converter.fromView.apply(converter, [value].concat(evalList(scope, this.args, valueConverters)));
+    }
+
+    return this.allArgs[0].assign(scope, value, valueConverters);
   }
   
   accept(visitor){
-    visitor.visitFilter(this);
+    visitor.visitValueConverter(this);
   }
 }
 
@@ -111,8 +96,8 @@ export class Assign extends Expression {
     this.value = value;
   }
 
-  eval(scope, filters=defaultFilterMap){
-    return this.target.assign(scope, this.value.eval(scope, filters));
+  eval(scope, valueConverters){
+    return this.target.assign(scope, this.value.eval(scope, valueConverters));
   }
 
   accept(vistor){
@@ -129,7 +114,7 @@ export class Conditional extends Expression {
     this.no = no;
   }
 
-  eval(scope, filters=defaultFilterMap){
+  eval(scope, valueConverters){
     return (!!this.condition.eval(scope)) ? this.yes.eval(scope) : this.no.eval(scope);
   }
 
@@ -146,7 +131,7 @@ export class AccessScope extends Expression {
     this.isAssignable = true;
   }
 
-  eval(scope, filters=defaultFilterMap){
+  eval(scope, valueConverters){
     return scope[this.name];
   }
 
@@ -168,8 +153,8 @@ export class AccessMember extends Expression {
     this.isAssignable = true;
   }
 
-  eval(scope, filters=defaultFilterMap){
-    var instance = this.object.eval(scope, filters);
+  eval(scope, valueConverters){
+    var instance = this.object.eval(scope, valueConverters);
     return instance == null ? null : instance[this.name];
   }
 
@@ -198,9 +183,9 @@ export class AccessKeyed extends Expression {
     this.isAssignable = true;
   }
 
-  eval(scope, filters=defaultFilterMap){
-    var instance = this.object.eval(scope, filters);
-    var lookup = this.key.eval(scope, filters);
+  eval(scope, valueConverters){
+    var instance = this.object.eval(scope, valueConverters);
+    var lookup = this.key.eval(scope, valueConverters);
     return getKeyed(instance, lookup);
   }
 
@@ -223,8 +208,8 @@ export class CallScope extends Expression {
     this.args = args;
   }
 
-  eval(scope, filters=defaultFilterMap){
-    var args = evalList(scope, this.args, filters);
+  eval(scope, valueConverters, args){
+    args = args || evalList(scope, this.args, valueConverters);
     return ensureFunctionFromMap(scope, this.name).apply(scope, args);
   }
 
@@ -242,9 +227,9 @@ export class CallMember extends Expression {
     this.args = args;
   }
 
-  eval(scope, filters=defaultFilterMap){
-    var instance = this.object.eval(scope, filters);
-    var args = evalList(scope, this.args, filters);
+  eval(scope, valueConverters, args){
+    var instance = this.object.eval(scope, valueConverters);
+    args = args || evalList(scope, this.args, valueConverters);
     return ensureFunctionFromMap(instance, this.name).apply(instance, args);
   }
 
@@ -261,13 +246,13 @@ export class CallFunction extends Expression {
     this.args = args;
   }
 
-  eval(scope, filters=defaultFilterMap){
-    var func = this.func.eval(scope, filters);
+  eval(scope, valueConverters, args){
+    var func = this.func.eval(scope, valueConverters);
 
     if (typeof func != 'function') {
       throw new Error(`${this.func} is not a function`);
     } else {
-      return func.apply(null, evalList(scope, this.args, filters));
+      return func.apply(null, args || evalList(scope, this.args, valueConverters));
     }
   }
 
@@ -285,7 +270,7 @@ export class Binary extends Expression {
     this.right = right;
   }
 
-  eval(scope, filters=defaultFilterMap){
+  eval(scope, valueConverters){
     var left = this.left.eval(scope);
 
     switch (this.operation) {
@@ -344,7 +329,7 @@ export class PrefixNot extends Expression {
     this.expression = expression;
   }
 
-  eval(scope, filters=defaultFilterMap){
+  eval(scope, valueConverters){
     return !this.expression.eval(scope);
   }
 
@@ -360,7 +345,7 @@ export class LiteralPrimitive extends Expression {
     this.value = value;
   }
 
-  eval(scope, filters=defaultFilterMap){
+  eval(scope, valueConverters){
     return this.value;
   }
 
@@ -376,7 +361,7 @@ export class LiteralString extends Expression {
     this.value = value;
   }
 
-  eval(scope, filters=defaultFilterMap){
+  eval(scope, valueConverters){
     return this.value;
   }
 
@@ -392,14 +377,14 @@ export class LiteralArray extends Expression {
     this.elements = elements;
   }
 
-  eval(scope, filters=defaultFilterMap){
+  eval(scope, valueConverters){
     var elements = this.elements,
         length = elements.length,
         result = [],
         i;
 
-    for(i = 0; i < length; i++){
-      result[i] = elements[i].eval(scope, filters);
+    for(i = 0; i < length; ++i){
+      result[i] = elements[i].eval(scope, valueConverters);
     }
 
     return result;
@@ -418,15 +403,15 @@ export class LiteralObject extends Expression {
     this.values = values;
   }
 
-  eval(scope, filters=defaultFilterMap){
+  eval(scope, valueConverters){
     var instance = {},
         keys = this.keys,
         values = this.values,
         length = keys.length,
         i;
 
-    for(i = 0; i < length; i++){
-      instance[keys[i]] = values[i].eval(scope, filters);
+    for(i = 0; i < length; ++i){
+      instance[keys[i]] = values[i].eval(scope, valueConverters);
     }
 
     return instance;
@@ -456,9 +441,11 @@ export class Unparser {
   }
 
   writeArgs(args) {
+    var i, length;
+
     this.write('(');
 
-    for (var i = 0, length = args.length; i < length; i++) {
+    for (i = 0, length = args.length; i < length; ++i) {
       if (i != 0) {
         this.write(',');
       }
@@ -474,7 +461,7 @@ export class Unparser {
         length = expressions.length,
         i;
 
-    for (i = 0; i < length; i++) {
+    for (i = 0; i < length; ++i) {
       if (i != 0) {
         this.write(';');
       }
@@ -483,16 +470,16 @@ export class Unparser {
     }
   }
 
-  visitFilter(filter) {
-    var args = filter.args,
+  visitValueConverter(converter) {
+    var args = converter.args,
         length = args.length,
         i;
 
     this.write('(');
-    filter.expression.accept(this);
-    this.write(`|${filter.name}`);
+    converter.expression.accept(this);
+    this.write(`|${converter.name}`);
 
-    for (i = 0; i < length; i++) {
+    for (i = 0; i < length; ++i) {
       this.write(' :');
       args[i].accept(this);
     }
@@ -571,7 +558,7 @@ export class Unparser {
 
     this.write('[');
 
-    for (i = 0; i < length; i++) {
+    for (i = 0; i < length; ++i) {
       if (i != 0) {
         this.write(',');
       }
@@ -590,7 +577,7 @@ export class Unparser {
 
     this.write('{');
 
-    for (i = 0; i < length; i++) {
+    for (i = 0; i < length; ++i) {
       if (i != 0){
         this.write(',');
       }
@@ -608,24 +595,21 @@ export class Unparser {
   }
 }
 
-function defaultFilterMap(name){
-  throw new Error(`No NgFilter: ${name} found!`);
-}
-
 var evalListCache = [[],[0],[0,0],[0,0,0],[0,0,0,0],[0,0,0,0,0]];
 
 /// Evaluate the [list] in context of the [scope].
-function evalList(scope, list, filters=defaultFilterMap) {
-  var length = list.length;
+function evalList(scope, list, valueConverters) {
+  var length = list.length,
+      cacheLength, i;
 
-  for (var cacheLength = evalListCache.length; cacheLength <= length; cacheLength++) {
+  for (cacheLength = evalListCache.length; cacheLength <= length; ++cacheLength) {
     _evalListCache.push([]);
   }
 
   var result = evalListCache[length];
 
-  for (var i = 0; i < length; i++) {
-    result[i] = list[i].eval(scope, filters);
+  for (i = 0; i < length; ++i) {
+    result[i] = list[i].eval(scope, valueConverters);
   }
 
   return result;

@@ -1,31 +1,31 @@
 "use strict";
 
 exports.patchAST = patchAST;
-var PathObserver = require('./path-observer').PathObserver;
-var CompositeObserver = require('./composite-observer').CompositeObserver;
-var Filter = require('./expressions/ast').Filter;
-var Assign = require('./expressions/ast').Assign;
-var Conditional = require('./expressions/ast').Conditional;
-var AccessScope = require('./expressions/ast').AccessScope;
-var AccessMember = require('./expressions/ast').AccessMember;
-var AccessKeyed = require('./expressions/ast').AccessKeyed;
-var CallScope = require('./expressions/ast').CallScope;
-var CallMember = require('./expressions/ast').CallMember;
-var CallFunction = require('./expressions/ast').CallFunction;
-var Binary = require('./expressions/ast').Binary;
-var PrefixNot = require('./expressions/ast').PrefixNot;
-var LiteralPrimitive = require('./expressions/ast').LiteralPrimitive;
-var LiteralString = require('./expressions/ast').LiteralString;
-var LiteralArray = require('./expressions/ast').LiteralArray;
-var LiteralObject = require('./expressions/ast').LiteralObject;
+var PathObserver = require("./path-observer").PathObserver;
+var CompositeObserver = require("./composite-observer").CompositeObserver;
+var ValueConverter = require("./expressions/ast").ValueConverter;
+var Assign = require("./expressions/ast").Assign;
+var Conditional = require("./expressions/ast").Conditional;
+var AccessScope = require("./expressions/ast").AccessScope;
+var AccessMember = require("./expressions/ast").AccessMember;
+var AccessKeyed = require("./expressions/ast").AccessKeyed;
+var CallScope = require("./expressions/ast").CallScope;
+var CallMember = require("./expressions/ast").CallMember;
+var CallFunction = require("./expressions/ast").CallFunction;
+var Binary = require("./expressions/ast").Binary;
+var PrefixNot = require("./expressions/ast").PrefixNot;
+var LiteralPrimitive = require("./expressions/ast").LiteralPrimitive;
+var LiteralString = require("./expressions/ast").LiteralString;
+var LiteralArray = require("./expressions/ast").LiteralArray;
+var LiteralObject = require("./expressions/ast").LiteralObject;
 function patchAST() {
-  Filter.prototype.connect = function (binding, scope) {
+  ValueConverter.prototype.connect = function (binding, scope) {
     var _this = this;
-    var observer;
-    var childObservers = [];
+    var observer, childObservers = [], i, ii, exp, expInfo;
 
-    for (var i = 0, ii = this.allArgs.length; i < ii; i++) {
-      var exp = this.allArgs[i], expInfo = exp.connect(binding, scope);
+    for (i = 0, ii = this.allArgs.length; i < ii; ++i) {
+      exp = this.allArgs[i];
+      expInfo = exp.connect(binding, scope);
 
       if (expInfo.observer) {
         childObservers.push(expInfo.observer);
@@ -34,18 +34,18 @@ function patchAST() {
 
     if (childObservers.length) {
       observer = new CompositeObserver(childObservers, function () {
-        return _this.eval(scope, binding.filterLookupFunction);
+        return _this.eval(scope, binding.valueConverterLookupFunction);
       });
     }
 
     return {
-      value: this.eval(scope, binding.filterLookupFunction),
+      value: this.eval(scope, binding.valueConverterLookupFunction),
       observer: observer
     };
   };
 
   Assign.prototype.connect = function (binding, scope) {
-    return { value: this.eval(scope, binding.filterLookupFunction) };
+    return { value: this.eval(scope, binding.valueConverterLookupFunction) };
   };
 
   Conditional.prototype.connect = function (binding, scope) {
@@ -66,12 +66,12 @@ function patchAST() {
 
     if (childObservers.length) {
       observer = new CompositeObserver(childObservers, function () {
-        return _this2.eval(scope, binding.filterLookupFunction);
+        return _this2.eval(scope, binding.valueConverterLookupFunction);
       });
     }
 
     return {
-      value: (!!conditionInfo.value) ? yesInfo.value : noInfo.value,
+      value: !!conditionInfo.value ? yesInfo.value : noInfo.value,
       observer: observer
     };
   };
@@ -121,23 +121,23 @@ function patchAST() {
 
     if (childObservers.length) {
       observer = new CompositeObserver(childObservers, function () {
-        return _this4.eval(scope, binding.filterLookupFunction);
+        return _this4.eval(scope, binding.valueConverterLookupFunction);
       });
     }
 
     return {
-      value: this.eval(scope, binding.filterLookupFunction),
+      value: this.eval(scope, binding.valueConverterLookupFunction),
       observer: observer
     };
   };
 
   CallScope.prototype.connect = function (binding, scope) {
     var _this5 = this;
-    var observer;
-    var childObservers = [];
+    var observer, childObservers = [], i, ii, exp, expInfo;
 
-    for (var i = 0, ii = this.args.length; i < ii; i++) {
-      var exp = this.args[i], expInfo = exp.connect(binding, scope);
+    for (i = 0, ii = this.args.length; i < ii; ++i) {
+      exp = this.args[i];
+      expInfo = exp.connect(binding, scope);
 
       if (expInfo.observer) {
         childObservers.push(expInfo.observer);
@@ -146,26 +146,27 @@ function patchAST() {
 
     if (childObservers.length) {
       observer = new CompositeObserver(childObservers, function () {
-        return _this5.eval(scope, binding.filterLookupFunction);
+        return _this5.eval(scope, binding.valueConverterLookupFunction);
       });
     }
 
     return {
-      value: this.eval(scope, binding.filterLookupFunction),
+      value: this.eval(scope, binding.valueConverterLookupFunction),
       observer: observer
     };
   };
 
   CallMember.prototype.connect = function (binding, scope) {
     var _this6 = this;
-    var observer, objectInfo = this.object.connect(binding, scope), childObservers = [];
+    var observer, objectInfo = this.object.connect(binding, scope), childObservers = [], i, ii, exp, expInfo;
 
     if (objectInfo.observer) {
       childObservers.push(objectInfo.observer);
     }
 
-    for (var i = 0, ii = this.args.length; i < ii; i++) {
-      var exp = this.args[i], expInfo = exp.connect(binding, scope);
+    for (i = 0, ii = this.args.length; i < ii; ++i) {
+      exp = this.args[i];
+      expInfo = exp.connect(binding, scope);
 
       if (expInfo.observer) {
         childObservers.push(expInfo.observer);
@@ -174,26 +175,27 @@ function patchAST() {
 
     if (childObservers.length) {
       observer = new CompositeObserver(childObservers, function () {
-        return _this6.eval(scope, binding.filterLookupFunction);
+        return _this6.eval(scope, binding.valueConverterLookupFunction);
       });
     }
 
     return {
-      value: this.eval(scope, binding.filterLookupFunction),
+      value: this.eval(scope, binding.valueConverterLookupFunction),
       observer: observer
     };
   };
 
   CallFunction.prototype.connect = function (binding, scope) {
     var _this7 = this;
-    var observer, funcInfo = this.func.connect(binding, scope), childObservers = [];
+    var observer, funcInfo = this.func.connect(binding, scope), childObservers = [], i, ii, exp, expInfo;
 
     if (funcInfo.observer) {
       childObservers.push(funcInfo.observer);
     }
 
-    for (var i = 0, ii = this.args.length; i < ii; i++) {
-      var exp = this.args[i], expInfo = exp.connect(binding, scope);
+    for (i = 0, ii = this.args.length; i < ii; ++i) {
+      exp = this.args[i];
+      expInfo = exp.connect(binding, scope);
 
       if (expInfo.observer) {
         childObservers.push(expInfo.observer);
@@ -202,12 +204,12 @@ function patchAST() {
 
     if (childObservers.length) {
       observer = new CompositeObserver(childObservers, function () {
-        return _this7.eval(scope, binding.filterLookupFunction);
+        return _this7.eval(scope, binding.valueConverterLookupFunction);
       });
     }
 
     return {
-      value: this.eval(scope, binding.filterLookupFunction),
+      value: this.eval(scope, binding.valueConverterLookupFunction),
       observer: observer
     };
   };
@@ -226,12 +228,12 @@ function patchAST() {
 
     if (childObservers.length) {
       observer = new CompositeObserver(childObservers, function () {
-        return _this8.eval(scope, binding.filterLookupFunction);
+        return _this8.eval(scope, binding.valueConverterLookupFunction);
       });
     }
 
     return {
-      value: this.eval(scope, binding.filterLookupFunction),
+      value: this.eval(scope, binding.valueConverterLookupFunction),
       observer: observer
     };
   };
@@ -242,7 +244,7 @@ function patchAST() {
 
     if (info.observer) {
       observer = new CompositeObserver([info.observer], function () {
-        return _this9.eval(scope, binding.filterLookupFunction);
+        return _this9.eval(scope, binding.valueConverterLookupFunction);
       });
     }
 
@@ -262,10 +264,11 @@ function patchAST() {
 
   LiteralArray.prototype.connect = function (binding, value) {
     var _this10 = this;
-    var observer, childObservers = [], results = [];
+    var observer, childObservers = [], results = [], i, ii, exp, expInfo;
 
-    for (var i = 0, ii = this.elements.length; i < ii; i++) {
-      var exp = this.elements[i], expInfo = exp.connect(binding, scope);
+    for (i = 0, ii = this.elements.length; i < ii; ++i) {
+      exp = this.elements[i];
+      expInfo = exp.connect(binding, scope);
 
       if (expInfo.observer) {
         childObservers.push(expInfo.observer);
@@ -276,7 +279,7 @@ function patchAST() {
 
     if (childObservers.length) {
       observer = new CompositeObserver(childObservers, function () {
-        return _this10.eval(scope, binding.filterLookupFunction);
+        return _this10.eval(scope, binding.valueConverterLookupFunction);
       });
     }
 
@@ -288,10 +291,10 @@ function patchAST() {
 
   LiteralObject.prototype.connect = function (binding, value) {
     var _this11 = this;
-    var observer, childObservers = [], instance = {}, keys = this.keys, values = this.values, length = keys.length, i;
+    var observer, childObservers = [], instance = {}, keys = this.keys, values = this.values, length = keys.length, i, valueInfo;
 
-    for (i = 0; i < length; i++) {
-      var valueInfo = values[i].connect(binding, scope);
+    for (i = 0; i < length; ++i) {
+      valueInfo = values[i].connect(binding, scope);
 
       if (valueInfo.observer) {
         childObservers.push(valueInfo.observer);
@@ -302,7 +305,7 @@ function patchAST() {
 
     if (childObservers.length) {
       observer = new CompositeObserver(childObservers, function () {
-        return _this11.eval(scope, binding.filterLookupFunction);
+        return _this11.eval(scope, binding.valueConverterLookupFunction);
       });
     }
 
