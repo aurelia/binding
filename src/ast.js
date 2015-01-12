@@ -281,7 +281,7 @@ export function patchAST(){
     return { value:this.value }
   }
 
-  LiteralArray.prototype.connect = function(binding, value) {
+  LiteralArray.prototype.connect = function(binding, scope) {
     var observer,
         childObservers = [],
         results = [],
@@ -310,7 +310,7 @@ export function patchAST(){
     };
   }
 
-  LiteralObject.prototype.connect = function(binding, value){
+  LiteralObject.prototype.connect = function(binding, scope){
     var observer,
         childObservers = [],
         instance = {},
