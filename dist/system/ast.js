@@ -261,7 +261,7 @@ System.register(["./path-observer", "./composite-observer", "./expressions/ast"]
       return { value: this.value };
     };
 
-    LiteralArray.prototype.connect = function (binding, value) {
+    LiteralArray.prototype.connect = function (binding, scope) {
       var _this10 = this;
       var observer, childObservers = [], results = [], i, ii, exp, expInfo;
 
@@ -288,7 +288,7 @@ System.register(["./path-observer", "./composite-observer", "./expressions/ast"]
       };
     };
 
-    LiteralObject.prototype.connect = function (binding, value) {
+    LiteralObject.prototype.connect = function (binding, scope) {
       var _this11 = this;
       var observer,
           childObservers = [],

@@ -1,3 +1,11 @@
+### 0.2.2 (2015-01-12)
+
+
+#### Bug Fixes
+
+* **ast:** incorrect parameter reference during connection ([cd291b0c](http://github.com/aurelia/binding/commit/cd291b0c74d394ffd55ab4d8b3d7cfa0213aaa18))
+
+
 ### 0.2.1 (2015-01-12)
 
 
