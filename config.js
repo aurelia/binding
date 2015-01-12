@@ -8,8 +8,8 @@ System.config({
 
 System.config({
   "map": {
-    "aurelia-metadata": "github:aurelia/metadata@0.2.3",
-    "aurelia-task-queue": "github:aurelia/task-queue@0.2.0"
+    "aurelia-metadata": "github:aurelia/metadata@0.2.4",
+    "aurelia-task-queue": "github:aurelia/task-queue@0.2.1"
   }
 });
 
