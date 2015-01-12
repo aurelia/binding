@@ -6,12 +6,14 @@ var _interopRequireWildcard = function (obj) {
   };
 };
 
-var _exportsWildcard = function (obj) {
-  for (var i in obj) {
-    if (exports[i] !== undefined) {
-      exports[i] = obj[i];
+var _defaults = function (obj, defaults) {
+  for (var key in defaults) {
+    if (obj[key] === undefined) {
+      obj[key] = defaults[key];
     }
   }
+
+  return obj;
 };
 
 var patchAST = require("./ast").patchAST;
@@ -21,7 +23,7 @@ exports.EventManager = require("./event-manager").EventManager;
 exports.ObserverLocator = require("./observer-locator").ObserverLocator;
 exports.ValueConverter = require("./value-converter").ValueConverter;
 exports.calcSplices = require("./array-change-records").calcSplices;
-_exportsWildcard(_interopRequireWildcard(require("./binding-modes")));
+_defaults(exports, _interopRequireWildcard(require("./binding-modes")));
 
 exports.Parser = require("./expressions/parser").Parser;
 exports.BindingExpression = require("./binding-expression").BindingExpression;

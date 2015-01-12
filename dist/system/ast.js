@@ -36,7 +36,11 @@ System.register(["./path-observer", "./composite-observer", "./expressions/ast"]
 
     Conditional.prototype.connect = function (binding, scope) {
       var _this2 = this;
-      var conditionInfo = this.condition.connect(binding, scope), yesInfo = this.yes.connect(binding, scope), noInfo = this.no.connect(binding, scope), childObservers = [], observer;
+      var conditionInfo = this.condition.connect(binding, scope),
+          yesInfo = this.yes.connect(binding, scope),
+          noInfo = this.no.connect(binding, scope),
+          childObservers = [],
+          observer;
 
       if (conditionInfo.observer) {
         childObservers.push(conditionInfo.observer);
@@ -73,7 +77,10 @@ System.register(["./path-observer", "./composite-observer", "./expressions/ast"]
 
     AccessMember.prototype.connect = function (binding, scope) {
       var _this3 = this;
-      var info = this.object.connect(binding, scope), objectInstance = info.value, objectObserver = info.observer, observer;
+      var info = this.object.connect(binding, scope),
+          objectInstance = info.value,
+          objectObserver = info.observer,
+          observer;
 
       if (objectObserver) {
         observer = new PathObserver(objectObserver, function (value) {
@@ -95,7 +102,10 @@ System.register(["./path-observer", "./composite-observer", "./expressions/ast"]
 
     AccessKeyed.prototype.connect = function (binding, scope) {
       var _this4 = this;
-      var objectInfo = this.object.connect(binding, scope), keyInfo = this.key.connect(binding, scope), childObservers = [], observer;
+      var objectInfo = this.object.connect(binding, scope),
+          keyInfo = this.key.connect(binding, scope),
+          childObservers = [],
+          observer;
 
       if (objectInfo.observer) {
         childObservers.push(objectInfo.observer);
@@ -202,7 +212,10 @@ System.register(["./path-observer", "./composite-observer", "./expressions/ast"]
 
     Binary.prototype.connect = function (binding, scope) {
       var _this8 = this;
-      var leftInfo = this.left.connect(binding, scope), rightInfo = this.right.connect(binding, scope), childObservers = [], observer;
+      var leftInfo = this.left.connect(binding, scope),
+          rightInfo = this.right.connect(binding, scope),
+          childObservers = [],
+          observer;
 
       if (leftInfo.observer) {
         childObservers.push(leftInfo.observer);
@@ -277,7 +290,14 @@ System.register(["./path-observer", "./composite-observer", "./expressions/ast"]
 
     LiteralObject.prototype.connect = function (binding, value) {
       var _this11 = this;
-      var observer, childObservers = [], instance = {}, keys = this.keys, values = this.values, length = keys.length, i, valueInfo;
+      var observer,
+          childObservers = [],
+          instance = {},
+          keys = this.keys,
+          values = this.values,
+          length = keys.length,
+          i,
+          valueInfo;
 
       for (i = 0; i < length; ++i) {
         valueInfo = values[i].connect(binding, scope);

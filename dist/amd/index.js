@@ -7,12 +7,14 @@ define(["exports", "./ast", "./event-manager", "./observer-locator", "./value-co
     };
   };
 
-  var _exportsWildcard = function (obj) {
-    for (var i in obj) {
-      if (exports[i] !== undefined) {
-        exports[i] = obj[i];
+  var _defaults = function (obj, defaults) {
+    for (var key in defaults) {
+      if (obj[key] === undefined) {
+        obj[key] = defaults[key];
       }
     }
+
+    return obj;
   };
 
   var patchAST = _ast.patchAST;
@@ -22,7 +24,7 @@ define(["exports", "./ast", "./event-manager", "./observer-locator", "./value-co
   exports.ObserverLocator = _observerLocator.ObserverLocator;
   exports.ValueConverter = _valueConverter.ValueConverter;
   exports.calcSplices = _arrayChangeRecords.calcSplices;
-  _exportsWildcard(_interopRequireWildcard(_bindingModes));
+  _defaults(exports, _interopRequireWildcard(_bindingModes));
 
   exports.Parser = _expressionsParser.Parser;
   exports.BindingExpression = _bindingExpression.BindingExpression;

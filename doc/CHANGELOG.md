@@ -1,3 +1,17 @@
+### 0.2.1 (2015-01-12)
+
+
+#### Bug Fixes
+
+* **observer-locator:** differentiate array observer storage from length prop storage ([992b4834](http://github.com/aurelia/binding/commit/992b483400d9a6fb76a743eb7eba3be71a57c2ea))
+
+
+#### Features
+
+* **name-expression:** prepare for new ref syntax ([f046e821](http://github.com/aurelia/binding/commit/f046e82182dfe6a5e7d6b3890ab42fc2c86217cb))
+* **package:** update Aurelia dependencies ([70acf72c](http://github.com/aurelia/binding/commit/70acf72cbdef8fadcc88fc258f18dd9c078e0541))
+
+
 ## 0.2.0 (2015-01-06)
 
 

@@ -1,15 +1,8 @@
-var hyphenMatcher = /-([a-z])/gi;
-
-function toUpperCase(match, char, index, str) {
-  return char.toUpperCase();
-}
-
 export class NameExpression {
-  constructor(attribute, value){
-    this.attribute = attribute;
-    this.property = attribute.replace(hyphenMatcher, toUpperCase); 
+  constructor(name, mode){
+    this.property = name;
     this.discrete = true;
-    this.mode = (value || 'model').toLowerCase();
+    this.mode = (mode || 'view-model').toLowerCase();
   }
 
   createBinding(target){
@@ -22,11 +15,11 @@ class NameBinder {
     this.property = property;
 
     switch(mode){
-      case 'model':
-        this.target = target.primaryBehavior ? target.primaryBehavior.executionContext : target;
-        break;
       case 'element':
         this.target = target;
+        break;
+      case 'view-model':
+        this.target = target.primaryBehavior ? target.primaryBehavior.executionContext : target;
         break;
       default:
         throw new Error('Name expressions do not support mode: ' + mode);

@@ -1,7 +1,7 @@
 System.register(["aurelia-metadata"], function (_export) {
   "use strict";
 
-  var ResourceType, _inherits, capitalMatcher, ValueConverter;
+  var ResourceType, _prototypeProperties, _inherits, capitalMatcher, ValueConverter;
 
 
   function addHyphenAndLower(char) {
@@ -17,6 +17,11 @@ System.register(["aurelia-metadata"], function (_export) {
       ResourceType = _aureliaMetadata.ResourceType;
     }],
     execute: function () {
+      _prototypeProperties = function (child, staticProps, instanceProps) {
+        if (staticProps) Object.defineProperties(child, staticProps);
+        if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
+      };
+
       _inherits = function (child, parent) {
         if (typeof parent !== "function" && parent !== null) {
           throw new TypeError("Super expression must either be null or a function, not " + typeof parent);
@@ -33,31 +38,46 @@ System.register(["aurelia-metadata"], function (_export) {
       };
 
       capitalMatcher = /([A-Z])/g;
-      ValueConverter = (function () {
-        var _ResourceType = ResourceType;
+      ValueConverter = (function (ResourceType) {
         var ValueConverter = function ValueConverter(name) {
           this.name = name;
         };
 
-        _inherits(ValueConverter, _ResourceType);
+        _inherits(ValueConverter, ResourceType);
 
-        ValueConverter.convention = function (name) {
-          if (name.endsWith("ValueConverter")) {
-            return new ValueConverter(hyphenate(name.substring(0, name.length - 14)));
+        _prototypeProperties(ValueConverter, {
+          convention: {
+            value: function (name) {
+              if (name.endsWith("ValueConverter")) {
+                return new ValueConverter(hyphenate(name.substring(0, name.length - 14)));
+              }
+            },
+            writable: true,
+            enumerable: true,
+            configurable: true
           }
-        };
-
-        ValueConverter.prototype.load = function (container, target) {
-          this.instance = container.get(target);
-          return Promise.resolve(this);
-        };
-
-        ValueConverter.prototype.register = function (registry, name) {
-          registry.registerValueConverter(name || this.name, this.instance);
-        };
+        }, {
+          load: {
+            value: function (container, target) {
+              this.instance = container.get(target);
+              return Promise.resolve(this);
+            },
+            writable: true,
+            enumerable: true,
+            configurable: true
+          },
+          register: {
+            value: function (registry, name) {
+              registry.registerValueConverter(name || this.name, this.instance);
+            },
+            writable: true,
+            enumerable: true,
+            configurable: true
+          }
+        });
 
         return ValueConverter;
-      })();
+      })(ResourceType);
       _export("ValueConverter", ValueConverter);
     }
   };

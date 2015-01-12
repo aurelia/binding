@@ -1,7 +1,7 @@
 System.register(["aurelia-task-queue", "./array-observation", "./event-manager", "./dirty-checking", "./property-observation"], function (_export) {
   "use strict";
 
-  var TaskQueue, getArrayObserver, EventManager, DirtyChecker, DirtyCheckProperty, SetterObserver, OoObjectObserver, OoPropertyObserver, ElementObserver, hasObjectObserve, ObserverLocator;
+  var TaskQueue, getArrayObserver, EventManager, DirtyChecker, DirtyCheckProperty, SetterObserver, OoObjectObserver, OoPropertyObserver, ElementObserver, _prototypeProperties, hasObjectObserve, ObserverLocator;
 
 
   function createObserversLookup(obj) {
@@ -47,6 +47,11 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
       ElementObserver = _propertyObservation.ElementObserver;
     }],
     execute: function () {
+      _prototypeProperties = function (child, staticProps, instanceProps) {
+        if (staticProps) Object.defineProperties(child, staticProps);
+        if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
+      };
+
       if (typeof Object.getPropertyDescriptor !== "function") {
         Object.getPropertyDescriptor = function (subject, name) {
           var pd = Object.getOwnPropertyDescriptor(subject, name);
@@ -87,66 +92,93 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
 
         return true;
       })();
-      ObserverLocator = function ObserverLocator(taskQueue, eventManager, dirtyChecker) {
-        this.taskQueue = taskQueue;
-        this.eventManager = eventManager;
-        this.dirtyChecker = dirtyChecker;
-      };
+      ObserverLocator = (function () {
+        var ObserverLocator = function ObserverLocator(taskQueue, eventManager, dirtyChecker) {
+          this.taskQueue = taskQueue;
+          this.eventManager = eventManager;
+          this.dirtyChecker = dirtyChecker;
+        };
 
-      ObserverLocator.inject = function () {
-        return [TaskQueue, EventManager, DirtyChecker];
-      };
-
-      ObserverLocator.prototype.getObserversLookup = function (obj) {
-        return obj.__observers__ || createObserversLookup(obj);
-      };
-
-      ObserverLocator.prototype.getObserver = function (obj, propertyName) {
-        var observersLookup = this.getObserversLookup(obj);
-
-        if (propertyName in observersLookup) {
-          return observersLookup[propertyName];
-        }
-
-        return observersLookup[propertyName] = this.createPropertyObserver(obj, propertyName);
-      };
-
-      ObserverLocator.prototype.createPropertyObserver = function (obj, propertyName) {
-        var observerLookup, descriptor, handler;
-
-        if (obj instanceof Element) {
-          handler = this.eventManager.getElementHandler(obj);
-          if (handler) {
-            return new ElementObserver(handler, obj, propertyName);
+        _prototypeProperties(ObserverLocator, {
+          inject: {
+            value: function () {
+              return [TaskQueue, EventManager, DirtyChecker];
+            },
+            writable: true,
+            enumerable: true,
+            configurable: true
           }
-        }
+        }, {
+          getObserversLookup: {
+            value: function (obj) {
+              return obj.__observers__ || createObserversLookup(obj);
+            },
+            writable: true,
+            enumerable: true,
+            configurable: true
+          },
+          getObserver: {
+            value: function (obj, propertyName) {
+              var observersLookup = this.getObserversLookup(obj);
 
-        descriptor = Object.getPropertyDescriptor(obj, propertyName);
-        if (descriptor && (descriptor.get || descriptor.set)) {
-          return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
-        }
+              if (propertyName in observersLookup) {
+                return observersLookup[propertyName];
+              }
 
-        if (hasObjectObserve) {
-          observerLookup = obj.__observer__ || createObserverLookup(obj);
-          return observerLookup.getObserver(propertyName);
-        }
+              return observersLookup[propertyName] = this.createPropertyObserver(obj, propertyName);
+            },
+            writable: true,
+            enumerable: true,
+            configurable: true
+          },
+          createPropertyObserver: {
+            value: function (obj, propertyName) {
+              var observerLookup, descriptor, handler;
 
-        if (obj instanceof Array) {
-          observerLookup = this.getArrayObserver(obj);
-          return observerLookup.getObserver(propertyName);
-        }
+              if (obj instanceof Element) {
+                handler = this.eventManager.getElementHandler(obj);
+                if (handler) {
+                  return new ElementObserver(handler, obj, propertyName);
+                }
+              }
 
-        return new SetterObserver(this.taskQueue, obj, propertyName);
-      };
+              descriptor = Object.getPropertyDescriptor(obj, propertyName);
+              if (descriptor && (descriptor.get || descriptor.set)) {
+                return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
+              }
 
-      ObserverLocator.prototype.getArrayObserver = function (array) {
-        if ("__observer__" in array) {
-          return array.__observer__;
-        }
+              if (hasObjectObserve) {
+                observerLookup = obj.__observer__ || createObserverLookup(obj);
+                return observerLookup.getObserver(propertyName);
+              }
 
-        return array.__observer__ = getArrayObserver(this.taskQueue, array);
-      };
+              if (obj instanceof Array) {
+                observerLookup = this.getArrayObserver(obj);
+                return observerLookup.getObserver(propertyName);
+              }
 
+              return new SetterObserver(this.taskQueue, obj, propertyName);
+            },
+            writable: true,
+            enumerable: true,
+            configurable: true
+          },
+          getArrayObserver: {
+            value: function (array) {
+              if ("__array_observer__" in array) {
+                return array.__array_observer__;
+              }
+
+              return array.__array_observer__ = getArrayObserver(this.taskQueue, array);
+            },
+            writable: true,
+            enumerable: true,
+            configurable: true
+          }
+        });
+
+        return ObserverLocator;
+      })();
       _export("ObserverLocator", ObserverLocator);
     }
   };

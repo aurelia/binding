@@ -1,61 +1,89 @@
 define(["exports"], function (exports) {
   "use strict";
 
-  var PathObserver = function PathObserver(leftObserver, getRightObserver, value) {
-    var _this = this;
-    this.leftObserver = leftObserver;
-
-    this.disposeLeft = leftObserver.subscribe(function (newValue) {
-      var newRightValue = _this.updateRight(getRightObserver(newValue));
-      _this.notify(newRightValue);
-    });
-
-    this.updateRight(getRightObserver(value));
+  var _prototypeProperties = function (child, staticProps, instanceProps) {
+    if (staticProps) Object.defineProperties(child, staticProps);
+    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
   };
 
-  PathObserver.prototype.updateRight = function (observer) {
-    var _this2 = this;
-    this.rightObserver = observer;
+  var PathObserver = (function () {
+    var PathObserver = function PathObserver(leftObserver, getRightObserver, value) {
+      var _this = this;
+      this.leftObserver = leftObserver;
 
-    if (this.disposeRight) {
-      this.disposeRight();
-    }
+      this.disposeLeft = leftObserver.subscribe(function (newValue) {
+        var newRightValue = _this.updateRight(getRightObserver(newValue));
+        _this.notify(newRightValue);
+      });
 
-    if (!observer) {
-      return null;
-    }
-
-    this.disposeRight = observer.subscribe(function (newValue) {
-      return _this2.notify(newValue);
-    });
-    return observer.getValue();
-  };
-
-  PathObserver.prototype.subscribe = function (callback) {
-    var that = this;
-    that.callback = callback;
-    return function () {
-      that.callback = null;
+      this.updateRight(getRightObserver(value));
     };
-  };
 
-  PathObserver.prototype.notify = function (newValue) {
-    var callback = this.callback;
+    _prototypeProperties(PathObserver, null, {
+      updateRight: {
+        value: function (observer) {
+          var _this2 = this;
+          this.rightObserver = observer;
 
-    if (callback) {
-      callback(newValue);
-    }
-  };
+          if (this.disposeRight) {
+            this.disposeRight();
+          }
 
-  PathObserver.prototype.dispose = function () {
-    if (this.disposeLeft) {
-      this.disposeLeft();
-    }
+          if (!observer) {
+            return null;
+          }
 
-    if (this.disposeRight) {
-      this.disposeRight();
-    }
-  };
+          this.disposeRight = observer.subscribe(function (newValue) {
+            return _this2.notify(newValue);
+          });
+          return observer.getValue();
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      subscribe: {
+        value: function (callback) {
+          var that = this;
+          that.callback = callback;
+          return function () {
+            that.callback = null;
+          };
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      notify: {
+        value: function (newValue) {
+          var callback = this.callback;
+
+          if (callback) {
+            callback(newValue);
+          }
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      dispose: {
+        value: function () {
+          if (this.disposeLeft) {
+            this.disposeLeft();
+          }
+
+          if (this.disposeRight) {
+            this.disposeRight();
+          }
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      }
+    });
+
+    return PathObserver;
+  })();
 
   exports.PathObserver = PathObserver;
 });

@@ -133,10 +133,10 @@ export class ObserverLocator {
   }
 
   getArrayObserver(array){
-    if('__observer__' in array){
-      return array.__observer__;
+    if('__array_observer__' in array){
+      return array.__array_observer__;
     }
 
-    return array.__observer__ = getArrayObserver(this.taskQueue, array);
+    return array.__array_observer__ = getArrayObserver(this.taskQueue, array);
   }
 }

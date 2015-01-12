@@ -30,346 +30,447 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
 
   var EOF = new Token(-1, null);
 
-  var Parser = function Parser() {
-    this.cache = {};
-    this.lexer = new Lexer();
-  };
+  var Parser = (function () {
+    var Parser = function Parser() {
+      this.cache = {};
+      this.lexer = new Lexer();
+    };
 
-  Parser.prototype.parse = function (input) {
-    input = input || "";
+    _prototypeProperties(Parser, null, {
+      parse: {
+        value: function (input) {
+          input = input || "";
 
-    return this.cache[input] || (this.cache[input] = new ParserImplementation(this.lexer, input).parseChain());
-  };
+          return this.cache[input] || (this.cache[input] = new ParserImplementation(this.lexer, input).parseChain());
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      }
+    });
+
+    return Parser;
+  })();
 
   exports.Parser = Parser;
-  var ParserImplementation = function ParserImplementation(lexer, input) {
-    this.index = 0;
-    this.input = input;
-    this.tokens = lexer.lex(input);
-  };
+  var ParserImplementation = (function () {
+    var ParserImplementation = function ParserImplementation(lexer, input) {
+      this.index = 0;
+      this.input = input;
+      this.tokens = lexer.lex(input);
+    };
 
-  ParserImplementation.prototype.parseChain = function () {
-    var isChain = false, expressions = [];
+    _prototypeProperties(ParserImplementation, null, {
+      peek: {
+        get: function () {
+          return this.index < this.tokens.length ? this.tokens[this.index] : EOF;
+        },
+        enumerable: true,
+        configurable: true
+      },
+      parseChain: {
+        value: function () {
+          var isChain = false,
+              expressions = [];
 
-    while (this.optional(";")) {
-      isChain = true;
-    }
+          while (this.optional(";")) {
+            isChain = true;
+          }
 
-    while (this.index < this.tokens.length) {
-      if (this.peek.text == ")" || this.peek.text == "}" || this.peek.text == "]") {
-        this.error("Unconsumed token " + this.peek.text);
-      }
+          while (this.index < this.tokens.length) {
+            if (this.peek.text == ")" || this.peek.text == "}" || this.peek.text == "]") {
+              this.error("Unconsumed token " + this.peek.text);
+            }
 
-      var expr = this.parseValueConverter();
-      expressions.push(expr);
+            var expr = this.parseValueConverter();
+            expressions.push(expr);
 
-      while (this.optional(";")) {
-        isChain = true;
-      }
+            while (this.optional(";")) {
+              isChain = true;
+            }
 
-      if (isChain && expr instanceof ValueConverter) {
-        this.error("cannot have a value converter in a chain");
-      }
-    }
+            if (isChain && expr instanceof ValueConverter) {
+              this.error("cannot have a value converter in a chain");
+            }
+          }
 
-    return expressions.length == 1 ? expressions[0] : new Chain(expressions);
-  };
+          return expressions.length == 1 ? expressions[0] : new Chain(expressions);
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      parseValueConverter: {
+        value: function () {
+          var result = this.parseExpression();
 
-  ParserImplementation.prototype.parseValueConverter = function () {
-    var result = this.parseExpression();
+          while (this.optional("|")) {
+            var name = this.peek.text,
+                args = [];
 
-    while (this.optional("|")) {
-      var name = this.peek.text, args = [];
+            this.advance();
 
-      this.advance();
+            while (this.optional(":")) {
+              args.push(this.parseExpression());
+            }
 
-      while (this.optional(":")) {
-        args.push(this.parseExpression());
-      }
+            result = new ValueConverter(result, name, args, [result].concat(args));
+          }
 
-      result = new ValueConverter(result, name, args, [result].concat(args));
-    }
+          return result;
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      parseExpression: {
+        value: function () {
+          var start = this.peek.index,
+              result = this.parseConditional();
 
-    return result;
-  };
+          while (this.peek.text == "=") {
+            if (!result.isAssignable) {
+              var end = this.index < this.tokens.length ? this.peek.index : this.input.length;
+              var expression = this.input.substring(start, end);
 
-  ParserImplementation.prototype.parseExpression = function () {
-    var start = this.peek.index, result = this.parseConditional();
+              this.error("Expression " + expression + " is not assignable");
+            }
 
-    while (this.peek.text == "=") {
-      if (!result.isAssignable) {
-        var end = this.index < this.tokens.length ? this.peek.index : this.input.length;
-        var expression = this.input.substring(start, end);
+            this.expect("=");
+            result = new Assign(result, this.parseConditional());
+          }
 
-        this.error("Expression " + expression + " is not assignable");
-      }
+          return result;
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      parseConditional: {
+        value: function () {
+          var start = this.peek.index,
+              result = this.parseLogicalOr();
 
-      this.expect("=");
-      result = new Assign(result, this.parseConditional());
-    }
+          if (this.optional("?")) {
+            var yes = this.parseExpression();
 
-    return result;
-  };
+            if (!this.optional(":")) {
+              var end = this.index < this.tokens.length ? this.peek.index : this.input.length;
+              var expression = this.input.substring(start, end);
 
-  ParserImplementation.prototype.parseConditional = function () {
-    var start = this.peek.index, result = this.parseLogicalOr();
+              this.error("Conditional expression " + expression + " requires all 3 expressions");
+            }
 
-    if (this.optional("?")) {
-      var yes = this.parseExpression();
+            var no = this.parseExpression();
+            result = new Conditional(result, yes, no);
+          }
 
-      if (!this.optional(":")) {
-        var end = this.index < this.tokens.length ? this.peek.index : this.input.length;
-        var expression = this.input.substring(start, end);
+          return result;
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      parseLogicalOr: {
+        value: function () {
+          var result = this.parseLogicalAnd();
 
-        this.error("Conditional expression " + expression + " requires all 3 expressions");
-      }
+          while (this.optional("||")) {
+            result = new Binary("||", result, this.parseLogicalAnd());
+          }
 
-      var no = this.parseExpression();
-      result = new Conditional(result, yes, no);
-    }
+          return result;
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      parseLogicalAnd: {
+        value: function () {
+          var result = this.parseEquality();
 
-    return result;
-  };
+          while (this.optional("&&")) {
+            result = new Binary("&&", result, this.parseEquality());
+          }
 
-  ParserImplementation.prototype.parseLogicalOr = function () {
-    var result = this.parseLogicalAnd();
+          return result;
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      parseEquality: {
+        value: function () {
+          var result = this.parseRelational();
 
-    while (this.optional("||")) {
-      result = new Binary("||", result, this.parseLogicalAnd());
-    }
+          while (true) {
+            if (this.optional("==")) {
+              result = new Binary("==", result, this.parseRelational());
+            } else if (this.optional("!=")) {
+              result = new Binary("!=", result, this.parseRelational());
+            } else {
+              return result;
+            }
+          }
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      parseRelational: {
+        value: function () {
+          var result = this.parseAdditive();
 
-    return result;
-  };
+          while (true) {
+            if (this.optional("<")) {
+              result = new Binary("<", result, this.parseAdditive());
+            } else if (this.optional(">")) {
+              result = new Binary(">", result, this.parseAdditive());
+            } else if (this.optional("<=")) {
+              result = new Binary("<=", result, this.parseAdditive());
+            } else if (this.optional(">=")) {
+              result = new Binary(">=", result, this.parseAdditive());
+            } else {
+              return result;
+            }
+          }
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      parseAdditive: {
+        value: function () {
+          var result = this.parseMultiplicative();
 
-  ParserImplementation.prototype.parseLogicalAnd = function () {
-    var result = this.parseEquality();
+          while (true) {
+            if (this.optional("+")) {
+              result = new Binary("+", result, this.parseMultiplicative());
+            } else if (this.optional("-")) {
+              result = new Binary("-", result, this.parseMultiplicative());
+            } else {
+              return result;
+            }
+          }
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      parseMultiplicative: {
+        value: function () {
+          var result = this.parsePrefix();
 
-    while (this.optional("&&")) {
-      result = new Binary("&&", result, this.parseEquality());
-    }
+          while (true) {
+            if (this.optional("*")) {
+              result = new Binary("*", result, this.parsePrefix());
+            } else if (this.optional("%")) {
+              result = new Binary("%", result, this.parsePrefix());
+            } else if (this.optional("/")) {
+              result = new Binary("/", result, this.parsePrefix());
+            } else if (this.optional("~/")) {
+              result = new Binary("~/", result, this.parsePrefix());
+            } else {
+              return result;
+            }
+          }
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      parsePrefix: {
+        value: function () {
+          if (this.optional("+")) {
+            return this.parsePrefix();
+          } else if (this.optional("-")) {
+            return new Binary("-", new LiteralPrimitive(0), this.parsePrefix());
+          } else if (this.optional("!")) {
+            return new PrefixNot("!", this.parsePrefix());
+          } else {
+            return this.parseAccessOrCallMember();
+          }
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      parseAccessOrCallMember: {
+        value: function () {
+          var result = this.parsePrimary();
 
-    return result;
-  };
+          while (true) {
+            if (this.optional(".")) {
+              var name = this.peek.text;
 
-  ParserImplementation.prototype.parseEquality = function () {
-    var result = this.parseRelational();
+              this.advance();
 
-    while (true) {
-      if (this.optional("==")) {
-        result = new Binary("==", result, this.parseRelational());
-      } else if (this.optional("!=")) {
-        result = new Binary("!=", result, this.parseRelational());
-      } else {
-        return result;
-      }
-    }
-  };
+              if (this.optional("(")) {
+                var args = this.parseExpressionList(")");
+                this.expect(")");
+                result = new CallMember(result, name, args);
+              } else {
+                result = new AccessMember(result, name);
+              }
+            } else if (this.optional("[")) {
+              var key = this.parseExpression();
+              this.expect("]");
+              result = new AccessKeyed(result, key);
+            } else if (this.optional("(")) {
+              var args = this.parseExpressionList(")");
+              this.expect(")");
+              result = new CallFunction(result, args);
+            } else {
+              return result;
+            }
+          }
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      parsePrimary: {
+        value: function () {
+          if (this.optional("(")) {
+            var result = this.parseExpression();
+            this.expect(")");
+            return result;
+          } else if (this.optional("null") || this.optional("undefined")) {
+            return new LiteralPrimitive(null);
+          } else if (this.optional("true")) {
+            return new LiteralPrimitive(true);
+          } else if (this.optional("false")) {
+            return new LiteralPrimitive(false);
+          } else if (this.optional("[")) {
+            var elements = this.parseExpressionList("]");
+            this.expect("]");
+            return new LiteralArray(elements);
+          } else if (this.peek.text == "{") {
+            return this.parseObject();
+          } else if (this.peek.key != null) {
+            return this.parseAccessOrCallScope();
+          } else if (this.peek.value != null) {
+            var value = this.peek.value;
+            this.advance();
+            return isNaN(value) ? new LiteralString(value) : new LiteralPrimitive(value);
+          } else if (this.index >= this.tokens.length) {
+            throw new Error("Unexpected end of expression: " + this.input);
+          } else {
+            this.error("Unexpected token " + this.peek.text);
+          }
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      parseAccessOrCallScope: {
+        value: function () {
+          var name = this.peek.key;
 
-  ParserImplementation.prototype.parseRelational = function () {
-    var result = this.parseAdditive();
+          this.advance();
 
-    while (true) {
-      if (this.optional("<")) {
-        result = new Binary("<", result, this.parseAdditive());
-      } else if (this.optional(">")) {
-        result = new Binary(">", result, this.parseAdditive());
-      } else if (this.optional("<=")) {
-        result = new Binary("<=", result, this.parseAdditive());
-      } else if (this.optional(">=")) {
-        result = new Binary(">=", result, this.parseAdditive());
-      } else {
-        return result;
-      }
-    }
-  };
+          if (!this.optional("(")) {
+            return new AccessScope(name);
+          }
 
-  ParserImplementation.prototype.parseAdditive = function () {
-    var result = this.parseMultiplicative();
-
-    while (true) {
-      if (this.optional("+")) {
-        result = new Binary("+", result, this.parseMultiplicative());
-      } else if (this.optional("-")) {
-        result = new Binary("-", result, this.parseMultiplicative());
-      } else {
-        return result;
-      }
-    }
-  };
-
-  ParserImplementation.prototype.parseMultiplicative = function () {
-    var result = this.parsePrefix();
-
-    while (true) {
-      if (this.optional("*")) {
-        result = new Binary("*", result, this.parsePrefix());
-      } else if (this.optional("%")) {
-        result = new Binary("%", result, this.parsePrefix());
-      } else if (this.optional("/")) {
-        result = new Binary("/", result, this.parsePrefix());
-      } else if (this.optional("~/")) {
-        result = new Binary("~/", result, this.parsePrefix());
-      } else {
-        return result;
-      }
-    }
-  };
-
-  ParserImplementation.prototype.parsePrefix = function () {
-    if (this.optional("+")) {
-      return this.parsePrefix();
-    } else if (this.optional("-")) {
-      return new Binary("-", new LiteralPrimitive(0), this.parsePrefix());
-    } else if (this.optional("!")) {
-      return new PrefixNot("!", this.parsePrefix());
-    } else {
-      return this.parseAccessOrCallMember();
-    }
-  };
-
-  ParserImplementation.prototype.parseAccessOrCallMember = function () {
-    var result = this.parsePrimary();
-
-    while (true) {
-      if (this.optional(".")) {
-        var name = this.peek.text;
-
-        this.advance();
-
-        if (this.optional("(")) {
           var args = this.parseExpressionList(")");
           this.expect(")");
-          result = new CallMember(result, name, args);
-        } else {
-          result = new AccessMember(result, name);
-        }
-      } else if (this.optional("[")) {
-        var key = this.parseExpression();
-        this.expect("]");
-        result = new AccessKeyed(result, key);
-      } else if (this.optional("(")) {
-        var args = this.parseExpressionList(")");
-        this.expect(")");
-        result = new CallFunction(result, args);
-      } else {
-        return result;
-      }
-    }
-  };
-
-  ParserImplementation.prototype.parsePrimary = function () {
-    if (this.optional("(")) {
-      var result = this.parseExpression();
-      this.expect(")");
-      return result;
-    } else if (this.optional("null") || this.optional("undefined")) {
-      return new LiteralPrimitive(null);
-    } else if (this.optional("true")) {
-      return new LiteralPrimitive(true);
-    } else if (this.optional("false")) {
-      return new LiteralPrimitive(false);
-    } else if (this.optional("[")) {
-      var elements = this.parseExpressionList("]");
-      this.expect("]");
-      return new LiteralArray(elements);
-    } else if (this.peek.text == "{") {
-      return this.parseObject();
-    } else if (this.peek.key != null) {
-      return this.parseAccessOrCallScope();
-    } else if (this.peek.value != null) {
-      var value = this.peek.value;
-      this.advance();
-      return isNaN(value) ? new LiteralString(value) : new LiteralPrimitive(value);
-    } else if (this.index >= this.tokens.length) {
-      throw new Error("Unexpected end of expression: " + this.input);
-    } else {
-      this.error("Unexpected token " + this.peek.text);
-    }
-  };
-
-  ParserImplementation.prototype.parseAccessOrCallScope = function () {
-    var name = this.peek.key;
-
-    this.advance();
-
-    if (!this.optional("(")) {
-      return new AccessScope(name);
-    }
-
-    var args = this.parseExpressionList(")");
-    this.expect(")");
-    return new CallScope(name, args);
-  };
-
-  ParserImplementation.prototype.parseObject = function () {
-    var keys = [], values = [];
-
-    this.expect("{");
-
-    if (this.peek.text != "}") {
-      do {
-        var value = this.peek.value;
-        keys.push(typeof value == "string" ? value : this.peek.text);
-
-        this.advance();
-        this.expect(":");
-
-        values.push(this.parseExpression());
-      } while (this.optional(","));
-    }
-
-    this.expect("}");
-
-    return new LiteralObject(keys, values);
-  };
-
-  ParserImplementation.prototype.parseExpressionList = function (terminator) {
-    var result = [];
-
-    if (this.peek.text != terminator) {
-      do {
-        result.push(this.parseExpression());
-      } while (this.optional(","));
-    }
-
-    return result;
-  };
-
-  ParserImplementation.prototype.optional = function (text) {
-    if (this.peek.text == text) {
-      this.advance();
-      return true;
-    }
-
-    return false;
-  };
-
-  ParserImplementation.prototype.expect = function (text) {
-    if (this.peek.text == text) {
-      this.advance();
-    } else {
-      this.error("Missing expected " + text);
-    }
-  };
-
-  ParserImplementation.prototype.advance = function () {
-    this.index++;
-  };
-
-  ParserImplementation.prototype.error = function (message) {
-    var location = this.index < this.tokens.length ? "at column " + (this.tokens[this.index].index + 1) + " in" : "at the end of the expression";
-
-    throw new Error("Parser Error: " + message + " " + location + " [" + this.input + "]");
-  };
-
-  _prototypeProperties(ParserImplementation, null, {
-    peek: {
-      get: function () {
-        return this.index < this.tokens.length ? this.tokens[this.index] : EOF;
+          return new CallScope(name, args);
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
       },
-      enumerable: true
-    }
-  });
+      parseObject: {
+        value: function () {
+          var keys = [],
+              values = [];
+
+          this.expect("{");
+
+          if (this.peek.text != "}") {
+            do {
+              var value = this.peek.value;
+              keys.push(typeof value == "string" ? value : this.peek.text);
+
+              this.advance();
+              this.expect(":");
+
+              values.push(this.parseExpression());
+            } while (this.optional(","));
+          }
+
+          this.expect("}");
+
+          return new LiteralObject(keys, values);
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      parseExpressionList: {
+        value: function (terminator) {
+          var result = [];
+
+          if (this.peek.text != terminator) {
+            do {
+              result.push(this.parseExpression());
+            } while (this.optional(","));
+          }
+
+          return result;
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      optional: {
+        value: function (text) {
+          if (this.peek.text == text) {
+            this.advance();
+            return true;
+          }
+
+          return false;
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      expect: {
+        value: function (text) {
+          if (this.peek.text == text) {
+            this.advance();
+          } else {
+            this.error("Missing expected " + text);
+          }
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      advance: {
+        value: function () {
+          this.index++;
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      error: {
+        value: function (message) {
+          var location = this.index < this.tokens.length ? "at column " + (this.tokens[this.index].index + 1) + " in" : "at the end of the expression";
+
+          throw new Error("Parser Error: " + message + " " + location + " [" + this.input + "]");
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      }
+    });
+
+    return ParserImplementation;
+  })();
 
   exports.ParserImplementation = ParserImplementation;
 });

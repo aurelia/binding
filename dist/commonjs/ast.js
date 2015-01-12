@@ -50,7 +50,11 @@ function patchAST() {
 
   Conditional.prototype.connect = function (binding, scope) {
     var _this2 = this;
-    var conditionInfo = this.condition.connect(binding, scope), yesInfo = this.yes.connect(binding, scope), noInfo = this.no.connect(binding, scope), childObservers = [], observer;
+    var conditionInfo = this.condition.connect(binding, scope),
+        yesInfo = this.yes.connect(binding, scope),
+        noInfo = this.no.connect(binding, scope),
+        childObservers = [],
+        observer;
 
     if (conditionInfo.observer) {
       childObservers.push(conditionInfo.observer);
@@ -87,7 +91,10 @@ function patchAST() {
 
   AccessMember.prototype.connect = function (binding, scope) {
     var _this3 = this;
-    var info = this.object.connect(binding, scope), objectInstance = info.value, objectObserver = info.observer, observer;
+    var info = this.object.connect(binding, scope),
+        objectInstance = info.value,
+        objectObserver = info.observer,
+        observer;
 
     if (objectObserver) {
       observer = new PathObserver(objectObserver, function (value) {
@@ -109,7 +116,10 @@ function patchAST() {
 
   AccessKeyed.prototype.connect = function (binding, scope) {
     var _this4 = this;
-    var objectInfo = this.object.connect(binding, scope), keyInfo = this.key.connect(binding, scope), childObservers = [], observer;
+    var objectInfo = this.object.connect(binding, scope),
+        keyInfo = this.key.connect(binding, scope),
+        childObservers = [],
+        observer;
 
     if (objectInfo.observer) {
       childObservers.push(objectInfo.observer);
@@ -216,7 +226,10 @@ function patchAST() {
 
   Binary.prototype.connect = function (binding, scope) {
     var _this8 = this;
-    var leftInfo = this.left.connect(binding, scope), rightInfo = this.right.connect(binding, scope), childObservers = [], observer;
+    var leftInfo = this.left.connect(binding, scope),
+        rightInfo = this.right.connect(binding, scope),
+        childObservers = [],
+        observer;
 
     if (leftInfo.observer) {
       childObservers.push(leftInfo.observer);
@@ -291,7 +304,14 @@ function patchAST() {
 
   LiteralObject.prototype.connect = function (binding, value) {
     var _this11 = this;
-    var observer, childObservers = [], instance = {}, keys = this.keys, values = this.values, length = keys.length, i, valueInfo;
+    var observer,
+        childObservers = [],
+        instance = {},
+        keys = this.keys,
+        values = this.values,
+        length = keys.length,
+        i,
+        valueInfo;
 
     for (i = 0; i < length; ++i) {
       valueInfo = values[i].connect(binding, scope);

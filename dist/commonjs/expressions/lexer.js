@@ -1,282 +1,364 @@
 "use strict";
 
-var Token = function Token(index, text) {
-  this.index = index;
-  this.text = text;
+var _prototypeProperties = function (child, staticProps, instanceProps) {
+  if (staticProps) Object.defineProperties(child, staticProps);
+  if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
 };
 
-Token.prototype.withOp = function (op) {
-  this.opKey = op;
-  return this;
-};
+var Token = (function () {
+  var Token = function Token(index, text) {
+    this.index = index;
+    this.text = text;
+  };
 
-Token.prototype.withGetterSetter = function (key) {
-  this.key = key;
-  return this;
-};
+  _prototypeProperties(Token, null, {
+    withOp: {
+      value: function (op) {
+        this.opKey = op;
+        return this;
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    withGetterSetter: {
+      value: function (key) {
+        this.key = key;
+        return this;
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    withValue: {
+      value: function (value) {
+        this.value = value;
+        return this;
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    toString: {
+      value: function () {
+        return "Token(" + this.text + ")";
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    }
+  });
 
-Token.prototype.withValue = function (value) {
-  this.value = value;
-  return this;
-};
-
-Token.prototype.toString = function () {
-  return "Token(" + this.text + ")";
-};
+  return Token;
+})();
 
 exports.Token = Token;
-var Lexer = function Lexer() {};
+var Lexer = (function () {
+  var Lexer = function Lexer() {};
 
-Lexer.prototype.lex = function (text) {
-  var scanner = new Scanner(text);
-  var tokens = [];
-  var token = scanner.scanToken();
+  _prototypeProperties(Lexer, null, {
+    lex: {
+      value: function (text) {
+        var scanner = new Scanner(text);
+        var tokens = [];
+        var token = scanner.scanToken();
 
-  while (token) {
-    tokens.push(token);
-    token = scanner.scanToken();
-  }
+        while (token) {
+          tokens.push(token);
+          token = scanner.scanToken();
+        }
 
-  return tokens;
-};
+        return tokens;
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    }
+  });
+
+  return Lexer;
+})();
 
 exports.Lexer = Lexer;
-var Scanner = function Scanner(input) {
-  this.input = input;
-  this.length = input.length;
-  this.peek = 0;
-  this.index = -1;
-
-  this.advance();
-};
-
-Scanner.prototype.scanToken = function () {
-  while (this.peek <= $SPACE) {
-    if (++this.index >= this.length) {
-      this.peek = $EOF;
-      return null;
-    } else {
-      this.peek = this.input.charCodeAt(this.index);
-    }
-  }
-
-  if (isIdentifierStart(this.peek)) {
-    return this.scanIdentifier();
-  }
-
-  if (isDigit(this.peek)) {
-    return this.scanNumber(this.index);
-  }
-
-  var start = this.index;
-
-  switch (this.peek) {
-    case $PERIOD:
-      this.advance();
-      return isDigit(this.peek) ? this.scanNumber(start) : new Token(start, ".");
-    case $LPAREN:
-    case $RPAREN:
-    case $LBRACE:
-    case $RBRACE:
-    case $LBRACKET:
-    case $RBRACKET:
-    case $COMMA:
-    case $COLON:
-    case $SEMICOLON:
-      return this.scanCharacter(start, String.fromCharCode(this.peek));
-    case $SQ:
-    case $DQ:
-      return this.scanString();
-    case $PLUS:
-    case $MINUS:
-    case $STAR:
-    case $SLASH:
-    case $PERCENT:
-    case $CARET:
-    case $QUESTION:
-      return this.scanOperator(start, String.fromCharCode(this.peek));
-    case $LT:
-    case $GT:
-    case $BANG:
-    case $EQ:
-      return this.scanComplexOperator(start, $EQ, String.fromCharCode(this.peek), "=");
-    case $AMPERSAND:
-      return this.scanComplexOperator(start, $AMPERSAND, "&", "&");
-    case $BAR:
-      return this.scanComplexOperator(start, $BAR, "|", "|");
-    case $TILDE:
-      return this.scanComplexOperator(start, $SLASH, "~", "/");
-    case $NBSP:
-      while (isWhitespace(this.peek)) {
-        this.advance();
-      }
-
-      return this.scanToken();
-  }
-
-  var character = String.fromCharCode(this.peek);
-  this.error("Unexpected character [" + character + "]");
-  return null;
-};
-
-Scanner.prototype.scanCharacter = function (start, text) {
-  assert(this.peek == text.charCodeAt(0));
-  this.advance();
-  return new Token(start, text);
-};
-
-Scanner.prototype.scanOperator = function (start, text) {
-  assert(this.peek == text.charCodeAt(0));
-  assert(OPERATORS.indexOf(text) != -1);
-  this.advance();
-  return new Token(start, text).withOp(text);
-};
-
-Scanner.prototype.scanComplexOperator = function (start, code, one, two) {
-  assert(this.peek == one.charCodeAt(0));
-  this.advance();
-
-  var text = one;
-
-  if (this.peek == code) {
-    this.advance();
-    text += two;
-  }
-
-  assert(OPERATORS.indexOf(text) != -1);
-
-  return new Token(start, text).withOp(text);
-};
-
-Scanner.prototype.scanIdentifier = function () {
-  assert(isIdentifierStart(this.peek));
-  var start = this.index;
-
-  this.advance();
-
-  while (isIdentifierPart(this.peek)) {
-    this.advance();
-  }
-
-  var text = this.input.substring(start, this.index);
-  var result = new Token(start, text);
-
-  if (OPERATORS.indexOf(text) != -1) {
-    result.withOp(text);
-  } else {
-    result.withGetterSetter(text);
-  }
-
-  return result;
-};
-
-Scanner.prototype.scanNumber = function (start) {
-  assert(isDigit(this.peek));
-  var simple = this.index == start;
-  this.advance();
-
-  while (true) {
-    if (isDigit(this.peek)) {} else if (this.peek == $PERIOD) {
-      simple = false;
-    } else if (isExponentStart(this.peek)) {
-      this.advance();
-
-      if (isExponentSign(this.peek)) {
-        this.advance();
-      }
-
-      if (!isDigit(this.peek)) {
-        this.error("Invalid exponent", -1);
-      }
-
-      simple = false;
-    } else {
-      break;
-    }
+var Scanner = (function () {
+  var Scanner = function Scanner(input) {
+    this.input = input;
+    this.length = input.length;
+    this.peek = 0;
+    this.index = -1;
 
     this.advance();
-  }
+  };
 
-  var text = this.input.substring(start, this.index);
-  var value = simple ? parseInt(text) : parseFloat(text);
-  return new Token(start, text).withValue(value);
-};
-
-Scanner.prototype.scanString = function () {
-  assert(this.peek == $SQ || this.peek == $DQ);
-
-  var start = this.index;
-  var quote = this.peek;
-
-  this.advance();
-
-  var buffer;
-  var marker = this.index;
-
-  while (this.peek != quote) {
-    if (this.peek == $BACKSLASH) {
-      if (buffer == null) {
-        buffer = [];
-      }
-
-      buffer.push(this.input.substring(marker, this.index));
-      this.advance();
-
-      var unescaped;
-
-      if (this.peek == $u) {
-        var hex = this.input.substring(this.index + 1, this.index + 5);
-
-        if (!/[A-Z0-9]{4}/.test(hex)) {
-          this.error("Invalid unicode escape [\\u" + hex + "]");
+  _prototypeProperties(Scanner, null, {
+    scanToken: {
+      value: function () {
+        while (this.peek <= $SPACE) {
+          if (++this.index >= this.length) {
+            this.peek = $EOF;
+            return null;
+          } else {
+            this.peek = this.input.charCodeAt(this.index);
+          }
         }
 
-        unescaped = parseInt(hex, 16);
+        if (isIdentifierStart(this.peek)) {
+          return this.scanIdentifier();
+        }
 
-        for (var i = 0; i < 5; i++) {
+        if (isDigit(this.peek)) {
+          return this.scanNumber(this.index);
+        }
+
+        var start = this.index;
+
+        switch (this.peek) {
+          case $PERIOD:
+            this.advance();
+            return isDigit(this.peek) ? this.scanNumber(start) : new Token(start, ".");
+          case $LPAREN:
+          case $RPAREN:
+          case $LBRACE:
+          case $RBRACE:
+          case $LBRACKET:
+          case $RBRACKET:
+          case $COMMA:
+          case $COLON:
+          case $SEMICOLON:
+            return this.scanCharacter(start, String.fromCharCode(this.peek));
+          case $SQ:
+          case $DQ:
+            return this.scanString();
+          case $PLUS:
+          case $MINUS:
+          case $STAR:
+          case $SLASH:
+          case $PERCENT:
+          case $CARET:
+          case $QUESTION:
+            return this.scanOperator(start, String.fromCharCode(this.peek));
+          case $LT:
+          case $GT:
+          case $BANG:
+          case $EQ:
+            return this.scanComplexOperator(start, $EQ, String.fromCharCode(this.peek), "=");
+          case $AMPERSAND:
+            return this.scanComplexOperator(start, $AMPERSAND, "&", "&");
+          case $BAR:
+            return this.scanComplexOperator(start, $BAR, "|", "|");
+          case $TILDE:
+            return this.scanComplexOperator(start, $SLASH, "~", "/");
+          case $NBSP:
+            while (isWhitespace(this.peek)) {
+              this.advance();
+            }
+
+            return this.scanToken();
+        }
+
+        var character = String.fromCharCode(this.peek);
+        this.error("Unexpected character [" + character + "]");
+        return null;
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    scanCharacter: {
+      value: function (start, text) {
+        assert(this.peek == text.charCodeAt(0));
+        this.advance();
+        return new Token(start, text);
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    scanOperator: {
+      value: function (start, text) {
+        assert(this.peek == text.charCodeAt(0));
+        assert(OPERATORS.indexOf(text) != -1);
+        this.advance();
+        return new Token(start, text).withOp(text);
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    scanComplexOperator: {
+      value: function (start, code, one, two) {
+        assert(this.peek == one.charCodeAt(0));
+        this.advance();
+
+        var text = one;
+
+        if (this.peek == code) {
+          this.advance();
+          text += two;
+        }
+
+        assert(OPERATORS.indexOf(text) != -1);
+
+        return new Token(start, text).withOp(text);
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    scanIdentifier: {
+      value: function () {
+        assert(isIdentifierStart(this.peek));
+        var start = this.index;
+
+        this.advance();
+
+        while (isIdentifierPart(this.peek)) {
           this.advance();
         }
-      } else {
-        unescaped = decodeURIComponent(this.peek);
+
+        var text = this.input.substring(start, this.index);
+        var result = new Token(start, text);
+
+        if (OPERATORS.indexOf(text) != -1) {
+          result.withOp(text);
+        } else {
+          result.withGetterSetter(text);
+        }
+
+        return result;
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    scanNumber: {
+      value: function (start) {
+        assert(isDigit(this.peek));
+        var simple = this.index == start;
         this.advance();
-      }
 
-      buffer.push(String.fromCharCode(unescaped));
-      marker = this.index;
-    } else if (this.peek == $EOF) {
-      this.error("Unterminated quote");
-    } else {
-      this.advance();
+        while (true) {
+          if (isDigit(this.peek)) {} else if (this.peek == $PERIOD) {
+            simple = false;
+          } else if (isExponentStart(this.peek)) {
+            this.advance();
+
+            if (isExponentSign(this.peek)) {
+              this.advance();
+            }
+
+            if (!isDigit(this.peek)) {
+              this.error("Invalid exponent", -1);
+            }
+
+            simple = false;
+          } else {
+            break;
+          }
+
+          this.advance();
+        }
+
+        var text = this.input.substring(start, this.index);
+        var value = simple ? parseInt(text) : parseFloat(text);
+        return new Token(start, text).withValue(value);
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    scanString: {
+      value: function () {
+        assert(this.peek == $SQ || this.peek == $DQ);
+
+        var start = this.index;
+        var quote = this.peek;
+
+        this.advance();
+
+        var buffer;
+        var marker = this.index;
+
+        while (this.peek != quote) {
+          if (this.peek == $BACKSLASH) {
+            if (buffer == null) {
+              buffer = [];
+            }
+
+            buffer.push(this.input.substring(marker, this.index));
+            this.advance();
+
+            var unescaped;
+
+            if (this.peek == $u) {
+              var hex = this.input.substring(this.index + 1, this.index + 5);
+
+              if (!/[A-Z0-9]{4}/.test(hex)) {
+                this.error("Invalid unicode escape [\\u" + hex + "]");
+              }
+
+              unescaped = parseInt(hex, 16);
+
+              for (var i = 0; i < 5; i++) {
+                this.advance();
+              }
+            } else {
+              unescaped = decodeURIComponent(this.peek);
+              this.advance();
+            }
+
+            buffer.push(String.fromCharCode(unescaped));
+            marker = this.index;
+          } else if (this.peek == $EOF) {
+            this.error("Unterminated quote");
+          } else {
+            this.advance();
+          }
+        }
+
+        var last = this.input.substring(marker, this.index);
+        this.advance();
+        var text = this.input.substring(start, this.index);
+
+        var unescaped = last;
+
+        if (buffer != null) {
+          buffer.push(last);
+          unescaped = buffer.join("");
+        }
+
+        return new Token(start, text).withValue(unescaped);
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    advance: {
+      value: function () {
+        if (++this.index >= this.length) {
+          this.peek = $EOF;
+        } else {
+          this.peek = this.input.charCodeAt(this.index);
+        }
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
+    error: {
+      value: function (message) {
+        var offset = arguments[1] === undefined ? 0 : arguments[1];
+        var position = this.index + offset;
+        throw new Error("Lexer Error: " + message + " at column " + position + " in expression [" + this.input + "]");
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
     }
-  }
+  });
 
-  var last = this.input.substring(marker, this.index);
-  this.advance();
-  var text = this.input.substring(start, this.index);
-
-  var unescaped = last;
-
-  if (buffer != null) {
-    buffer.push(last);
-    unescaped = buffer.join("");
-  }
-
-  return new Token(start, text).withValue(unescaped);
-};
-
-Scanner.prototype.advance = function () {
-  if (++this.index >= this.length) {
-    this.peek = $EOF;
-  } else {
-    this.peek = this.input.charCodeAt(this.index);
-  }
-};
-
-Scanner.prototype.error = function (message) {
-  var offset = arguments[1] === undefined ? 0 : arguments[1];
-  var position = this.index + offset;
-  throw new Error("Lexer Error: " + message + " at column " + position + " in expression [" + this.input + "]");
-};
+  return Scanner;
+})();
 
 exports.Scanner = Scanner;
 

@@ -1,48 +1,79 @@
 define(["exports"], function (exports) {
   "use strict";
 
-  var CallExpression = function CallExpression(observerLocator, targetProperty, sourceExpression, valueConverterLookupFunction) {
-    this.observerLocator = observerLocator;
-    this.targetProperty = targetProperty;
-    this.sourceExpression = sourceExpression;
-    this.valueConverterLookupFunction = valueConverterLookupFunction;
+  var _prototypeProperties = function (child, staticProps, instanceProps) {
+    if (staticProps) Object.defineProperties(child, staticProps);
+    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
   };
 
-  CallExpression.prototype.createBinding = function (target) {
-    return new Call(this.observerLocator, this.sourceExpression, target, this.targetProperty, this.valueConverterLookupFunction);
-  };
+  var CallExpression = (function () {
+    var CallExpression = function CallExpression(observerLocator, targetProperty, sourceExpression, valueConverterLookupFunction) {
+      this.observerLocator = observerLocator;
+      this.targetProperty = targetProperty;
+      this.sourceExpression = sourceExpression;
+      this.valueConverterLookupFunction = valueConverterLookupFunction;
+    };
+
+    _prototypeProperties(CallExpression, null, {
+      createBinding: {
+        value: function (target) {
+          return new Call(this.observerLocator, this.sourceExpression, target, this.targetProperty, this.valueConverterLookupFunction);
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      }
+    });
+
+    return CallExpression;
+  })();
 
   exports.CallExpression = CallExpression;
-  var Call = function Call(observerLocator, sourceExpression, target, targetProperty, valueConverterLookupFunction) {
-    this.sourceExpression = sourceExpression;
-    this.target = target;
-    this.targetProperty = observerLocator.getObserver(target, targetProperty);
-    this.valueConverterLookupFunction = valueConverterLookupFunction;
-  };
+  var Call = (function () {
+    var Call = function Call(observerLocator, sourceExpression, target, targetProperty, valueConverterLookupFunction) {
+      this.sourceExpression = sourceExpression;
+      this.target = target;
+      this.targetProperty = observerLocator.getObserver(target, targetProperty);
+      this.valueConverterLookupFunction = valueConverterLookupFunction;
+    };
 
-  Call.prototype.bind = function (source) {
-    var _this = this;
-    if (this.source === source) {
-      return;
-    }
+    _prototypeProperties(Call, null, {
+      bind: {
+        value: function (source) {
+          var _this = this;
+          if (this.source === source) {
+            return;
+          }
 
-    if (this.source) {
-      this.unbind();
-    }
+          if (this.source) {
+            this.unbind();
+          }
 
-    this.source = source;
-    this.targetProperty.setValue(function () {
-      var rest = [];
+          this.source = source;
+          this.targetProperty.setValue(function () {
+            var rest = [];
 
-      for (var _key = 0; _key < arguments.length; _key++) {
-        rest[_key] = arguments[_key];
+            for (var _key = 0; _key < arguments.length; _key++) {
+              rest[_key] = arguments[_key];
+            }
+
+            return _this.sourceExpression.eval(source, _this.valueConverterLookupFunction, rest);
+          });
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
+      },
+      unbind: {
+        value: function () {
+          this.targetProperty.setValue(null);
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true
       }
-
-      return _this.sourceExpression.eval(source, _this.valueConverterLookupFunction, rest);
     });
-  };
 
-  Call.prototype.unbind = function () {
-    this.targetProperty.setValue(null);
-  };
+    return Call;
+  })();
 });
