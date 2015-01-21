@@ -34,7 +34,7 @@ export class Chain extends Expression {
     for (i = 0; i < length; ++i) {
       last = expressions[i].eval(scope, valueConverters);
       
-      if (last != null) {
+      if (last !== null) {
         result = last;
       }
     }
@@ -155,7 +155,7 @@ export class AccessMember extends Expression {
 
   eval(scope, valueConverters){
     var instance = this.object.eval(scope, valueConverters);
-    return instance == null ? null : instance[this.name];
+    return instance === null ? null : instance[this.name];
   }
 
   assign(scope, value){
@@ -249,7 +249,7 @@ export class CallFunction extends Expression {
   eval(scope, valueConverters, args){
     var func = this.func.eval(scope, valueConverters);
 
-    if (typeof func != 'function') {
+    if (typeof func !== 'function') {
       throw new Error(`${this.func} is not a function`);
     } else {
       return func.apply(null, args || evalList(scope, this.args, valueConverters));
@@ -281,7 +281,7 @@ export class Binary extends Expression {
     var right = this.right.eval(scope);
 
     // Null check for the operations.
-    if (left == null || right == null) {
+    if (left === null || right === null) {
       switch (this.operation) {
         case '+':
           if (left != null) return left;
@@ -447,7 +447,7 @@ export class Unparser {
     this.write('(');
 
     for (i = 0, length = args.length; i < length; ++i) {
-      if (i != 0) {
+      if (i !== 0) {
         this.write(',');
       }
 
@@ -463,7 +463,7 @@ export class Unparser {
         i;
 
     for (i = 0; i < length; ++i) {
-      if (i != 0) {
+      if (i !== 0) {
         this.write(';');
       }
       
@@ -560,7 +560,7 @@ export class Unparser {
     this.write('[');
 
     for (i = 0; i < length; ++i) {
-      if (i != 0) {
+      if (i !== 0) {
         this.write(',');
       }
 
@@ -579,7 +579,7 @@ export class Unparser {
     this.write('{');
 
     for (i = 0; i < length; ++i) {
-      if (i != 0){
+      if (i !== 0){
         this.write(',');
       }
 
@@ -618,24 +618,24 @@ function evalList(scope, list, valueConverters) {
 
 /// Add the two arguments with automatic type conversion.
 function autoConvertAdd(a, b) {
-  if (a != null && b != null) {
+  if (a !== null && b !== null) {
     // TODO(deboer): Support others.
-    if (typeof a == 'string' && typeof b != 'string') {
+    if (typeof a === 'string' && typeof b !== 'string') {
       return a + b.toString();
     }
 
-    if (typeof a != 'string' && typeof b == 'string') {
+    if (typeof a !== 'string' && typeof b === 'string') {
       return a.toString() + b;
     }
 
     return a + b;
   }
 
-  if (a != null) {
+  if (a !== null) {
     return a;
   }
 
-  if (b != null) {
+  if (b !== null) {
     return b;
   }
 
@@ -645,11 +645,11 @@ function autoConvertAdd(a, b) {
 function ensureFunctionFromMap(obj, name){
   var func = obj[name];
 
-  if (typeof func == 'function') {
+  if (typeof func === 'function') {
     return func;
   }
 
-  if (func == null) {
+  if (func === null) {
     throw new Error(`Undefined function ${name}`);
   } else {
     throw new Error(`${name} is not a function`);
@@ -661,7 +661,7 @@ function getKeyed(obj, key) {
     return obj[parseInt(key)];
   } else if (obj) {
     return obj[key];
-  } else if (obj == null) {
+  } else if (obj === null) {
     throw new Error('Accessing null object');
   } else {
     return obj[key];

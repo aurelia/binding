@@ -40,7 +40,7 @@ export class ParserImplementation {
     }
 
     while (this.index < this.tokens.length) {
-      if (this.peek.text == ')' || this.peek.text == '}' || this.peek.text == ']') {
+      if (this.peek.text === ')' || this.peek.text === '}' || this.peek.text === ']') {
         this.error(`Unconsumed token ${this.peek.text}`);
       }
 
@@ -56,7 +56,7 @@ export class ParserImplementation {
       }
     }
 
-    return (expressions.length == 1) ? expressions[0] : new Chain(expressions);
+    return (expressions.length === 1) ? expressions[0] : new Chain(expressions);
   }
 
   parseValueConverter() {
@@ -83,7 +83,7 @@ export class ParserImplementation {
     var start = this.peek.index,
         result = this.parseConditional();
 
-    while (this.peek.text == '=') {
+    while (this.peek.text === '=') {
       if (!result.isAssignable) {
         var end = (this.index < this.tokens.length) ? this.peek.index : this.input.length;
         var expression = this.input.substring(start, end);
@@ -297,12 +297,12 @@ export class ParserImplementation {
 
     this.expect('{');
 
-    if (this.peek.text != '}') {
+    if (this.peek.text !== '}') {
       do {
         // TODO(kasperl): Stricter checking. Only allow identifiers
         // and strings as keys. Maybe also keywords?
         var value = this.peek.value;
-        keys.push(typeof value == 'string' ? value : this.peek.text);
+        keys.push(typeof value === 'string' ? value : this.peek.text);
 
         this.advance();
         this.expect(':');
@@ -329,7 +329,7 @@ export class ParserImplementation {
   }
 
   optional(text) {
-    if (this.peek.text == text) {
+    if (this.peek.text === text) {
       this.advance();
       return true;
     }
@@ -338,7 +338,7 @@ export class ParserImplementation {
   }
 
   expect(text) {
-    if (this.peek.text == text) {
+    if (this.peek.text === text) {
       this.advance();
     } else {
       this.error(`Missing expected ${text}`);

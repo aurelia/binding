@@ -119,30 +119,30 @@ export class Scanner {
   }
 
   scanCharacter(start, text) {
-    assert(this.peek == text.charCodeAt(0));
+    assert(this.peek === text.charCodeAt(0));
     this.advance();
     return new Token(start, text);
   }
 
   scanOperator(start, text) {
-    assert(this.peek == text.charCodeAt(0));
-    assert(OPERATORS.indexOf(text) != -1);
+    assert(this.peek === text.charCodeAt(0));
+    assert(OPERATORS.indexOf(text) !== -1);
     this.advance();
     return new Token(start, text).withOp(text);
   }
 
   scanComplexOperator(start, code, one, two) {
-    assert(this.peek == one.charCodeAt(0));
+    assert(this.peek === one.charCodeAt(0));
     this.advance();
 
     var text = one;
     
-    if (this.peek == code) {
+    if (this.peek === code) {
       this.advance();
       text += two;
     }
 
-    if (this.peek == code) {
+    if (this.peek === code) {
       this.advance();
       text += two;
     }
@@ -167,7 +167,7 @@ export class Scanner {
 
     // TODO(kasperl): Deal with null, undefined, true, and false in
     // a cleaner and faster way.
-    if (OPERATORS.indexOf(text) != -1) {
+    if (OPERATORS.indexOf(text) !== -1) {
       result.withOp(text);
     } else {
       result.withGetterSetter(text);
@@ -178,13 +178,13 @@ export class Scanner {
 
   scanNumber(start) {
     assert(isDigit(this.peek));
-    var simple = (this.index == start);
+    var simple = (this.index === start);
     this.advance();  // Skip initial digit.
 
     while (true) {
       if (isDigit(this.peek)) {
         // Do nothing.
-      } else if (this.peek == $PERIOD) {
+      } else if (this.peek === $PERIOD) {
         simple = false;
       } else if (isExponentStart(this.peek)) {
         this.advance();
@@ -211,7 +211,7 @@ export class Scanner {
   }
 
   scanString() {
-    assert(this.peek == $SQ || this.peek == $DQ);
+    assert(this.peek === $SQ || this.peek === $DQ);
     
     var start = this.index;
     var quote = this.peek;
@@ -221,9 +221,9 @@ export class Scanner {
     var buffer;
     var marker = this.index;
 
-    while (this.peek != quote) {
-      if (this.peek == $BACKSLASH) {
-        if (buffer == null) {
+    while (this.peek !== quote) {
+      if (this.peek === $BACKSLASH) {
+        if (buffer === null) {
           buffer = [];
         }
 
@@ -232,7 +232,7 @@ export class Scanner {
 
         var unescaped;
 
-        if (this.peek == $u) {
+        if (this.peek === $u) {
           // TODO(kasperl): Check bounds? Make sure we have test
           // coverage for this.
           var hex = this.input.substring(this.index + 1, this.index + 5);
@@ -243,7 +243,7 @@ export class Scanner {
 
           unescaped = parseInt(hex, 16);
           
-          for (var i = 0; i < 5; i++) {
+          for (var i = 0; i < 5; ++i) {
             this.advance();
           }
         } else {
@@ -253,7 +253,7 @@ export class Scanner {
 
         buffer.push(String.fromCharCode(unescaped));
         marker = this.index;
-      } else if (this.peek == $EOF) {
+      } else if (this.peek === $EOF) {
         this.error('Unterminated quote');
       } else {
         this.advance();
@@ -376,22 +376,22 @@ var $RBRACE = 125;
 var $NBSP   = 160;
 
 function isWhitespace(code) {
-  return (code >= $TAB && code <= $SPACE) || (code == $NBSP);
+  return (code >= $TAB && code <= $SPACE) || (code === $NBSP);
 }
 
 function isIdentifierStart(code) {
   return ($a <= code && code <= $z)
       || ($A <= code && code <= $Z)
-      || (code == $_)
-      || (code == $$);
+      || (code === $_)
+      || (code === $$);
 }
 
 function isIdentifierPart(code) {
   return ($a <= code && code <= $z)
       || ($A <= code && code <= $Z)
       || ($0 <= code && code <= $9)
-      || (code == $_)
-      || (code == $$);
+      || (code === $_)
+      || (code === $$);
 }
 
 function isDigit(code) {
@@ -399,11 +399,11 @@ function isDigit(code) {
 }
 
 function isExponentStart(code) {
-  return (code == $e || code == $E);
+  return (code === $e || code === $E);
 }
 
 function isExponentSign(code) {
-  return (code == $MINUS || code == $PLUS);
+  return (code === $MINUS || code === $PLUS);
 }
 
 function unescape(code) {
