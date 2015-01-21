@@ -301,10 +301,11 @@ export class Binary extends Expression {
       case '-'  : return left - right;
       case '*'  : return left * right;
       case '/'  : return left / right;
-      case '~/' : return Math.floor(left / right);
       case '%'  : return left % right;
       case '==' : return left == right;
+      case '===': return left === right;
       case '!=' : return left != right;
+      case '!==': return left !== right;
       case '<'  : return left < right;
       case '>'  : return left > right;
       case '<=' : return left <= right;

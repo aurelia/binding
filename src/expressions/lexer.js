@@ -105,8 +105,6 @@ export class Scanner {
         return this.scanComplexOperator(start, $AMPERSAND, '&', '&');
       case $BAR:
         return this.scanComplexOperator(start, $BAR, '|', '|');
-      case $TILDE:
-        return this.scanComplexOperator(start, $SLASH, '~', '/');
       case $NBSP:
         while (isWhitespace(this.peek)){
           this.advance();
@@ -139,6 +137,11 @@ export class Scanner {
 
     var text = one;
     
+    if (this.peek == code) {
+      this.advance();
+      text += two;
+    }
+
     if (this.peek == code) {
       this.advance();
       text += two;
@@ -297,12 +300,13 @@ var OPERATORS = [
   '-',
   '*',
   '/',
-  '~/',
   '%',
   '^',
   '=',
   '==',
+  '===',
   '!=',
+  '!==',
   '<',
   '>',
   '<=',
@@ -369,7 +373,6 @@ var $z = 122;
 var $LBRACE = 123;
 var $BAR    = 124;
 var $RBRACE = 125;
-var $TILDE  = 126;
 var $NBSP   = 160;
 
 function isWhitespace(code) {

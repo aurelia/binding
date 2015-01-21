@@ -147,6 +147,10 @@ export class ParserImplementation {
         result = new Binary('==', result, this.parseRelational());
       } else if (this.optional('!=')) {
         result = new Binary('!=', result, this.parseRelational());
+      } else if (this.optional('===')) {
+        result = new Binary('===', result, this.parseRelational());
+      } else if (this.optional('!==')) {
+        result = new Binary('!==', result, this.parseRelational());
       } else {
         return result;
       }
@@ -195,8 +199,6 @@ export class ParserImplementation {
         result = new Binary('%', result, this.parsePrefix());
       } else if (this.optional('/')) {
         result = new Binary('/', result, this.parsePrefix());
-      } else if (this.optional('~/')) {
-        result = new Binary('~/', result, this.parsePrefix());
       } else {
         return result;
       }
