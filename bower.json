@@ -17,7 +17,7 @@
     "url": "http://github.com/aurelia/binding"
   },
   "dependencies": {
-    "aurelia-metadata": "0.2.4",
-    "aurelia-task-queue": "0.2.1"
+    "aurelia-metadata": "0.3.0",
+    "aurelia-task-queue": "0.2.2"
   }
 }
