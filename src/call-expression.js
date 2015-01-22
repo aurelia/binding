@@ -36,7 +36,7 @@ class Call {
 
     this.source = source;
     this.targetProperty.setValue((...rest) => {
-      return this.sourceExpression.eval(source, this.valueConverterLookupFunction, rest);
+      return this.sourceExpression.evaluate(source, this.valueConverterLookupFunction, rest);
     });
   }
 

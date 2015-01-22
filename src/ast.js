@@ -7,7 +7,7 @@ export class Expression {
     this.isAssignable = false;
   }
 
-  eval(){
+  evaluate(){
     throw new Error(`Cannot evaluate ${this}`);
   }
 
@@ -28,14 +28,14 @@ export class Chain extends Expression {
     this.isChain = true;
   }
 
-  eval(scope, valueConverters) {
+  evaluate(scope, valueConverters) {
     var result,
         expressions = this.expressions,
         length = expressions.length,
         i, last;
 
     for (i = 0; i < length; ++i) {
-      last = expressions[i].eval(scope, valueConverters);
+      last = expressions[i].evaluate(scope, valueConverters);
       
       if (last !== null) {
         result = last;
@@ -60,7 +60,7 @@ export class ValueConverter extends Expression {
     this.allArgs = allArgs;
   }
 
-  eval(scope, valueConverters){
+  evaluate(scope, valueConverters){
     var converter = valueConverters(this.name);
     if(!converter){
       throw new Error(`No ValueConverter named "${this.name}" was found!`);
@@ -70,7 +70,7 @@ export class ValueConverter extends Expression {
       return converter.toView.apply(converter, evalList(scope, this.allArgs, valueConverters));
     }
 
-    return this.allArgs[0].eval(scope, valueConverters);
+    return this.allArgs[0].evaluate(scope, valueConverters);
   }
 
   assign(scope, value, valueConverters){
@@ -106,12 +106,12 @@ export class ValueConverter extends Expression {
 
     if(childObservers.length){
       observer = new CompositeObserver(childObservers, () => {
-        return this.eval(scope, binding.valueConverterLookupFunction);
+        return this.evaluate(scope, binding.valueConverterLookupFunction);
       });
     }
 
     return {
-      value:this.eval(scope, binding.valueConverterLookupFunction),
+      value:this.evaluate(scope, binding.valueConverterLookupFunction),
       observer:observer
     };
   }
@@ -125,8 +125,8 @@ export class Assign extends Expression {
     this.value = value;
   }
 
-  eval(scope, valueConverters){
-    return this.target.assign(scope, this.value.eval(scope, valueConverters));
+  evaluate(scope, valueConverters){
+    return this.target.assign(scope, this.value.evaluate(scope, valueConverters));
   }
 
   accept(vistor){
@@ -134,7 +134,7 @@ export class Assign extends Expression {
   }
 
   connect(binding, scope){
-    return { value: this.eval(scope, binding.valueConverterLookupFunction) };
+    return { value: this.evaluate(scope, binding.valueConverterLookupFunction) };
   }
 }
 
@@ -147,8 +147,8 @@ export class Conditional extends Expression {
     this.no = no;
   }
 
-  eval(scope, valueConverters){
-    return (!!this.condition.eval(scope)) ? this.yes.eval(scope) : this.no.eval(scope);
+  evaluate(scope, valueConverters){
+    return (!!this.condition.evaluate(scope)) ? this.yes.evaluate(scope) : this.no.evaluate(scope);
   }
 
   accept(visitor){
@@ -176,7 +176,7 @@ export class Conditional extends Expression {
 
     if(childObservers.length){
       observer = new CompositeObserver(childObservers, () => {
-        return this.eval(scope, binding.valueConverterLookupFunction);
+        return this.evaluate(scope, binding.valueConverterLookupFunction);
       });
     }
 
@@ -195,7 +195,7 @@ export class AccessScope extends Expression {
     this.isAssignable = true;
   }
 
-  eval(scope, valueConverters){
+  evaluate(scope, valueConverters){
     return scope[this.name];
   }
 
@@ -226,13 +226,13 @@ export class AccessMember extends Expression {
     this.isAssignable = true;
   }
 
-  eval(scope, valueConverters){
-    var instance = this.object.eval(scope, valueConverters);
+  evaluate(scope, valueConverters){
+    var instance = this.object.evaluate(scope, valueConverters);
     return instance === null ? null : instance[this.name];
   }
 
   assign(scope, value){
-    var instance = this.object.eval(scope);
+    var instance = this.object.evaluate(scope);
 
     if(!instance){
       instance = {};
@@ -284,15 +284,15 @@ export class AccessKeyed extends Expression {
     this.isAssignable = true;
   }
 
-  eval(scope, valueConverters){
-    var instance = this.object.eval(scope, valueConverters);
-    var lookup = this.key.eval(scope, valueConverters);
+  evaluate(scope, valueConverters){
+    var instance = this.object.evaluate(scope, valueConverters);
+    var lookup = this.key.evaluate(scope, valueConverters);
     return getKeyed(instance, lookup);
   }
 
   assign(scope, value){
-    var instance = this.object.eval(scope);
-    var lookup = this.key.eval(scope);
+    var instance = this.object.evaluate(scope);
+    var lookup = this.key.evaluate(scope);
     return setKeyed(instance, lookup, value);
   }
 
@@ -316,12 +316,12 @@ export class AccessKeyed extends Expression {
 
     if(childObservers.length){
       observer = new CompositeObserver(childObservers, () => {
-        return this.eval(scope, binding.valueConverterLookupFunction);
+        return this.evaluate(scope, binding.valueConverterLookupFunction);
       });
     }
 
     return {
-      value:this.eval(scope, binding.valueConverterLookupFunction),
+      value:this.evaluate(scope, binding.valueConverterLookupFunction),
       observer:observer
     };
   }
@@ -335,7 +335,7 @@ export class CallScope extends Expression {
     this.args = args;
   }
 
-  eval(scope, valueConverters, args){
+  evaluate(scope, valueConverters, args){
     args = args || evalList(scope, this.args, valueConverters);
     return ensureFunctionFromMap(scope, this.name).apply(scope, args);
   }
@@ -360,12 +360,12 @@ export class CallScope extends Expression {
 
     if(childObservers.length){
       observer = new CompositeObserver(childObservers, () => {
-        return this.eval(scope, binding.valueConverterLookupFunction);
+        return this.evaluate(scope, binding.valueConverterLookupFunction);
       });
     }
 
     return {
-      value:this.eval(scope, binding.valueConverterLookupFunction),
+      value:this.evaluate(scope, binding.valueConverterLookupFunction),
       observer:observer
     };
   }
@@ -380,8 +380,8 @@ export class CallMember extends Expression {
     this.args = args;
   }
 
-  eval(scope, valueConverters, args){
-    var instance = this.object.eval(scope, valueConverters);
+  evaluate(scope, valueConverters, args){
+    var instance = this.object.evaluate(scope, valueConverters);
     args = args || evalList(scope, this.args, valueConverters);
     return ensureFunctionFromMap(instance, this.name).apply(instance, args);
   }
@@ -411,12 +411,12 @@ export class CallMember extends Expression {
 
     if(childObservers.length){
       observer = new CompositeObserver(childObservers, () => {
-        return this.eval(scope, binding.valueConverterLookupFunction);
+        return this.evaluate(scope, binding.valueConverterLookupFunction);
       });
     }
 
     return {
-      value:this.eval(scope, binding.valueConverterLookupFunction),
+      value:this.evaluate(scope, binding.valueConverterLookupFunction),
       observer:observer
     };
   }
@@ -430,8 +430,8 @@ export class CallFunction extends Expression {
     this.args = args;
   }
 
-  eval(scope, valueConverters, args){
-    var func = this.func.eval(scope, valueConverters);
+  evaluate(scope, valueConverters, args){
+    var func = this.func.evaluate(scope, valueConverters);
 
     if (typeof func !== 'function') {
       throw new Error(`${this.func} is not a function`);
@@ -465,12 +465,12 @@ export class CallFunction extends Expression {
 
     if(childObservers.length){
       observer = new CompositeObserver(childObservers, () => {
-        return this.eval(scope, binding.valueConverterLookupFunction);
+        return this.evaluate(scope, binding.valueConverterLookupFunction);
       });
     }
 
     return {
-      value:this.eval(scope, binding.valueConverterLookupFunction),
+      value:this.evaluate(scope, binding.valueConverterLookupFunction),
       observer:observer
     };
   }
@@ -485,15 +485,15 @@ export class Binary extends Expression {
     this.right = right;
   }
 
-  eval(scope, valueConverters){
-    var left = this.left.eval(scope);
+  evaluate(scope, valueConverters){
+    var left = this.left.evaluate(scope);
 
     switch (this.operation) {
-      case '&&': return !!left && !!this.right.eval(scope);
-      case '||': return !!left || !!this.right.eval(scope);
+      case '&&': return !!left && !!this.right.evaluate(scope);
+      case '||': return !!left || !!this.right.evaluate(scope);
     }
 
-    var right = this.right.eval(scope);
+    var right = this.right.evaluate(scope);
 
     // Null check for the operations.
     if (left === null || right === null) {
@@ -552,12 +552,12 @@ export class Binary extends Expression {
 
     if(childObservers.length){
       observer = new CompositeObserver(childObservers, () => {
-        return this.eval(scope, binding.valueConverterLookupFunction);
+        return this.evaluate(scope, binding.valueConverterLookupFunction);
       });
     }
 
     return {
-      value:this.eval(scope, binding.valueConverterLookupFunction),
+      value:this.evaluate(scope, binding.valueConverterLookupFunction),
       observer:observer
     };
   }
@@ -571,8 +571,8 @@ export class PrefixNot extends Expression {
     this.expression = expression;
   }
 
-  eval(scope, valueConverters){
-    return !this.expression.eval(scope);
+  evaluate(scope, valueConverters){
+    return !this.expression.evaluate(scope);
   }
 
   accept(visitor){
@@ -585,7 +585,7 @@ export class PrefixNot extends Expression {
 
     if(info.observer){
       observer = new CompositeObserver([info.observer], () => {
-        return this.eval(scope, binding.valueConverterLookupFunction);
+        return this.evaluate(scope, binding.valueConverterLookupFunction);
       });
     }
 
@@ -603,7 +603,7 @@ export class LiteralPrimitive extends Expression {
     this.value = value;
   }
 
-  eval(scope, valueConverters){
+  evaluate(scope, valueConverters){
     return this.value;
   }
 
@@ -623,7 +623,7 @@ export class LiteralString extends Expression {
     this.value = value;
   }
 
-  eval(scope, valueConverters){
+  evaluate(scope, valueConverters){
     return this.value;
   }
 
@@ -643,14 +643,14 @@ export class LiteralArray extends Expression {
     this.elements = elements;
   }
 
-  eval(scope, valueConverters){
+  evaluate(scope, valueConverters){
     var elements = this.elements,
         length = elements.length,
         result = [],
         i;
 
     for(i = 0; i < length; ++i){
-      result[i] = elements[i].eval(scope, valueConverters);
+      result[i] = elements[i].evaluate(scope, valueConverters);
     }
 
     return result;
@@ -679,7 +679,7 @@ export class LiteralArray extends Expression {
 
     if(childObservers.length){
       observer = new CompositeObserver(childObservers, () => {
-        return this.eval(scope, binding.valueConverterLookupFunction);
+        return this.evaluate(scope, binding.valueConverterLookupFunction);
       });
     }
 
@@ -698,7 +698,7 @@ export class LiteralObject extends Expression {
     this.values = values;
   }
 
-  eval(scope, valueConverters){
+  evaluate(scope, valueConverters){
     var instance = {},
         keys = this.keys,
         values = this.values,
@@ -706,7 +706,7 @@ export class LiteralObject extends Expression {
         i;
 
     for(i = 0; i < length; ++i){
-      instance[keys[i]] = values[i].eval(scope, valueConverters);
+      instance[keys[i]] = values[i].evaluate(scope, valueConverters);
     }
 
     return instance;
@@ -737,7 +737,7 @@ export class LiteralObject extends Expression {
 
     if(childObservers.length){
       observer = new CompositeObserver(childObservers, () => {
-        return this.eval(scope, binding.valueConverterLookupFunction);
+        return this.evaluate(scope, binding.valueConverterLookupFunction);
       });
     }
 
@@ -935,7 +935,7 @@ function evalList(scope, list, valueConverters) {
   var result = evalListCache[length];
 
   for (i = 0; i < length; ++i) {
-    result[i] = list[i].eval(scope, valueConverters);
+    result[i] = list[i].evaluate(scope, valueConverters);
   }
 
   return result;
