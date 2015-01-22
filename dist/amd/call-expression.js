@@ -55,7 +55,7 @@ define(["exports"], function (exports) {
               rest[_key] = arguments[_key];
             }
 
-            return _this.sourceExpression.eval(source, _this.valueConverterLookupFunction, rest);
+            return _this.sourceExpression.evaluate(source, _this.valueConverterLookupFunction, rest);
           });
         },
         writable: true,

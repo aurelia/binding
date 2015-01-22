@@ -51,8 +51,8 @@ var Expression = (function () {
   }
 
   _prototypeProperties(Expression, null, {
-    eval: {
-      value: function eval() {
+    evaluate: {
+      value: function evaluate() {
         throw new Error("Cannot evaluate " + this);
       },
       writable: true,
@@ -92,8 +92,8 @@ var Chain = (function (Expression) {
   _inherits(Chain, Expression);
 
   _prototypeProperties(Chain, null, {
-    eval: {
-      value: function eval(scope, valueConverters) {
+    evaluate: {
+      value: function evaluate(scope, valueConverters) {
         var result,
             expressions = this.expressions,
             length = expressions.length,
@@ -101,7 +101,7 @@ var Chain = (function (Expression) {
             last;
 
         for (i = 0; i < length; ++i) {
-          last = expressions[i].eval(scope, valueConverters);
+          last = expressions[i].evaluate(scope, valueConverters);
 
           if (last !== null) {
             result = last;
@@ -141,8 +141,8 @@ var ValueConverter = (function (Expression) {
   _inherits(ValueConverter, Expression);
 
   _prototypeProperties(ValueConverter, null, {
-    eval: {
-      value: function eval(scope, valueConverters) {
+    evaluate: {
+      value: function evaluate(scope, valueConverters) {
         var converter = valueConverters(this.name);
         if (!converter) {
           throw new Error("No ValueConverter named \"" + this.name + "\" was found!");
@@ -152,7 +152,7 @@ var ValueConverter = (function (Expression) {
           return converter.toView.apply(converter, evalList(scope, this.allArgs, valueConverters));
         }
 
-        return this.allArgs[0].eval(scope, valueConverters);
+        return this.allArgs[0].evaluate(scope, valueConverters);
       },
       writable: true,
       enumerable: true,
@@ -204,12 +204,12 @@ var ValueConverter = (function (Expression) {
 
         if (childObservers.length) {
           observer = new CompositeObserver(childObservers, function () {
-            return _this.eval(scope, binding.valueConverterLookupFunction);
+            return _this.evaluate(scope, binding.valueConverterLookupFunction);
           });
         }
 
         return {
-          value: this.eval(scope, binding.valueConverterLookupFunction),
+          value: this.evaluate(scope, binding.valueConverterLookupFunction),
           observer: observer
         };
       },
@@ -234,9 +234,9 @@ var Assign = (function (Expression) {
   _inherits(Assign, Expression);
 
   _prototypeProperties(Assign, null, {
-    eval: {
-      value: function eval(scope, valueConverters) {
-        return this.target.assign(scope, this.value.eval(scope, valueConverters));
+    evaluate: {
+      value: function evaluate(scope, valueConverters) {
+        return this.target.assign(scope, this.value.evaluate(scope, valueConverters));
       },
       writable: true,
       enumerable: true,
@@ -252,7 +252,7 @@ var Assign = (function (Expression) {
     },
     connect: {
       value: function connect(binding, scope) {
-        return { value: this.eval(scope, binding.valueConverterLookupFunction) };
+        return { value: this.evaluate(scope, binding.valueConverterLookupFunction) };
       },
       writable: true,
       enumerable: true,
@@ -276,9 +276,9 @@ var Conditional = (function (Expression) {
   _inherits(Conditional, Expression);
 
   _prototypeProperties(Conditional, null, {
-    eval: {
-      value: function eval(scope, valueConverters) {
-        return !!this.condition.eval(scope) ? this.yes.eval(scope) : this.no.eval(scope);
+    evaluate: {
+      value: function evaluate(scope, valueConverters) {
+        return !!this.condition.evaluate(scope) ? this.yes.evaluate(scope) : this.no.evaluate(scope);
       },
       writable: true,
       enumerable: true,
@@ -315,7 +315,7 @@ var Conditional = (function (Expression) {
 
         if (childObservers.length) {
           observer = new CompositeObserver(childObservers, function () {
-            return _this2.eval(scope, binding.valueConverterLookupFunction);
+            return _this2.evaluate(scope, binding.valueConverterLookupFunction);
           });
         }
 
@@ -345,8 +345,8 @@ var AccessScope = (function (Expression) {
   _inherits(AccessScope, Expression);
 
   _prototypeProperties(AccessScope, null, {
-    eval: {
-      value: function eval(scope, valueConverters) {
+    evaluate: {
+      value: function evaluate(scope, valueConverters) {
         return scope[this.name];
       },
       writable: true,
@@ -400,9 +400,9 @@ var AccessMember = (function (Expression) {
   _inherits(AccessMember, Expression);
 
   _prototypeProperties(AccessMember, null, {
-    eval: {
-      value: function eval(scope, valueConverters) {
-        var instance = this.object.eval(scope, valueConverters);
+    evaluate: {
+      value: function evaluate(scope, valueConverters) {
+        var instance = this.object.evaluate(scope, valueConverters);
         return instance === null ? null : instance[this.name];
       },
       writable: true,
@@ -411,7 +411,7 @@ var AccessMember = (function (Expression) {
     },
     assign: {
       value: function assign(scope, value) {
-        var instance = this.object.eval(scope);
+        var instance = this.object.evaluate(scope);
 
         if (!instance) {
           instance = {};
@@ -479,10 +479,10 @@ var AccessKeyed = (function (Expression) {
   _inherits(AccessKeyed, Expression);
 
   _prototypeProperties(AccessKeyed, null, {
-    eval: {
-      value: function eval(scope, valueConverters) {
-        var instance = this.object.eval(scope, valueConverters);
-        var lookup = this.key.eval(scope, valueConverters);
+    evaluate: {
+      value: function evaluate(scope, valueConverters) {
+        var instance = this.object.evaluate(scope, valueConverters);
+        var lookup = this.key.evaluate(scope, valueConverters);
         return getKeyed(instance, lookup);
       },
       writable: true,
@@ -491,8 +491,8 @@ var AccessKeyed = (function (Expression) {
     },
     assign: {
       value: function assign(scope, value) {
-        var instance = this.object.eval(scope);
-        var lookup = this.key.eval(scope);
+        var instance = this.object.evaluate(scope);
+        var lookup = this.key.evaluate(scope);
         return setKeyed(instance, lookup, value);
       },
       writable: true,
@@ -525,12 +525,12 @@ var AccessKeyed = (function (Expression) {
 
         if (childObservers.length) {
           observer = new CompositeObserver(childObservers, function () {
-            return _this4.eval(scope, binding.valueConverterLookupFunction);
+            return _this4.evaluate(scope, binding.valueConverterLookupFunction);
           });
         }
 
         return {
-          value: this.eval(scope, binding.valueConverterLookupFunction),
+          value: this.evaluate(scope, binding.valueConverterLookupFunction),
           observer: observer
         };
       },
@@ -555,8 +555,8 @@ var CallScope = (function (Expression) {
   _inherits(CallScope, Expression);
 
   _prototypeProperties(CallScope, null, {
-    eval: {
-      value: function eval(scope, valueConverters, args) {
+    evaluate: {
+      value: function evaluate(scope, valueConverters, args) {
         args = args || evalList(scope, this.args, valueConverters);
         return ensureFunctionFromMap(scope, this.name).apply(scope, args);
       },
@@ -593,12 +593,12 @@ var CallScope = (function (Expression) {
 
         if (childObservers.length) {
           observer = new CompositeObserver(childObservers, function () {
-            return _this5.eval(scope, binding.valueConverterLookupFunction);
+            return _this5.evaluate(scope, binding.valueConverterLookupFunction);
           });
         }
 
         return {
-          value: this.eval(scope, binding.valueConverterLookupFunction),
+          value: this.evaluate(scope, binding.valueConverterLookupFunction),
           observer: observer
         };
       },
@@ -624,9 +624,9 @@ var CallMember = (function (Expression) {
   _inherits(CallMember, Expression);
 
   _prototypeProperties(CallMember, null, {
-    eval: {
-      value: function eval(scope, valueConverters, args) {
-        var instance = this.object.eval(scope, valueConverters);
+    evaluate: {
+      value: function evaluate(scope, valueConverters, args) {
+        var instance = this.object.evaluate(scope, valueConverters);
         args = args || evalList(scope, this.args, valueConverters);
         return ensureFunctionFromMap(instance, this.name).apply(instance, args);
       },
@@ -668,12 +668,12 @@ var CallMember = (function (Expression) {
 
         if (childObservers.length) {
           observer = new CompositeObserver(childObservers, function () {
-            return _this6.eval(scope, binding.valueConverterLookupFunction);
+            return _this6.evaluate(scope, binding.valueConverterLookupFunction);
           });
         }
 
         return {
-          value: this.eval(scope, binding.valueConverterLookupFunction),
+          value: this.evaluate(scope, binding.valueConverterLookupFunction),
           observer: observer
         };
       },
@@ -698,9 +698,9 @@ var CallFunction = (function (Expression) {
   _inherits(CallFunction, Expression);
 
   _prototypeProperties(CallFunction, null, {
-    eval: {
-      value: function eval(scope, valueConverters, args) {
-        var func = this.func.eval(scope, valueConverters);
+    evaluate: {
+      value: function evaluate(scope, valueConverters, args) {
+        var func = this.func.evaluate(scope, valueConverters);
 
         if (typeof func !== "function") {
           throw new Error("" + this.func + " is not a function");
@@ -746,12 +746,12 @@ var CallFunction = (function (Expression) {
 
         if (childObservers.length) {
           observer = new CompositeObserver(childObservers, function () {
-            return _this7.eval(scope, binding.valueConverterLookupFunction);
+            return _this7.evaluate(scope, binding.valueConverterLookupFunction);
           });
         }
 
         return {
-          value: this.eval(scope, binding.valueConverterLookupFunction),
+          value: this.evaluate(scope, binding.valueConverterLookupFunction),
           observer: observer
         };
       },
@@ -777,18 +777,18 @@ var Binary = (function (Expression) {
   _inherits(Binary, Expression);
 
   _prototypeProperties(Binary, null, {
-    eval: {
-      value: function eval(scope, valueConverters) {
-        var left = this.left.eval(scope);
+    evaluate: {
+      value: function evaluate(scope, valueConverters) {
+        var left = this.left.evaluate(scope);
 
         switch (this.operation) {
           case "&&":
-            return !!left && !!this.right.eval(scope);
+            return !!left && !!this.right.evaluate(scope);
           case "||":
-            return !!left || !!this.right.eval(scope);
+            return !!left || !!this.right.evaluate(scope);
         }
 
-        var right = this.right.eval(scope);
+        var right = this.right.evaluate(scope);
 
         if (left === null || right === null) {
           switch (this.operation) {
@@ -870,12 +870,12 @@ var Binary = (function (Expression) {
 
         if (childObservers.length) {
           observer = new CompositeObserver(childObservers, function () {
-            return _this8.eval(scope, binding.valueConverterLookupFunction);
+            return _this8.evaluate(scope, binding.valueConverterLookupFunction);
           });
         }
 
         return {
-          value: this.eval(scope, binding.valueConverterLookupFunction),
+          value: this.evaluate(scope, binding.valueConverterLookupFunction),
           observer: observer
         };
       },
@@ -900,9 +900,9 @@ var PrefixNot = (function (Expression) {
   _inherits(PrefixNot, Expression);
 
   _prototypeProperties(PrefixNot, null, {
-    eval: {
-      value: function eval(scope, valueConverters) {
-        return !this.expression.eval(scope);
+    evaluate: {
+      value: function evaluate(scope, valueConverters) {
+        return !this.expression.evaluate(scope);
       },
       writable: true,
       enumerable: true,
@@ -924,7 +924,7 @@ var PrefixNot = (function (Expression) {
 
         if (info.observer) {
           observer = new CompositeObserver([info.observer], function () {
-            return _this9.eval(scope, binding.valueConverterLookupFunction);
+            return _this9.evaluate(scope, binding.valueConverterLookupFunction);
           });
         }
 
@@ -953,8 +953,8 @@ var LiteralPrimitive = (function (Expression) {
   _inherits(LiteralPrimitive, Expression);
 
   _prototypeProperties(LiteralPrimitive, null, {
-    eval: {
-      value: function eval(scope, valueConverters) {
+    evaluate: {
+      value: function evaluate(scope, valueConverters) {
         return this.value;
       },
       writable: true,
@@ -993,8 +993,8 @@ var LiteralString = (function (Expression) {
   _inherits(LiteralString, Expression);
 
   _prototypeProperties(LiteralString, null, {
-    eval: {
-      value: function eval(scope, valueConverters) {
+    evaluate: {
+      value: function evaluate(scope, valueConverters) {
         return this.value;
       },
       writable: true,
@@ -1033,15 +1033,15 @@ var LiteralArray = (function (Expression) {
   _inherits(LiteralArray, Expression);
 
   _prototypeProperties(LiteralArray, null, {
-    eval: {
-      value: function eval(scope, valueConverters) {
+    evaluate: {
+      value: function evaluate(scope, valueConverters) {
         var elements = this.elements,
             length = elements.length,
             result = [],
             i;
 
         for (i = 0; i < length; ++i) {
-          result[i] = elements[i].eval(scope, valueConverters);
+          result[i] = elements[i].evaluate(scope, valueConverters);
         }
 
         return result;
@@ -1082,7 +1082,7 @@ var LiteralArray = (function (Expression) {
 
         if (childObservers.length) {
           observer = new CompositeObserver(childObservers, function () {
-            return _this10.eval(scope, binding.valueConverterLookupFunction);
+            return _this10.evaluate(scope, binding.valueConverterLookupFunction);
           });
         }
 
@@ -1112,8 +1112,8 @@ var LiteralObject = (function (Expression) {
   _inherits(LiteralObject, Expression);
 
   _prototypeProperties(LiteralObject, null, {
-    eval: {
-      value: function eval(scope, valueConverters) {
+    evaluate: {
+      value: function evaluate(scope, valueConverters) {
         var instance = {},
             keys = this.keys,
             values = this.values,
@@ -1121,7 +1121,7 @@ var LiteralObject = (function (Expression) {
             i;
 
         for (i = 0; i < length; ++i) {
-          instance[keys[i]] = values[i].eval(scope, valueConverters);
+          instance[keys[i]] = values[i].evaluate(scope, valueConverters);
         }
 
         return instance;
@@ -1162,7 +1162,7 @@ var LiteralObject = (function (Expression) {
 
         if (childObservers.length) {
           observer = new CompositeObserver(childObservers, function () {
-            return _this11.eval(scope, binding.valueConverterLookupFunction);
+            return _this11.evaluate(scope, binding.valueConverterLookupFunction);
           });
         }
 
@@ -1453,7 +1453,7 @@ function evalList(scope, list, valueConverters) {
   var result = evalListCache[length];
 
   for (i = 0; i < length; ++i) {
-    result[i] = list[i].eval(scope, valueConverters);
+    result[i] = list[i].evaluate(scope, valueConverters);
   }
 
   return result;

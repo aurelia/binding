@@ -61,7 +61,7 @@ System.register([], function (_export) {
               this._disposeListener = this.eventManager.addEventListener(this.target, this.targetEvent, function (event) {
                 var prevEvent = source.$event;
                 source.$event = event;
-                var result = _this.sourceExpression.eval(source);
+                var result = _this.sourceExpression.evaluate(source);
                 source.$event = prevEvent;
                 if (_this.preventDefault) {
                   event.preventDefault();

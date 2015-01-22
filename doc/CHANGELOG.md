@@ -1,3 +1,11 @@
+### 0.3.1 (2015-01-22)
+
+
+#### Bug Fixes
+
+* **ast:** rename eval to evaluate to avoid name conflicts ([c3964e7c](http://github.com/aurelia/binding/commit/c3964e7ca34e962be88c65faa04730c349a7472b))
+
+
 ## 0.3.0 (2015-01-22)
 
 

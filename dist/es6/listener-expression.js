@@ -43,7 +43,7 @@ class Listener {
     this._disposeListener = this.eventManager.addEventListener(this.target, this.targetEvent, event =>{
       var prevEvent = source.$event;
       source.$event = event;
-      var result = this.sourceExpression.eval(source);
+      var result = this.sourceExpression.evaluate(source);
       source.$event = prevEvent;
       if(this.preventDefault){
         event.preventDefault();

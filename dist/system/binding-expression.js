@@ -95,7 +95,7 @@ System.register(["./binding-modes"], function (_export) {
 
                 this.source = source;
               } else {
-                var value = this.sourceExpression.eval(source, this.valueConverterLookupFunction);
+                var value = this.sourceExpression.evaluate(source, this.valueConverterLookupFunction);
 
                 if (value !== undefined) {
                   targetProperty.setValue(value);
