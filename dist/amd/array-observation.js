@@ -13,15 +13,15 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
 
   var arrayProto = Array.prototype,
       hasArrayObserve = (function detectArrayObserve() {
+    var callback = function (recs) {
+      records = recs;
+    };
+
     if (typeof Array.observe !== "function") {
       return false;
     }
 
     var records = [];
-
-    function callback(recs) {
-      records = recs;
-    }
 
     var arr = [];
     Array.observe(arr, callback);
@@ -49,18 +49,18 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
   }
 
   var ModifyArrayObserver = (function () {
-    var ModifyArrayObserver = function ModifyArrayObserver(taskQueue, array) {
+    function ModifyArrayObserver(taskQueue, array) {
       this.taskQueue = taskQueue;
       this.callbacks = [];
       this.changeRecords = [];
       this.queued = false;
       this.array = array;
       this.oldArray = null;
-    };
+    }
 
     _prototypeProperties(ModifyArrayObserver, {
       create: {
-        value: function (taskQueue, array) {
+        value: function create(taskQueue, array) {
           var observer = new ModifyArrayObserver(taskQueue, array);
 
           array.pop = function () {
@@ -143,7 +143,7 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
       }
     }, {
       subscribe: {
-        value: function (callback) {
+        value: function subscribe(callback) {
           var callbacks = this.callbacks;
           callbacks.push(callback);
           return function () {
@@ -155,7 +155,7 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
         configurable: true
       },
       addChangeRecord: {
-        value: function (changeRecord) {
+        value: function addChangeRecord(changeRecord) {
           if (!this.callbacks.length) {
             return;
           }
@@ -172,7 +172,7 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
         configurable: true
       },
       reset: {
-        value: function (oldArray) {
+        value: function reset(oldArray) {
           if (!this.callbacks.length) {
             return;
           }
@@ -189,7 +189,7 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
         configurable: true
       },
       getObserver: {
-        value: function (propertyName) {
+        value: function getObserver(propertyName) {
           if (propertyName == "length") {
             return this.lengthObserver || (this.lengthObserver = new ArrayLengthObserver(this.array));
           } else {
@@ -201,7 +201,7 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
         configurable: true
       },
       call: {
-        value: function () {
+        value: function call() {
           var callbacks = this.callbacks,
               i = callbacks.length,
               changeRecords = this.changeRecords,
@@ -238,15 +238,15 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
   })();
 
   var ArrayObserveObserver = (function () {
-    var ArrayObserveObserver = function ArrayObserveObserver(array) {
+    function ArrayObserveObserver(array) {
       this.array = array;
       this.callbacks = [];
       this.observing = false;
-    };
+    }
 
     _prototypeProperties(ArrayObserveObserver, null, {
       subscribe: {
-        value: function (callback) {
+        value: function subscribe(callback) {
           var _this = this;
           var callbacks = this.callbacks;
 
@@ -268,7 +268,7 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
         configurable: true
       },
       getObserver: {
-        value: function (propertyName) {
+        value: function getObserver(propertyName) {
           if (propertyName == "length") {
             return this.lengthObserver || (this.lengthObserver = new ArrayLengthObserver(this.array));
           } else {
@@ -280,7 +280,7 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
         configurable: true
       },
       handleChanges: {
-        value: function (changeRecords) {
+        value: function handleChanges(changeRecords) {
           var callbacks = this.callbacks,
               i = callbacks.length,
               splices;
@@ -309,15 +309,15 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
   })();
 
   var ArrayLengthObserver = (function () {
-    var ArrayLengthObserver = function ArrayLengthObserver(array) {
+    function ArrayLengthObserver(array) {
       this.array = array;
       this.callbacks = [];
       this.currentValue = array.length;
-    };
+    }
 
     _prototypeProperties(ArrayLengthObserver, null, {
       getValue: {
-        value: function () {
+        value: function getValue() {
           return this.array.length;
         },
         writable: true,
@@ -325,7 +325,7 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
         configurable: true
       },
       setValue: {
-        value: function (newValue) {
+        value: function setValue(newValue) {
           this.array.length = newValue;
         },
         writable: true,
@@ -333,7 +333,7 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
         configurable: true
       },
       subscribe: {
-        value: function (callback) {
+        value: function subscribe(callback) {
           var callbacks = this.callbacks;
           callbacks.push(callback);
           return function () {
@@ -345,7 +345,7 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
         configurable: true
       },
       call: {
-        value: function (newValue) {
+        value: function call(newValue) {
           var callbacks = this.callbacks,
               i = callbacks.length,
               oldValue = this.currentValue;

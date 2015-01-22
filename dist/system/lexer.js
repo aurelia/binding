@@ -1,19 +1,19 @@
 System.register([], function (_export) {
   "use strict";
 
-  var _prototypeProperties, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $TILDE, $NBSP;
+  var _prototypeProperties, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP;
 
 
   function isWhitespace(code) {
-    return code >= $TAB && code <= $SPACE || code == $NBSP;
+    return code >= $TAB && code <= $SPACE || code === $NBSP;
   }
 
   function isIdentifierStart(code) {
-    return $a <= code && code <= $z || $A <= code && code <= $Z || code == $_ || code == $$;
+    return $a <= code && code <= $z || $A <= code && code <= $Z || code === $_ || code === $$;
   }
 
   function isIdentifierPart(code) {
-    return $a <= code && code <= $z || $A <= code && code <= $Z || $0 <= code && code <= $9 || code == $_ || code == $$;
+    return $a <= code && code <= $z || $A <= code && code <= $Z || $0 <= code && code <= $9 || code === $_ || code === $$;
   }
 
   function isDigit(code) {
@@ -21,11 +21,11 @@ System.register([], function (_export) {
   }
 
   function isExponentStart(code) {
-    return code == $e || code == $E;
+    return code === $e || code === $E;
   }
 
   function isExponentSign(code) {
-    return code == $MINUS || code == $PLUS;
+    return code === $MINUS || code === $PLUS;
   }
 
   function unescape(code) {
@@ -59,14 +59,14 @@ System.register([], function (_export) {
       };
 
       Token = (function () {
-        var Token = function Token(index, text) {
+        function Token(index, text) {
           this.index = index;
           this.text = text;
-        };
+        }
 
         _prototypeProperties(Token, null, {
           withOp: {
-            value: function (op) {
+            value: function withOp(op) {
               this.opKey = op;
               return this;
             },
@@ -75,7 +75,7 @@ System.register([], function (_export) {
             configurable: true
           },
           withGetterSetter: {
-            value: function (key) {
+            value: function withGetterSetter(key) {
               this.key = key;
               return this;
             },
@@ -84,7 +84,7 @@ System.register([], function (_export) {
             configurable: true
           },
           withValue: {
-            value: function (value) {
+            value: function withValue(value) {
               this.value = value;
               return this;
             },
@@ -93,7 +93,7 @@ System.register([], function (_export) {
             configurable: true
           },
           toString: {
-            value: function () {
+            value: function toString() {
               return "Token(" + this.text + ")";
             },
             writable: true,
@@ -107,11 +107,11 @@ System.register([], function (_export) {
       _export("Token", Token);
 
       Lexer = (function () {
-        var Lexer = function Lexer() {};
+        function Lexer() {}
 
         _prototypeProperties(Lexer, null, {
           lex: {
-            value: function (text) {
+            value: function lex(text) {
               var scanner = new Scanner(text);
               var tokens = [];
               var token = scanner.scanToken();
@@ -134,18 +134,18 @@ System.register([], function (_export) {
       _export("Lexer", Lexer);
 
       Scanner = (function () {
-        var Scanner = function Scanner(input) {
+        function Scanner(input) {
           this.input = input;
           this.length = input.length;
           this.peek = 0;
           this.index = -1;
 
           this.advance();
-        };
+        }
 
         _prototypeProperties(Scanner, null, {
           scanToken: {
-            value: function () {
+            value: function scanToken() {
               while (this.peek <= $SPACE) {
                 if (++this.index >= this.length) {
                   this.peek = $EOF;
@@ -199,8 +199,6 @@ System.register([], function (_export) {
                   return this.scanComplexOperator(start, $AMPERSAND, "&", "&");
                 case $BAR:
                   return this.scanComplexOperator(start, $BAR, "|", "|");
-                case $TILDE:
-                  return this.scanComplexOperator(start, $SLASH, "~", "/");
                 case $NBSP:
                   while (isWhitespace(this.peek)) {
                     this.advance();
@@ -218,8 +216,8 @@ System.register([], function (_export) {
             configurable: true
           },
           scanCharacter: {
-            value: function (start, text) {
-              assert(this.peek == text.charCodeAt(0));
+            value: function scanCharacter(start, text) {
+              assert(this.peek === text.charCodeAt(0));
               this.advance();
               return new Token(start, text);
             },
@@ -228,9 +226,9 @@ System.register([], function (_export) {
             configurable: true
           },
           scanOperator: {
-            value: function (start, text) {
-              assert(this.peek == text.charCodeAt(0));
-              assert(OPERATORS.indexOf(text) != -1);
+            value: function scanOperator(start, text) {
+              assert(this.peek === text.charCodeAt(0));
+              assert(OPERATORS.indexOf(text) !== -1);
               this.advance();
               return new Token(start, text).withOp(text);
             },
@@ -239,13 +237,18 @@ System.register([], function (_export) {
             configurable: true
           },
           scanComplexOperator: {
-            value: function (start, code, one, two) {
-              assert(this.peek == one.charCodeAt(0));
+            value: function scanComplexOperator(start, code, one, two) {
+              assert(this.peek === one.charCodeAt(0));
               this.advance();
 
               var text = one;
 
-              if (this.peek == code) {
+              if (this.peek === code) {
+                this.advance();
+                text += two;
+              }
+
+              if (this.peek === code) {
                 this.advance();
                 text += two;
               }
@@ -259,7 +262,7 @@ System.register([], function (_export) {
             configurable: true
           },
           scanIdentifier: {
-            value: function () {
+            value: function scanIdentifier() {
               assert(isIdentifierStart(this.peek));
               var start = this.index;
 
@@ -272,7 +275,7 @@ System.register([], function (_export) {
               var text = this.input.substring(start, this.index);
               var result = new Token(start, text);
 
-              if (OPERATORS.indexOf(text) != -1) {
+              if (OPERATORS.indexOf(text) !== -1) {
                 result.withOp(text);
               } else {
                 result.withGetterSetter(text);
@@ -285,13 +288,13 @@ System.register([], function (_export) {
             configurable: true
           },
           scanNumber: {
-            value: function (start) {
+            value: function scanNumber(start) {
               assert(isDigit(this.peek));
-              var simple = this.index == start;
+              var simple = this.index === start;
               this.advance();
 
               while (true) {
-                if (isDigit(this.peek)) {} else if (this.peek == $PERIOD) {
+                if (isDigit(this.peek)) {} else if (this.peek === $PERIOD) {
                   simple = false;
                 } else if (isExponentStart(this.peek)) {
                   this.advance();
@@ -321,8 +324,8 @@ System.register([], function (_export) {
             configurable: true
           },
           scanString: {
-            value: function () {
-              assert(this.peek == $SQ || this.peek == $DQ);
+            value: function scanString() {
+              assert(this.peek === $SQ || this.peek === $DQ);
 
               var start = this.index;
               var quote = this.peek;
@@ -332,9 +335,9 @@ System.register([], function (_export) {
               var buffer;
               var marker = this.index;
 
-              while (this.peek != quote) {
-                if (this.peek == $BACKSLASH) {
-                  if (buffer == null) {
+              while (this.peek !== quote) {
+                if (this.peek === $BACKSLASH) {
+                  if (buffer === null) {
                     buffer = [];
                   }
 
@@ -343,7 +346,7 @@ System.register([], function (_export) {
 
                   var unescaped;
 
-                  if (this.peek == $u) {
+                  if (this.peek === $u) {
                     var hex = this.input.substring(this.index + 1, this.index + 5);
 
                     if (!/[A-Z0-9]{4}/.test(hex)) {
@@ -352,7 +355,7 @@ System.register([], function (_export) {
 
                     unescaped = parseInt(hex, 16);
 
-                    for (var i = 0; i < 5; i++) {
+                    for (var i = 0; i < 5; ++i) {
                       this.advance();
                     }
                   } else {
@@ -362,7 +365,7 @@ System.register([], function (_export) {
 
                   buffer.push(String.fromCharCode(unescaped));
                   marker = this.index;
-                } else if (this.peek == $EOF) {
+                } else if (this.peek === $EOF) {
                   this.error("Unterminated quote");
                 } else {
                   this.advance();
@@ -387,7 +390,7 @@ System.register([], function (_export) {
             configurable: true
           },
           advance: {
-            value: function () {
+            value: function advance() {
               if (++this.index >= this.length) {
                 this.peek = $EOF;
               } else {
@@ -399,7 +402,7 @@ System.register([], function (_export) {
             configurable: true
           },
           error: {
-            value: function (message) {
+            value: function error(message) {
               var offset = arguments[1] === undefined ? 0 : arguments[1];
               var position = this.index + offset;
               throw new Error("Lexer Error: " + message + " at column " + position + " in expression [" + this.input + "]");
@@ -414,7 +417,7 @@ System.register([], function (_export) {
       })();
       _export("Scanner", Scanner);
 
-      OPERATORS = ["undefined", "null", "true", "false", "+", "-", "*", "/", "~/", "%", "^", "=", "==", "!=", "<", ">", "<=", ">=", "&&", "||", "&", "|", "!", "?"];
+      OPERATORS = ["undefined", "null", "true", "false", "+", "-", "*", "/", "%", "^", "=", "==", "===", "!=", "!==", "<", ">", "<=", ">=", "&&", "||", "&", "|", "!", "?"];
       $EOF = 0;
       $TAB = 9;
       $LF = 10;
@@ -464,7 +467,6 @@ System.register([], function (_export) {
       $LBRACE = 123;
       $BAR = 124;
       $RBRACE = 125;
-      $TILDE = 126;
       $NBSP = 160;
     }
   };

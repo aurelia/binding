@@ -11,7 +11,7 @@ System.register([], function (_export) {
       };
 
       PathObserver = (function () {
-        var PathObserver = function PathObserver(leftObserver, getRightObserver, value) {
+        function PathObserver(leftObserver, getRightObserver, value) {
           var _this = this;
           this.leftObserver = leftObserver;
 
@@ -21,11 +21,11 @@ System.register([], function (_export) {
           });
 
           this.updateRight(getRightObserver(value));
-        };
+        }
 
         _prototypeProperties(PathObserver, null, {
           updateRight: {
-            value: function (observer) {
+            value: function updateRight(observer) {
               var _this2 = this;
               this.rightObserver = observer;
 
@@ -47,7 +47,7 @@ System.register([], function (_export) {
             configurable: true
           },
           subscribe: {
-            value: function (callback) {
+            value: function subscribe(callback) {
               var that = this;
               that.callback = callback;
               return function () {
@@ -59,7 +59,7 @@ System.register([], function (_export) {
             configurable: true
           },
           notify: {
-            value: function (newValue) {
+            value: function notify(newValue) {
               var callback = this.callback;
 
               if (callback) {
@@ -71,7 +71,7 @@ System.register([], function (_export) {
             configurable: true
           },
           dispose: {
-            value: function () {
+            value: function dispose() {
               if (this.disposeLeft) {
                 this.disposeLeft();
               }

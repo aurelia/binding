@@ -8,7 +8,7 @@ var _prototypeProperties = function (child, staticProps, instanceProps) {
 var ONE_WAY = require("./binding-modes").ONE_WAY;
 var TWO_WAY = require("./binding-modes").TWO_WAY;
 var BindingExpression = (function () {
-  var BindingExpression = function BindingExpression(observerLocator, targetProperty, sourceExpression, mode, valueConverterLookupFunction, attribute) {
+  function BindingExpression(observerLocator, targetProperty, sourceExpression, mode, valueConverterLookupFunction, attribute) {
     this.observerLocator = observerLocator;
     this.targetProperty = targetProperty;
     this.sourceExpression = sourceExpression;
@@ -16,11 +16,11 @@ var BindingExpression = (function () {
     this.valueConverterLookupFunction = valueConverterLookupFunction;
     this.attribute = attribute;
     this.discrete = false;
-  };
+  }
 
   _prototypeProperties(BindingExpression, null, {
     createBinding: {
-      value: function (target) {
+      value: function createBinding(target) {
         return new Binding(this.observerLocator, this.sourceExpression, target, this.targetProperty, this.mode, this.valueConverterLookupFunction);
       },
       writable: true,
@@ -34,17 +34,17 @@ var BindingExpression = (function () {
 
 exports.BindingExpression = BindingExpression;
 var Binding = (function () {
-  var Binding = function Binding(observerLocator, sourceExpression, target, targetProperty, mode, valueConverterLookupFunction) {
+  function Binding(observerLocator, sourceExpression, target, targetProperty, mode, valueConverterLookupFunction) {
     this.observerLocator = observerLocator;
     this.sourceExpression = sourceExpression;
     this.targetProperty = observerLocator.getObserver(target, targetProperty);
     this.mode = mode;
     this.valueConverterLookupFunction = valueConverterLookupFunction;
-  };
+  }
 
   _prototypeProperties(Binding, null, {
     getObserver: {
-      value: function (obj, propertyName) {
+      value: function getObserver(obj, propertyName) {
         return this.observerLocator.getObserver(obj, propertyName);
       },
       writable: true,
@@ -52,9 +52,10 @@ var Binding = (function () {
       configurable: true
     },
     bind: {
-      value: function (source) {
+      value: function bind(source) {
         var _this = this;
-        var targetProperty = this.targetProperty, info;
+        var targetProperty = this.targetProperty,
+            info;
 
         if (this.mode == ONE_WAY || this.mode == TWO_WAY) {
           if (this._disposeObserver) {
@@ -100,7 +101,7 @@ var Binding = (function () {
       configurable: true
     },
     unbind: {
-      value: function () {
+      value: function unbind() {
         if (this._disposeObserver) {
           this._disposeObserver();
           this._disposeObserver = null;

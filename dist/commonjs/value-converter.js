@@ -5,19 +5,19 @@ var _prototypeProperties = function (child, staticProps, instanceProps) {
   if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
 };
 
-var _inherits = function (child, parent) {
-  if (typeof parent !== "function" && parent !== null) {
-    throw new TypeError("Super expression must either be null or a function, not " + typeof parent);
+var _inherits = function (subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
   }
-  child.prototype = Object.create(parent && parent.prototype, {
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
     constructor: {
-      value: child,
+      value: subClass,
       enumerable: false,
       writable: true,
       configurable: true
     }
   });
-  if (parent) child.__proto__ = parent;
+  if (superClass) subClass.__proto__ = superClass;
 };
 
 var ResourceType = require("aurelia-metadata").ResourceType;
@@ -34,15 +34,15 @@ function hyphenate(name) {
 }
 
 var ValueConverter = (function (ResourceType) {
-  var ValueConverter = function ValueConverter(name) {
+  function ValueConverter(name) {
     this.name = name;
-  };
+  }
 
   _inherits(ValueConverter, ResourceType);
 
   _prototypeProperties(ValueConverter, {
     convention: {
-      value: function (name) {
+      value: function convention(name) {
         if (name.endsWith("ValueConverter")) {
           return new ValueConverter(hyphenate(name.substring(0, name.length - 14)));
         }
@@ -53,7 +53,7 @@ var ValueConverter = (function (ResourceType) {
     }
   }, {
     load: {
-      value: function (container, target) {
+      value: function load(container, target) {
         this.instance = container.get(target);
         return Promise.resolve(this);
       },
@@ -62,7 +62,7 @@ var ValueConverter = (function (ResourceType) {
       configurable: true
     },
     register: {
-      value: function (registry, name) {
+      value: function register(registry, name) {
         registry.registerValueConverter(name || this.name, this.instance);
       },
       writable: true,

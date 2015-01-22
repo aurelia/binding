@@ -6,14 +6,14 @@ var _prototypeProperties = function (child, staticProps, instanceProps) {
 };
 
 var DirtyChecker = (function () {
-  var DirtyChecker = function DirtyChecker() {
+  function DirtyChecker() {
     this.tracked = [];
     this.checkDelay = 120;
-  };
+  }
 
   _prototypeProperties(DirtyChecker, null, {
     addProperty: {
-      value: function (property) {
+      value: function addProperty(property) {
         var tracked = this.tracked;
 
         tracked.push(property);
@@ -27,7 +27,7 @@ var DirtyChecker = (function () {
       configurable: true
     },
     removeProperty: {
-      value: function (property) {
+      value: function removeProperty(property) {
         var tracked = this.tracked;
         tracked.splice(tracked.indexOf(property), 1);
       },
@@ -36,7 +36,7 @@ var DirtyChecker = (function () {
       configurable: true
     },
     scheduleDirtyCheck: {
-      value: function () {
+      value: function scheduleDirtyCheck() {
         var _this = this;
         setTimeout(function () {
           return _this.check();
@@ -47,7 +47,7 @@ var DirtyChecker = (function () {
       configurable: true
     },
     check: {
-      value: function () {
+      value: function check() {
         var tracked = this.tracked,
             i = tracked.length;
 
@@ -74,17 +74,17 @@ var DirtyChecker = (function () {
 
 exports.DirtyChecker = DirtyChecker;
 var DirtyCheckProperty = (function () {
-  var DirtyCheckProperty = function DirtyCheckProperty(dirtyChecker, obj, propertyName) {
+  function DirtyCheckProperty(dirtyChecker, obj, propertyName) {
     this.dirtyChecker = dirtyChecker;
     this.obj = obj;
     this.propertyName = propertyName;
     this.callbacks = [];
     this.isSVG = obj instanceof SVGElement;
-  };
+  }
 
   _prototypeProperties(DirtyCheckProperty, null, {
     getValue: {
-      value: function () {
+      value: function getValue() {
         return this.obj[this.propertyName];
       },
       writable: true,
@@ -92,7 +92,7 @@ var DirtyCheckProperty = (function () {
       configurable: true
     },
     setValue: {
-      value: function (newValue) {
+      value: function setValue(newValue) {
         if (this.isSVG) {
           this.obj.setAttributeNS(null, this.propertyName, newValue);
         } else {
@@ -104,7 +104,7 @@ var DirtyCheckProperty = (function () {
       configurable: true
     },
     call: {
-      value: function () {
+      value: function call() {
         var callbacks = this.callbacks,
             i = callbacks.length,
             oldValue = this.oldValue,
@@ -121,7 +121,7 @@ var DirtyCheckProperty = (function () {
       configurable: true
     },
     isDirty: {
-      value: function () {
+      value: function isDirty() {
         return this.oldValue !== this.getValue();
       },
       writable: true,
@@ -129,7 +129,7 @@ var DirtyCheckProperty = (function () {
       configurable: true
     },
     beginTracking: {
-      value: function () {
+      value: function beginTracking() {
         this.tracking = true;
         this.oldValue = this.newValue = this.getValue();
         this.dirtyChecker.addProperty(this);
@@ -139,7 +139,7 @@ var DirtyCheckProperty = (function () {
       configurable: true
     },
     endTracking: {
-      value: function () {
+      value: function endTracking() {
         this.tracking = false;
         this.dirtyChecker.removeProperty(this);
       },
@@ -148,7 +148,7 @@ var DirtyCheckProperty = (function () {
       configurable: true
     },
     subscribe: {
-      value: function (callback) {
+      value: function subscribe(callback) {
         var callbacks = this.callbacks,
             that = this;
 

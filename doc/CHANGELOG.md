@@ -1,3 +1,20 @@
+## 0.3.0 (2015-01-22)
+
+
+#### Bug Fixes
+
+* **all:**
+  * correct internal operator usage ([4072c598](http://github.com/aurelia/binding/commit/4072c598ff0562947377a76f3a0c8610fb66b73a))
+  * real javascript operator support for equality ([bbad0f38](http://github.com/aurelia/binding/commit/bbad0f381f1b27da049fd9eeb93816053dc7566e))
+* **event-manager:** improve element config model ([afc9e37d](http://github.com/aurelia/binding/commit/afc9e37dbc93c8b06c0031def05170d58cc84383))
+* **package:** update dependencies ([ac2cef9c](http://github.com/aurelia/binding/commit/ac2cef9cd2d809b6d60193d1eb7edd8b7a1c1c8c))
+
+
+#### Features
+
+* **value-converter:** add fluent helper to metadata api ([63c1ecff](http://github.com/aurelia/binding/commit/63c1ecffd3e5fc8be6a1145a833bb3817ea1c2f1))
+
+
 ### 0.2.2 (2015-01-12)
 
 

@@ -6,7 +6,7 @@ var _prototypeProperties = function (child, staticProps, instanceProps) {
 };
 
 var PathObserver = (function () {
-  var PathObserver = function PathObserver(leftObserver, getRightObserver, value) {
+  function PathObserver(leftObserver, getRightObserver, value) {
     var _this = this;
     this.leftObserver = leftObserver;
 
@@ -16,11 +16,11 @@ var PathObserver = (function () {
     });
 
     this.updateRight(getRightObserver(value));
-  };
+  }
 
   _prototypeProperties(PathObserver, null, {
     updateRight: {
-      value: function (observer) {
+      value: function updateRight(observer) {
         var _this2 = this;
         this.rightObserver = observer;
 
@@ -42,7 +42,7 @@ var PathObserver = (function () {
       configurable: true
     },
     subscribe: {
-      value: function (callback) {
+      value: function subscribe(callback) {
         var that = this;
         that.callback = callback;
         return function () {
@@ -54,7 +54,7 @@ var PathObserver = (function () {
       configurable: true
     },
     notify: {
-      value: function (newValue) {
+      value: function notify(newValue) {
         var callback = this.callback;
 
         if (callback) {
@@ -66,7 +66,7 @@ var PathObserver = (function () {
       configurable: true
     },
     dispose: {
-      value: function () {
+      value: function dispose() {
         if (this.disposeLeft) {
           this.disposeLeft();
         }

@@ -6,15 +6,15 @@ var _prototypeProperties = function (child, staticProps, instanceProps) {
 };
 
 var NameExpression = (function () {
-  var NameExpression = function NameExpression(name, mode) {
+  function NameExpression(name, mode) {
     this.property = name;
     this.discrete = true;
     this.mode = (mode || "view-model").toLowerCase();
-  };
+  }
 
   _prototypeProperties(NameExpression, null, {
     createBinding: {
-      value: function (target) {
+      value: function createBinding(target) {
         return new NameBinder(this.property, target, this.mode);
       },
       writable: true,
@@ -28,7 +28,7 @@ var NameExpression = (function () {
 
 exports.NameExpression = NameExpression;
 var NameBinder = (function () {
-  var NameBinder = function NameBinder(property, target, mode) {
+  function NameBinder(property, target, mode) {
     this.property = property;
 
     switch (mode) {
@@ -41,11 +41,11 @@ var NameBinder = (function () {
       default:
         throw new Error("Name expressions do not support mode: " + mode);
     }
-  };
+  }
 
   _prototypeProperties(NameBinder, null, {
     bind: {
-      value: function (source) {
+      value: function bind(source) {
         if (this.source) {
           if (this.source === source) {
             return;
@@ -62,7 +62,7 @@ var NameBinder = (function () {
       configurable: true
     },
     unbind: {
-      value: function () {
+      value: function unbind() {
         this.source[this.property] = null;
       },
       writable: true,

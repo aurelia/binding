@@ -11,13 +11,13 @@ System.register([], function (_export) {
       };
 
       DefaultEventStrategy = (function () {
-        var DefaultEventStrategy = function DefaultEventStrategy() {
+        function DefaultEventStrategy() {
           this.delegatedEvents = {};
-        };
+        }
 
         _prototypeProperties(DefaultEventStrategy, null, {
           ensureDelegatedEvent: {
-            value: function (eventName) {
+            value: function ensureDelegatedEvent(eventName) {
               if (this.delegatedEvents[eventName]) {
                 return;
               }
@@ -30,15 +30,16 @@ System.register([], function (_export) {
             configurable: true
           },
           handleCallbackResult: {
-            value: function (result) {},
+            value: function handleCallbackResult(result) {},
             writable: true,
             enumerable: true,
             configurable: true
           },
           handleDelegatedEvent: {
-            value: function (event) {
+            value: function handleDelegatedEvent(event) {
               event = event || window.event;
-              var target = event.target || event.srcElement, callback;
+              var target = event.target || event.srcElement,
+                  callback;
 
               while (target && !callback) {
                 if (target.delegatedEvents) {
@@ -59,7 +60,7 @@ System.register([], function (_export) {
             configurable: true
           },
           createDirectEventCallback: {
-            value: function (callback) {
+            value: function createDirectEventCallback(callback) {
               var _this = this;
               return function (event) {
                 _this.handleCallbackResult(callback(event));
@@ -70,7 +71,7 @@ System.register([], function (_export) {
             configurable: true
           },
           subscribeToDelegatedEvent: {
-            value: function (target, targetEvent, callback) {
+            value: function subscribeToDelegatedEvent(target, targetEvent, callback) {
               var lookup = target.delegatedEvents || (target.delegatedEvents = {});
 
               this.ensureDelegatedEvent(targetEvent);
@@ -85,7 +86,7 @@ System.register([], function (_export) {
             configurable: true
           },
           subscribeToDirectEvent: {
-            value: function (target, targetEvent, callback) {
+            value: function subscribeToDirectEvent(target, targetEvent, callback) {
               var directEventCallback = this.createDirectEventCallback(callback);
               target.addEventListener(targetEvent, directEventCallback, false);
 
@@ -98,7 +99,7 @@ System.register([], function (_export) {
             configurable: true
           },
           subscribe: {
-            value: function (target, targetEvent, callback, delegate) {
+            value: function subscribe(target, targetEvent, callback, delegate) {
               if (delegate) {
                 return this.subscribeToDirectEvent(target, targetEvent, callback);
               } else {
@@ -114,24 +115,41 @@ System.register([], function (_export) {
         return DefaultEventStrategy;
       })();
       EventManager = (function () {
-        var EventManager = function EventManager() {
+        function EventManager() {
           this.elementHandlerLookup = {};
           this.eventStrategyLookup = {};
-          this.registerElementConfig("input", {
-            value: ["change", "input"],
-            checked: ["change", "input"]
+
+          this.registerElementConfig({
+            tagName: "input",
+            properties: {
+              value: ["change", "input"],
+              checked: ["change", "input"]
+            }
           });
-          this.registerElementConfig("textarea", { value: ["change", "input"] });
-          this.registerElementConfig("select", { value: ["change"] });
+
+          this.registerElementConfig({
+            tagName: "textarea",
+            properties: {
+              value: ["change", "input"]
+            }
+          });
+
+          this.registerElementConfig({
+            tagName: "select",
+            properties: {
+              value: ["change"]
+            }
+          });
+
           this.defaultEventStrategy = new DefaultEventStrategy();
-        };
+        }
 
         _prototypeProperties(EventManager, null, {
           registerElementConfig: {
-            value: function (tagName, config) {
-              this.elementHandlerLookup[tagName.toLowerCase()] = {
+            value: function registerElementConfig(config) {
+              this.elementHandlerLookup[config.tagName.toLowerCase()] = {
                 subscribe: function subscribe(target, property, callback) {
-                  var events = config[property];
+                  var events = config.properties[property];
                   if (events) {
                     events.forEach(function (changeEvent) {
                       target.addEventListener(changeEvent, callback, false);
@@ -143,7 +161,7 @@ System.register([], function (_export) {
                       });
                     };
                   } else {
-                    throw new Error("Cannot observe property " + property + " of " + tagName + ". No events found.");
+                    throw new Error("Cannot observe property " + property + " of " + config.tagName + ". No events found.");
                   }
                 }
               };
@@ -153,7 +171,7 @@ System.register([], function (_export) {
             configurable: true
           },
           registerElementHandler: {
-            value: function (tagName, handler) {
+            value: function registerElementHandler(tagName, handler) {
               this.elementHandlerLookup[tagName.toLowerCase()] = handler;
             },
             writable: true,
@@ -161,7 +179,7 @@ System.register([], function (_export) {
             configurable: true
           },
           registerEventStrategy: {
-            value: function (eventName, strategy) {
+            value: function registerEventStrategy(eventName, strategy) {
               this.eventStrategyLookup[eventName] = strategy;
             },
             writable: true,
@@ -169,7 +187,7 @@ System.register([], function (_export) {
             configurable: true
           },
           getElementHandler: {
-            value: function (target) {
+            value: function getElementHandler(target) {
               if (target.tagName) {
                 var handler = this.elementHandlerLookup[target.tagName.toLowerCase()];
                 if (handler) {
@@ -184,7 +202,7 @@ System.register([], function (_export) {
             configurable: true
           },
           addEventListener: {
-            value: function (target, targetEvent, callback, delegate) {
+            value: function addEventListener(target, targetEvent, callback, delegate) {
               return (this.eventStrategyLookup[targetEvent] || this.defaultEventStrategy).subscribe(target, targetEvent, callback, delegate);
             },
             writable: true,

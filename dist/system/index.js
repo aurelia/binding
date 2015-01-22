@@ -1,24 +1,25 @@
-System.register(["./ast", "./event-manager", "./observer-locator", "./value-converter", "./array-change-records", "./binding-modes", "./expressions/parser", "./binding-expression", "./listener-expression", "./name-expression", "./call-expression", "./dirty-checking"], function (_export) {
+System.register(["aurelia-metadata", "./value-converter", "./event-manager", "./observer-locator", "./array-change-records", "./binding-modes", "./parser", "./binding-expression", "./listener-expression", "./name-expression", "./call-expression", "./dirty-checking"], function (_export) {
   "use strict";
 
-  var patchAST;
+  var Metadata, ValueConverter;
   return {
-    setters: [function (_ast) {
-      patchAST = _ast.patchAST;
+    setters: [function (_aureliaMetadata) {
+      Metadata = _aureliaMetadata.Metadata;
+    }, function (_valueConverter) {
+      ValueConverter = _valueConverter.ValueConverter;
+      _export("ValueConverter", _valueConverter.ValueConverter);
     }, function (_eventManager) {
       _export("EventManager", _eventManager.EventManager);
     }, function (_observerLocator) {
       _export("ObserverLocator", _observerLocator.ObserverLocator);
-    }, function (_valueConverter) {
-      _export("ValueConverter", _valueConverter.ValueConverter);
     }, function (_arrayChangeRecords) {
       _export("calcSplices", _arrayChangeRecords.calcSplices);
     }, function (_bindingModes) {
       for (var _key in _bindingModes) {
         _export(_key, _bindingModes[_key]);
       }
-    }, function (_expressionsParser) {
-      _export("Parser", _expressionsParser.Parser);
+    }, function (_parser) {
+      _export("Parser", _parser.Parser);
     }, function (_bindingExpression) {
       _export("BindingExpression", _bindingExpression.BindingExpression);
     }, function (_listenerExpression) {
@@ -31,7 +32,7 @@ System.register(["./ast", "./event-manager", "./observer-locator", "./value-conv
       _export("DirtyChecker", _dirtyChecking.DirtyChecker);
     }],
     execute: function () {
-      patchAST();
+      Metadata.configure.classHelper("valueConverter", ValueConverter);
     }
   };
 });

@@ -7,16 +7,16 @@ define(["exports"], function (exports) {
   };
 
   var CallExpression = (function () {
-    var CallExpression = function CallExpression(observerLocator, targetProperty, sourceExpression, valueConverterLookupFunction) {
+    function CallExpression(observerLocator, targetProperty, sourceExpression, valueConverterLookupFunction) {
       this.observerLocator = observerLocator;
       this.targetProperty = targetProperty;
       this.sourceExpression = sourceExpression;
       this.valueConverterLookupFunction = valueConverterLookupFunction;
-    };
+    }
 
     _prototypeProperties(CallExpression, null, {
       createBinding: {
-        value: function (target) {
+        value: function createBinding(target) {
           return new Call(this.observerLocator, this.sourceExpression, target, this.targetProperty, this.valueConverterLookupFunction);
         },
         writable: true,
@@ -30,16 +30,16 @@ define(["exports"], function (exports) {
 
   exports.CallExpression = CallExpression;
   var Call = (function () {
-    var Call = function Call(observerLocator, sourceExpression, target, targetProperty, valueConverterLookupFunction) {
+    function Call(observerLocator, sourceExpression, target, targetProperty, valueConverterLookupFunction) {
       this.sourceExpression = sourceExpression;
       this.target = target;
       this.targetProperty = observerLocator.getObserver(target, targetProperty);
       this.valueConverterLookupFunction = valueConverterLookupFunction;
-    };
+    }
 
     _prototypeProperties(Call, null, {
       bind: {
-        value: function (source) {
+        value: function bind(source) {
           var _this = this;
           if (this.source === source) {
             return;
@@ -51,9 +51,7 @@ define(["exports"], function (exports) {
 
           this.source = source;
           this.targetProperty.setValue(function () {
-            var rest = [];
-
-            for (var _key = 0; _key < arguments.length; _key++) {
+            for (var _len = arguments.length, rest = Array(_len), _key = 0; _key < _len; _key++) {
               rest[_key] = arguments[_key];
             }
 
@@ -65,7 +63,7 @@ define(["exports"], function (exports) {
         configurable: true
       },
       unbind: {
-        value: function () {
+        value: function unbind() {
           this.targetProperty.setValue(null);
         },
         writable: true,

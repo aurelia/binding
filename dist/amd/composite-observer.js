@@ -7,22 +7,21 @@ define(["exports"], function (exports) {
   };
 
   var CompositeObserver = (function () {
-    var CompositeObserver = function CompositeObserver(observers, evaluate) {
+    function CompositeObserver(observers, evaluate) {
       var _this = this;
       this.subscriptions = new Array(observers.length);
       this.evaluate = evaluate;
 
-      for (var i = 0,
-          ii = observers.length; i < ii; i++) {
+      for (var i = 0, ii = observers.length; i < ii; i++) {
         this.subscriptions[i] = observers[i].subscribe(function (newValue) {
           _this.notify(_this.evaluate());
         });
       }
-    };
+    }
 
     _prototypeProperties(CompositeObserver, null, {
       subscribe: {
-        value: function (callback) {
+        value: function subscribe(callback) {
           var that = this;
           that.callback = callback;
           return function () {
@@ -34,7 +33,7 @@ define(["exports"], function (exports) {
         configurable: true
       },
       notify: {
-        value: function (newValue) {
+        value: function notify(newValue) {
           var callback = this.callback;
 
           if (callback) {
@@ -46,7 +45,7 @@ define(["exports"], function (exports) {
         configurable: true
       },
       dispose: {
-        value: function () {
+        value: function dispose() {
           var subscriptions = this.subscriptions;
 
           while (i--) {

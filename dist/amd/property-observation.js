@@ -7,7 +7,7 @@ define(["exports"], function (exports) {
   };
 
   var SetterObserver = (function () {
-    var SetterObserver = function SetterObserver(taskQueue, obj, propertyName) {
+    function SetterObserver(taskQueue, obj, propertyName) {
       this.taskQueue = taskQueue;
       this.obj = obj;
       this.propertyName = propertyName;
@@ -15,11 +15,11 @@ define(["exports"], function (exports) {
       this.queued = false;
       this.observing = false;
       this.isSVG = obj instanceof SVGElement;
-    };
+    }
 
     _prototypeProperties(SetterObserver, null, {
       getValue: {
-        value: function () {
+        value: function getValue() {
           return this.obj[this.propertyName];
         },
         writable: true,
@@ -27,7 +27,7 @@ define(["exports"], function (exports) {
         configurable: true
       },
       setValue: {
-        value: function (newValue) {
+        value: function setValue(newValue) {
           if (this.isSVG) {
             this.obj.setAttributeNS(null, this.propertyName, newValue);
           } else {
@@ -39,7 +39,7 @@ define(["exports"], function (exports) {
         configurable: true
       },
       getterValue: {
-        value: function () {
+        value: function getterValue() {
           return this.currentValue;
         },
         writable: true,
@@ -47,7 +47,7 @@ define(["exports"], function (exports) {
         configurable: true
       },
       setterValue: {
-        value: function (newValue) {
+        value: function setterValue(newValue) {
           var oldValue = this.currentValue;
 
           if (oldValue != newValue) {
@@ -65,7 +65,7 @@ define(["exports"], function (exports) {
         configurable: true
       },
       call: {
-        value: function () {
+        value: function call() {
           var callbacks = this.callbacks,
               i = callbacks.length,
               oldValue = this.oldValue,
@@ -82,7 +82,7 @@ define(["exports"], function (exports) {
         configurable: true
       },
       subscribe: {
-        value: function (callback) {
+        value: function subscribe(callback) {
           var callbacks = this.callbacks;
           callbacks.push(callback);
 
@@ -99,7 +99,7 @@ define(["exports"], function (exports) {
         configurable: true
       },
       convertProperty: {
-        value: function () {
+        value: function convertProperty() {
           this.observing = true;
           this.currentValue = this.obj[this.propertyName];
           this.setValue = this.setterValue;
@@ -123,14 +123,14 @@ define(["exports"], function (exports) {
 
   exports.SetterObserver = SetterObserver;
   var OoObjectObserver = (function () {
-    var OoObjectObserver = function OoObjectObserver(obj) {
+    function OoObjectObserver(obj) {
       this.obj = obj;
       this.observers = {};
-    };
+    }
 
     _prototypeProperties(OoObjectObserver, null, {
       subscribe: {
-        value: function (propertyObserver, callback) {
+        value: function subscribe(propertyObserver, callback) {
           var _this = this;
           var callbacks = propertyObserver.callbacks;
           callbacks.push(callback);
@@ -151,7 +151,7 @@ define(["exports"], function (exports) {
         configurable: true
       },
       getObserver: {
-        value: function (propertyName) {
+        value: function getObserver(propertyName) {
           var propertyObserver = this.observers[propertyName] || (this.observers[propertyName] = new OoPropertyObserver(this, this.obj, propertyName));
 
           return propertyObserver;
@@ -161,7 +161,7 @@ define(["exports"], function (exports) {
         configurable: true
       },
       handleChanges: {
-        value: function (changeRecords) {
+        value: function handleChanges(changeRecords) {
           var updates = {},
               observers = this.observers,
               i = changeRecords.length;
@@ -190,17 +190,17 @@ define(["exports"], function (exports) {
 
   exports.OoObjectObserver = OoObjectObserver;
   var OoPropertyObserver = (function () {
-    var OoPropertyObserver = function OoPropertyObserver(owner, obj, propertyName) {
+    function OoPropertyObserver(owner, obj, propertyName) {
       this.owner = owner;
       this.obj = obj;
       this.propertyName = propertyName;
       this.callbacks = [];
       this.isSVG = obj instanceof SVGElement;
-    };
+    }
 
     _prototypeProperties(OoPropertyObserver, null, {
       getValue: {
-        value: function () {
+        value: function getValue() {
           return this.obj[this.propertyName];
         },
         writable: true,
@@ -208,7 +208,7 @@ define(["exports"], function (exports) {
         configurable: true
       },
       setValue: {
-        value: function (newValue) {
+        value: function setValue(newValue) {
           if (this.isSVG) {
             this.obj.setAttributeNS(null, this.propertyName, newValue);
           } else {
@@ -220,7 +220,7 @@ define(["exports"], function (exports) {
         configurable: true
       },
       trigger: {
-        value: function (newValue, oldValue) {
+        value: function trigger(newValue, oldValue) {
           var callbacks = this.callbacks,
               i = callbacks.length;
 
@@ -233,7 +233,7 @@ define(["exports"], function (exports) {
         configurable: true
       },
       subscribe: {
-        value: function (callback) {
+        value: function subscribe(callback) {
           return this.owner.subscribe(this, callback);
         },
         writable: true,
@@ -247,17 +247,17 @@ define(["exports"], function (exports) {
 
   exports.OoPropertyObserver = OoPropertyObserver;
   var ElementObserver = (function () {
-    var ElementObserver = function ElementObserver(handler, element, propertyName) {
+    function ElementObserver(handler, element, propertyName) {
       this.element = element;
       this.propertyName = propertyName;
       this.callbacks = [];
       this.oldValue = element[propertyName];
       this.handler = handler;
-    };
+    }
 
     _prototypeProperties(ElementObserver, null, {
       getValue: {
-        value: function () {
+        value: function getValue() {
           return this.element[this.propertyName];
         },
         writable: true,
@@ -265,7 +265,7 @@ define(["exports"], function (exports) {
         configurable: true
       },
       setValue: {
-        value: function (newValue) {
+        value: function setValue(newValue) {
           this.element[this.propertyName] = newValue;
           this.call();
         },
@@ -274,7 +274,7 @@ define(["exports"], function (exports) {
         configurable: true
       },
       call: {
-        value: function () {
+        value: function call() {
           var callbacks = this.callbacks,
               i = callbacks.length,
               oldValue = this.oldValue,
@@ -291,7 +291,7 @@ define(["exports"], function (exports) {
         configurable: true
       },
       subscribe: {
-        value: function (callback) {
+        value: function subscribe(callback) {
           var that = this;
 
           if (!this.disposeHandler) {

@@ -7,18 +7,18 @@ define(["exports"], function (exports) {
   };
 
   var ListenerExpression = (function () {
-    var ListenerExpression = function ListenerExpression(eventManager, targetEvent, sourceExpression, delegate, preventDefault) {
+    function ListenerExpression(eventManager, targetEvent, sourceExpression, delegate, preventDefault) {
       this.eventManager = eventManager;
       this.targetEvent = targetEvent;
       this.sourceExpression = sourceExpression;
       this.delegate = delegate;
       this.discrete = true;
       this.preventDefault = preventDefault;
-    };
+    }
 
     _prototypeProperties(ListenerExpression, null, {
       createBinding: {
-        value: function (target) {
+        value: function createBinding(target) {
           return new Listener(this.eventManager, this.targetEvent, this.delegate, this.sourceExpression, target, this.preventDefault);
         },
         writable: true,
@@ -32,18 +32,18 @@ define(["exports"], function (exports) {
 
   exports.ListenerExpression = ListenerExpression;
   var Listener = (function () {
-    var Listener = function Listener(eventManager, targetEvent, delegate, sourceExpression, target, preventDefault) {
+    function Listener(eventManager, targetEvent, delegate, sourceExpression, target, preventDefault) {
       this.eventManager = eventManager;
       this.targetEvent = targetEvent;
       this.delegate = delegate;
       this.sourceExpression = sourceExpression;
       this.target = target;
       this.preventDefault = preventDefault;
-    };
+    }
 
     _prototypeProperties(Listener, null, {
       bind: {
-        value: function (source) {
+        value: function bind(source) {
           var _this = this;
           if (this._disposeListener) {
             if (this.source === source) {
@@ -70,7 +70,7 @@ define(["exports"], function (exports) {
         configurable: true
       },
       unbind: {
-        value: function () {
+        value: function unbind() {
           if (this._disposeListener) {
             this._disposeListener();
             this._disposeListener = null;

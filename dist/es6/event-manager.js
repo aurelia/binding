@@ -75,19 +75,36 @@ export class EventManager {
   constructor(){
     this.elementHandlerLookup = {};
     this.eventStrategyLookup = {};
-    this.registerElementConfig('input', { 
-      value:['change','input'],
-      checked:['change','input'] 
+    
+    this.registerElementConfig({ 
+      tagName:'input',
+      properties: {
+        value:['change','input'],
+        checked:['change','input'] 
+      }
     });
-    this.registerElementConfig('textarea', { value:['change','input'] });
-    this.registerElementConfig('select', { value:['change'] });
+
+    this.registerElementConfig({
+      tagName:'textarea',
+      properties:{
+        value:['change','input']
+      } 
+    });
+
+    this.registerElementConfig({
+      tagName:'select',
+      properties:{
+        value:['change']
+      }
+    });
+
     this.defaultEventStrategy = new DefaultEventStrategy();
   }
 
-  registerElementConfig(tagName, config){
-    this.elementHandlerLookup[tagName.toLowerCase()] = { 
+  registerElementConfig(config){
+    this.elementHandlerLookup[config.tagName.toLowerCase()] = { 
       subscribe(target, property, callback) {
-        var events = config[property];
+        var events = config.properties[property];
         if(events){
           events.forEach(changeEvent => {
             target.addEventListener(changeEvent, callback, false);
@@ -99,7 +116,7 @@ export class EventManager {
             });
           }
         }else{
-          throw new Error(`Cannot observe property ${property} of ${tagName}. No events found.`)
+          throw new Error(`Cannot observe property ${property} of ${config.tagName}. No events found.`)
         }
       }
     }

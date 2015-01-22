@@ -12,15 +12,15 @@ var projectArraySplices = require("./array-change-records").projectArraySplices;
 
 var arrayProto = Array.prototype,
     hasArrayObserve = (function detectArrayObserve() {
+  var callback = function (recs) {
+    records = recs;
+  };
+
   if (typeof Array.observe !== "function") {
     return false;
   }
 
   var records = [];
-
-  function callback(recs) {
-    records = recs;
-  }
 
   var arr = [];
   Array.observe(arr, callback);
@@ -48,18 +48,18 @@ function getArrayObserver(taskQueue, array) {
 }
 
 var ModifyArrayObserver = (function () {
-  var ModifyArrayObserver = function ModifyArrayObserver(taskQueue, array) {
+  function ModifyArrayObserver(taskQueue, array) {
     this.taskQueue = taskQueue;
     this.callbacks = [];
     this.changeRecords = [];
     this.queued = false;
     this.array = array;
     this.oldArray = null;
-  };
+  }
 
   _prototypeProperties(ModifyArrayObserver, {
     create: {
-      value: function (taskQueue, array) {
+      value: function create(taskQueue, array) {
         var observer = new ModifyArrayObserver(taskQueue, array);
 
         array.pop = function () {
@@ -142,7 +142,7 @@ var ModifyArrayObserver = (function () {
     }
   }, {
     subscribe: {
-      value: function (callback) {
+      value: function subscribe(callback) {
         var callbacks = this.callbacks;
         callbacks.push(callback);
         return function () {
@@ -154,7 +154,7 @@ var ModifyArrayObserver = (function () {
       configurable: true
     },
     addChangeRecord: {
-      value: function (changeRecord) {
+      value: function addChangeRecord(changeRecord) {
         if (!this.callbacks.length) {
           return;
         }
@@ -171,7 +171,7 @@ var ModifyArrayObserver = (function () {
       configurable: true
     },
     reset: {
-      value: function (oldArray) {
+      value: function reset(oldArray) {
         if (!this.callbacks.length) {
           return;
         }
@@ -188,7 +188,7 @@ var ModifyArrayObserver = (function () {
       configurable: true
     },
     getObserver: {
-      value: function (propertyName) {
+      value: function getObserver(propertyName) {
         if (propertyName == "length") {
           return this.lengthObserver || (this.lengthObserver = new ArrayLengthObserver(this.array));
         } else {
@@ -200,7 +200,7 @@ var ModifyArrayObserver = (function () {
       configurable: true
     },
     call: {
-      value: function () {
+      value: function call() {
         var callbacks = this.callbacks,
             i = callbacks.length,
             changeRecords = this.changeRecords,
@@ -237,15 +237,15 @@ var ModifyArrayObserver = (function () {
 })();
 
 var ArrayObserveObserver = (function () {
-  var ArrayObserveObserver = function ArrayObserveObserver(array) {
+  function ArrayObserveObserver(array) {
     this.array = array;
     this.callbacks = [];
     this.observing = false;
-  };
+  }
 
   _prototypeProperties(ArrayObserveObserver, null, {
     subscribe: {
-      value: function (callback) {
+      value: function subscribe(callback) {
         var _this = this;
         var callbacks = this.callbacks;
 
@@ -267,7 +267,7 @@ var ArrayObserveObserver = (function () {
       configurable: true
     },
     getObserver: {
-      value: function (propertyName) {
+      value: function getObserver(propertyName) {
         if (propertyName == "length") {
           return this.lengthObserver || (this.lengthObserver = new ArrayLengthObserver(this.array));
         } else {
@@ -279,7 +279,7 @@ var ArrayObserveObserver = (function () {
       configurable: true
     },
     handleChanges: {
-      value: function (changeRecords) {
+      value: function handleChanges(changeRecords) {
         var callbacks = this.callbacks,
             i = callbacks.length,
             splices;
@@ -308,15 +308,15 @@ var ArrayObserveObserver = (function () {
 })();
 
 var ArrayLengthObserver = (function () {
-  var ArrayLengthObserver = function ArrayLengthObserver(array) {
+  function ArrayLengthObserver(array) {
     this.array = array;
     this.callbacks = [];
     this.currentValue = array.length;
-  };
+  }
 
   _prototypeProperties(ArrayLengthObserver, null, {
     getValue: {
-      value: function () {
+      value: function getValue() {
         return this.array.length;
       },
       writable: true,
@@ -324,7 +324,7 @@ var ArrayLengthObserver = (function () {
       configurable: true
     },
     setValue: {
-      value: function (newValue) {
+      value: function setValue(newValue) {
         this.array.length = newValue;
       },
       writable: true,
@@ -332,7 +332,7 @@ var ArrayLengthObserver = (function () {
       configurable: true
     },
     subscribe: {
-      value: function (callback) {
+      value: function subscribe(callback) {
         var callbacks = this.callbacks;
         callbacks.push(callback);
         return function () {
@@ -344,7 +344,7 @@ var ArrayLengthObserver = (function () {
       configurable: true
     },
     call: {
-      value: function (newValue) {
+      value: function call(newValue) {
         var callbacks = this.callbacks,
             i = callbacks.length,
             oldValue = this.currentValue;

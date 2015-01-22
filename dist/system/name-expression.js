@@ -11,15 +11,15 @@ System.register([], function (_export) {
       };
 
       NameExpression = (function () {
-        var NameExpression = function NameExpression(name, mode) {
+        function NameExpression(name, mode) {
           this.property = name;
           this.discrete = true;
           this.mode = (mode || "view-model").toLowerCase();
-        };
+        }
 
         _prototypeProperties(NameExpression, null, {
           createBinding: {
-            value: function (target) {
+            value: function createBinding(target) {
               return new NameBinder(this.property, target, this.mode);
             },
             writable: true,
@@ -33,7 +33,7 @@ System.register([], function (_export) {
       _export("NameExpression", NameExpression);
 
       NameBinder = (function () {
-        var NameBinder = function NameBinder(property, target, mode) {
+        function NameBinder(property, target, mode) {
           this.property = property;
 
           switch (mode) {
@@ -46,11 +46,11 @@ System.register([], function (_export) {
             default:
               throw new Error("Name expressions do not support mode: " + mode);
           }
-        };
+        }
 
         _prototypeProperties(NameBinder, null, {
           bind: {
-            value: function (source) {
+            value: function bind(source) {
               if (this.source) {
                 if (this.source === source) {
                   return;
@@ -67,7 +67,7 @@ System.register([], function (_export) {
             configurable: true
           },
           unbind: {
-            value: function () {
+            value: function unbind() {
               this.source[this.property] = null;
             },
             writable: true,

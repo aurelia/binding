@@ -31,14 +31,14 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
   var EOF = new Token(-1, null);
 
   var Parser = (function () {
-    var Parser = function Parser() {
+    function Parser() {
       this.cache = {};
       this.lexer = new Lexer();
-    };
+    }
 
     _prototypeProperties(Parser, null, {
       parse: {
-        value: function (input) {
+        value: function parse(input) {
           input = input || "";
 
           return this.cache[input] || (this.cache[input] = new ParserImplementation(this.lexer, input).parseChain());
@@ -54,11 +54,11 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
 
   exports.Parser = Parser;
   var ParserImplementation = (function () {
-    var ParserImplementation = function ParserImplementation(lexer, input) {
+    function ParserImplementation(lexer, input) {
       this.index = 0;
       this.input = input;
       this.tokens = lexer.lex(input);
-    };
+    }
 
     _prototypeProperties(ParserImplementation, null, {
       peek: {
@@ -69,7 +69,7 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
         configurable: true
       },
       parseChain: {
-        value: function () {
+        value: function parseChain() {
           var isChain = false,
               expressions = [];
 
@@ -78,7 +78,7 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           }
 
           while (this.index < this.tokens.length) {
-            if (this.peek.text == ")" || this.peek.text == "}" || this.peek.text == "]") {
+            if (this.peek.text === ")" || this.peek.text === "}" || this.peek.text === "]") {
               this.error("Unconsumed token " + this.peek.text);
             }
 
@@ -94,14 +94,14 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
             }
           }
 
-          return expressions.length == 1 ? expressions[0] : new Chain(expressions);
+          return expressions.length === 1 ? expressions[0] : new Chain(expressions);
         },
         writable: true,
         enumerable: true,
         configurable: true
       },
       parseValueConverter: {
-        value: function () {
+        value: function parseValueConverter() {
           var result = this.parseExpression();
 
           while (this.optional("|")) {
@@ -124,11 +124,11 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
         configurable: true
       },
       parseExpression: {
-        value: function () {
+        value: function parseExpression() {
           var start = this.peek.index,
               result = this.parseConditional();
 
-          while (this.peek.text == "=") {
+          while (this.peek.text === "=") {
             if (!result.isAssignable) {
               var end = this.index < this.tokens.length ? this.peek.index : this.input.length;
               var expression = this.input.substring(start, end);
@@ -147,7 +147,7 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
         configurable: true
       },
       parseConditional: {
-        value: function () {
+        value: function parseConditional() {
           var start = this.peek.index,
               result = this.parseLogicalOr();
 
@@ -172,7 +172,7 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
         configurable: true
       },
       parseLogicalOr: {
-        value: function () {
+        value: function parseLogicalOr() {
           var result = this.parseLogicalAnd();
 
           while (this.optional("||")) {
@@ -186,7 +186,7 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
         configurable: true
       },
       parseLogicalAnd: {
-        value: function () {
+        value: function parseLogicalAnd() {
           var result = this.parseEquality();
 
           while (this.optional("&&")) {
@@ -200,7 +200,7 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
         configurable: true
       },
       parseEquality: {
-        value: function () {
+        value: function parseEquality() {
           var result = this.parseRelational();
 
           while (true) {
@@ -208,6 +208,10 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
               result = new Binary("==", result, this.parseRelational());
             } else if (this.optional("!=")) {
               result = new Binary("!=", result, this.parseRelational());
+            } else if (this.optional("===")) {
+              result = new Binary("===", result, this.parseRelational());
+            } else if (this.optional("!==")) {
+              result = new Binary("!==", result, this.parseRelational());
             } else {
               return result;
             }
@@ -218,7 +222,7 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
         configurable: true
       },
       parseRelational: {
-        value: function () {
+        value: function parseRelational() {
           var result = this.parseAdditive();
 
           while (true) {
@@ -240,7 +244,7 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
         configurable: true
       },
       parseAdditive: {
-        value: function () {
+        value: function parseAdditive() {
           var result = this.parseMultiplicative();
 
           while (true) {
@@ -258,7 +262,7 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
         configurable: true
       },
       parseMultiplicative: {
-        value: function () {
+        value: function parseMultiplicative() {
           var result = this.parsePrefix();
 
           while (true) {
@@ -268,8 +272,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
               result = new Binary("%", result, this.parsePrefix());
             } else if (this.optional("/")) {
               result = new Binary("/", result, this.parsePrefix());
-            } else if (this.optional("~/")) {
-              result = new Binary("~/", result, this.parsePrefix());
             } else {
               return result;
             }
@@ -280,7 +282,7 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
         configurable: true
       },
       parsePrefix: {
-        value: function () {
+        value: function parsePrefix() {
           if (this.optional("+")) {
             return this.parsePrefix();
           } else if (this.optional("-")) {
@@ -296,7 +298,7 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
         configurable: true
       },
       parseAccessOrCallMember: {
-        value: function () {
+        value: function parseAccessOrCallMember() {
           var result = this.parsePrimary();
 
           while (true) {
@@ -330,7 +332,7 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
         configurable: true
       },
       parsePrimary: {
-        value: function () {
+        value: function parsePrimary() {
           if (this.optional("(")) {
             var result = this.parseExpression();
             this.expect(")");
@@ -364,7 +366,7 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
         configurable: true
       },
       parseAccessOrCallScope: {
-        value: function () {
+        value: function parseAccessOrCallScope() {
           var name = this.peek.key;
 
           this.advance();
@@ -382,16 +384,16 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
         configurable: true
       },
       parseObject: {
-        value: function () {
+        value: function parseObject() {
           var keys = [],
               values = [];
 
           this.expect("{");
 
-          if (this.peek.text != "}") {
+          if (this.peek.text !== "}") {
             do {
               var value = this.peek.value;
-              keys.push(typeof value == "string" ? value : this.peek.text);
+              keys.push(typeof value === "string" ? value : this.peek.text);
 
               this.advance();
               this.expect(":");
@@ -409,7 +411,7 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
         configurable: true
       },
       parseExpressionList: {
-        value: function (terminator) {
+        value: function parseExpressionList(terminator) {
           var result = [];
 
           if (this.peek.text != terminator) {
@@ -425,8 +427,8 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
         configurable: true
       },
       optional: {
-        value: function (text) {
-          if (this.peek.text == text) {
+        value: function optional(text) {
+          if (this.peek.text === text) {
             this.advance();
             return true;
           }
@@ -438,8 +440,8 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
         configurable: true
       },
       expect: {
-        value: function (text) {
-          if (this.peek.text == text) {
+        value: function expect(text) {
+          if (this.peek.text === text) {
             this.advance();
           } else {
             this.error("Missing expected " + text);
@@ -450,7 +452,7 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
         configurable: true
       },
       advance: {
-        value: function () {
+        value: function advance() {
           this.index++;
         },
         writable: true,
@@ -458,7 +460,7 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
         configurable: true
       },
       error: {
-        value: function (message) {
+        value: function error(message) {
           var location = this.index < this.tokens.length ? "at column " + (this.tokens[this.index].index + 1) + " in" : "at the end of the expression";
 
           throw new Error("Parser Error: " + message + " " + location + " [" + this.input + "]");

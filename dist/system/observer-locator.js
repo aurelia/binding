@@ -65,15 +65,15 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
       }
 
       hasObjectObserve = (function detectObjectObserve() {
+        var callback = function (recs) {
+          records = recs;
+        };
+
         if (typeof Object.observe !== "function") {
           return false;
         }
 
         var records = [];
-
-        function callback(recs) {
-          records = recs;
-        }
 
         var test = {};
         Object.observe(test, callback);
@@ -93,15 +93,15 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
         return true;
       })();
       ObserverLocator = (function () {
-        var ObserverLocator = function ObserverLocator(taskQueue, eventManager, dirtyChecker) {
+        function ObserverLocator(taskQueue, eventManager, dirtyChecker) {
           this.taskQueue = taskQueue;
           this.eventManager = eventManager;
           this.dirtyChecker = dirtyChecker;
-        };
+        }
 
         _prototypeProperties(ObserverLocator, {
           inject: {
-            value: function () {
+            value: function inject() {
               return [TaskQueue, EventManager, DirtyChecker];
             },
             writable: true,
@@ -110,7 +110,7 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
           }
         }, {
           getObserversLookup: {
-            value: function (obj) {
+            value: function getObserversLookup(obj) {
               return obj.__observers__ || createObserversLookup(obj);
             },
             writable: true,
@@ -118,7 +118,7 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
             configurable: true
           },
           getObserver: {
-            value: function (obj, propertyName) {
+            value: function getObserver(obj, propertyName) {
               var observersLookup = this.getObserversLookup(obj);
 
               if (propertyName in observersLookup) {
@@ -132,7 +132,7 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
             configurable: true
           },
           createPropertyObserver: {
-            value: function (obj, propertyName) {
+            value: function createPropertyObserver(obj, propertyName) {
               var observerLookup, descriptor, handler;
 
               if (obj instanceof Element) {
@@ -164,13 +164,23 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
             configurable: true
           },
           getArrayObserver: {
-            value: function (array) {
+            value: (function (_getArrayObserver) {
+              var _getArrayObserverWrapper = function getArrayObserver() {
+                return _getArrayObserver.apply(this, arguments);
+              };
+
+              _getArrayObserverWrapper.toString = function () {
+                return _getArrayObserver.toString();
+              };
+
+              return _getArrayObserverWrapper;
+            })(function (array) {
               if ("__array_observer__" in array) {
                 return array.__array_observer__;
               }
 
               return array.__array_observer__ = getArrayObserver(this.taskQueue, array);
-            },
+            }),
             writable: true,
             enumerable: true,
             configurable: true
