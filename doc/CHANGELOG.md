@@ -1,3 +1,11 @@
+### 0.3.2 (2015-01-24)
+
+
+#### Bug Fixes
+
+* **bower:** correct semver ranges ([88a94ad4](http://github.com/aurelia/binding/commit/88a94ad41b74b09e4b04a64a9f22317156ed8009))
+
+
 ### 0.3.1 (2015-01-22)
 
 
