@@ -228,13 +228,15 @@ export class AccessMember extends Expression {
 
   evaluate(scope, valueConverters){
     var instance = this.object.evaluate(scope, valueConverters);
-    return instance === null ? null : instance[this.name];
+    return instance === null || instance === undefined
+      ? instance 
+      : instance[this.name];
   }
 
   assign(scope, value){
     var instance = this.object.evaluate(scope);
 
-    if(!instance){
+    if(instance === null || instance === undefined){
       instance = {};
       this.object.assign(scope, instance);
     }
@@ -256,8 +258,8 @@ export class AccessMember extends Expression {
       observer = new PathObserver(
         objectObserver, 
         value => {
-          if(value == null){
-            return null;
+          if(value == null || value == undefined){
+            return value;
           }
 
           return binding.getObserver(value, this.name)
