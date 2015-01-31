@@ -497,6 +497,13 @@ export class Binary extends Expression {
 
     var right = this.right.evaluate(scope);
 
+    switch (this.operation) {
+      case '==' : return left == right;
+      case '===': return left === right;
+      case '!=' : return left != right;
+      case '!==': return left !== right;
+    }
+
     // Null check for the operations.
     if (left === null || right === null) {
       switch (this.operation) {
@@ -519,10 +526,6 @@ export class Binary extends Expression {
       case '*'  : return left * right;
       case '/'  : return left / right;
       case '%'  : return left % right;
-      case '==' : return left == right;
-      case '===': return left === right;
-      case '!=' : return left != right;
-      case '!==': return left !== right;
       case '<'  : return left < right;
       case '>'  : return left > right;
       case '<=' : return left <= right;
