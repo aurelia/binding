@@ -8,6 +8,7 @@ import {
   OoPropertyObserver, 
   ElementObserver
 } from './property-observation';
+import {All} from 'aurelia-dependency-injection';
 
 if(typeof Object.getPropertyDescriptor !== 'function'){
  Object.getPropertyDescriptor = function (subject, name) {
@@ -80,11 +81,12 @@ function createObserverLookup(obj) {
 }
 
 export class ObserverLocator {
-  static inject(){ return [TaskQueue, EventManager, DirtyChecker]; }
-  constructor(taskQueue, eventManager, dirtyChecker){
+  static inject(){ return [TaskQueue, EventManager, DirtyChecker, All.of(ObjectObservationAdapter)]; }
+  constructor(taskQueue, eventManager, dirtyChecker, observationAdapters){
     this.taskQueue = taskQueue;
     this.eventManager = eventManager;
     this.dirtyChecker = dirtyChecker;
+    this.observationAdapters = observationAdapters;
   }
 
   getObserversLookup(obj){
@@ -104,8 +106,18 @@ export class ObserverLocator {
       );
   }
 
+  getObservationAdapter(obj, propertyName) {
+    var i, ii, observationAdapter;
+    for(i = 0, ii = this.observationAdapters.length; i < ii; i++){
+      observationAdapter = this.observationAdapters[i];
+      if (observationAdapter.handlesProperty(obj, propertyName))
+        return observationAdapter;
+    }
+    return null;
+  }
+
   createPropertyObserver(obj, propertyName){
-    var observerLookup, descriptor, handler;
+    var observerLookup, descriptor, handler, observationAdapter;
 
     if(obj instanceof Element){
       handler = this.eventManager.getElementHandler(obj);
@@ -116,6 +128,10 @@ export class ObserverLocator {
 
     descriptor = Object.getPropertyDescriptor(obj, propertyName);
     if(descriptor && (descriptor.get || descriptor.set)){
+      // attempt to use an adapter before resorting to dirty checking.
+      observationAdapter = this.getObservationAdapter(obj, propertyName);
+      if (observationAdapter)
+        return observationAdapter.getObserver(obj, propertyName);
       return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     }
 
@@ -138,5 +154,15 @@ export class ObserverLocator {
     }
 
     return array.__array_observer__ = getArrayObserver(this.taskQueue, array);
+  }
+}
+
+export class ObjectObservationAdapter {
+  handlesProperty(object, propertyName) {
+    throw new Error('BindingAdapters must implement handlesProperty(object, propertyName).');
+  }
+
+  getObserver(object, propertyName) {
+    throw new Error('BindingAdapters must implement createObserver(object, propertyName).');
   }
 }
