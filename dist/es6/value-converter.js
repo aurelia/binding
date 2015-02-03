@@ -27,6 +27,6 @@ export class ValueConverter extends ResourceType {
   }
 
   register(registry, name){
-  	registry.registerValueConverter(name || this.name, this.instance);
+    registry.registerValueConverter(name || this.name, this.instance);
   }
 }

@@ -1,12 +1,9 @@
 define(["exports"], function (exports) {
   "use strict";
 
-  var _prototypeProperties = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
+  var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-  var ListenerExpression = (function () {
+  var ListenerExpression = exports.ListenerExpression = (function () {
     function ListenerExpression(eventManager, targetEvent, sourceExpression, delegate, preventDefault) {
       this.eventManager = eventManager;
       this.targetEvent = targetEvent;
@@ -22,15 +19,12 @@ define(["exports"], function (exports) {
           return new Listener(this.eventManager, this.targetEvent, this.delegate, this.sourceExpression, target, this.preventDefault);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return ListenerExpression;
   })();
-
-  exports.ListenerExpression = ListenerExpression;
   var Listener = (function () {
     function Listener(eventManager, targetEvent, delegate, sourceExpression, target, preventDefault) {
       this.eventManager = eventManager;
@@ -66,7 +60,6 @@ define(["exports"], function (exports) {
           }, this.delegate);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       unbind: {
@@ -77,11 +70,12 @@ define(["exports"], function (exports) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return Listener;
   })();
+
+  exports.__esModule = true;
 });

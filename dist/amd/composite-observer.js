@@ -1,12 +1,9 @@
 define(["exports"], function (exports) {
   "use strict";
 
-  var _prototypeProperties = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
+  var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-  var CompositeObserver = (function () {
+  var CompositeObserver = exports.CompositeObserver = (function () {
     function CompositeObserver(observers, evaluate) {
       var _this = this;
       this.subscriptions = new Array(observers.length);
@@ -29,7 +26,6 @@ define(["exports"], function (exports) {
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       notify: {
@@ -41,7 +37,6 @@ define(["exports"], function (exports) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       dispose: {
@@ -53,13 +48,11 @@ define(["exports"], function (exports) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return CompositeObserver;
   })();
-
-  exports.CompositeObserver = CompositeObserver;
+  exports.__esModule = true;
 });

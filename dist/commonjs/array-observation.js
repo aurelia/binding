@@ -1,26 +1,25 @@
 "use strict";
 
-var _prototypeProperties = function (child, staticProps, instanceProps) {
-  if (staticProps) Object.defineProperties(child, staticProps);
-  if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-};
+var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
 exports.getArrayObserver = getArrayObserver;
-var calcSplices = require("./array-change-records").calcSplices;
-var projectArraySplices = require("./array-change-records").projectArraySplices;
+var _arrayChangeRecords = require("./array-change-records");
+
+var calcSplices = _arrayChangeRecords.calcSplices;
+var projectArraySplices = _arrayChangeRecords.projectArraySplices;
 
 
 var arrayProto = Array.prototype,
     hasArrayObserve = (function detectArrayObserve() {
-  var callback = function (recs) {
-    records = recs;
-  };
-
   if (typeof Array.observe !== "function") {
     return false;
   }
 
   var records = [];
+
+  function callback(recs) {
+    records = recs;
+  }
 
   var arr = [];
   Array.observe(arr, callback);
@@ -137,7 +136,6 @@ var ModifyArrayObserver = (function () {
         return observer;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   }, {
@@ -150,7 +148,6 @@ var ModifyArrayObserver = (function () {
         };
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     addChangeRecord: {
@@ -167,7 +164,6 @@ var ModifyArrayObserver = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     reset: {
@@ -184,7 +180,6 @@ var ModifyArrayObserver = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     getObserver: {
@@ -196,7 +191,6 @@ var ModifyArrayObserver = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     call: {
@@ -228,7 +222,6 @@ var ModifyArrayObserver = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
@@ -263,7 +256,6 @@ var ArrayObserveObserver = (function () {
         };
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     getObserver: {
@@ -275,7 +267,6 @@ var ArrayObserveObserver = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     handleChanges: {
@@ -299,7 +290,6 @@ var ArrayObserveObserver = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
@@ -320,7 +310,6 @@ var ArrayLengthObserver = (function () {
         return this.array.length;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     setValue: {
@@ -328,7 +317,6 @@ var ArrayLengthObserver = (function () {
         this.array.length = newValue;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     subscribe: {
@@ -340,7 +328,6 @@ var ArrayLengthObserver = (function () {
         };
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     call: {
@@ -356,10 +343,11 @@ var ArrayLengthObserver = (function () {
         this.currentValue = newValue;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
 
   return ArrayLengthObserver;
 })();
+
+exports.__esModule = true;

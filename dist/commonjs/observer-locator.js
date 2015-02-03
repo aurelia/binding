@@ -1,19 +1,21 @@
 "use strict";
 
-var _prototypeProperties = function (child, staticProps, instanceProps) {
-  if (staticProps) Object.defineProperties(child, staticProps);
-  if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-};
+var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
 var TaskQueue = require("aurelia-task-queue").TaskQueue;
 var getArrayObserver = require("./array-observation").getArrayObserver;
 var EventManager = require("./event-manager").EventManager;
-var DirtyChecker = require("./dirty-checking").DirtyChecker;
-var DirtyCheckProperty = require("./dirty-checking").DirtyCheckProperty;
-var SetterObserver = require("./property-observation").SetterObserver;
-var OoObjectObserver = require("./property-observation").OoObjectObserver;
-var OoPropertyObserver = require("./property-observation").OoPropertyObserver;
-var ElementObserver = require("./property-observation").ElementObserver;
+var _dirtyChecking = require("./dirty-checking");
+
+var DirtyChecker = _dirtyChecking.DirtyChecker;
+var DirtyCheckProperty = _dirtyChecking.DirtyCheckProperty;
+var _propertyObservation = require("./property-observation");
+
+var SetterObserver = _propertyObservation.SetterObserver;
+var OoObjectObserver = _propertyObservation.OoObjectObserver;
+var OoPropertyObserver = _propertyObservation.OoPropertyObserver;
+var ElementObserver = _propertyObservation.ElementObserver;
+var All = require("aurelia-dependency-injection").All;
 
 
 if (typeof Object.getPropertyDescriptor !== "function") {
@@ -29,15 +31,15 @@ if (typeof Object.getPropertyDescriptor !== "function") {
 }
 
 var hasObjectObserve = (function detectObjectObserve() {
-  var callback = function (recs) {
-    records = recs;
-  };
-
   if (typeof Object.observe !== "function") {
     return false;
   }
 
   var records = [];
+
+  function callback(recs) {
+    records = recs;
+  }
 
   var test = {};
   Object.observe(test, callback);
@@ -83,20 +85,20 @@ function createObserverLookup(obj) {
   return value;
 }
 
-var ObserverLocator = (function () {
-  function ObserverLocator(taskQueue, eventManager, dirtyChecker) {
+var ObserverLocator = exports.ObserverLocator = (function () {
+  function ObserverLocator(taskQueue, eventManager, dirtyChecker, observationAdapters) {
     this.taskQueue = taskQueue;
     this.eventManager = eventManager;
     this.dirtyChecker = dirtyChecker;
+    this.observationAdapters = observationAdapters;
   }
 
   _prototypeProperties(ObserverLocator, {
     inject: {
       value: function inject() {
-        return [TaskQueue, EventManager, DirtyChecker];
+        return [TaskQueue, EventManager, DirtyChecker, All.of(ObjectObservationAdapter)];
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   }, {
@@ -105,7 +107,6 @@ var ObserverLocator = (function () {
         return obj.__observers__ || createObserversLookup(obj);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     getObserver: {
@@ -119,12 +120,23 @@ var ObserverLocator = (function () {
         return observersLookup[propertyName] = this.createPropertyObserver(obj, propertyName);
       },
       writable: true,
-      enumerable: true,
+      configurable: true
+    },
+    getObservationAdapter: {
+      value: function getObservationAdapter(obj, propertyName) {
+        var i, ii, observationAdapter;
+        for (i = 0, ii = this.observationAdapters.length; i < ii; i++) {
+          observationAdapter = this.observationAdapters[i];
+          if (observationAdapter.handlesProperty(obj, propertyName)) return observationAdapter;
+        }
+        return null;
+      },
+      writable: true,
       configurable: true
     },
     createPropertyObserver: {
       value: function createPropertyObserver(obj, propertyName) {
-        var observerLookup, descriptor, handler;
+        var observerLookup, descriptor, handler, observationAdapter;
 
         if (obj instanceof Element) {
           handler = this.eventManager.getElementHandler(obj);
@@ -135,6 +147,8 @@ var ObserverLocator = (function () {
 
         descriptor = Object.getPropertyDescriptor(obj, propertyName);
         if (descriptor && (descriptor.get || descriptor.set)) {
+          observationAdapter = this.getObservationAdapter(obj, propertyName);
+          if (observationAdapter) return observationAdapter.getObserver(obj, propertyName);
           return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
         }
 
@@ -151,7 +165,6 @@ var ObserverLocator = (function () {
         return new SetterObserver(this.taskQueue, obj, propertyName);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     getArrayObserver: {
@@ -173,12 +186,32 @@ var ObserverLocator = (function () {
         return array.__array_observer__ = getArrayObserver(this.taskQueue, array);
       }),
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
 
   return ObserverLocator;
 })();
+var ObjectObservationAdapter = exports.ObjectObservationAdapter = (function () {
+  function ObjectObservationAdapter() {}
 
-exports.ObserverLocator = ObserverLocator;
+  _prototypeProperties(ObjectObservationAdapter, null, {
+    handlesProperty: {
+      value: function handlesProperty(object, propertyName) {
+        throw new Error("BindingAdapters must implement handlesProperty(object, propertyName).");
+      },
+      writable: true,
+      configurable: true
+    },
+    getObserver: {
+      value: function getObserver(object, propertyName) {
+        throw new Error("BindingAdapters must implement createObserver(object, propertyName).");
+      },
+      writable: true,
+      configurable: true
+    }
+  });
+
+  return ObjectObservationAdapter;
+})();
+exports.__esModule = true;

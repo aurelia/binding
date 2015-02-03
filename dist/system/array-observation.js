@@ -18,22 +18,19 @@ System.register(["./array-change-records"], function (_export) {
       projectArraySplices = _arrayChangeRecords.projectArraySplices;
     }],
     execute: function () {
-      _prototypeProperties = function (child, staticProps, instanceProps) {
-        if (staticProps) Object.defineProperties(child, staticProps);
-        if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-      };
+      _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
       arrayProto = Array.prototype;
       hasArrayObserve = (function detectArrayObserve() {
-        var callback = function (recs) {
-          records = recs;
-        };
-
         if (typeof Array.observe !== "function") {
           return false;
         }
 
         var records = [];
+
+        function callback(recs) {
+          records = recs;
+        }
 
         var arr = [];
         Array.observe(arr, callback);
@@ -141,7 +138,6 @@ System.register(["./array-change-records"], function (_export) {
               return observer;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         }, {
@@ -154,7 +150,6 @@ System.register(["./array-change-records"], function (_export) {
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           addChangeRecord: {
@@ -171,7 +166,6 @@ System.register(["./array-change-records"], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           reset: {
@@ -188,7 +182,6 @@ System.register(["./array-change-records"], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           getObserver: {
@@ -200,7 +193,6 @@ System.register(["./array-change-records"], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           call: {
@@ -232,7 +224,6 @@ System.register(["./array-change-records"], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
@@ -266,7 +257,6 @@ System.register(["./array-change-records"], function (_export) {
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           getObserver: {
@@ -278,7 +268,6 @@ System.register(["./array-change-records"], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           handleChanges: {
@@ -302,7 +291,6 @@ System.register(["./array-change-records"], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
@@ -322,7 +310,6 @@ System.register(["./array-change-records"], function (_export) {
               return this.array.length;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           setValue: {
@@ -330,7 +317,6 @@ System.register(["./array-change-records"], function (_export) {
               this.array.length = newValue;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           subscribe: {
@@ -342,7 +328,6 @@ System.register(["./array-change-records"], function (_export) {
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           call: {
@@ -358,7 +343,6 @@ System.register(["./array-change-records"], function (_export) {
               this.currentValue = newValue;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });

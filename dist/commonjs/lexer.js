@@ -1,11 +1,8 @@
 "use strict";
 
-var _prototypeProperties = function (child, staticProps, instanceProps) {
-  if (staticProps) Object.defineProperties(child, staticProps);
-  if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-};
+var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-var Token = (function () {
+var Token = exports.Token = (function () {
   function Token(index, text) {
     this.index = index;
     this.text = text;
@@ -18,7 +15,6 @@ var Token = (function () {
         return this;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     withGetterSetter: {
@@ -27,7 +23,6 @@ var Token = (function () {
         return this;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     withValue: {
@@ -36,7 +31,6 @@ var Token = (function () {
         return this;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     toString: {
@@ -44,16 +38,13 @@ var Token = (function () {
         return "Token(" + this.text + ")";
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
 
   return Token;
 })();
-
-exports.Token = Token;
-var Lexer = (function () {
+var Lexer = exports.Lexer = (function () {
   function Lexer() {}
 
   _prototypeProperties(Lexer, null, {
@@ -71,16 +62,13 @@ var Lexer = (function () {
         return tokens;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
 
   return Lexer;
 })();
-
-exports.Lexer = Lexer;
-var Scanner = (function () {
+var Scanner = exports.Scanner = (function () {
   function Scanner(input) {
     this.input = input;
     this.length = input.length;
@@ -159,7 +147,6 @@ var Scanner = (function () {
         return null;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     scanCharacter: {
@@ -169,7 +156,6 @@ var Scanner = (function () {
         return new Token(start, text);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     scanOperator: {
@@ -180,7 +166,6 @@ var Scanner = (function () {
         return new Token(start, text).withOp(text);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     scanComplexOperator: {
@@ -205,7 +190,6 @@ var Scanner = (function () {
         return new Token(start, text).withOp(text);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     scanIdentifier: {
@@ -231,7 +215,6 @@ var Scanner = (function () {
         return result;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     scanNumber: {
@@ -267,7 +250,6 @@ var Scanner = (function () {
         return new Token(start, text).withValue(value);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     scanString: {
@@ -333,7 +315,6 @@ var Scanner = (function () {
         return new Token(start, text).withValue(unescaped);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     advance: {
@@ -345,7 +326,6 @@ var Scanner = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     error: {
@@ -355,15 +335,12 @@ var Scanner = (function () {
         throw new Error("Lexer Error: " + message + " at column " + position + " in expression [" + this.input + "]");
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
 
   return Scanner;
 })();
-
-exports.Scanner = Scanner;
 
 
 var OPERATORS = ["undefined", "null", "true", "false", "+", "-", "*", "/", "%", "^", "=", "==", "===", "!=", "!==", "<", ">", "<=", ">=", "&&", "||", "&", "|", "!", "?"];
@@ -470,3 +447,4 @@ function assert(condition, message) {
     throw message || "Assertion failed";
   }
 }
+exports.__esModule = true;

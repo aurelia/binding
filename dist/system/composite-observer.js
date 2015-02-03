@@ -5,12 +5,9 @@ System.register([], function (_export) {
   return {
     setters: [],
     execute: function () {
-      _prototypeProperties = function (child, staticProps, instanceProps) {
-        if (staticProps) Object.defineProperties(child, staticProps);
-        if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-      };
+      _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-      CompositeObserver = (function () {
+      CompositeObserver = _export("CompositeObserver", (function () {
         function CompositeObserver(observers, evaluate) {
           var _this = this;
           this.subscriptions = new Array(observers.length);
@@ -33,7 +30,6 @@ System.register([], function (_export) {
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           notify: {
@@ -45,7 +41,6 @@ System.register([], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           dispose: {
@@ -57,14 +52,12 @@ System.register([], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return CompositeObserver;
-      })();
-      _export("CompositeObserver", CompositeObserver);
+      })());
     }
   };
 });

@@ -5,12 +5,9 @@ System.register([], function (_export) {
   return {
     setters: [],
     execute: function () {
-      _prototypeProperties = function (child, staticProps, instanceProps) {
-        if (staticProps) Object.defineProperties(child, staticProps);
-        if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-      };
+      _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-      NameExpression = (function () {
+      NameExpression = _export("NameExpression", (function () {
         function NameExpression(name, mode) {
           this.property = name;
           this.discrete = true;
@@ -23,15 +20,12 @@ System.register([], function (_export) {
               return new NameBinder(this.property, target, this.mode);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return NameExpression;
-      })();
-      _export("NameExpression", NameExpression);
-
+      })());
       NameBinder = (function () {
         function NameBinder(property, target, mode) {
           this.property = property;
@@ -63,7 +57,6 @@ System.register([], function (_export) {
               source[this.property] = this.target;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           unbind: {
@@ -71,7 +64,6 @@ System.register([], function (_export) {
               this.source[this.property] = null;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });

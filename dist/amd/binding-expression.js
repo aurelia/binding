@@ -1,14 +1,11 @@
 define(["exports", "./binding-modes"], function (exports, _bindingModes) {
   "use strict";
 
-  var _prototypeProperties = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
+  var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
   var ONE_WAY = _bindingModes.ONE_WAY;
   var TWO_WAY = _bindingModes.TWO_WAY;
-  var BindingExpression = (function () {
+  var BindingExpression = exports.BindingExpression = (function () {
     function BindingExpression(observerLocator, targetProperty, sourceExpression, mode, valueConverterLookupFunction, attribute) {
       this.observerLocator = observerLocator;
       this.targetProperty = targetProperty;
@@ -25,15 +22,12 @@ define(["exports", "./binding-modes"], function (exports, _bindingModes) {
           return new Binding(this.observerLocator, this.sourceExpression, target, this.targetProperty, this.mode, this.valueConverterLookupFunction);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return BindingExpression;
   })();
-
-  exports.BindingExpression = BindingExpression;
   var Binding = (function () {
     function Binding(observerLocator, sourceExpression, target, targetProperty, mode, valueConverterLookupFunction) {
       this.observerLocator = observerLocator;
@@ -49,7 +43,6 @@ define(["exports", "./binding-modes"], function (exports, _bindingModes) {
           return this.observerLocator.getObserver(obj, propertyName);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       bind: {
@@ -98,7 +91,6 @@ define(["exports", "./binding-modes"], function (exports, _bindingModes) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       unbind: {
@@ -114,11 +106,12 @@ define(["exports", "./binding-modes"], function (exports, _bindingModes) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return Binding;
   })();
+
+  exports.__esModule = true;
 });

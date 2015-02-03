@@ -1,7 +1,7 @@
-System.register(["aurelia-task-queue", "./array-observation", "./event-manager", "./dirty-checking", "./property-observation"], function (_export) {
+System.register(["aurelia-task-queue", "./array-observation", "./event-manager", "./dirty-checking", "./property-observation", "aurelia-dependency-injection"], function (_export) {
   "use strict";
 
-  var TaskQueue, getArrayObserver, EventManager, DirtyChecker, DirtyCheckProperty, SetterObserver, OoObjectObserver, OoPropertyObserver, ElementObserver, _prototypeProperties, hasObjectObserve, ObserverLocator;
+  var TaskQueue, getArrayObserver, EventManager, DirtyChecker, DirtyCheckProperty, SetterObserver, OoObjectObserver, OoPropertyObserver, ElementObserver, All, _prototypeProperties, hasObjectObserve, ObserverLocator, ObjectObservationAdapter;
 
 
   function createObserversLookup(obj) {
@@ -45,12 +45,11 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
       OoObjectObserver = _propertyObservation.OoObjectObserver;
       OoPropertyObserver = _propertyObservation.OoPropertyObserver;
       ElementObserver = _propertyObservation.ElementObserver;
+    }, function (_aureliaDependencyInjection) {
+      All = _aureliaDependencyInjection.All;
     }],
     execute: function () {
-      _prototypeProperties = function (child, staticProps, instanceProps) {
-        if (staticProps) Object.defineProperties(child, staticProps);
-        if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-      };
+      _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
       if (typeof Object.getPropertyDescriptor !== "function") {
         Object.getPropertyDescriptor = function (subject, name) {
@@ -65,15 +64,15 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
       }
 
       hasObjectObserve = (function detectObjectObserve() {
-        var callback = function (recs) {
-          records = recs;
-        };
-
         if (typeof Object.observe !== "function") {
           return false;
         }
 
         var records = [];
+
+        function callback(recs) {
+          records = recs;
+        }
 
         var test = {};
         Object.observe(test, callback);
@@ -92,20 +91,20 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
 
         return true;
       })();
-      ObserverLocator = (function () {
-        function ObserverLocator(taskQueue, eventManager, dirtyChecker) {
+      ObserverLocator = _export("ObserverLocator", (function () {
+        function ObserverLocator(taskQueue, eventManager, dirtyChecker, observationAdapters) {
           this.taskQueue = taskQueue;
           this.eventManager = eventManager;
           this.dirtyChecker = dirtyChecker;
+          this.observationAdapters = observationAdapters;
         }
 
         _prototypeProperties(ObserverLocator, {
           inject: {
             value: function inject() {
-              return [TaskQueue, EventManager, DirtyChecker];
+              return [TaskQueue, EventManager, DirtyChecker, All.of(ObjectObservationAdapter)];
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         }, {
@@ -114,7 +113,6 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
               return obj.__observers__ || createObserversLookup(obj);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           getObserver: {
@@ -128,12 +126,23 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
               return observersLookup[propertyName] = this.createPropertyObserver(obj, propertyName);
             },
             writable: true,
-            enumerable: true,
+            configurable: true
+          },
+          getObservationAdapter: {
+            value: function getObservationAdapter(obj, propertyName) {
+              var i, ii, observationAdapter;
+              for (i = 0, ii = this.observationAdapters.length; i < ii; i++) {
+                observationAdapter = this.observationAdapters[i];
+                if (observationAdapter.handlesProperty(obj, propertyName)) return observationAdapter;
+              }
+              return null;
+            },
+            writable: true,
             configurable: true
           },
           createPropertyObserver: {
             value: function createPropertyObserver(obj, propertyName) {
-              var observerLookup, descriptor, handler;
+              var observerLookup, descriptor, handler, observationAdapter;
 
               if (obj instanceof Element) {
                 handler = this.eventManager.getElementHandler(obj);
@@ -144,6 +153,8 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
 
               descriptor = Object.getPropertyDescriptor(obj, propertyName);
               if (descriptor && (descriptor.get || descriptor.set)) {
+                observationAdapter = this.getObservationAdapter(obj, propertyName);
+                if (observationAdapter) return observationAdapter.getObserver(obj, propertyName);
                 return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
               }
 
@@ -160,7 +171,6 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
               return new SetterObserver(this.taskQueue, obj, propertyName);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           getArrayObserver: {
@@ -182,14 +192,34 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
               return array.__array_observer__ = getArrayObserver(this.taskQueue, array);
             }),
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return ObserverLocator;
-      })();
-      _export("ObserverLocator", ObserverLocator);
+      })());
+      ObjectObservationAdapter = _export("ObjectObservationAdapter", (function () {
+        function ObjectObservationAdapter() {}
+
+        _prototypeProperties(ObjectObservationAdapter, null, {
+          handlesProperty: {
+            value: function handlesProperty(object, propertyName) {
+              throw new Error("BindingAdapters must implement handlesProperty(object, propertyName).");
+            },
+            writable: true,
+            configurable: true
+          },
+          getObserver: {
+            value: function getObserver(object, propertyName) {
+              throw new Error("BindingAdapters must implement createObserver(object, propertyName).");
+            },
+            writable: true,
+            configurable: true
+          }
+        });
+
+        return ObjectObservationAdapter;
+      })());
     }
   };
 });

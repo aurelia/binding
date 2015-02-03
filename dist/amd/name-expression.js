@@ -1,12 +1,9 @@
 define(["exports"], function (exports) {
   "use strict";
 
-  var _prototypeProperties = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
+  var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-  var NameExpression = (function () {
+  var NameExpression = exports.NameExpression = (function () {
     function NameExpression(name, mode) {
       this.property = name;
       this.discrete = true;
@@ -19,15 +16,12 @@ define(["exports"], function (exports) {
           return new NameBinder(this.property, target, this.mode);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return NameExpression;
   })();
-
-  exports.NameExpression = NameExpression;
   var NameBinder = (function () {
     function NameBinder(property, target, mode) {
       this.property = property;
@@ -59,7 +53,6 @@ define(["exports"], function (exports) {
           source[this.property] = this.target;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       unbind: {
@@ -67,11 +60,12 @@ define(["exports"], function (exports) {
           this.source[this.property] = null;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return NameBinder;
   })();
+
+  exports.__esModule = true;
 });

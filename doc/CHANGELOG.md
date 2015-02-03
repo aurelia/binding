@@ -1,3 +1,12 @@
+### 0.3.3 (2015-02-03)
+
+
+#### Bug Fixes
+
+* **ast:** correct (in)equality operators against null operands ([4036b33d](http://github.com/aurelia/binding/commit/4036b33d431a53dd2978cbd317a0fd44a3461fe8))
+* **last:** prevent null refs on complex property path expressions ([68ab5073](http://github.com/aurelia/binding/commit/68ab50738e1a77b23bff96a86c1f017d9c39f91b))
+
+
 ### 0.3.2 (2015-01-24)
 
 

@@ -1,10 +1,7 @@
 define(["exports", "./array-change-records"], function (exports, _arrayChangeRecords) {
   "use strict";
 
-  var _prototypeProperties = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
+  var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
   exports.getArrayObserver = getArrayObserver;
   var calcSplices = _arrayChangeRecords.calcSplices;
@@ -13,15 +10,15 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
 
   var arrayProto = Array.prototype,
       hasArrayObserve = (function detectArrayObserve() {
-    var callback = function (recs) {
-      records = recs;
-    };
-
     if (typeof Array.observe !== "function") {
       return false;
     }
 
     var records = [];
+
+    function callback(recs) {
+      records = recs;
+    }
 
     var arr = [];
     Array.observe(arr, callback);
@@ -138,7 +135,6 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
           return observer;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     }, {
@@ -151,7 +147,6 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       addChangeRecord: {
@@ -168,7 +163,6 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       reset: {
@@ -185,7 +179,6 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       getObserver: {
@@ -197,7 +190,6 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       call: {
@@ -229,7 +221,6 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
@@ -264,7 +255,6 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       getObserver: {
@@ -276,7 +266,6 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       handleChanges: {
@@ -300,7 +289,6 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
@@ -321,7 +309,6 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
           return this.array.length;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       setValue: {
@@ -329,7 +316,6 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
           this.array.length = newValue;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       subscribe: {
@@ -341,7 +327,6 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       call: {
@@ -357,11 +342,12 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
           this.currentValue = newValue;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return ArrayLengthObserver;
   })();
+
+  exports.__esModule = true;
 });

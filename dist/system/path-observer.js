@@ -5,12 +5,9 @@ System.register([], function (_export) {
   return {
     setters: [],
     execute: function () {
-      _prototypeProperties = function (child, staticProps, instanceProps) {
-        if (staticProps) Object.defineProperties(child, staticProps);
-        if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-      };
+      _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-      PathObserver = (function () {
+      PathObserver = _export("PathObserver", (function () {
         function PathObserver(leftObserver, getRightObserver, value) {
           var _this = this;
           this.leftObserver = leftObserver;
@@ -26,7 +23,7 @@ System.register([], function (_export) {
         _prototypeProperties(PathObserver, null, {
           updateRight: {
             value: function updateRight(observer) {
-              var _this2 = this;
+              var _this = this;
               this.rightObserver = observer;
 
               if (this.disposeRight) {
@@ -38,12 +35,11 @@ System.register([], function (_export) {
               }
 
               this.disposeRight = observer.subscribe(function (newValue) {
-                return _this2.notify(newValue);
+                return _this.notify(newValue);
               });
               return observer.getValue();
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           subscribe: {
@@ -55,7 +51,6 @@ System.register([], function (_export) {
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           notify: {
@@ -67,7 +62,6 @@ System.register([], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           dispose: {
@@ -81,14 +75,12 @@ System.register([], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return PathObserver;
-      })();
-      _export("PathObserver", PathObserver);
+      })());
     }
   };
 });

@@ -311,4 +311,5 @@ define(["exports"], function (exports) {
 
     return splices;
   }
+  exports.__esModule = true;
 });

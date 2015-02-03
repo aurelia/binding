@@ -1,11 +1,8 @@
 "use strict";
 
-var _prototypeProperties = function (child, staticProps, instanceProps) {
-  if (staticProps) Object.defineProperties(child, staticProps);
-  if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-};
+var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-var SetterObserver = (function () {
+var SetterObserver = exports.SetterObserver = (function () {
   function SetterObserver(taskQueue, obj, propertyName) {
     this.taskQueue = taskQueue;
     this.obj = obj;
@@ -22,7 +19,6 @@ var SetterObserver = (function () {
         return this.obj[this.propertyName];
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     setValue: {
@@ -34,7 +30,6 @@ var SetterObserver = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     getterValue: {
@@ -42,7 +37,6 @@ var SetterObserver = (function () {
         return this.currentValue;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     setterValue: {
@@ -60,7 +54,6 @@ var SetterObserver = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     call: {
@@ -77,7 +70,6 @@ var SetterObserver = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     subscribe: {
@@ -94,7 +86,6 @@ var SetterObserver = (function () {
         };
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     convertProperty: {
@@ -112,16 +103,13 @@ var SetterObserver = (function () {
         });
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
 
   return SetterObserver;
 })();
-
-exports.SetterObserver = SetterObserver;
-var OoObjectObserver = (function () {
+var OoObjectObserver = exports.OoObjectObserver = (function () {
   function OoObjectObserver(obj) {
     this.obj = obj;
     this.observers = {};
@@ -146,7 +134,6 @@ var OoObjectObserver = (function () {
         };
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     getObserver: {
@@ -156,7 +143,6 @@ var OoObjectObserver = (function () {
         return propertyObserver;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     handleChanges: {
@@ -179,16 +165,13 @@ var OoObjectObserver = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
 
   return OoObjectObserver;
 })();
-
-exports.OoObjectObserver = OoObjectObserver;
-var OoPropertyObserver = (function () {
+var OoPropertyObserver = exports.OoPropertyObserver = (function () {
   function OoPropertyObserver(owner, obj, propertyName) {
     this.owner = owner;
     this.obj = obj;
@@ -203,7 +186,6 @@ var OoPropertyObserver = (function () {
         return this.obj[this.propertyName];
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     setValue: {
@@ -215,7 +197,6 @@ var OoPropertyObserver = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     trigger: {
@@ -228,7 +209,6 @@ var OoPropertyObserver = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     subscribe: {
@@ -236,16 +216,13 @@ var OoPropertyObserver = (function () {
         return this.owner.subscribe(this, callback);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
 
   return OoPropertyObserver;
 })();
-
-exports.OoPropertyObserver = OoPropertyObserver;
-var ElementObserver = (function () {
+var ElementObserver = exports.ElementObserver = (function () {
   function ElementObserver(handler, element, propertyName) {
     this.element = element;
     this.propertyName = propertyName;
@@ -260,7 +237,6 @@ var ElementObserver = (function () {
         return this.element[this.propertyName];
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     setValue: {
@@ -269,7 +245,6 @@ var ElementObserver = (function () {
         this.call();
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     call: {
@@ -286,7 +261,6 @@ var ElementObserver = (function () {
         this.oldValue = newValue;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     subscribe: {
@@ -310,12 +284,10 @@ var ElementObserver = (function () {
         };
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
 
   return ElementObserver;
 })();
-
-exports.ElementObserver = ElementObserver;
+exports.__esModule = true;

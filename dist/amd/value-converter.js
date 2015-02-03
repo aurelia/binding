@@ -1,25 +1,9 @@
 define(["exports", "aurelia-metadata"], function (exports, _aureliaMetadata) {
   "use strict";
 
-  var _prototypeProperties = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
+  var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-  var _inherits = function (subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-      throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-    }
-    subClass.prototype = Object.create(superClass && superClass.prototype, {
-      constructor: {
-        value: subClass,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-    if (superClass) subClass.__proto__ = superClass;
-  };
+  var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
   var ResourceType = _aureliaMetadata.ResourceType;
 
@@ -34,7 +18,7 @@ define(["exports", "aurelia-metadata"], function (exports, _aureliaMetadata) {
     return (name.charAt(0).toLowerCase() + name.slice(1)).replace(capitalMatcher, addHyphenAndLower);
   }
 
-  var ValueConverter = (function (ResourceType) {
+  var ValueConverter = exports.ValueConverter = (function (ResourceType) {
     function ValueConverter(name) {
       this.name = name;
     }
@@ -49,7 +33,6 @@ define(["exports", "aurelia-metadata"], function (exports, _aureliaMetadata) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     }, {
@@ -59,7 +42,6 @@ define(["exports", "aurelia-metadata"], function (exports, _aureliaMetadata) {
           return Promise.resolve(this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       register: {
@@ -67,13 +49,11 @@ define(["exports", "aurelia-metadata"], function (exports, _aureliaMetadata) {
           registry.registerValueConverter(name || this.name, this.instance);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return ValueConverter;
   })(ResourceType);
-
-  exports.ValueConverter = ValueConverter;
+  exports.__esModule = true;
 });

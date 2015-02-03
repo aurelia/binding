@@ -1,51 +1,15 @@
 define(["exports", "./path-observer", "./composite-observer"], function (exports, _pathObserver, _compositeObserver) {
   "use strict";
 
-  var _get = function get(object, property, receiver) {
-    var desc = Object.getOwnPropertyDescriptor(object, property);
+  var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-    if (desc === undefined) {
-      var parent = Object.getPrototypeOf(object);
+  var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
-      if (parent === null) {
-        return undefined;
-      } else {
-        return get(parent, property, receiver);
-      }
-    } else if ("value" in desc && desc.writable) {
-      return desc.value;
-    } else {
-      var getter = desc.get;
-      if (getter === undefined) {
-        return undefined;
-      }
-      return getter.call(receiver);
-    }
-  };
-
-  var _inherits = function (subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-      throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-    }
-    subClass.prototype = Object.create(superClass && superClass.prototype, {
-      constructor: {
-        value: subClass,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-    if (superClass) subClass.__proto__ = superClass;
-  };
-
-  var _prototypeProperties = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
+  var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
   var PathObserver = _pathObserver.PathObserver;
   var CompositeObserver = _compositeObserver.CompositeObserver;
-  var Expression = (function () {
+  var Expression = exports.Expression = (function () {
     function Expression() {
       this.isChain = false;
       this.isAssignable = false;
@@ -57,7 +21,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           throw new Error("Cannot evaluate " + this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       assign: {
@@ -65,7 +28,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           throw new Error("Cannot assign to " + this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       toString: {
@@ -73,16 +35,13 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return Unparser.unparse(this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return Expression;
   })();
-
-  exports.Expression = Expression;
-  var Chain = (function (Expression) {
+  var Chain = exports.Chain = (function (Expression) {
     function Chain(expressions) {
       _get(Object.getPrototypeOf(Chain.prototype), "constructor", this).call(this);
 
@@ -112,7 +71,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return result;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       accept: {
@@ -120,16 +78,13 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           visitor.visitChain(this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return Chain;
   })(Expression);
-
-  exports.Chain = Chain;
-  var ValueConverter = (function (Expression) {
+  var ValueConverter = exports.ValueConverter = (function (Expression) {
     function ValueConverter(expression, name, args, allArgs) {
       _get(Object.getPrototypeOf(ValueConverter.prototype), "constructor", this).call(this);
 
@@ -156,7 +111,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return this.allArgs[0].evaluate(scope, valueConverters);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       assign: {
@@ -173,7 +127,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return this.allArgs[0].assign(scope, value, valueConverters);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       accept: {
@@ -181,7 +134,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           visitor.visitValueConverter(this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       connect: {
@@ -215,16 +167,13 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return ValueConverter;
   })(Expression);
-
-  exports.ValueConverter = ValueConverter;
-  var Assign = (function (Expression) {
+  var Assign = exports.Assign = (function (Expression) {
     function Assign(target, value) {
       _get(Object.getPrototypeOf(Assign.prototype), "constructor", this).call(this);
 
@@ -240,7 +189,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return this.target.assign(scope, this.value.evaluate(scope, valueConverters));
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       accept: {
@@ -248,7 +196,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           vistor.visitAssign(this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       connect: {
@@ -256,16 +203,13 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return { value: this.evaluate(scope, binding.valueConverterLookupFunction) };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return Assign;
   })(Expression);
-
-  exports.Assign = Assign;
-  var Conditional = (function (Expression) {
+  var Conditional = exports.Conditional = (function (Expression) {
     function Conditional(condition, yes, no) {
       _get(Object.getPrototypeOf(Conditional.prototype), "constructor", this).call(this);
 
@@ -282,7 +226,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return !!this.condition.evaluate(scope) ? this.yes.evaluate(scope) : this.no.evaluate(scope);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       accept: {
@@ -290,12 +233,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           visitor.visitConditional(this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       connect: {
         value: function connect(binding, scope) {
-          var _this2 = this;
+          var _this = this;
           var conditionInfo = this.condition.connect(binding, scope),
               yesInfo = this.yes.connect(binding, scope),
               noInfo = this.no.connect(binding, scope),
@@ -316,7 +258,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
           if (childObservers.length) {
             observer = new CompositeObserver(childObservers, function () {
-              return _this2.evaluate(scope, binding.valueConverterLookupFunction);
+              return _this.evaluate(scope, binding.valueConverterLookupFunction);
             });
           }
 
@@ -326,16 +268,13 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return Conditional;
   })(Expression);
-
-  exports.Conditional = Conditional;
-  var AccessScope = (function (Expression) {
+  var AccessScope = exports.AccessScope = (function (Expression) {
     function AccessScope(name) {
       _get(Object.getPrototypeOf(AccessScope.prototype), "constructor", this).call(this);
 
@@ -351,7 +290,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return scope[this.name];
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       assign: {
@@ -359,7 +297,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return scope[this.name] = value;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       accept: {
@@ -367,7 +304,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           visitor.visitAccessScope(this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       connect: {
@@ -380,16 +316,13 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return AccessScope;
   })(Expression);
-
-  exports.AccessScope = AccessScope;
-  var AccessMember = (function (Expression) {
+  var AccessMember = exports.AccessMember = (function (Expression) {
     function AccessMember(object, name) {
       _get(Object.getPrototypeOf(AccessMember.prototype), "constructor", this).call(this);
 
@@ -404,17 +337,16 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
       evaluate: {
         value: function evaluate(scope, valueConverters) {
           var instance = this.object.evaluate(scope, valueConverters);
-          return instance === null ? null : instance[this.name];
+          return instance === null || instance === undefined ? instance : instance[this.name];
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       assign: {
         value: function assign(scope, value) {
           var instance = this.object.evaluate(scope);
 
-          if (!instance) {
+          if (instance === null || instance === undefined) {
             instance = {};
             this.object.assign(scope, instance);
           }
@@ -422,7 +354,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return instance[this.name] = value;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       accept: {
@@ -430,12 +361,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           visitor.visitAccessMember(this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       connect: {
         value: function connect(binding, scope) {
-          var _this3 = this;
+          var _this = this;
           var info = this.object.connect(binding, scope),
               objectInstance = info.value,
               objectObserver = info.observer,
@@ -443,11 +373,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
           if (objectObserver) {
             observer = new PathObserver(objectObserver, function (value) {
-              if (value == null) {
-                return null;
+              if (value == null || value == undefined) {
+                return value;
               }
 
-              return binding.getObserver(value, _this3.name);
+              return binding.getObserver(value, _this.name);
             }, objectInstance);
           } else {
             observer = binding.getObserver(objectInstance, this.name);
@@ -459,16 +389,13 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return AccessMember;
   })(Expression);
-
-  exports.AccessMember = AccessMember;
-  var AccessKeyed = (function (Expression) {
+  var AccessKeyed = exports.AccessKeyed = (function (Expression) {
     function AccessKeyed(object, key) {
       _get(Object.getPrototypeOf(AccessKeyed.prototype), "constructor", this).call(this);
 
@@ -487,7 +414,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return getKeyed(instance, lookup);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       assign: {
@@ -497,7 +423,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return setKeyed(instance, lookup, value);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       accept: {
@@ -505,12 +430,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           visitor.visitAccessKeyed(this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       connect: {
         value: function connect(binding, scope) {
-          var _this4 = this;
+          var _this = this;
           var objectInfo = this.object.connect(binding, scope),
               keyInfo = this.key.connect(binding, scope),
               childObservers = [],
@@ -526,7 +450,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
           if (childObservers.length) {
             observer = new CompositeObserver(childObservers, function () {
-              return _this4.evaluate(scope, binding.valueConverterLookupFunction);
+              return _this.evaluate(scope, binding.valueConverterLookupFunction);
             });
           }
 
@@ -536,16 +460,13 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return AccessKeyed;
   })(Expression);
-
-  exports.AccessKeyed = AccessKeyed;
-  var CallScope = (function (Expression) {
+  var CallScope = exports.CallScope = (function (Expression) {
     function CallScope(name, args) {
       _get(Object.getPrototypeOf(CallScope.prototype), "constructor", this).call(this);
 
@@ -562,7 +483,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return ensureFunctionFromMap(scope, this.name).apply(scope, args);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       accept: {
@@ -570,12 +490,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           visitor.visitCallScope(this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       connect: {
         value: function connect(binding, scope) {
-          var _this5 = this;
+          var _this = this;
           var observer,
               childObservers = [],
               i,
@@ -594,7 +513,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
           if (childObservers.length) {
             observer = new CompositeObserver(childObservers, function () {
-              return _this5.evaluate(scope, binding.valueConverterLookupFunction);
+              return _this.evaluate(scope, binding.valueConverterLookupFunction);
             });
           }
 
@@ -604,16 +523,13 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return CallScope;
   })(Expression);
-
-  exports.CallScope = CallScope;
-  var CallMember = (function (Expression) {
+  var CallMember = exports.CallMember = (function (Expression) {
     function CallMember(object, name, args) {
       _get(Object.getPrototypeOf(CallMember.prototype), "constructor", this).call(this);
 
@@ -632,7 +548,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return ensureFunctionFromMap(instance, this.name).apply(instance, args);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       accept: {
@@ -640,12 +555,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           visitor.visitCallMember(this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       connect: {
         value: function connect(binding, scope) {
-          var _this6 = this;
+          var _this = this;
           var observer,
               objectInfo = this.object.connect(binding, scope),
               childObservers = [],
@@ -669,7 +583,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
           if (childObservers.length) {
             observer = new CompositeObserver(childObservers, function () {
-              return _this6.evaluate(scope, binding.valueConverterLookupFunction);
+              return _this.evaluate(scope, binding.valueConverterLookupFunction);
             });
           }
 
@@ -679,16 +593,13 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return CallMember;
   })(Expression);
-
-  exports.CallMember = CallMember;
-  var CallFunction = (function (Expression) {
+  var CallFunction = exports.CallFunction = (function (Expression) {
     function CallFunction(func, args) {
       _get(Object.getPrototypeOf(CallFunction.prototype), "constructor", this).call(this);
 
@@ -710,7 +621,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       accept: {
@@ -718,12 +628,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           visitor.visitCallFunction(this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       connect: {
         value: function connect(binding, scope) {
-          var _this7 = this;
+          var _this = this;
           var observer,
               funcInfo = this.func.connect(binding, scope),
               childObservers = [],
@@ -747,7 +656,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
           if (childObservers.length) {
             observer = new CompositeObserver(childObservers, function () {
-              return _this7.evaluate(scope, binding.valueConverterLookupFunction);
+              return _this.evaluate(scope, binding.valueConverterLookupFunction);
             });
           }
 
@@ -757,16 +666,13 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return CallFunction;
   })(Expression);
-
-  exports.CallFunction = CallFunction;
-  var Binary = (function (Expression) {
+  var Binary = exports.Binary = (function (Expression) {
     function Binary(operation, left, right) {
       _get(Object.getPrototypeOf(Binary.prototype), "constructor", this).call(this);
 
@@ -790,6 +696,17 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           }
 
           var right = this.right.evaluate(scope);
+
+          switch (this.operation) {
+            case "==":
+              return left == right;
+            case "===":
+              return left === right;
+            case "!=":
+              return left != right;
+            case "!==":
+              return left !== right;
+          }
 
           if (left === null || right === null) {
             switch (this.operation) {
@@ -817,14 +734,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
               return left / right;
             case "%":
               return left % right;
-            case "==":
-              return left == right;
-            case "===":
-              return left === right;
-            case "!=":
-              return left != right;
-            case "!==":
-              return left !== right;
             case "<":
               return left < right;
             case ">":
@@ -842,7 +751,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           throw new Error("Internal error [" + this.operation + "] not handled");
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       accept: {
@@ -850,12 +758,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           visitor.visitBinary(this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       connect: {
         value: function connect(binding, scope) {
-          var _this8 = this;
+          var _this = this;
           var leftInfo = this.left.connect(binding, scope),
               rightInfo = this.right.connect(binding, scope),
               childObservers = [],
@@ -871,7 +778,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
           if (childObservers.length) {
             observer = new CompositeObserver(childObservers, function () {
-              return _this8.evaluate(scope, binding.valueConverterLookupFunction);
+              return _this.evaluate(scope, binding.valueConverterLookupFunction);
             });
           }
 
@@ -881,16 +788,13 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return Binary;
   })(Expression);
-
-  exports.Binary = Binary;
-  var PrefixNot = (function (Expression) {
+  var PrefixNot = exports.PrefixNot = (function (Expression) {
     function PrefixNot(operation, expression) {
       _get(Object.getPrototypeOf(PrefixNot.prototype), "constructor", this).call(this);
 
@@ -906,7 +810,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return !this.expression.evaluate(scope);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       accept: {
@@ -914,18 +817,17 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           visitor.visitPrefix(this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       connect: {
         value: function connect(binding, scope) {
-          var _this9 = this;
+          var _this = this;
           var info = this.expression.connect(binding, scope),
               observer;
 
           if (info.observer) {
             observer = new CompositeObserver([info.observer], function () {
-              return _this9.evaluate(scope, binding.valueConverterLookupFunction);
+              return _this.evaluate(scope, binding.valueConverterLookupFunction);
             });
           }
 
@@ -935,16 +837,13 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return PrefixNot;
   })(Expression);
-
-  exports.PrefixNot = PrefixNot;
-  var LiteralPrimitive = (function (Expression) {
+  var LiteralPrimitive = exports.LiteralPrimitive = (function (Expression) {
     function LiteralPrimitive(value) {
       _get(Object.getPrototypeOf(LiteralPrimitive.prototype), "constructor", this).call(this);
 
@@ -959,7 +858,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return this.value;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       accept: {
@@ -967,7 +865,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           visitor.visitLiteralPrimitive(this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       connect: {
@@ -975,16 +872,13 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return { value: this.value };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return LiteralPrimitive;
   })(Expression);
-
-  exports.LiteralPrimitive = LiteralPrimitive;
-  var LiteralString = (function (Expression) {
+  var LiteralString = exports.LiteralString = (function (Expression) {
     function LiteralString(value) {
       _get(Object.getPrototypeOf(LiteralString.prototype), "constructor", this).call(this);
 
@@ -999,7 +893,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return this.value;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       accept: {
@@ -1007,7 +900,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           visitor.visitLiteralString(this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       connect: {
@@ -1015,16 +907,13 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return { value: this.value };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return LiteralString;
   })(Expression);
-
-  exports.LiteralString = LiteralString;
-  var LiteralArray = (function (Expression) {
+  var LiteralArray = exports.LiteralArray = (function (Expression) {
     function LiteralArray(elements) {
       _get(Object.getPrototypeOf(LiteralArray.prototype), "constructor", this).call(this);
 
@@ -1048,7 +937,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return result;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       accept: {
@@ -1056,12 +944,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           visitor.visitLiteralArray(this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       connect: {
         value: function connect(binding, scope) {
-          var _this10 = this;
+          var _this = this;
           var observer,
               childObservers = [],
               results = [],
@@ -1083,7 +970,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
           if (childObservers.length) {
             observer = new CompositeObserver(childObservers, function () {
-              return _this10.evaluate(scope, binding.valueConverterLookupFunction);
+              return _this.evaluate(scope, binding.valueConverterLookupFunction);
             });
           }
 
@@ -1093,16 +980,13 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return LiteralArray;
   })(Expression);
-
-  exports.LiteralArray = LiteralArray;
-  var LiteralObject = (function (Expression) {
+  var LiteralObject = exports.LiteralObject = (function (Expression) {
     function LiteralObject(keys, values) {
       _get(Object.getPrototypeOf(LiteralObject.prototype), "constructor", this).call(this);
 
@@ -1128,7 +1012,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return instance;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       accept: {
@@ -1136,12 +1019,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           visitor.visitLiteralObject(this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       connect: {
         value: function connect(binding, scope) {
-          var _this11 = this;
+          var _this = this;
           var observer,
               childObservers = [],
               instance = {},
@@ -1163,7 +1045,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
           if (childObservers.length) {
             observer = new CompositeObserver(childObservers, function () {
-              return _this11.evaluate(scope, binding.valueConverterLookupFunction);
+              return _this.evaluate(scope, binding.valueConverterLookupFunction);
             });
           }
 
@@ -1173,16 +1055,13 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return LiteralObject;
   })(Expression);
-
-  exports.LiteralObject = LiteralObject;
-  var Unparser = (function () {
+  var Unparser = exports.Unparser = (function () {
     function Unparser(buffer) {
       this.buffer = buffer;
     }
@@ -1198,7 +1077,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           return buffer.join("");
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     }, {
@@ -1207,7 +1085,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           this.buffer.push(text);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       writeArgs: {
@@ -1227,7 +1104,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           this.write(")");
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       visitChain: {
@@ -1245,7 +1121,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       visitValueConverter: {
@@ -1266,7 +1141,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           this.write(")");
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       visitAssign: {
@@ -1276,7 +1150,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           assign.value.accept(this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       visitConditional: {
@@ -1288,7 +1161,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           conditional.no.accept(this);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       visitAccessScope: {
@@ -1296,7 +1168,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           this.write(access.name);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       visitAccessMember: {
@@ -1305,7 +1176,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           this.write("." + access.name);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       visitAccessKeyed: {
@@ -1316,7 +1186,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           this.write("]");
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       visitCallScope: {
@@ -1325,7 +1194,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           this.writeArgs(call.args);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       visitCallFunction: {
@@ -1334,7 +1202,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           this.writeArgs(call.args);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       visitCallMember: {
@@ -1344,7 +1211,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           this.writeArgs(call.args);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       visitPrefix: {
@@ -1354,7 +1220,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           this.write(")");
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       visitBinary: {
@@ -1366,7 +1231,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           this.write(")");
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       visitLiteralPrimitive: {
@@ -1374,7 +1238,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           this.write("" + literal.value);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       visitLiteralArray: {
@@ -1396,7 +1259,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           this.write("]");
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       visitLiteralObject: {
@@ -1420,7 +1282,6 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           this.write("}");
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       visitLiteralString: {
@@ -1429,15 +1290,12 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           this.write("'" + escaped + "'");
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return Unparser;
   })();
-
-  exports.Unparser = Unparser;
 
 
   var evalListCache = [[], [0], [0, 0], [0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0]];
@@ -1525,4 +1383,5 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
     return value;
   }
+  exports.__esModule = true;
 });

@@ -1,11 +1,8 @@
 "use strict";
 
-var _prototypeProperties = function (child, staticProps, instanceProps) {
-  if (staticProps) Object.defineProperties(child, staticProps);
-  if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-};
+var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-var PathObserver = (function () {
+var PathObserver = exports.PathObserver = (function () {
   function PathObserver(leftObserver, getRightObserver, value) {
     var _this = this;
     this.leftObserver = leftObserver;
@@ -21,7 +18,7 @@ var PathObserver = (function () {
   _prototypeProperties(PathObserver, null, {
     updateRight: {
       value: function updateRight(observer) {
-        var _this2 = this;
+        var _this = this;
         this.rightObserver = observer;
 
         if (this.disposeRight) {
@@ -33,12 +30,11 @@ var PathObserver = (function () {
         }
 
         this.disposeRight = observer.subscribe(function (newValue) {
-          return _this2.notify(newValue);
+          return _this.notify(newValue);
         });
         return observer.getValue();
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     subscribe: {
@@ -50,7 +46,6 @@ var PathObserver = (function () {
         };
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     notify: {
@@ -62,7 +57,6 @@ var PathObserver = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     dispose: {
@@ -76,12 +70,10 @@ var PathObserver = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
 
   return PathObserver;
 })();
-
-exports.PathObserver = PathObserver;
+exports.__esModule = true;

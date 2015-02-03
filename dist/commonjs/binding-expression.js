@@ -1,13 +1,12 @@
 "use strict";
 
-var _prototypeProperties = function (child, staticProps, instanceProps) {
-  if (staticProps) Object.defineProperties(child, staticProps);
-  if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-};
+var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-var ONE_WAY = require("./binding-modes").ONE_WAY;
-var TWO_WAY = require("./binding-modes").TWO_WAY;
-var BindingExpression = (function () {
+var _bindingModes = require("./binding-modes");
+
+var ONE_WAY = _bindingModes.ONE_WAY;
+var TWO_WAY = _bindingModes.TWO_WAY;
+var BindingExpression = exports.BindingExpression = (function () {
   function BindingExpression(observerLocator, targetProperty, sourceExpression, mode, valueConverterLookupFunction, attribute) {
     this.observerLocator = observerLocator;
     this.targetProperty = targetProperty;
@@ -24,15 +23,12 @@ var BindingExpression = (function () {
         return new Binding(this.observerLocator, this.sourceExpression, target, this.targetProperty, this.mode, this.valueConverterLookupFunction);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
 
   return BindingExpression;
 })();
-
-exports.BindingExpression = BindingExpression;
 var Binding = (function () {
   function Binding(observerLocator, sourceExpression, target, targetProperty, mode, valueConverterLookupFunction) {
     this.observerLocator = observerLocator;
@@ -48,7 +44,6 @@ var Binding = (function () {
         return this.observerLocator.getObserver(obj, propertyName);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     bind: {
@@ -97,7 +92,6 @@ var Binding = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     unbind: {
@@ -113,10 +107,11 @@ var Binding = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
 
   return Binding;
 })();
+
+exports.__esModule = true;

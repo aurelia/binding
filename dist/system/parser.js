@@ -27,13 +27,10 @@ System.register(["./lexer", "./ast"], function (_export) {
       LiteralString = _ast.LiteralString;
     }],
     execute: function () {
-      _prototypeProperties = function (child, staticProps, instanceProps) {
-        if (staticProps) Object.defineProperties(child, staticProps);
-        if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-      };
+      _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
       EOF = new Token(-1, null);
-      Parser = (function () {
+      Parser = _export("Parser", (function () {
         function Parser() {
           this.cache = {};
           this.lexer = new Lexer();
@@ -47,16 +44,13 @@ System.register(["./lexer", "./ast"], function (_export) {
               return this.cache[input] || (this.cache[input] = new ParserImplementation(this.lexer, input).parseChain());
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return Parser;
-      })();
-      _export("Parser", Parser);
-
-      ParserImplementation = (function () {
+      })());
+      ParserImplementation = _export("ParserImplementation", (function () {
         function ParserImplementation(lexer, input) {
           this.index = 0;
           this.input = input;
@@ -68,7 +62,6 @@ System.register(["./lexer", "./ast"], function (_export) {
             get: function () {
               return this.index < this.tokens.length ? this.tokens[this.index] : EOF;
             },
-            enumerable: true,
             configurable: true
           },
           parseChain: {
@@ -100,7 +93,6 @@ System.register(["./lexer", "./ast"], function (_export) {
               return expressions.length === 1 ? expressions[0] : new Chain(expressions);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           parseValueConverter: {
@@ -123,7 +115,6 @@ System.register(["./lexer", "./ast"], function (_export) {
               return result;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           parseExpression: {
@@ -146,7 +137,6 @@ System.register(["./lexer", "./ast"], function (_export) {
               return result;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           parseConditional: {
@@ -171,7 +161,6 @@ System.register(["./lexer", "./ast"], function (_export) {
               return result;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           parseLogicalOr: {
@@ -185,7 +174,6 @@ System.register(["./lexer", "./ast"], function (_export) {
               return result;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           parseLogicalAnd: {
@@ -199,7 +187,6 @@ System.register(["./lexer", "./ast"], function (_export) {
               return result;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           parseEquality: {
@@ -221,7 +208,6 @@ System.register(["./lexer", "./ast"], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           parseRelational: {
@@ -243,7 +229,6 @@ System.register(["./lexer", "./ast"], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           parseAdditive: {
@@ -261,7 +246,6 @@ System.register(["./lexer", "./ast"], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           parseMultiplicative: {
@@ -281,7 +265,6 @@ System.register(["./lexer", "./ast"], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           parsePrefix: {
@@ -297,7 +280,6 @@ System.register(["./lexer", "./ast"], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           parseAccessOrCallMember: {
@@ -331,7 +313,6 @@ System.register(["./lexer", "./ast"], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           parsePrimary: {
@@ -365,7 +346,6 @@ System.register(["./lexer", "./ast"], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           parseAccessOrCallScope: {
@@ -383,7 +363,6 @@ System.register(["./lexer", "./ast"], function (_export) {
               return new CallScope(name, args);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           parseObject: {
@@ -410,7 +389,6 @@ System.register(["./lexer", "./ast"], function (_export) {
               return new LiteralObject(keys, values);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           parseExpressionList: {
@@ -426,7 +404,6 @@ System.register(["./lexer", "./ast"], function (_export) {
               return result;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           optional: {
@@ -439,7 +416,6 @@ System.register(["./lexer", "./ast"], function (_export) {
               return false;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           expect: {
@@ -451,7 +427,6 @@ System.register(["./lexer", "./ast"], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           advance: {
@@ -459,7 +434,6 @@ System.register(["./lexer", "./ast"], function (_export) {
               this.index++;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           error: {
@@ -469,14 +443,12 @@ System.register(["./lexer", "./ast"], function (_export) {
               throw new Error("Parser Error: " + message + " " + location + " [" + this.input + "]");
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return ParserImplementation;
-      })();
-      _export("ParserImplementation", ParserImplementation);
+      })());
     }
   };
 });

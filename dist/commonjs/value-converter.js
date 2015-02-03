@@ -1,24 +1,8 @@
 "use strict";
 
-var _prototypeProperties = function (child, staticProps, instanceProps) {
-  if (staticProps) Object.defineProperties(child, staticProps);
-  if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-};
+var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-var _inherits = function (subClass, superClass) {
-  if (typeof superClass !== "function" && superClass !== null) {
-    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-  }
-  subClass.prototype = Object.create(superClass && superClass.prototype, {
-    constructor: {
-      value: subClass,
-      enumerable: false,
-      writable: true,
-      configurable: true
-    }
-  });
-  if (superClass) subClass.__proto__ = superClass;
-};
+var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
 var ResourceType = require("aurelia-metadata").ResourceType;
 
@@ -33,7 +17,7 @@ function hyphenate(name) {
   return (name.charAt(0).toLowerCase() + name.slice(1)).replace(capitalMatcher, addHyphenAndLower);
 }
 
-var ValueConverter = (function (ResourceType) {
+var ValueConverter = exports.ValueConverter = (function (ResourceType) {
   function ValueConverter(name) {
     this.name = name;
   }
@@ -48,7 +32,6 @@ var ValueConverter = (function (ResourceType) {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   }, {
@@ -58,7 +41,6 @@ var ValueConverter = (function (ResourceType) {
         return Promise.resolve(this);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     register: {
@@ -66,12 +48,10 @@ var ValueConverter = (function (ResourceType) {
         registry.registerValueConverter(name || this.name, this.instance);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
 
   return ValueConverter;
 })(ResourceType);
-
-exports.ValueConverter = ValueConverter;
+exports.__esModule = true;

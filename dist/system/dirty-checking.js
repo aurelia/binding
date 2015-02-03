@@ -5,12 +5,9 @@ System.register([], function (_export) {
   return {
     setters: [],
     execute: function () {
-      _prototypeProperties = function (child, staticProps, instanceProps) {
-        if (staticProps) Object.defineProperties(child, staticProps);
-        if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-      };
+      _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-      DirtyChecker = (function () {
+      DirtyChecker = _export("DirtyChecker", (function () {
         function DirtyChecker() {
           this.tracked = [];
           this.checkDelay = 120;
@@ -28,7 +25,6 @@ System.register([], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           removeProperty: {
@@ -37,7 +33,6 @@ System.register([], function (_export) {
               tracked.splice(tracked.indexOf(property), 1);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           scheduleDirtyCheck: {
@@ -48,7 +43,6 @@ System.register([], function (_export) {
               }, this.checkDelay);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           check: {
@@ -69,16 +63,13 @@ System.register([], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return DirtyChecker;
-      })();
-      _export("DirtyChecker", DirtyChecker);
-
-      DirtyCheckProperty = (function () {
+      })());
+      DirtyCheckProperty = _export("DirtyCheckProperty", (function () {
         function DirtyCheckProperty(dirtyChecker, obj, propertyName) {
           this.dirtyChecker = dirtyChecker;
           this.obj = obj;
@@ -93,7 +84,6 @@ System.register([], function (_export) {
               return this.obj[this.propertyName];
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           setValue: {
@@ -105,7 +95,6 @@ System.register([], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           call: {
@@ -122,7 +111,6 @@ System.register([], function (_export) {
               this.oldValue = newValue;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           isDirty: {
@@ -130,7 +118,6 @@ System.register([], function (_export) {
               return this.oldValue !== this.getValue();
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           beginTracking: {
@@ -140,7 +127,6 @@ System.register([], function (_export) {
               this.dirtyChecker.addProperty(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           endTracking: {
@@ -149,7 +135,6 @@ System.register([], function (_export) {
               this.dirtyChecker.removeProperty(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           subscribe: {
@@ -171,14 +156,12 @@ System.register([], function (_export) {
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return DirtyCheckProperty;
-      })();
-      _export("DirtyCheckProperty", DirtyCheckProperty);
+      })());
     }
   };
 });

@@ -1,35 +1,36 @@
 "use strict";
 
-var _prototypeProperties = function (child, staticProps, instanceProps) {
-  if (staticProps) Object.defineProperties(child, staticProps);
-  if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-};
+var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-var Lexer = require("./lexer").Lexer;
-var Token = require("./lexer").Token;
-var Expression = require("./ast").Expression;
-var ArrayOfExpression = require("./ast").ArrayOfExpression;
-var Chain = require("./ast").Chain;
-var ValueConverter = require("./ast").ValueConverter;
-var Assign = require("./ast").Assign;
-var Conditional = require("./ast").Conditional;
-var AccessScope = require("./ast").AccessScope;
-var AccessMember = require("./ast").AccessMember;
-var AccessKeyed = require("./ast").AccessKeyed;
-var CallScope = require("./ast").CallScope;
-var CallFunction = require("./ast").CallFunction;
-var CallMember = require("./ast").CallMember;
-var PrefixNot = require("./ast").PrefixNot;
-var Binary = require("./ast").Binary;
-var LiteralPrimitive = require("./ast").LiteralPrimitive;
-var LiteralArray = require("./ast").LiteralArray;
-var LiteralObject = require("./ast").LiteralObject;
-var LiteralString = require("./ast").LiteralString;
+var _lexer = require("./lexer");
+
+var Lexer = _lexer.Lexer;
+var Token = _lexer.Token;
+var _ast = require("./ast");
+
+var Expression = _ast.Expression;
+var ArrayOfExpression = _ast.ArrayOfExpression;
+var Chain = _ast.Chain;
+var ValueConverter = _ast.ValueConverter;
+var Assign = _ast.Assign;
+var Conditional = _ast.Conditional;
+var AccessScope = _ast.AccessScope;
+var AccessMember = _ast.AccessMember;
+var AccessKeyed = _ast.AccessKeyed;
+var CallScope = _ast.CallScope;
+var CallFunction = _ast.CallFunction;
+var CallMember = _ast.CallMember;
+var PrefixNot = _ast.PrefixNot;
+var Binary = _ast.Binary;
+var LiteralPrimitive = _ast.LiteralPrimitive;
+var LiteralArray = _ast.LiteralArray;
+var LiteralObject = _ast.LiteralObject;
+var LiteralString = _ast.LiteralString;
 
 
 var EOF = new Token(-1, null);
 
-var Parser = (function () {
+var Parser = exports.Parser = (function () {
   function Parser() {
     this.cache = {};
     this.lexer = new Lexer();
@@ -43,16 +44,13 @@ var Parser = (function () {
         return this.cache[input] || (this.cache[input] = new ParserImplementation(this.lexer, input).parseChain());
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
 
   return Parser;
 })();
-
-exports.Parser = Parser;
-var ParserImplementation = (function () {
+var ParserImplementation = exports.ParserImplementation = (function () {
   function ParserImplementation(lexer, input) {
     this.index = 0;
     this.input = input;
@@ -64,7 +62,6 @@ var ParserImplementation = (function () {
       get: function () {
         return this.index < this.tokens.length ? this.tokens[this.index] : EOF;
       },
-      enumerable: true,
       configurable: true
     },
     parseChain: {
@@ -96,7 +93,6 @@ var ParserImplementation = (function () {
         return expressions.length === 1 ? expressions[0] : new Chain(expressions);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     parseValueConverter: {
@@ -119,7 +115,6 @@ var ParserImplementation = (function () {
         return result;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     parseExpression: {
@@ -142,7 +137,6 @@ var ParserImplementation = (function () {
         return result;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     parseConditional: {
@@ -167,7 +161,6 @@ var ParserImplementation = (function () {
         return result;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     parseLogicalOr: {
@@ -181,7 +174,6 @@ var ParserImplementation = (function () {
         return result;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     parseLogicalAnd: {
@@ -195,7 +187,6 @@ var ParserImplementation = (function () {
         return result;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     parseEquality: {
@@ -217,7 +208,6 @@ var ParserImplementation = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     parseRelational: {
@@ -239,7 +229,6 @@ var ParserImplementation = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     parseAdditive: {
@@ -257,7 +246,6 @@ var ParserImplementation = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     parseMultiplicative: {
@@ -277,7 +265,6 @@ var ParserImplementation = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     parsePrefix: {
@@ -293,7 +280,6 @@ var ParserImplementation = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     parseAccessOrCallMember: {
@@ -327,7 +313,6 @@ var ParserImplementation = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     parsePrimary: {
@@ -361,7 +346,6 @@ var ParserImplementation = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     parseAccessOrCallScope: {
@@ -379,7 +363,6 @@ var ParserImplementation = (function () {
         return new CallScope(name, args);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     parseObject: {
@@ -406,7 +389,6 @@ var ParserImplementation = (function () {
         return new LiteralObject(keys, values);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     parseExpressionList: {
@@ -422,7 +404,6 @@ var ParserImplementation = (function () {
         return result;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     optional: {
@@ -435,7 +416,6 @@ var ParserImplementation = (function () {
         return false;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     expect: {
@@ -447,7 +427,6 @@ var ParserImplementation = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     advance: {
@@ -455,7 +434,6 @@ var ParserImplementation = (function () {
         this.index++;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     error: {
@@ -465,12 +443,10 @@ var ParserImplementation = (function () {
         throw new Error("Parser Error: " + message + " " + location + " [" + this.input + "]");
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
 
   return ParserImplementation;
 })();
-
-exports.ParserImplementation = ParserImplementation;
+exports.__esModule = true;

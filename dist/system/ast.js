@@ -92,49 +92,13 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
       CompositeObserver = _compositeObserver.CompositeObserver;
     }],
     execute: function () {
-      _get = function get(object, property, receiver) {
-        var desc = Object.getOwnPropertyDescriptor(object, property);
+      _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-        if (desc === undefined) {
-          var parent = Object.getPrototypeOf(object);
+      _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
-          if (parent === null) {
-            return undefined;
-          } else {
-            return get(parent, property, receiver);
-          }
-        } else if ("value" in desc && desc.writable) {
-          return desc.value;
-        } else {
-          var getter = desc.get;
-          if (getter === undefined) {
-            return undefined;
-          }
-          return getter.call(receiver);
-        }
-      };
+      _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-      _inherits = function (subClass, superClass) {
-        if (typeof superClass !== "function" && superClass !== null) {
-          throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-        }
-        subClass.prototype = Object.create(superClass && superClass.prototype, {
-          constructor: {
-            value: subClass,
-            enumerable: false,
-            writable: true,
-            configurable: true
-          }
-        });
-        if (superClass) subClass.__proto__ = superClass;
-      };
-
-      _prototypeProperties = function (child, staticProps, instanceProps) {
-        if (staticProps) Object.defineProperties(child, staticProps);
-        if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-      };
-
-      Expression = (function () {
+      Expression = _export("Expression", (function () {
         function Expression() {
           this.isChain = false;
           this.isAssignable = false;
@@ -146,7 +110,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               throw new Error("Cannot evaluate " + this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           assign: {
@@ -154,7 +117,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               throw new Error("Cannot assign to " + this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           toString: {
@@ -162,16 +124,13 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return Unparser.unparse(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return Expression;
-      })();
-      _export("Expression", Expression);
-
-      Chain = (function (Expression) {
+      })());
+      Chain = _export("Chain", (function (Expression) {
         function Chain(expressions) {
           _get(Object.getPrototypeOf(Chain.prototype), "constructor", this).call(this);
 
@@ -201,7 +160,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return result;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           accept: {
@@ -209,16 +167,13 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               visitor.visitChain(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return Chain;
-      })(Expression);
-      _export("Chain", Chain);
-
-      ValueConverter = (function (Expression) {
+      })(Expression));
+      ValueConverter = _export("ValueConverter", (function (Expression) {
         function ValueConverter(expression, name, args, allArgs) {
           _get(Object.getPrototypeOf(ValueConverter.prototype), "constructor", this).call(this);
 
@@ -245,7 +200,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return this.allArgs[0].evaluate(scope, valueConverters);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           assign: {
@@ -262,7 +216,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return this.allArgs[0].assign(scope, value, valueConverters);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           accept: {
@@ -270,7 +223,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               visitor.visitValueConverter(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           connect: {
@@ -304,16 +256,13 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return ValueConverter;
-      })(Expression);
-      _export("ValueConverter", ValueConverter);
-
-      Assign = (function (Expression) {
+      })(Expression));
+      Assign = _export("Assign", (function (Expression) {
         function Assign(target, value) {
           _get(Object.getPrototypeOf(Assign.prototype), "constructor", this).call(this);
 
@@ -329,7 +278,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return this.target.assign(scope, this.value.evaluate(scope, valueConverters));
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           accept: {
@@ -337,7 +285,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               vistor.visitAssign(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           connect: {
@@ -345,16 +292,13 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return { value: this.evaluate(scope, binding.valueConverterLookupFunction) };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return Assign;
-      })(Expression);
-      _export("Assign", Assign);
-
-      Conditional = (function (Expression) {
+      })(Expression));
+      Conditional = _export("Conditional", (function (Expression) {
         function Conditional(condition, yes, no) {
           _get(Object.getPrototypeOf(Conditional.prototype), "constructor", this).call(this);
 
@@ -371,7 +315,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return !!this.condition.evaluate(scope) ? this.yes.evaluate(scope) : this.no.evaluate(scope);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           accept: {
@@ -379,12 +322,11 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               visitor.visitConditional(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           connect: {
             value: function connect(binding, scope) {
-              var _this2 = this;
+              var _this = this;
               var conditionInfo = this.condition.connect(binding, scope),
                   yesInfo = this.yes.connect(binding, scope),
                   noInfo = this.no.connect(binding, scope),
@@ -405,7 +347,7 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
 
               if (childObservers.length) {
                 observer = new CompositeObserver(childObservers, function () {
-                  return _this2.evaluate(scope, binding.valueConverterLookupFunction);
+                  return _this.evaluate(scope, binding.valueConverterLookupFunction);
                 });
               }
 
@@ -415,16 +357,13 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return Conditional;
-      })(Expression);
-      _export("Conditional", Conditional);
-
-      AccessScope = (function (Expression) {
+      })(Expression));
+      AccessScope = _export("AccessScope", (function (Expression) {
         function AccessScope(name) {
           _get(Object.getPrototypeOf(AccessScope.prototype), "constructor", this).call(this);
 
@@ -440,7 +379,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return scope[this.name];
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           assign: {
@@ -448,7 +386,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return scope[this.name] = value;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           accept: {
@@ -456,7 +393,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               visitor.visitAccessScope(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           connect: {
@@ -469,16 +405,13 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return AccessScope;
-      })(Expression);
-      _export("AccessScope", AccessScope);
-
-      AccessMember = (function (Expression) {
+      })(Expression));
+      AccessMember = _export("AccessMember", (function (Expression) {
         function AccessMember(object, name) {
           _get(Object.getPrototypeOf(AccessMember.prototype), "constructor", this).call(this);
 
@@ -493,17 +426,16 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
           evaluate: {
             value: function evaluate(scope, valueConverters) {
               var instance = this.object.evaluate(scope, valueConverters);
-              return instance === null ? null : instance[this.name];
+              return instance === null || instance === undefined ? instance : instance[this.name];
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           assign: {
             value: function assign(scope, value) {
               var instance = this.object.evaluate(scope);
 
-              if (!instance) {
+              if (instance === null || instance === undefined) {
                 instance = {};
                 this.object.assign(scope, instance);
               }
@@ -511,7 +443,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return instance[this.name] = value;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           accept: {
@@ -519,12 +450,11 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               visitor.visitAccessMember(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           connect: {
             value: function connect(binding, scope) {
-              var _this3 = this;
+              var _this = this;
               var info = this.object.connect(binding, scope),
                   objectInstance = info.value,
                   objectObserver = info.observer,
@@ -532,11 +462,11 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
 
               if (objectObserver) {
                 observer = new PathObserver(objectObserver, function (value) {
-                  if (value == null) {
-                    return null;
+                  if (value == null || value == undefined) {
+                    return value;
                   }
 
-                  return binding.getObserver(value, _this3.name);
+                  return binding.getObserver(value, _this.name);
                 }, objectInstance);
               } else {
                 observer = binding.getObserver(objectInstance, this.name);
@@ -548,16 +478,13 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return AccessMember;
-      })(Expression);
-      _export("AccessMember", AccessMember);
-
-      AccessKeyed = (function (Expression) {
+      })(Expression));
+      AccessKeyed = _export("AccessKeyed", (function (Expression) {
         function AccessKeyed(object, key) {
           _get(Object.getPrototypeOf(AccessKeyed.prototype), "constructor", this).call(this);
 
@@ -576,7 +503,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return getKeyed(instance, lookup);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           assign: {
@@ -586,7 +512,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return setKeyed(instance, lookup, value);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           accept: {
@@ -594,12 +519,11 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               visitor.visitAccessKeyed(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           connect: {
             value: function connect(binding, scope) {
-              var _this4 = this;
+              var _this = this;
               var objectInfo = this.object.connect(binding, scope),
                   keyInfo = this.key.connect(binding, scope),
                   childObservers = [],
@@ -615,7 +539,7 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
 
               if (childObservers.length) {
                 observer = new CompositeObserver(childObservers, function () {
-                  return _this4.evaluate(scope, binding.valueConverterLookupFunction);
+                  return _this.evaluate(scope, binding.valueConverterLookupFunction);
                 });
               }
 
@@ -625,16 +549,13 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return AccessKeyed;
-      })(Expression);
-      _export("AccessKeyed", AccessKeyed);
-
-      CallScope = (function (Expression) {
+      })(Expression));
+      CallScope = _export("CallScope", (function (Expression) {
         function CallScope(name, args) {
           _get(Object.getPrototypeOf(CallScope.prototype), "constructor", this).call(this);
 
@@ -651,7 +572,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return ensureFunctionFromMap(scope, this.name).apply(scope, args);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           accept: {
@@ -659,12 +579,11 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               visitor.visitCallScope(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           connect: {
             value: function connect(binding, scope) {
-              var _this5 = this;
+              var _this = this;
               var observer,
                   childObservers = [],
                   i,
@@ -683,7 +602,7 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
 
               if (childObservers.length) {
                 observer = new CompositeObserver(childObservers, function () {
-                  return _this5.evaluate(scope, binding.valueConverterLookupFunction);
+                  return _this.evaluate(scope, binding.valueConverterLookupFunction);
                 });
               }
 
@@ -693,16 +612,13 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return CallScope;
-      })(Expression);
-      _export("CallScope", CallScope);
-
-      CallMember = (function (Expression) {
+      })(Expression));
+      CallMember = _export("CallMember", (function (Expression) {
         function CallMember(object, name, args) {
           _get(Object.getPrototypeOf(CallMember.prototype), "constructor", this).call(this);
 
@@ -721,7 +637,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return ensureFunctionFromMap(instance, this.name).apply(instance, args);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           accept: {
@@ -729,12 +644,11 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               visitor.visitCallMember(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           connect: {
             value: function connect(binding, scope) {
-              var _this6 = this;
+              var _this = this;
               var observer,
                   objectInfo = this.object.connect(binding, scope),
                   childObservers = [],
@@ -758,7 +672,7 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
 
               if (childObservers.length) {
                 observer = new CompositeObserver(childObservers, function () {
-                  return _this6.evaluate(scope, binding.valueConverterLookupFunction);
+                  return _this.evaluate(scope, binding.valueConverterLookupFunction);
                 });
               }
 
@@ -768,16 +682,13 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return CallMember;
-      })(Expression);
-      _export("CallMember", CallMember);
-
-      CallFunction = (function (Expression) {
+      })(Expression));
+      CallFunction = _export("CallFunction", (function (Expression) {
         function CallFunction(func, args) {
           _get(Object.getPrototypeOf(CallFunction.prototype), "constructor", this).call(this);
 
@@ -799,7 +710,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           accept: {
@@ -807,12 +717,11 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               visitor.visitCallFunction(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           connect: {
             value: function connect(binding, scope) {
-              var _this7 = this;
+              var _this = this;
               var observer,
                   funcInfo = this.func.connect(binding, scope),
                   childObservers = [],
@@ -836,7 +745,7 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
 
               if (childObservers.length) {
                 observer = new CompositeObserver(childObservers, function () {
-                  return _this7.evaluate(scope, binding.valueConverterLookupFunction);
+                  return _this.evaluate(scope, binding.valueConverterLookupFunction);
                 });
               }
 
@@ -846,16 +755,13 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return CallFunction;
-      })(Expression);
-      _export("CallFunction", CallFunction);
-
-      Binary = (function (Expression) {
+      })(Expression));
+      Binary = _export("Binary", (function (Expression) {
         function Binary(operation, left, right) {
           _get(Object.getPrototypeOf(Binary.prototype), "constructor", this).call(this);
 
@@ -879,6 +785,17 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               }
 
               var right = this.right.evaluate(scope);
+
+              switch (this.operation) {
+                case "==":
+                  return left == right;
+                case "===":
+                  return left === right;
+                case "!=":
+                  return left != right;
+                case "!==":
+                  return left !== right;
+              }
 
               if (left === null || right === null) {
                 switch (this.operation) {
@@ -906,14 +823,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
                   return left / right;
                 case "%":
                   return left % right;
-                case "==":
-                  return left == right;
-                case "===":
-                  return left === right;
-                case "!=":
-                  return left != right;
-                case "!==":
-                  return left !== right;
                 case "<":
                   return left < right;
                 case ">":
@@ -931,7 +840,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               throw new Error("Internal error [" + this.operation + "] not handled");
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           accept: {
@@ -939,12 +847,11 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               visitor.visitBinary(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           connect: {
             value: function connect(binding, scope) {
-              var _this8 = this;
+              var _this = this;
               var leftInfo = this.left.connect(binding, scope),
                   rightInfo = this.right.connect(binding, scope),
                   childObservers = [],
@@ -960,7 +867,7 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
 
               if (childObservers.length) {
                 observer = new CompositeObserver(childObservers, function () {
-                  return _this8.evaluate(scope, binding.valueConverterLookupFunction);
+                  return _this.evaluate(scope, binding.valueConverterLookupFunction);
                 });
               }
 
@@ -970,16 +877,13 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return Binary;
-      })(Expression);
-      _export("Binary", Binary);
-
-      PrefixNot = (function (Expression) {
+      })(Expression));
+      PrefixNot = _export("PrefixNot", (function (Expression) {
         function PrefixNot(operation, expression) {
           _get(Object.getPrototypeOf(PrefixNot.prototype), "constructor", this).call(this);
 
@@ -995,7 +899,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return !this.expression.evaluate(scope);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           accept: {
@@ -1003,18 +906,17 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               visitor.visitPrefix(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           connect: {
             value: function connect(binding, scope) {
-              var _this9 = this;
+              var _this = this;
               var info = this.expression.connect(binding, scope),
                   observer;
 
               if (info.observer) {
                 observer = new CompositeObserver([info.observer], function () {
-                  return _this9.evaluate(scope, binding.valueConverterLookupFunction);
+                  return _this.evaluate(scope, binding.valueConverterLookupFunction);
                 });
               }
 
@@ -1024,16 +926,13 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return PrefixNot;
-      })(Expression);
-      _export("PrefixNot", PrefixNot);
-
-      LiteralPrimitive = (function (Expression) {
+      })(Expression));
+      LiteralPrimitive = _export("LiteralPrimitive", (function (Expression) {
         function LiteralPrimitive(value) {
           _get(Object.getPrototypeOf(LiteralPrimitive.prototype), "constructor", this).call(this);
 
@@ -1048,7 +947,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return this.value;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           accept: {
@@ -1056,7 +954,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               visitor.visitLiteralPrimitive(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           connect: {
@@ -1064,16 +961,13 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return { value: this.value };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return LiteralPrimitive;
-      })(Expression);
-      _export("LiteralPrimitive", LiteralPrimitive);
-
-      LiteralString = (function (Expression) {
+      })(Expression));
+      LiteralString = _export("LiteralString", (function (Expression) {
         function LiteralString(value) {
           _get(Object.getPrototypeOf(LiteralString.prototype), "constructor", this).call(this);
 
@@ -1088,7 +982,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return this.value;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           accept: {
@@ -1096,7 +989,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               visitor.visitLiteralString(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           connect: {
@@ -1104,16 +996,13 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return { value: this.value };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return LiteralString;
-      })(Expression);
-      _export("LiteralString", LiteralString);
-
-      LiteralArray = (function (Expression) {
+      })(Expression));
+      LiteralArray = _export("LiteralArray", (function (Expression) {
         function LiteralArray(elements) {
           _get(Object.getPrototypeOf(LiteralArray.prototype), "constructor", this).call(this);
 
@@ -1137,7 +1026,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return result;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           accept: {
@@ -1145,12 +1033,11 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               visitor.visitLiteralArray(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           connect: {
             value: function connect(binding, scope) {
-              var _this10 = this;
+              var _this = this;
               var observer,
                   childObservers = [],
                   results = [],
@@ -1172,7 +1059,7 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
 
               if (childObservers.length) {
                 observer = new CompositeObserver(childObservers, function () {
-                  return _this10.evaluate(scope, binding.valueConverterLookupFunction);
+                  return _this.evaluate(scope, binding.valueConverterLookupFunction);
                 });
               }
 
@@ -1182,16 +1069,13 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return LiteralArray;
-      })(Expression);
-      _export("LiteralArray", LiteralArray);
-
-      LiteralObject = (function (Expression) {
+      })(Expression));
+      LiteralObject = _export("LiteralObject", (function (Expression) {
         function LiteralObject(keys, values) {
           _get(Object.getPrototypeOf(LiteralObject.prototype), "constructor", this).call(this);
 
@@ -1217,7 +1101,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return instance;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           accept: {
@@ -1225,12 +1108,11 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               visitor.visitLiteralObject(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           connect: {
             value: function connect(binding, scope) {
-              var _this11 = this;
+              var _this = this;
               var observer,
                   childObservers = [],
                   instance = {},
@@ -1252,7 +1134,7 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
 
               if (childObservers.length) {
                 observer = new CompositeObserver(childObservers, function () {
-                  return _this11.evaluate(scope, binding.valueConverterLookupFunction);
+                  return _this.evaluate(scope, binding.valueConverterLookupFunction);
                 });
               }
 
@@ -1262,16 +1144,13 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return LiteralObject;
-      })(Expression);
-      _export("LiteralObject", LiteralObject);
-
-      Unparser = (function () {
+      })(Expression));
+      Unparser = _export("Unparser", (function () {
         function Unparser(buffer) {
           this.buffer = buffer;
         }
@@ -1287,7 +1166,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               return buffer.join("");
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         }, {
@@ -1296,7 +1174,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               this.buffer.push(text);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           writeArgs: {
@@ -1316,7 +1193,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               this.write(")");
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           visitChain: {
@@ -1334,7 +1210,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           visitValueConverter: {
@@ -1355,7 +1230,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               this.write(")");
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           visitAssign: {
@@ -1365,7 +1239,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               assign.value.accept(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           visitConditional: {
@@ -1377,7 +1250,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               conditional.no.accept(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           visitAccessScope: {
@@ -1385,7 +1257,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               this.write(access.name);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           visitAccessMember: {
@@ -1394,7 +1265,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               this.write("." + access.name);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           visitAccessKeyed: {
@@ -1405,7 +1275,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               this.write("]");
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           visitCallScope: {
@@ -1414,7 +1283,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               this.writeArgs(call.args);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           visitCallFunction: {
@@ -1423,7 +1291,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               this.writeArgs(call.args);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           visitCallMember: {
@@ -1433,7 +1300,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               this.writeArgs(call.args);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           visitPrefix: {
@@ -1443,7 +1309,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               this.write(")");
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           visitBinary: {
@@ -1455,7 +1320,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               this.write(")");
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           visitLiteralPrimitive: {
@@ -1463,7 +1327,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               this.write("" + literal.value);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           visitLiteralArray: {
@@ -1485,7 +1348,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               this.write("]");
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           visitLiteralObject: {
@@ -1509,7 +1371,6 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               this.write("}");
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           visitLiteralString: {
@@ -1518,15 +1379,12 @@ System.register(["./path-observer", "./composite-observer"], function (_export) 
               this.write("'" + escaped + "'");
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return Unparser;
-      })();
-      _export("Unparser", Unparser);
-
+      })());
       evalListCache = [[], [0], [0, 0], [0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0]];
     }
   };

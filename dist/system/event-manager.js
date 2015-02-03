@@ -5,10 +5,7 @@ System.register([], function (_export) {
   return {
     setters: [],
     execute: function () {
-      _prototypeProperties = function (child, staticProps, instanceProps) {
-        if (staticProps) Object.defineProperties(child, staticProps);
-        if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-      };
+      _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
       DefaultEventStrategy = (function () {
         function DefaultEventStrategy() {
@@ -26,13 +23,11 @@ System.register([], function (_export) {
               document.addEventListener(eventName, this.handleDelegatedEvent.bind(this), false);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           handleCallbackResult: {
             value: function handleCallbackResult(result) {},
             writable: true,
-            enumerable: true,
             configurable: true
           },
           handleDelegatedEvent: {
@@ -56,7 +51,6 @@ System.register([], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           createDirectEventCallback: {
@@ -67,7 +61,6 @@ System.register([], function (_export) {
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           subscribeToDelegatedEvent: {
@@ -82,7 +75,6 @@ System.register([], function (_export) {
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           subscribeToDirectEvent: {
@@ -95,7 +87,6 @@ System.register([], function (_export) {
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           subscribe: {
@@ -107,14 +98,13 @@ System.register([], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return DefaultEventStrategy;
       })();
-      EventManager = (function () {
+      EventManager = _export("EventManager", (function () {
         function EventManager() {
           this.elementHandlerLookup = {};
           this.eventStrategyLookup = {};
@@ -167,7 +157,6 @@ System.register([], function (_export) {
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           registerElementHandler: {
@@ -175,7 +164,6 @@ System.register([], function (_export) {
               this.elementHandlerLookup[tagName.toLowerCase()] = handler;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           registerEventStrategy: {
@@ -183,7 +171,6 @@ System.register([], function (_export) {
               this.eventStrategyLookup[eventName] = strategy;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           getElementHandler: {
@@ -198,7 +185,6 @@ System.register([], function (_export) {
               return null;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           addEventListener: {
@@ -206,14 +192,12 @@ System.register([], function (_export) {
               return (this.eventStrategyLookup[targetEvent] || this.defaultEventStrategy).subscribe(target, targetEvent, callback, delegate);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return EventManager;
-      })();
-      _export("EventManager", EventManager);
+      })());
     }
   };
 });

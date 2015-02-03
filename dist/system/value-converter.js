@@ -17,28 +17,12 @@ System.register(["aurelia-metadata"], function (_export) {
       ResourceType = _aureliaMetadata.ResourceType;
     }],
     execute: function () {
-      _prototypeProperties = function (child, staticProps, instanceProps) {
-        if (staticProps) Object.defineProperties(child, staticProps);
-        if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-      };
+      _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-      _inherits = function (subClass, superClass) {
-        if (typeof superClass !== "function" && superClass !== null) {
-          throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-        }
-        subClass.prototype = Object.create(superClass && superClass.prototype, {
-          constructor: {
-            value: subClass,
-            enumerable: false,
-            writable: true,
-            configurable: true
-          }
-        });
-        if (superClass) subClass.__proto__ = superClass;
-      };
+      _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
       capitalMatcher = /([A-Z])/g;
-      ValueConverter = (function (ResourceType) {
+      ValueConverter = _export("ValueConverter", (function (ResourceType) {
         function ValueConverter(name) {
           this.name = name;
         }
@@ -53,7 +37,6 @@ System.register(["aurelia-metadata"], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         }, {
@@ -63,7 +46,6 @@ System.register(["aurelia-metadata"], function (_export) {
               return Promise.resolve(this);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           register: {
@@ -71,14 +53,12 @@ System.register(["aurelia-metadata"], function (_export) {
               registry.registerValueConverter(name || this.name, this.instance);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return ValueConverter;
-      })(ResourceType);
-      _export("ValueConverter", ValueConverter);
+      })(ResourceType));
     }
   };
 });

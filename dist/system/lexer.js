@@ -53,12 +53,9 @@ System.register([], function (_export) {
   return {
     setters: [],
     execute: function () {
-      _prototypeProperties = function (child, staticProps, instanceProps) {
-        if (staticProps) Object.defineProperties(child, staticProps);
-        if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-      };
+      _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-      Token = (function () {
+      Token = _export("Token", (function () {
         function Token(index, text) {
           this.index = index;
           this.text = text;
@@ -71,7 +68,6 @@ System.register([], function (_export) {
               return this;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           withGetterSetter: {
@@ -80,7 +76,6 @@ System.register([], function (_export) {
               return this;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           withValue: {
@@ -89,7 +84,6 @@ System.register([], function (_export) {
               return this;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           toString: {
@@ -97,16 +91,13 @@ System.register([], function (_export) {
               return "Token(" + this.text + ")";
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return Token;
-      })();
-      _export("Token", Token);
-
-      Lexer = (function () {
+      })());
+      Lexer = _export("Lexer", (function () {
         function Lexer() {}
 
         _prototypeProperties(Lexer, null, {
@@ -124,16 +115,13 @@ System.register([], function (_export) {
               return tokens;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return Lexer;
-      })();
-      _export("Lexer", Lexer);
-
-      Scanner = (function () {
+      })());
+      Scanner = _export("Scanner", (function () {
         function Scanner(input) {
           this.input = input;
           this.length = input.length;
@@ -212,7 +200,6 @@ System.register([], function (_export) {
               return null;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           scanCharacter: {
@@ -222,7 +209,6 @@ System.register([], function (_export) {
               return new Token(start, text);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           scanOperator: {
@@ -233,7 +219,6 @@ System.register([], function (_export) {
               return new Token(start, text).withOp(text);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           scanComplexOperator: {
@@ -258,7 +243,6 @@ System.register([], function (_export) {
               return new Token(start, text).withOp(text);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           scanIdentifier: {
@@ -284,7 +268,6 @@ System.register([], function (_export) {
               return result;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           scanNumber: {
@@ -320,7 +303,6 @@ System.register([], function (_export) {
               return new Token(start, text).withValue(value);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           scanString: {
@@ -386,7 +368,6 @@ System.register([], function (_export) {
               return new Token(start, text).withValue(unescaped);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           advance: {
@@ -398,7 +379,6 @@ System.register([], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           error: {
@@ -408,15 +388,12 @@ System.register([], function (_export) {
               throw new Error("Lexer Error: " + message + " at column " + position + " in expression [" + this.input + "]");
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return Scanner;
-      })();
-      _export("Scanner", Scanner);
-
+      })());
       OPERATORS = ["undefined", "null", "true", "false", "+", "-", "*", "/", "%", "^", "=", "==", "===", "!=", "!==", "<", ">", "<=", ">=", "&&", "||", "&", "|", "!", "?"];
       $EOF = 0;
       $TAB = 9;

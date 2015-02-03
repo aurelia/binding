@@ -1,11 +1,8 @@
 "use strict";
 
-var _prototypeProperties = function (child, staticProps, instanceProps) {
-  if (staticProps) Object.defineProperties(child, staticProps);
-  if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-};
+var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-var CallExpression = (function () {
+var CallExpression = exports.CallExpression = (function () {
   function CallExpression(observerLocator, targetProperty, sourceExpression, valueConverterLookupFunction) {
     this.observerLocator = observerLocator;
     this.targetProperty = targetProperty;
@@ -19,15 +16,12 @@ var CallExpression = (function () {
         return new Call(this.observerLocator, this.sourceExpression, target, this.targetProperty, this.valueConverterLookupFunction);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
 
   return CallExpression;
 })();
-
-exports.CallExpression = CallExpression;
 var Call = (function () {
   function Call(observerLocator, sourceExpression, target, targetProperty, valueConverterLookupFunction) {
     this.sourceExpression = sourceExpression;
@@ -58,7 +52,6 @@ var Call = (function () {
         });
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     unbind: {
@@ -66,10 +59,11 @@ var Call = (function () {
         this.targetProperty.setValue(null);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
 
   return Call;
 })();
+
+exports.__esModule = true;

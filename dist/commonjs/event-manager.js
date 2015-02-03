@@ -1,9 +1,6 @@
 "use strict";
 
-var _prototypeProperties = function (child, staticProps, instanceProps) {
-  if (staticProps) Object.defineProperties(child, staticProps);
-  if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-};
+var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
 var DefaultEventStrategy = (function () {
   function DefaultEventStrategy() {
@@ -21,13 +18,11 @@ var DefaultEventStrategy = (function () {
         document.addEventListener(eventName, this.handleDelegatedEvent.bind(this), false);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     handleCallbackResult: {
       value: function handleCallbackResult(result) {},
       writable: true,
-      enumerable: true,
       configurable: true
     },
     handleDelegatedEvent: {
@@ -51,7 +46,6 @@ var DefaultEventStrategy = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     createDirectEventCallback: {
@@ -62,7 +56,6 @@ var DefaultEventStrategy = (function () {
         };
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     subscribeToDelegatedEvent: {
@@ -77,7 +70,6 @@ var DefaultEventStrategy = (function () {
         };
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     subscribeToDirectEvent: {
@@ -90,7 +82,6 @@ var DefaultEventStrategy = (function () {
         };
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     subscribe: {
@@ -102,7 +93,6 @@ var DefaultEventStrategy = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
@@ -110,7 +100,7 @@ var DefaultEventStrategy = (function () {
   return DefaultEventStrategy;
 })();
 
-var EventManager = (function () {
+var EventManager = exports.EventManager = (function () {
   function EventManager() {
     this.elementHandlerLookup = {};
     this.eventStrategyLookup = {};
@@ -163,7 +153,6 @@ var EventManager = (function () {
         };
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     registerElementHandler: {
@@ -171,7 +160,6 @@ var EventManager = (function () {
         this.elementHandlerLookup[tagName.toLowerCase()] = handler;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     registerEventStrategy: {
@@ -179,7 +167,6 @@ var EventManager = (function () {
         this.eventStrategyLookup[eventName] = strategy;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     getElementHandler: {
@@ -194,7 +181,6 @@ var EventManager = (function () {
         return null;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     addEventListener: {
@@ -202,12 +188,10 @@ var EventManager = (function () {
         return (this.eventStrategyLookup[targetEvent] || this.defaultEventStrategy).subscribe(target, targetEvent, callback, delegate);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
 
   return EventManager;
 })();
-
-exports.EventManager = EventManager;
+exports.__esModule = true;

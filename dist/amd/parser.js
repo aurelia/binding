@@ -1,10 +1,7 @@
 define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
   "use strict";
 
-  var _prototypeProperties = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
+  var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
   var Lexer = _lexer.Lexer;
   var Token = _lexer.Token;
@@ -30,7 +27,7 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
 
   var EOF = new Token(-1, null);
 
-  var Parser = (function () {
+  var Parser = exports.Parser = (function () {
     function Parser() {
       this.cache = {};
       this.lexer = new Lexer();
@@ -44,16 +41,13 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           return this.cache[input] || (this.cache[input] = new ParserImplementation(this.lexer, input).parseChain());
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return Parser;
   })();
-
-  exports.Parser = Parser;
-  var ParserImplementation = (function () {
+  var ParserImplementation = exports.ParserImplementation = (function () {
     function ParserImplementation(lexer, input) {
       this.index = 0;
       this.input = input;
@@ -65,7 +59,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
         get: function () {
           return this.index < this.tokens.length ? this.tokens[this.index] : EOF;
         },
-        enumerable: true,
         configurable: true
       },
       parseChain: {
@@ -97,7 +90,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           return expressions.length === 1 ? expressions[0] : new Chain(expressions);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       parseValueConverter: {
@@ -120,7 +112,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           return result;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       parseExpression: {
@@ -143,7 +134,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           return result;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       parseConditional: {
@@ -168,7 +158,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           return result;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       parseLogicalOr: {
@@ -182,7 +171,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           return result;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       parseLogicalAnd: {
@@ -196,7 +184,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           return result;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       parseEquality: {
@@ -218,7 +205,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       parseRelational: {
@@ -240,7 +226,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       parseAdditive: {
@@ -258,7 +243,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       parseMultiplicative: {
@@ -278,7 +262,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       parsePrefix: {
@@ -294,7 +277,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       parseAccessOrCallMember: {
@@ -328,7 +310,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       parsePrimary: {
@@ -362,7 +343,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       parseAccessOrCallScope: {
@@ -380,7 +360,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           return new CallScope(name, args);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       parseObject: {
@@ -407,7 +386,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           return new LiteralObject(keys, values);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       parseExpressionList: {
@@ -423,7 +401,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           return result;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       optional: {
@@ -436,7 +413,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           return false;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       expect: {
@@ -448,7 +424,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       advance: {
@@ -456,7 +431,6 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           this.index++;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       error: {
@@ -466,13 +440,11 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
           throw new Error("Parser Error: " + message + " " + location + " [" + this.input + "]");
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return ParserImplementation;
   })();
-
-  exports.ParserImplementation = ParserImplementation;
+  exports.__esModule = true;
 });

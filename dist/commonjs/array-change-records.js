@@ -310,3 +310,4 @@ function projectArraySplices(array, changeRecords) {
 
   return splices;
 }
+exports.__esModule = true;

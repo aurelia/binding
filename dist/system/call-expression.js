@@ -5,12 +5,9 @@ System.register([], function (_export) {
   return {
     setters: [],
     execute: function () {
-      _prototypeProperties = function (child, staticProps, instanceProps) {
-        if (staticProps) Object.defineProperties(child, staticProps);
-        if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-      };
+      _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-      CallExpression = (function () {
+      CallExpression = _export("CallExpression", (function () {
         function CallExpression(observerLocator, targetProperty, sourceExpression, valueConverterLookupFunction) {
           this.observerLocator = observerLocator;
           this.targetProperty = targetProperty;
@@ -24,15 +21,12 @@ System.register([], function (_export) {
               return new Call(this.observerLocator, this.sourceExpression, target, this.targetProperty, this.valueConverterLookupFunction);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return CallExpression;
-      })();
-      _export("CallExpression", CallExpression);
-
+      })());
       Call = (function () {
         function Call(observerLocator, sourceExpression, target, targetProperty, valueConverterLookupFunction) {
           this.sourceExpression = sourceExpression;
@@ -63,7 +57,6 @@ System.register([], function (_export) {
               });
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           unbind: {
@@ -71,7 +64,6 @@ System.register([], function (_export) {
               this.targetProperty.setValue(null);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });

@@ -1,10 +1,7 @@
 define(["exports"], function (exports) {
   "use strict";
 
-  var _prototypeProperties = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
+  var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
   var DefaultEventStrategy = (function () {
     function DefaultEventStrategy() {
@@ -22,13 +19,11 @@ define(["exports"], function (exports) {
           document.addEventListener(eventName, this.handleDelegatedEvent.bind(this), false);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       handleCallbackResult: {
         value: function handleCallbackResult(result) {},
         writable: true,
-        enumerable: true,
         configurable: true
       },
       handleDelegatedEvent: {
@@ -52,7 +47,6 @@ define(["exports"], function (exports) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       createDirectEventCallback: {
@@ -63,7 +57,6 @@ define(["exports"], function (exports) {
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       subscribeToDelegatedEvent: {
@@ -78,7 +71,6 @@ define(["exports"], function (exports) {
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       subscribeToDirectEvent: {
@@ -91,7 +83,6 @@ define(["exports"], function (exports) {
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       subscribe: {
@@ -103,7 +94,6 @@ define(["exports"], function (exports) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
@@ -111,7 +101,7 @@ define(["exports"], function (exports) {
     return DefaultEventStrategy;
   })();
 
-  var EventManager = (function () {
+  var EventManager = exports.EventManager = (function () {
     function EventManager() {
       this.elementHandlerLookup = {};
       this.eventStrategyLookup = {};
@@ -164,7 +154,6 @@ define(["exports"], function (exports) {
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       registerElementHandler: {
@@ -172,7 +161,6 @@ define(["exports"], function (exports) {
           this.elementHandlerLookup[tagName.toLowerCase()] = handler;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       registerEventStrategy: {
@@ -180,7 +168,6 @@ define(["exports"], function (exports) {
           this.eventStrategyLookup[eventName] = strategy;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       getElementHandler: {
@@ -195,7 +182,6 @@ define(["exports"], function (exports) {
           return null;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       addEventListener: {
@@ -203,13 +189,11 @@ define(["exports"], function (exports) {
           return (this.eventStrategyLookup[targetEvent] || this.defaultEventStrategy).subscribe(target, targetEvent, callback, delegate);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return EventManager;
   })();
-
-  exports.EventManager = EventManager;
+  exports.__esModule = true;
 });

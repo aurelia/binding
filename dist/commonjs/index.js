@@ -1,26 +1,16 @@
 "use strict";
 
-var _interopRequireWildcard = function (obj) {
-  return obj && obj.constructor === Object ? obj : {
-    "default": obj
-  };
-};
+var _interopRequireWildcard = function (obj) { return obj && obj.__esModule ? obj : { "default": obj }; };
 
-var _defaults = function (obj, defaults) {
-  for (var key in defaults) {
-    if (obj[key] === undefined) {
-      obj[key] = defaults[key];
-    }
-  }
-
-  return obj;
-};
+var _defaults = function (obj, defaults) { for (var key in defaults) { if (obj[key] === undefined) { obj[key] = defaults[key]; } } return obj; };
 
 var Metadata = require("aurelia-metadata").Metadata;
-var ValueConverter = require("./value-converter").ValueConverter;
+var _valueConverter = require("./value-converter");
+
+var ValueConverter = _valueConverter.ValueConverter;
 exports.EventManager = require("./event-manager").EventManager;
 exports.ObserverLocator = require("./observer-locator").ObserverLocator;
-exports.ValueConverter = require("./value-converter").ValueConverter;
+exports.ValueConverter = _valueConverter.ValueConverter;
 exports.calcSplices = require("./array-change-records").calcSplices;
 _defaults(exports, _interopRequireWildcard(require("./binding-modes")));
 
@@ -33,3 +23,4 @@ exports.DirtyChecker = require("./dirty-checking").DirtyChecker;
 
 
 Metadata.configure.classHelper("valueConverter", ValueConverter);
+exports.__esModule = true;

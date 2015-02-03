@@ -5,12 +5,9 @@ System.register([], function (_export) {
   return {
     setters: [],
     execute: function () {
-      _prototypeProperties = function (child, staticProps, instanceProps) {
-        if (staticProps) Object.defineProperties(child, staticProps);
-        if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-      };
+      _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-      SetterObserver = (function () {
+      SetterObserver = _export("SetterObserver", (function () {
         function SetterObserver(taskQueue, obj, propertyName) {
           this.taskQueue = taskQueue;
           this.obj = obj;
@@ -27,7 +24,6 @@ System.register([], function (_export) {
               return this.obj[this.propertyName];
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           setValue: {
@@ -39,7 +35,6 @@ System.register([], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           getterValue: {
@@ -47,7 +42,6 @@ System.register([], function (_export) {
               return this.currentValue;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           setterValue: {
@@ -65,7 +59,6 @@ System.register([], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           call: {
@@ -82,7 +75,6 @@ System.register([], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           subscribe: {
@@ -99,7 +91,6 @@ System.register([], function (_export) {
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           convertProperty: {
@@ -117,16 +108,13 @@ System.register([], function (_export) {
               });
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return SetterObserver;
-      })();
-      _export("SetterObserver", SetterObserver);
-
-      OoObjectObserver = (function () {
+      })());
+      OoObjectObserver = _export("OoObjectObserver", (function () {
         function OoObjectObserver(obj) {
           this.obj = obj;
           this.observers = {};
@@ -151,7 +139,6 @@ System.register([], function (_export) {
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           getObserver: {
@@ -161,7 +148,6 @@ System.register([], function (_export) {
               return propertyObserver;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           handleChanges: {
@@ -184,16 +170,13 @@ System.register([], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return OoObjectObserver;
-      })();
-      _export("OoObjectObserver", OoObjectObserver);
-
-      OoPropertyObserver = (function () {
+      })());
+      OoPropertyObserver = _export("OoPropertyObserver", (function () {
         function OoPropertyObserver(owner, obj, propertyName) {
           this.owner = owner;
           this.obj = obj;
@@ -208,7 +191,6 @@ System.register([], function (_export) {
               return this.obj[this.propertyName];
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           setValue: {
@@ -220,7 +202,6 @@ System.register([], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           trigger: {
@@ -233,7 +214,6 @@ System.register([], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           subscribe: {
@@ -241,16 +221,13 @@ System.register([], function (_export) {
               return this.owner.subscribe(this, callback);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return OoPropertyObserver;
-      })();
-      _export("OoPropertyObserver", OoPropertyObserver);
-
-      ElementObserver = (function () {
+      })());
+      ElementObserver = _export("ElementObserver", (function () {
         function ElementObserver(handler, element, propertyName) {
           this.element = element;
           this.propertyName = propertyName;
@@ -265,7 +242,6 @@ System.register([], function (_export) {
               return this.element[this.propertyName];
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           setValue: {
@@ -274,7 +250,6 @@ System.register([], function (_export) {
               this.call();
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           call: {
@@ -291,7 +266,6 @@ System.register([], function (_export) {
               this.oldValue = newValue;
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           subscribe: {
@@ -315,14 +289,12 @@ System.register([], function (_export) {
               };
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return ElementObserver;
-      })();
-      _export("ElementObserver", ElementObserver);
+      })());
     }
   };
 });

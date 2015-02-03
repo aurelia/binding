@@ -1,12 +1,9 @@
 define(["exports"], function (exports) {
   "use strict";
 
-  var _prototypeProperties = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
+  var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-  var PathObserver = (function () {
+  var PathObserver = exports.PathObserver = (function () {
     function PathObserver(leftObserver, getRightObserver, value) {
       var _this = this;
       this.leftObserver = leftObserver;
@@ -22,7 +19,7 @@ define(["exports"], function (exports) {
     _prototypeProperties(PathObserver, null, {
       updateRight: {
         value: function updateRight(observer) {
-          var _this2 = this;
+          var _this = this;
           this.rightObserver = observer;
 
           if (this.disposeRight) {
@@ -34,12 +31,11 @@ define(["exports"], function (exports) {
           }
 
           this.disposeRight = observer.subscribe(function (newValue) {
-            return _this2.notify(newValue);
+            return _this.notify(newValue);
           });
           return observer.getValue();
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       subscribe: {
@@ -51,7 +47,6 @@ define(["exports"], function (exports) {
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       notify: {
@@ -63,7 +58,6 @@ define(["exports"], function (exports) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       dispose: {
@@ -77,13 +71,11 @@ define(["exports"], function (exports) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return PathObserver;
   })();
-
-  exports.PathObserver = PathObserver;
+  exports.__esModule = true;
 });

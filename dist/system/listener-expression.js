@@ -5,12 +5,9 @@ System.register([], function (_export) {
   return {
     setters: [],
     execute: function () {
-      _prototypeProperties = function (child, staticProps, instanceProps) {
-        if (staticProps) Object.defineProperties(child, staticProps);
-        if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-      };
+      _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-      ListenerExpression = (function () {
+      ListenerExpression = _export("ListenerExpression", (function () {
         function ListenerExpression(eventManager, targetEvent, sourceExpression, delegate, preventDefault) {
           this.eventManager = eventManager;
           this.targetEvent = targetEvent;
@@ -26,15 +23,12 @@ System.register([], function (_export) {
               return new Listener(this.eventManager, this.targetEvent, this.delegate, this.sourceExpression, target, this.preventDefault);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return ListenerExpression;
-      })();
-      _export("ListenerExpression", ListenerExpression);
-
+      })());
       Listener = (function () {
         function Listener(eventManager, targetEvent, delegate, sourceExpression, target, preventDefault) {
           this.eventManager = eventManager;
@@ -70,7 +64,6 @@ System.register([], function (_export) {
               }, this.delegate);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           unbind: {
@@ -81,7 +74,6 @@ System.register([], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });

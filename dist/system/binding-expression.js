@@ -8,12 +8,9 @@ System.register(["./binding-modes"], function (_export) {
       TWO_WAY = _bindingModes.TWO_WAY;
     }],
     execute: function () {
-      _prototypeProperties = function (child, staticProps, instanceProps) {
-        if (staticProps) Object.defineProperties(child, staticProps);
-        if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-      };
+      _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-      BindingExpression = (function () {
+      BindingExpression = _export("BindingExpression", (function () {
         function BindingExpression(observerLocator, targetProperty, sourceExpression, mode, valueConverterLookupFunction, attribute) {
           this.observerLocator = observerLocator;
           this.targetProperty = targetProperty;
@@ -30,15 +27,12 @@ System.register(["./binding-modes"], function (_export) {
               return new Binding(this.observerLocator, this.sourceExpression, target, this.targetProperty, this.mode, this.valueConverterLookupFunction);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });
 
         return BindingExpression;
-      })();
-      _export("BindingExpression", BindingExpression);
-
+      })());
       Binding = (function () {
         function Binding(observerLocator, sourceExpression, target, targetProperty, mode, valueConverterLookupFunction) {
           this.observerLocator = observerLocator;
@@ -54,7 +48,6 @@ System.register(["./binding-modes"], function (_export) {
               return this.observerLocator.getObserver(obj, propertyName);
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           bind: {
@@ -103,7 +96,6 @@ System.register(["./binding-modes"], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           },
           unbind: {
@@ -119,7 +111,6 @@ System.register(["./binding-modes"], function (_export) {
               }
             },
             writable: true,
-            enumerable: true,
             configurable: true
           }
         });

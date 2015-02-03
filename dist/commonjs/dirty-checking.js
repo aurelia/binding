@@ -1,11 +1,8 @@
 "use strict";
 
-var _prototypeProperties = function (child, staticProps, instanceProps) {
-  if (staticProps) Object.defineProperties(child, staticProps);
-  if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-};
+var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-var DirtyChecker = (function () {
+var DirtyChecker = exports.DirtyChecker = (function () {
   function DirtyChecker() {
     this.tracked = [];
     this.checkDelay = 120;
@@ -23,7 +20,6 @@ var DirtyChecker = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     removeProperty: {
@@ -32,7 +28,6 @@ var DirtyChecker = (function () {
         tracked.splice(tracked.indexOf(property), 1);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     scheduleDirtyCheck: {
@@ -43,7 +38,6 @@ var DirtyChecker = (function () {
         }, this.checkDelay);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     check: {
@@ -64,16 +58,13 @@ var DirtyChecker = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
 
   return DirtyChecker;
 })();
-
-exports.DirtyChecker = DirtyChecker;
-var DirtyCheckProperty = (function () {
+var DirtyCheckProperty = exports.DirtyCheckProperty = (function () {
   function DirtyCheckProperty(dirtyChecker, obj, propertyName) {
     this.dirtyChecker = dirtyChecker;
     this.obj = obj;
@@ -88,7 +79,6 @@ var DirtyCheckProperty = (function () {
         return this.obj[this.propertyName];
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     setValue: {
@@ -100,7 +90,6 @@ var DirtyCheckProperty = (function () {
         }
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     call: {
@@ -117,7 +106,6 @@ var DirtyCheckProperty = (function () {
         this.oldValue = newValue;
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     isDirty: {
@@ -125,7 +113,6 @@ var DirtyCheckProperty = (function () {
         return this.oldValue !== this.getValue();
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     beginTracking: {
@@ -135,7 +122,6 @@ var DirtyCheckProperty = (function () {
         this.dirtyChecker.addProperty(this);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     endTracking: {
@@ -144,7 +130,6 @@ var DirtyCheckProperty = (function () {
         this.dirtyChecker.removeProperty(this);
       },
       writable: true,
-      enumerable: true,
       configurable: true
     },
     subscribe: {
@@ -166,12 +151,10 @@ var DirtyCheckProperty = (function () {
         };
       },
       writable: true,
-      enumerable: true,
       configurable: true
     }
   });
 
   return DirtyCheckProperty;
 })();
-
-exports.DirtyCheckProperty = DirtyCheckProperty;
+exports.__esModule = true;

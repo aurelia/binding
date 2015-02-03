@@ -1,12 +1,9 @@
 define(["exports"], function (exports) {
   "use strict";
 
-  var _prototypeProperties = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
+  var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-  var Token = (function () {
+  var Token = exports.Token = (function () {
     function Token(index, text) {
       this.index = index;
       this.text = text;
@@ -19,7 +16,6 @@ define(["exports"], function (exports) {
           return this;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       withGetterSetter: {
@@ -28,7 +24,6 @@ define(["exports"], function (exports) {
           return this;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       withValue: {
@@ -37,7 +32,6 @@ define(["exports"], function (exports) {
           return this;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       toString: {
@@ -45,16 +39,13 @@ define(["exports"], function (exports) {
           return "Token(" + this.text + ")";
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return Token;
   })();
-
-  exports.Token = Token;
-  var Lexer = (function () {
+  var Lexer = exports.Lexer = (function () {
     function Lexer() {}
 
     _prototypeProperties(Lexer, null, {
@@ -72,16 +63,13 @@ define(["exports"], function (exports) {
           return tokens;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return Lexer;
   })();
-
-  exports.Lexer = Lexer;
-  var Scanner = (function () {
+  var Scanner = exports.Scanner = (function () {
     function Scanner(input) {
       this.input = input;
       this.length = input.length;
@@ -160,7 +148,6 @@ define(["exports"], function (exports) {
           return null;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       scanCharacter: {
@@ -170,7 +157,6 @@ define(["exports"], function (exports) {
           return new Token(start, text);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       scanOperator: {
@@ -181,7 +167,6 @@ define(["exports"], function (exports) {
           return new Token(start, text).withOp(text);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       scanComplexOperator: {
@@ -206,7 +191,6 @@ define(["exports"], function (exports) {
           return new Token(start, text).withOp(text);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       scanIdentifier: {
@@ -232,7 +216,6 @@ define(["exports"], function (exports) {
           return result;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       scanNumber: {
@@ -268,7 +251,6 @@ define(["exports"], function (exports) {
           return new Token(start, text).withValue(value);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       scanString: {
@@ -334,7 +316,6 @@ define(["exports"], function (exports) {
           return new Token(start, text).withValue(unescaped);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       advance: {
@@ -346,7 +327,6 @@ define(["exports"], function (exports) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       error: {
@@ -356,15 +336,12 @@ define(["exports"], function (exports) {
           throw new Error("Lexer Error: " + message + " at column " + position + " in expression [" + this.input + "]");
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return Scanner;
   })();
-
-  exports.Scanner = Scanner;
 
 
   var OPERATORS = ["undefined", "null", "true", "false", "+", "-", "*", "/", "%", "^", "=", "==", "===", "!=", "!==", "<", ">", "<=", ">=", "&&", "||", "&", "|", "!", "?"];
@@ -471,4 +448,5 @@ define(["exports"], function (exports) {
       throw message || "Assertion failed";
     }
   }
+  exports.__esModule = true;
 });

@@ -1,12 +1,9 @@
 define(["exports"], function (exports) {
   "use strict";
 
-  var _prototypeProperties = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
+  var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-  var SetterObserver = (function () {
+  var SetterObserver = exports.SetterObserver = (function () {
     function SetterObserver(taskQueue, obj, propertyName) {
       this.taskQueue = taskQueue;
       this.obj = obj;
@@ -23,7 +20,6 @@ define(["exports"], function (exports) {
           return this.obj[this.propertyName];
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       setValue: {
@@ -35,7 +31,6 @@ define(["exports"], function (exports) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       getterValue: {
@@ -43,7 +38,6 @@ define(["exports"], function (exports) {
           return this.currentValue;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       setterValue: {
@@ -61,7 +55,6 @@ define(["exports"], function (exports) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       call: {
@@ -78,7 +71,6 @@ define(["exports"], function (exports) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       subscribe: {
@@ -95,7 +87,6 @@ define(["exports"], function (exports) {
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       convertProperty: {
@@ -113,16 +104,13 @@ define(["exports"], function (exports) {
           });
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return SetterObserver;
   })();
-
-  exports.SetterObserver = SetterObserver;
-  var OoObjectObserver = (function () {
+  var OoObjectObserver = exports.OoObjectObserver = (function () {
     function OoObjectObserver(obj) {
       this.obj = obj;
       this.observers = {};
@@ -147,7 +135,6 @@ define(["exports"], function (exports) {
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       getObserver: {
@@ -157,7 +144,6 @@ define(["exports"], function (exports) {
           return propertyObserver;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       handleChanges: {
@@ -180,16 +166,13 @@ define(["exports"], function (exports) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return OoObjectObserver;
   })();
-
-  exports.OoObjectObserver = OoObjectObserver;
-  var OoPropertyObserver = (function () {
+  var OoPropertyObserver = exports.OoPropertyObserver = (function () {
     function OoPropertyObserver(owner, obj, propertyName) {
       this.owner = owner;
       this.obj = obj;
@@ -204,7 +187,6 @@ define(["exports"], function (exports) {
           return this.obj[this.propertyName];
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       setValue: {
@@ -216,7 +198,6 @@ define(["exports"], function (exports) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       trigger: {
@@ -229,7 +210,6 @@ define(["exports"], function (exports) {
           }
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       subscribe: {
@@ -237,16 +217,13 @@ define(["exports"], function (exports) {
           return this.owner.subscribe(this, callback);
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return OoPropertyObserver;
   })();
-
-  exports.OoPropertyObserver = OoPropertyObserver;
-  var ElementObserver = (function () {
+  var ElementObserver = exports.ElementObserver = (function () {
     function ElementObserver(handler, element, propertyName) {
       this.element = element;
       this.propertyName = propertyName;
@@ -261,7 +238,6 @@ define(["exports"], function (exports) {
           return this.element[this.propertyName];
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       setValue: {
@@ -270,7 +246,6 @@ define(["exports"], function (exports) {
           this.call();
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       call: {
@@ -287,7 +262,6 @@ define(["exports"], function (exports) {
           this.oldValue = newValue;
         },
         writable: true,
-        enumerable: true,
         configurable: true
       },
       subscribe: {
@@ -311,13 +285,11 @@ define(["exports"], function (exports) {
           };
         },
         writable: true,
-        enumerable: true,
         configurable: true
       }
     });
 
     return ElementObserver;
   })();
-
-  exports.ElementObserver = ElementObserver;
+  exports.__esModule = true;
 });
