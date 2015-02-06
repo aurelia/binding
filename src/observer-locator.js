@@ -3,9 +3,9 @@ import {getArrayObserver} from './array-observation';
 import {EventManager} from './event-manager';
 import {DirtyChecker, DirtyCheckProperty} from './dirty-checking';
 import {
-  SetterObserver, 
-  OoObjectObserver, 
-  OoPropertyObserver, 
+  SetterObserver,
+  OoObjectObserver,
+  OoPropertyObserver,
   ElementObserver
 } from './property-observation';
 import {All} from 'aurelia-dependency-injection';
@@ -57,12 +57,14 @@ var hasObjectObserve = (function detectObjectObserve() {
 function createObserversLookup(obj) {
   var value = {};
 
-  Object.defineProperty(obj, "__observers__", {
-    enumerable: false,
-    configurable: false,
-    writable: false,
-    value: value
-  });
+  try{
+    Object.defineProperty(obj, "__observers__", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: value
+    });
+  }catch(_){}
 
   return value;
 }
@@ -70,12 +72,14 @@ function createObserversLookup(obj) {
 function createObserverLookup(obj) {
   var value = new OoObjectObserver(obj);
 
-  Object.defineProperty(obj, "__observer__", {
-    enumerable: false,
-    configurable: false,
-    writable: false,
-    value: value
-  });
+  try{
+    Object.defineProperty(obj, "__observer__", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: value
+    });
+  }catch(_){}
 
   return value;
 }
@@ -101,7 +105,7 @@ export class ObserverLocator {
     }
 
     return observersLookup[propertyName] = this.createPropertyObserver(
-      obj, 
+      obj,
       propertyName
       );
   }
