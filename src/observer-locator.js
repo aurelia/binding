@@ -1,5 +1,6 @@
 import {TaskQueue} from 'aurelia-task-queue';
 import {getArrayObserver} from './array-observation';
+import {getMapObserver} from './map-observation';
 import {EventManager} from './event-manager';
 import {DirtyChecker, DirtyCheckProperty} from './dirty-checking';
 import {
@@ -147,6 +148,9 @@ export class ObserverLocator {
     if(obj instanceof Array){
       observerLookup = this.getArrayObserver(obj);
       return observerLookup.getObserver(propertyName);
+    }else if(obj instanceof Map){
+      observerLookup = this.getMapObserver(obj);
+      return observerLookup.getObserver(propertyName);
     }
 
     return new SetterObserver(this.taskQueue, obj, propertyName);
@@ -158,6 +162,14 @@ export class ObserverLocator {
     }
 
     return array.__array_observer__ = getArrayObserver(this.taskQueue, array);
+  }
+
+  getMapObserver(map){
+    if('__map_observer__' in map){
+      return map.__map_observer__;
+    }
+
+    return map.__map_observer__ = getMapObserver(this.taskQueue, map);
   }
 }
 

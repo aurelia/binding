@@ -12,5 +12,6 @@ export {ListenerExpression} from './listener-expression';
 export {NameExpression} from './name-expression';
 export {CallExpression} from './call-expression';
 export {DirtyChecker} from './dirty-checking';
+export {getChangeRecords} from './map-change-records';
 
 Metadata.configure.classHelper('valueConverter', ValueConverter);
