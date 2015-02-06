@@ -7,12 +7,14 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
   function createObserversLookup(obj) {
     var value = {};
 
-    Object.defineProperty(obj, "__observers__", {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: value
-    });
+    try {
+      Object.defineProperty(obj, "__observers__", {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: value
+      });
+    } catch (_) {}
 
     return value;
   }
@@ -20,12 +22,14 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
   function createObserverLookup(obj) {
     var value = new OoObjectObserver(obj);
 
-    Object.defineProperty(obj, "__observer__", {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: value
-    });
+    try {
+      Object.defineProperty(obj, "__observer__", {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: value
+      });
+    } catch (_) {}
 
     return value;
   }

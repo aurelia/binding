@@ -1,3 +1,11 @@
+### 0.3.4 (2015-02-06)
+
+
+#### Bug Fixes
+
+* **observers:** do not fail on primitive observation attempt ([854930a5](http://github.com/aurelia/binding/commit/854930a50685836111f97119b1295e07190d6f34))
+
+
 ### 0.3.3 (2015-02-03)
 
 

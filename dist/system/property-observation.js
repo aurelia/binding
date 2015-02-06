@@ -100,12 +100,14 @@ System.register([], function (_export) {
               this.setValue = this.setterValue;
               this.getValue = this.getterValue;
 
-              Object.defineProperty(this.obj, this.propertyName, {
-                configurable: true,
-                enumerable: true,
-                get: this.getValue.bind(this),
-                set: this.setValue.bind(this)
-              });
+              try {
+                Object.defineProperty(this.obj, this.propertyName, {
+                  configurable: true,
+                  enumerable: true,
+                  get: this.getValue.bind(this),
+                  set: this.setValue.bind(this)
+                });
+              } catch (_) {}
             },
             writable: true,
             configurable: true
@@ -129,9 +131,11 @@ System.register([], function (_export) {
 
               if (!this.observing) {
                 this.observing = true;
-                Object.observe(this.obj, function (changes) {
-                  return _this.handleChanges(changes);
-                }, ["update", "add"]);
+                try {
+                  Object.observe(this.obj, function (changes) {
+                    return _this.handleChanges(changes);
+                  }, ["update", "add"]);
+                } catch (_) {}
               }
 
               return function () {

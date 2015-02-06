@@ -96,12 +96,14 @@ define(["exports"], function (exports) {
           this.setValue = this.setterValue;
           this.getValue = this.getterValue;
 
-          Object.defineProperty(this.obj, this.propertyName, {
-            configurable: true,
-            enumerable: true,
-            get: this.getValue.bind(this),
-            set: this.setValue.bind(this)
-          });
+          try {
+            Object.defineProperty(this.obj, this.propertyName, {
+              configurable: true,
+              enumerable: true,
+              get: this.getValue.bind(this),
+              set: this.setValue.bind(this)
+            });
+          } catch (_) {}
         },
         writable: true,
         configurable: true
@@ -125,9 +127,11 @@ define(["exports"], function (exports) {
 
           if (!this.observing) {
             this.observing = true;
-            Object.observe(this.obj, function (changes) {
-              return _this.handleChanges(changes);
-            }, ["update", "add"]);
+            try {
+              Object.observe(this.obj, function (changes) {
+                return _this.handleChanges(changes);
+              }, ["update", "add"]);
+            } catch (_) {}
           }
 
           return function () {

@@ -62,12 +62,14 @@ var hasObjectObserve = (function detectObjectObserve() {
 function createObserversLookup(obj) {
   var value = {};
 
-  Object.defineProperty(obj, "__observers__", {
-    enumerable: false,
-    configurable: false,
-    writable: false,
-    value: value
-  });
+  try {
+    Object.defineProperty(obj, "__observers__", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: value
+    });
+  } catch (_) {}
 
   return value;
 }
@@ -75,12 +77,14 @@ function createObserversLookup(obj) {
 function createObserverLookup(obj) {
   var value = new OoObjectObserver(obj);
 
-  Object.defineProperty(obj, "__observer__", {
-    enumerable: false,
-    configurable: false,
-    writable: false,
-    value: value
-  });
+  try {
+    Object.defineProperty(obj, "__observer__", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: value
+    });
+  } catch (_) {}
 
   return value;
 }

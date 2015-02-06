@@ -71,19 +71,21 @@ export class SetterObserver {
     this.setValue = this.setterValue;
     this.getValue = this.getterValue;
 
-    Object.defineProperty(this.obj, this.propertyName, {
-      configurable: true,
-      enumerable: true,
-      get: this.getValue.bind(this),
-      set: this.setValue.bind(this)
-    });
+    try{
+      Object.defineProperty(this.obj, this.propertyName, {
+        configurable: true,
+        enumerable: true,
+        get: this.getValue.bind(this),
+        set: this.setValue.bind(this)
+      });
+    }catch(_){}
   }
 }
 
 export class OoObjectObserver {
   constructor(obj){
     this.obj = obj;
-    this.observers = {};  
+    this.observers = {};
   }
 
   subscribe(propertyObserver, callback){
@@ -92,7 +94,9 @@ export class OoObjectObserver {
 
     if(!this.observing){
       this.observing = true;
-      Object.observe(this.obj, changes => this.handleChanges(changes), ['update', 'add']);
+      try{
+        Object.observe(this.obj, changes => this.handleChanges(changes), ['update', 'add']);
+      }catch(_){}
     }
 
     return function(){
@@ -111,11 +115,11 @@ export class OoObjectObserver {
     var updates = {},
         observers = this.observers,
         i = changeRecords.length;
-    
+
     while(i--) {
       var change = changeRecords[i],
           name = change.name;
-  
+
       if(!(name in updates)){
         var observer = observers[name];
         updates[name] = true;
@@ -202,9 +206,9 @@ export class ElementObserver {
     }
 
     var callbacks = this.callbacks;
-    
+
     callbacks.push(callback);
-    
+
     return function(){
       callbacks.splice(callbacks.indexOf(callback), 1);
       if(callback.length === 0){
