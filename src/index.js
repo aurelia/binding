@@ -2,7 +2,7 @@ import {Metadata} from 'aurelia-metadata';
 import {ValueConverter} from './value-converter';
 
 export {EventManager} from './event-manager';
-export {ObserverLocator} from './observer-locator';
+export {ObserverLocator, ObjectObservationAdapter} from './observer-locator';
 export {ValueConverter} from './value-converter';
 export {calcSplices} from './array-change-records';
 export * from './binding-modes';
