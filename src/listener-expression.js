@@ -45,7 +45,7 @@ class Listener {
       source.$event = event;
       var result = this.sourceExpression.evaluate(source);
       source.$event = prevEvent;
-      if(this.preventDefault){
+      if(result !== && this.preventDefault){
         event.preventDefault();
       }
       return result;
