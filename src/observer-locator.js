@@ -110,11 +110,11 @@ export class ObserverLocator {
       );
   }
 
-  getObservationAdapter(obj, propertyName) {
+  getObservationAdapter(obj, propertyName, descriptor) {
     var i, ii, observationAdapter;
     for(i = 0, ii = this.observationAdapters.length; i < ii; i++){
       observationAdapter = this.observationAdapters[i];
-      if (observationAdapter.handlesProperty(obj, propertyName))
+      if (observationAdapter.handlesProperty(obj, propertyName, descriptor))
         return observationAdapter;
     }
     return null;
@@ -133,9 +133,9 @@ export class ObserverLocator {
     descriptor = Object.getPropertyDescriptor(obj, propertyName);
     if(descriptor && (descriptor.get || descriptor.set)){
       // attempt to use an adapter before resorting to dirty checking.
-      observationAdapter = this.getObservationAdapter(obj, propertyName);
+      observationAdapter = this.getObservationAdapter(obj, propertyName, descriptor);
       if (observationAdapter)
-        return observationAdapter.getObserver(obj, propertyName);
+        return observationAdapter.getObserver(obj, propertyName, descriptor);
       return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     }
 
@@ -162,11 +162,11 @@ export class ObserverLocator {
 }
 
 export class ObjectObservationAdapter {
-  handlesProperty(object, propertyName) {
+  handlesProperty(object, propertyName, descriptor) {
     throw new Error('BindingAdapters must implement handlesProperty(object, propertyName).');
   }
 
-  getObserver(object, propertyName) {
+  getObserver(object, propertyName, descriptor) {
     throw new Error('BindingAdapters must implement createObserver(object, propertyName).');
   }
 }
