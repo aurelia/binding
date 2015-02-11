@@ -83,9 +83,10 @@ export class SetterObserver {
 }
 
 export class OoObjectObserver {
-  constructor(obj){
+  constructor(obj, observerLocator){
     this.obj = obj;
     this.observers = {};
+    this.observerLocator = observerLocator;
   }
 
   subscribe(propertyObserver, callback){
@@ -104,10 +105,15 @@ export class OoObjectObserver {
     };
   }
 
-  getObserver(propertyName){
-    var propertyObserver = this.observers[propertyName]
-      || (this.observers[propertyName] = new OoPropertyObserver(this, this.obj, propertyName));
-
+  getObserver(propertyName, descriptor){
+    var propertyObserver = this.observers[propertyName];
+    if (!propertyObserver) {
+      if (descriptor) {
+        propertyObserver = this.observers[propertyName] = new OoPropertyObserver(this, this.obj, propertyName);
+      } else {
+        propertyObserver = this.observers[propertyName] = new UndefinedPropertyObserver(this, this.obj, propertyName);
+      }
+    }
     return propertyObserver;
   }
 
@@ -163,6 +169,106 @@ export class OoPropertyObserver {
 
   subscribe(callback){
     return this.owner.subscribe(this, callback);
+  }
+}
+
+export class UndefinedPropertyObserver {
+  constructor(owner, obj, propertyName){
+    this.owner = owner;
+    this.obj = obj;
+    this.propertyName = propertyName;
+    this.callbackMap = new Map();
+    this.callbacks = []; // unused here, but required by owner OoObjectObserver.
+    this.isSVG = obj instanceof SVGElement;
+  }
+
+  getValue(){
+    // delegate this to the actual observer if possible.
+    if (this.actual){
+      return this.actual.getValue();
+    }
+    return this.obj[this.propertyName];
+  }
+
+  setValue(newValue){
+    // delegate this to the actual observer if possible.
+    if (this.actual){
+      this.actual.setValue(newValue);
+      return;
+    }
+    // define the property and trigger the callbacks.
+    if(this.isSVG){
+      this.obj.setAttributeNS(null, this.propertyName, newValue);
+    }else{
+      this.obj[this.propertyName] = newValue;
+    }
+    this.trigger(newValue, undefined);
+  }
+
+  trigger(newValue, oldValue){
+    var callback;
+
+    // we only care about this event one time:  when the property becomes defined.
+    if (this.subscription){
+      this.subscription();
+    }
+
+    // get the actual observer.
+    this.getObserver();
+
+    // invoke the callbacks.
+    for(callback of this.callbackMap.keys()) {
+      callback(newValue, oldValue);
+    }
+  }
+
+  getObserver() {
+    var callback, observerLocator;
+
+    // has the property has been defined?
+    if (!Object.getOwnPropertyDescriptor(this.obj, this.propertyName)) {
+      return;
+    }
+
+    // get the actual observer.
+    observerLocator = this.owner.observerLocator;
+    delete this.owner.observers[this.propertyName];
+    delete observerLocator.getObserversLookup(this.obj, observerLocator)[this.propertyName];
+    this.actual = observerLocator.getObserver(this.obj, this.propertyName);
+
+    // attach any existing callbacks to the actual observer.
+    for(callback of this.callbackMap.keys()) {
+      this.callbackMap.set(callback, this.actual.subscribe(callback));
+    }
+  }
+
+  subscribe(callback){
+    // attempt to get the actual observer in case the property has become
+    // defined since the ObserverLocator returned [this].
+    if (!this.actual) {
+      this.getObserver();
+    }
+
+    // if we have the actual observer, use it.
+    if (this.actual){
+      return this.actual.subscribe(callback);
+    }
+
+    // start listening for the property to become defined.
+    if (!this.subscription){
+      this.subscription = this.owner.subscribe(this);
+    }
+
+    // cache the callback.
+    this.callbackMap.set(callback, null);
+
+    // return the method to dispose the subscription.
+    return () => {
+      var actualDispose = this.callbackMap.get(callback);
+      if (actualDispose)
+        actualDispose();
+      this.callbackMap.delete(callback);
+    };
   }
 }
 
