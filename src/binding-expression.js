@@ -28,6 +28,10 @@ class Binding {
   constructor(observerLocator, sourceExpression, target, targetProperty, mode, valueConverterLookupFunction){
     this.observerLocator = observerLocator;
     this.sourceExpression = sourceExpression;
+    if (/^data-/.test(targetProperty)) {
+      targetProperty = targetProperty.substr(5).replace(/-([a-z])/g, s => s.substr(1).toUpperCase());
+      target = target.dataset;
+    }
     this.targetProperty = observerLocator.getObserver(target, targetProperty);
     this.mode = mode;
     this.valueConverterLookupFunction = valueConverterLookupFunction;
