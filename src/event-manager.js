@@ -75,12 +75,12 @@ export class EventManager {
   constructor(){
     this.elementHandlerLookup = {};
     this.eventStrategyLookup = {};
-    
-    this.registerElementConfig({ 
+
+    this.registerElementConfig({
       tagName:'input',
       properties: {
         value:['change','input'],
-        checked:['change','input'] 
+        checked:['change','input']
       }
     });
 
@@ -88,7 +88,7 @@ export class EventManager {
       tagName:'textarea',
       properties:{
         value:['change','input']
-      } 
+      }
     });
 
     this.registerElementConfig({
@@ -102,7 +102,7 @@ export class EventManager {
   }
 
   registerElementConfig(config){
-    this.elementHandlerLookup[config.tagName.toLowerCase()] = { 
+    this.elementHandlerLookup[config.tagName.toLowerCase()] = {
       subscribe(target, property, callback) {
         var events = config.properties[property];
         if(events){
@@ -118,7 +118,8 @@ export class EventManager {
         }else{
           throw new Error(`Cannot observe property ${property} of ${config.tagName}. No events found.`)
         }
-      }
+      },
+      properties: config.properties
     }
   }
 
@@ -130,10 +131,10 @@ export class EventManager {
     this.eventStrategyLookup[eventName] = strategy;
   }
 
-  getElementHandler(target){
+  getElementHandler(target, propertyName){
     if(target.tagName){
       var handler = this.elementHandlerLookup[target.tagName.toLowerCase()];
-      if(handler){
+      if(handler && handler.properties[propertyName]){
         return handler;
       }
     }
