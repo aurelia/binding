@@ -70,8 +70,8 @@ function createObserversLookup(obj) {
   return value;
 }
 
-function createObserverLookup(obj) {
-  var value = new OoObjectObserver(obj);
+function createObserverLookup(obj, observerLocator) {
+  var value = new OoObjectObserver(obj, observerLocator);
 
   try{
     Object.defineProperty(obj, "__observer__", {
@@ -141,8 +141,8 @@ export class ObserverLocator {
     }
 
     if(hasObjectObserve){
-      observerLookup = obj.__observer__ || createObserverLookup(obj);
-      return observerLookup.getObserver(propertyName);
+      observerLookup = obj.__observer__ || createObserverLookup(obj, this);
+      return observerLookup.getObserver(propertyName, descriptor);
     }
 
     if(obj instanceof Array){
