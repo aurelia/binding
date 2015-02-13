@@ -125,7 +125,12 @@ describe('observer locator', () => {
   });
 
   it('uses adapter when appropriate', () => {
-    var person = { handleWithAdapter: true }, name, observer;
+    var person = { handleWithAdapter: true }, name, observer, adapter, descriptor;
+
+    adapter = locator.observationAdapters[0];
+    spyOn(adapter, 'handlesProperty').and.callThrough();
+    spyOn(adapter, 'getObserver').and.callThrough();
+
     Object.defineProperty(person, 'name', {
       get: function() { return name; },
       set: function(newValue) { name = newValue; },
@@ -133,7 +138,11 @@ describe('observer locator', () => {
       configurable: true
     });
 
+    descriptor = Object.getOwnPropertyDescriptor(person, 'name');
+
     observer = locator.getObserver(person, 'name');
     expect(observer).toBe('test-adapter');
+    expect(adapter.handlesProperty).toHaveBeenCalledWith(person, 'name', descriptor);
+    expect(adapter.getObserver).toHaveBeenCalledWith(person, 'name', descriptor);
   });
 });
