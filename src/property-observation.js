@@ -272,7 +272,7 @@ export class UndefinedPropertyObserver {
   }
 }
 
-export class ElementObserver {
+export class ValueAttributeObserver {
   constructor(handler, element, propertyName){
     this.element = element;
     this.propertyName = propertyName;
@@ -324,3 +324,25 @@ export class ElementObserver {
     };
   }
 }
+
+export class DataAttributeObserver {
+  constructor(element, propertyName){
+    this.element = element;
+    this.propertyName = propertyName;
+  }
+
+  getValue(){
+    return this.element.getAttribute(this.propertyName);
+  }
+
+  setValue(newValue){
+    this.element.setAttribute(this.propertyName, newValue);
+  }
+
+  subscribe(callback){
+    var propertyName = this.propertyName, tagName = this.element.tagName;
+    throw new Error(`Cannot observe property ${propertyName} of ${tagName}. No events found.`);
+  }
+}
+
+DataAttributeObserver.handlesProperty = propertyName => /^(data)|(aria)-/.test(propertyName);
