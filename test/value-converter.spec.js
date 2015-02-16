@@ -1,4 +1,4 @@
-import {ValueConverter} from '../src/value-converter';
+import {ValueConverter} from '../src/index';
 
 describe('ValueConverter', () => {
   it('uses ends with ValueConverter convention', () => {
