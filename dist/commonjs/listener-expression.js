@@ -52,7 +52,7 @@ var Listener = (function () {
           source.$event = event;
           var result = _this.sourceExpression.evaluate(source);
           source.$event = prevEvent;
-          if (_this.preventDefault) {
+          if (result !== true && _this.preventDefault) {
             event.preventDefault();
           }
           return result;

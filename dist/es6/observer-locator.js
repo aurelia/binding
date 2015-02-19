@@ -1,12 +1,14 @@
 import {TaskQueue} from 'aurelia-task-queue';
 import {getArrayObserver} from './array-observation';
+import {getMapObserver} from './map-observation';
 import {EventManager} from './event-manager';
 import {DirtyChecker, DirtyCheckProperty} from './dirty-checking';
 import {
   SetterObserver,
   OoObjectObserver,
   OoPropertyObserver,
-  ElementObserver
+  ValueAttributeObserver,
+  DataAttributeObserver
 } from './property-observation';
 import {All} from 'aurelia-dependency-injection';
 
@@ -69,8 +71,8 @@ function createObserversLookup(obj) {
   return value;
 }
 
-function createObserverLookup(obj) {
-  var value = new OoObjectObserver(obj);
+function createObserverLookup(obj, observerLocator) {
+  var value = new OoObjectObserver(obj, observerLocator);
 
   try{
     Object.defineProperty(obj, "__observer__", {
@@ -110,11 +112,11 @@ export class ObserverLocator {
       );
   }
 
-  getObservationAdapter(obj, propertyName) {
+  getObservationAdapter(obj, propertyName, descriptor) {
     var i, ii, observationAdapter;
     for(i = 0, ii = this.observationAdapters.length; i < ii; i++){
       observationAdapter = this.observationAdapters[i];
-      if (observationAdapter.handlesProperty(obj, propertyName))
+      if (observationAdapter.handlesProperty(obj, propertyName, descriptor))
         return observationAdapter;
     }
     return null;
@@ -124,28 +126,33 @@ export class ObserverLocator {
     var observerLookup, descriptor, handler, observationAdapter;
 
     if(obj instanceof Element){
-      handler = this.eventManager.getElementHandler(obj);
+      handler = this.eventManager.getElementHandler(obj, propertyName);
       if(handler){
-        return new ElementObserver(handler, obj, propertyName);
+        return new ValueAttributeObserver(handler, obj, propertyName);
+      } else if (DataAttributeObserver.handlesProperty(propertyName)) {
+        return new DataAttributeObserver(obj, propertyName);
       }
     }
 
     descriptor = Object.getPropertyDescriptor(obj, propertyName);
     if(descriptor && (descriptor.get || descriptor.set)){
       // attempt to use an adapter before resorting to dirty checking.
-      observationAdapter = this.getObservationAdapter(obj, propertyName);
+      observationAdapter = this.getObservationAdapter(obj, propertyName, descriptor);
       if (observationAdapter)
-        return observationAdapter.getObserver(obj, propertyName);
+        return observationAdapter.getObserver(obj, propertyName, descriptor);
       return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     }
 
     if(hasObjectObserve){
-      observerLookup = obj.__observer__ || createObserverLookup(obj);
-      return observerLookup.getObserver(propertyName);
+      observerLookup = obj.__observer__ || createObserverLookup(obj, this);
+      return observerLookup.getObserver(propertyName, descriptor);
     }
 
     if(obj instanceof Array){
       observerLookup = this.getArrayObserver(obj);
+      return observerLookup.getObserver(propertyName);
+    }else if(obj instanceof Map){
+      observerLookup = this.getMapObserver(obj);
       return observerLookup.getObserver(propertyName);
     }
 
@@ -159,14 +166,22 @@ export class ObserverLocator {
 
     return array.__array_observer__ = getArrayObserver(this.taskQueue, array);
   }
+
+  getMapObserver(map){
+    if('__map_observer__' in map){
+      return map.__map_observer__;
+    }
+
+    return map.__map_observer__ = getMapObserver(this.taskQueue, map);
+  }
 }
 
 export class ObjectObservationAdapter {
-  handlesProperty(object, propertyName) {
+  handlesProperty(object, propertyName, descriptor) {
     throw new Error('BindingAdapters must implement handlesProperty(object, propertyName).');
   }
 
-  getObserver(object, propertyName) {
+  getObserver(object, propertyName, descriptor) {
     throw new Error('BindingAdapters must implement createObserver(object, propertyName).');
   }
 }

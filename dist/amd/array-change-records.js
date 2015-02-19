@@ -285,7 +285,7 @@ define(["exports"], function (exports) {
           if (!isIndex(record.name)) continue;
           var index = toNumber(record.name);
           if (index < 0) continue;
-          mergeSplice(splices, index, [record.oldValue], 1);
+          mergeSplice(splices, index, [record.oldValue], 0);
           break;
         default:
           console.error("Unexpected record type: " + JSON.stringify(record));

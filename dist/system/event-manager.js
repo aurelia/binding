@@ -153,7 +153,8 @@ System.register([], function (_export) {
                   } else {
                     throw new Error("Cannot observe property " + property + " of " + config.tagName + ". No events found.");
                   }
-                }
+                },
+                properties: config.properties
               };
             },
             writable: true,
@@ -174,10 +175,10 @@ System.register([], function (_export) {
             configurable: true
           },
           getElementHandler: {
-            value: function getElementHandler(target) {
+            value: function getElementHandler(target, propertyName) {
               if (target.tagName) {
                 var handler = this.elementHandlerLookup[target.tagName.toLowerCase()];
-                if (handler) {
+                if (handler && handler.properties[propertyName]) {
                   return handler;
                 }
               }

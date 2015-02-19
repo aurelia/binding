@@ -150,7 +150,8 @@ define(["exports"], function (exports) {
               } else {
                 throw new Error("Cannot observe property " + property + " of " + config.tagName + ". No events found.");
               }
-            }
+            },
+            properties: config.properties
           };
         },
         writable: true,
@@ -171,10 +172,10 @@ define(["exports"], function (exports) {
         configurable: true
       },
       getElementHandler: {
-        value: function getElementHandler(target) {
+        value: function getElementHandler(target, propertyName) {
           if (target.tagName) {
             var handler = this.elementHandlerLookup[target.tagName.toLowerCase()];
-            if (handler) {
+            if (handler && handler.properties[propertyName]) {
               return handler;
             }
           }

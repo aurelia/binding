@@ -1,3 +1,19 @@
+### 0.3.5 (2015-02-18)
+
+
+#### Bug Fixes
+
+* **array-change-records:** set addedCount to 0 on delete ([fb6cbe9f](http://github.com/aurelia/binding/commit/fb6cbe9fd2574994787e2da43a5526f655ab21d2))
+* **build:** add missing bower bump ([7d2172a2](http://github.com/aurelia/binding/commit/7d2172a2001dc23081b2bbee33c93653be2fa546))
+* **listener-expression:** use result of handler for preventDefault behavior ([fce610b9](http://github.com/aurelia/binding/commit/fce610b95c39c9f1606cae1a686751fbc5e9117b), closes [#16](http://github.com/aurelia/binding/issues/16))
+* **value-converter:** add missing endsWith polyfill ([0e05f9cc](http://github.com/aurelia/binding/commit/0e05f9cc37bb73561883c7eddad50f2e030b147d))
+
+
+#### Features
+
+* **map-observation:** implement map observation ([7a795785](http://github.com/aurelia/binding/commit/7a7957859773cba0ba3353d1e8e448caa13c417c))
+
+
 ### 0.3.4 (2015-02-06)
 
 

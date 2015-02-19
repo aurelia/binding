@@ -1,7 +1,7 @@
-System.register(["aurelia-task-queue", "./array-observation", "./event-manager", "./dirty-checking", "./property-observation", "aurelia-dependency-injection"], function (_export) {
+System.register(["aurelia-task-queue", "./array-observation", "./map-observation", "./event-manager", "./dirty-checking", "./property-observation", "aurelia-dependency-injection"], function (_export) {
   "use strict";
 
-  var TaskQueue, getArrayObserver, EventManager, DirtyChecker, DirtyCheckProperty, SetterObserver, OoObjectObserver, OoPropertyObserver, ElementObserver, All, _prototypeProperties, hasObjectObserve, ObserverLocator, ObjectObservationAdapter;
+  var TaskQueue, getArrayObserver, getMapObserver, EventManager, DirtyChecker, DirtyCheckProperty, SetterObserver, OoObjectObserver, OoPropertyObserver, ValueAttributeObserver, DataAttributeObserver, All, _prototypeProperties, hasObjectObserve, ObserverLocator, ObjectObservationAdapter;
 
 
   function createObserversLookup(obj) {
@@ -19,8 +19,8 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
     return value;
   }
 
-  function createObserverLookup(obj) {
-    var value = new OoObjectObserver(obj);
+  function createObserverLookup(obj, observerLocator) {
+    var value = new OoObjectObserver(obj, observerLocator);
 
     try {
       Object.defineProperty(obj, "__observer__", {
@@ -39,6 +39,8 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
       TaskQueue = _aureliaTaskQueue.TaskQueue;
     }, function (_arrayObservation) {
       getArrayObserver = _arrayObservation.getArrayObserver;
+    }, function (_mapObservation) {
+      getMapObserver = _mapObservation.getMapObserver;
     }, function (_eventManager) {
       EventManager = _eventManager.EventManager;
     }, function (_dirtyChecking) {
@@ -48,7 +50,8 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
       SetterObserver = _propertyObservation.SetterObserver;
       OoObjectObserver = _propertyObservation.OoObjectObserver;
       OoPropertyObserver = _propertyObservation.OoPropertyObserver;
-      ElementObserver = _propertyObservation.ElementObserver;
+      ValueAttributeObserver = _propertyObservation.ValueAttributeObserver;
+      DataAttributeObserver = _propertyObservation.DataAttributeObserver;
     }, function (_aureliaDependencyInjection) {
       All = _aureliaDependencyInjection.All;
     }],
@@ -133,11 +136,11 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
             configurable: true
           },
           getObservationAdapter: {
-            value: function getObservationAdapter(obj, propertyName) {
+            value: function getObservationAdapter(obj, propertyName, descriptor) {
               var i, ii, observationAdapter;
               for (i = 0, ii = this.observationAdapters.length; i < ii; i++) {
                 observationAdapter = this.observationAdapters[i];
-                if (observationAdapter.handlesProperty(obj, propertyName)) return observationAdapter;
+                if (observationAdapter.handlesProperty(obj, propertyName, descriptor)) return observationAdapter;
               }
               return null;
             },
@@ -149,26 +152,31 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
               var observerLookup, descriptor, handler, observationAdapter;
 
               if (obj instanceof Element) {
-                handler = this.eventManager.getElementHandler(obj);
+                handler = this.eventManager.getElementHandler(obj, propertyName);
                 if (handler) {
-                  return new ElementObserver(handler, obj, propertyName);
+                  return new ValueAttributeObserver(handler, obj, propertyName);
+                } else if (DataAttributeObserver.handlesProperty(propertyName)) {
+                  return new DataAttributeObserver(obj, propertyName);
                 }
               }
 
               descriptor = Object.getPropertyDescriptor(obj, propertyName);
               if (descriptor && (descriptor.get || descriptor.set)) {
-                observationAdapter = this.getObservationAdapter(obj, propertyName);
-                if (observationAdapter) return observationAdapter.getObserver(obj, propertyName);
+                observationAdapter = this.getObservationAdapter(obj, propertyName, descriptor);
+                if (observationAdapter) return observationAdapter.getObserver(obj, propertyName, descriptor);
                 return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
               }
 
               if (hasObjectObserve) {
-                observerLookup = obj.__observer__ || createObserverLookup(obj);
-                return observerLookup.getObserver(propertyName);
+                observerLookup = obj.__observer__ || createObserverLookup(obj, this);
+                return observerLookup.getObserver(propertyName, descriptor);
               }
 
               if (obj instanceof Array) {
                 observerLookup = this.getArrayObserver(obj);
+                return observerLookup.getObserver(propertyName);
+              } else if (obj instanceof Map) {
+                observerLookup = this.getMapObserver(obj);
                 return observerLookup.getObserver(propertyName);
               }
 
@@ -197,6 +205,27 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
             }),
             writable: true,
             configurable: true
+          },
+          getMapObserver: {
+            value: (function (_getMapObserver) {
+              var _getMapObserverWrapper = function getMapObserver() {
+                return _getMapObserver.apply(this, arguments);
+              };
+
+              _getMapObserverWrapper.toString = function () {
+                return _getMapObserver.toString();
+              };
+
+              return _getMapObserverWrapper;
+            })(function (map) {
+              if ("__map_observer__" in map) {
+                return map.__map_observer__;
+              }
+
+              return map.__map_observer__ = getMapObserver(this.taskQueue, map);
+            }),
+            writable: true,
+            configurable: true
           }
         });
 
@@ -207,14 +236,14 @@ System.register(["aurelia-task-queue", "./array-observation", "./event-manager",
 
         _prototypeProperties(ObjectObservationAdapter, null, {
           handlesProperty: {
-            value: function handlesProperty(object, propertyName) {
+            value: function handlesProperty(object, propertyName, descriptor) {
               throw new Error("BindingAdapters must implement handlesProperty(object, propertyName).");
             },
             writable: true,
             configurable: true
           },
           getObserver: {
-            value: function getObserver(object, propertyName) {
+            value: function getObserver(object, propertyName, descriptor) {
               throw new Error("BindingAdapters must implement createObserver(object, propertyName).");
             },
             writable: true,

@@ -8,14 +8,14 @@ define(["exports", "aurelia-metadata"], function (exports, _aureliaMetadata) {
   var ResourceType = _aureliaMetadata.ResourceType;
 
 
-  var capitalMatcher = /([A-Z])/g;
-
-  function addHyphenAndLower(char) {
-    return "-" + char.toLowerCase();
+  if (typeof String.prototype.endsWith !== "function") {
+    String.prototype.endsWith = function (suffix) {
+      return this.indexOf(suffix, this.length - suffix.length) !== -1;
+    };
   }
 
-  function hyphenate(name) {
-    return (name.charAt(0).toLowerCase() + name.slice(1)).replace(capitalMatcher, addHyphenAndLower);
+  function camelCase(name) {
+    return name.charAt(0).toLowerCase() + name.slice(1);
   }
 
   var ValueConverter = exports.ValueConverter = (function (ResourceType) {
@@ -29,7 +29,7 @@ define(["exports", "aurelia-metadata"], function (exports, _aureliaMetadata) {
       convention: {
         value: function convention(name) {
           if (name.endsWith("ValueConverter")) {
-            return new ValueConverter(hyphenate(name.substring(0, name.length - 14)));
+            return new ValueConverter(camelCase(name.substring(0, name.length - 14)));
           }
         },
         writable: true,
