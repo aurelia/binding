@@ -13,7 +13,7 @@ class ModifyMapObserver extends ModifyCollectionObserver {
   }
 
   static create(taskQueue, map) {
-    var observer = new ModifyCollectionObserver(taskQueue, map);
+    var observer = new ModifyMapObserver(taskQueue, map);
 
     map['set'] = function () {
       var oldValue = map.get(arguments[0]);
