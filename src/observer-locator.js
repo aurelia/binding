@@ -7,8 +7,7 @@ import {
   SetterObserver,
   OoObjectObserver,
   OoPropertyObserver,
-  ValueAttributeObserver,
-  DataAttributeObserver
+  ElementObserver
 } from './property-observation';
 import {All} from 'aurelia-dependency-injection';
 
@@ -127,11 +126,7 @@ export class ObserverLocator {
 
     if(obj instanceof Element){
       handler = this.eventManager.getElementHandler(obj, propertyName);
-      if(handler){
-        return new ValueAttributeObserver(handler, obj, propertyName);
-      } else if (DataAttributeObserver.handlesProperty(propertyName)) {
-        return new DataAttributeObserver(obj, propertyName);
-      }
+      return new ElementObserver(obj, propertyName, handler);
     }
 
     descriptor = Object.getPropertyDescriptor(obj, propertyName);

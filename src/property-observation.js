@@ -6,7 +6,6 @@ export class SetterObserver {
     this.callbacks = [];
     this.queued = false;
     this.observing = false;
-    this.isSVG = obj instanceof SVGElement;
   }
 
   getValue(){
@@ -14,11 +13,7 @@ export class SetterObserver {
   }
 
   setValue(newValue){
-    if(this.isSVG){
-      this.obj.setAttributeNS(null, this.propertyName, newValue);
-    }else{
-      this.obj[this.propertyName] = newValue;
-    }
+    this.obj[this.propertyName] = newValue;
   }
 
   getterValue(){
@@ -143,7 +138,6 @@ export class OoPropertyObserver {
     this.obj = obj;
     this.propertyName = propertyName;
     this.callbacks = [];
-    this.isSVG = obj instanceof SVGElement;
   }
 
   getValue(){
@@ -151,11 +145,7 @@ export class OoPropertyObserver {
   }
 
   setValue(newValue){
-    if(this.isSVG){
-      this.obj.setAttributeNS(null, this.propertyName, newValue);
-    }else{
-      this.obj[this.propertyName] = newValue;
-    }
+    this.obj[this.propertyName] = newValue;
   }
 
   trigger(newValue, oldValue){
@@ -179,7 +169,6 @@ export class UndefinedPropertyObserver {
     this.propertyName = propertyName;
     this.callbackMap = new Map();
     this.callbacks = []; // unused here, but required by owner OoObjectObserver.
-    this.isSVG = obj instanceof SVGElement;
   }
 
   getValue(){
@@ -197,11 +186,7 @@ export class UndefinedPropertyObserver {
       return;
     }
     // define the property and trigger the callbacks.
-    if(this.isSVG){
-      this.obj.setAttributeNS(null, this.propertyName, newValue);
-    }else{
-      this.obj[this.propertyName] = newValue;
-    }
+    this.obj[this.propertyName] = newValue;
     this.trigger(newValue, undefined);
   }
 
@@ -272,22 +257,38 @@ export class UndefinedPropertyObserver {
   }
 }
 
-export class ValueAttributeObserver {
-  constructor(handler, element, propertyName){
+export class ElementObserver {
+  constructor(element, propertyName, handler){
+    var xlinkResult = /^xlink:(.+)$/.exec(propertyName);
+
     this.element = element;
     this.propertyName = propertyName;
-    this.callbacks = [];
-    this.oldValue = element[propertyName];
     this.handler = handler;
-  }
+    this.callbacks = [];
 
-  getValue(){
-    return this.element[this.propertyName];
-  }
+    if (xlinkResult) {
+      // xlink namespaced attributes require getAttributeNS/setAttributeNS
+      // (even though the NS version doesn't work for other namespaces
+      // in html5 documents)
+      propertyName = xlinkResult[1];
+      this.getValue = () => element.getAttributeNS('http://www.w3.org/1999/xlink', propertyName);
+      this.setValue = newValue => element.setAttributeNS('http://www.w3.org/1999/xlink', propertyName, newValue);
+    } else if (/^\w+:|^data-|^aria-/.test(propertyName) || element instanceof SVGElement) {
+      // namespaced attributes, data-* attributes, aria-* attributes and any native SVGElement attribute require getAttribute/setAttribute
+      this.getValue = () => element.getAttribute(propertyName);
+      this.setValue = newValue => element.setAttribute(propertyName, newValue);
+    } else {
+      // everything else uses standard property accessor/assignment.
+      this.getValue = () => element[propertyName];
+      this.setValue = newValue => {
+        element[propertyName] = newValue;
+        if (handler) {
+          this.call();
+        }
+      }
+    }
 
-  setValue(newValue){
-    this.element[this.propertyName] = newValue
-    this.call();
+    this.oldValue = this.getValue();
   }
 
   call(){
@@ -305,6 +306,12 @@ export class ValueAttributeObserver {
 
   subscribe(callback){
     var that = this;
+
+    if (!this.handler) {
+      // todo: consider adding logic to use DirtyChecking for "native" Element
+      // properties and O.o/SetterObserver/etc for "ad-hoc" Element properties.
+      throw new Error('Observation of an Element\'s "' + this.propertyName + '" is not supported.');
+    }
 
     if(!this.disposeHandler){
       this.disposeHandler = this.handler
@@ -324,25 +331,3 @@ export class ValueAttributeObserver {
     };
   }
 }
-
-export class DataAttributeObserver {
-  constructor(element, propertyName){
-    this.element = element;
-    this.propertyName = propertyName;
-  }
-
-  getValue(){
-    return this.element.getAttribute(this.propertyName);
-  }
-
-  setValue(newValue){
-    this.element.setAttribute(this.propertyName, newValue);
-  }
-
-  subscribe(callback){
-    var propertyName = this.propertyName, tagName = this.element.tagName;
-    throw new Error(`Cannot observe property ${propertyName} of ${tagName}. No events found.`);
-  }
-}
-
-DataAttributeObserver.handlesProperty = propertyName => /^(data)|(aria)-/.test(propertyName);
