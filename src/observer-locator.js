@@ -10,6 +10,10 @@ import {
   ElementObserver
 } from './property-observation';
 import {All} from 'aurelia-dependency-injection';
+import {
+  hasDeclaredDependencies,
+  ComputedPropertyObserver
+} from './computed-observation';
 
 if(typeof Object.getPropertyDescriptor !== 'function'){
  Object.getPropertyDescriptor = function (subject, name) {
@@ -130,6 +134,11 @@ export class ObserverLocator {
     }
 
     descriptor = Object.getPropertyDescriptor(obj, propertyName);
+
+    if (hasDeclaredDependencies(descriptor)) {
+      return new ComputedPropertyObserver(obj, propertyName, descriptor, this)
+    }
+
     if(descriptor && (descriptor.get || descriptor.set)){
       // attempt to use an adapter before resorting to dirty checking.
       observationAdapter = this.getObservationAdapter(obj, propertyName, descriptor);
