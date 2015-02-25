@@ -973,7 +973,7 @@ function autoConvertAdd(a, b) {
 }
 
 function ensureFunctionFromMap(obj, name){
-  var func = obj[name];
+  var func = obj[name] || window[name];
 
   if (typeof func === 'function') {
     return func;
