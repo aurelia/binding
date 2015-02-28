@@ -2,8 +2,12 @@
 
 var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
 var Token = exports.Token = (function () {
   function Token(index, text) {
+    _classCallCheck(this, Token);
+
     this.index = index;
     this.text = text;
   }
@@ -44,8 +48,11 @@ var Token = exports.Token = (function () {
 
   return Token;
 })();
+
 var Lexer = exports.Lexer = (function () {
-  function Lexer() {}
+  function Lexer() {
+    _classCallCheck(this, Lexer);
+  }
 
   _prototypeProperties(Lexer, null, {
     lex: {
@@ -68,8 +75,11 @@ var Lexer = exports.Lexer = (function () {
 
   return Lexer;
 })();
+
 var Scanner = exports.Scanner = (function () {
   function Scanner(input) {
+    _classCallCheck(this, Scanner);
+
     this.input = input;
     this.length = input.length;
     this.peek = 0;
@@ -81,6 +91,7 @@ var Scanner = exports.Scanner = (function () {
   _prototypeProperties(Scanner, null, {
     scanToken: {
       value: function scanToken() {
+        // Skip whitespace.
         while (this.peek <= $SPACE) {
           if (++this.index >= this.length) {
             this.peek = $EOF;
@@ -90,6 +101,7 @@ var Scanner = exports.Scanner = (function () {
           }
         }
 
+        // Handle identifiers and numbers.
         if (isIdentifierStart(this.peek)) {
           return this.scanIdentifier();
         }
@@ -206,6 +218,8 @@ var Scanner = exports.Scanner = (function () {
         var text = this.input.substring(start, this.index);
         var result = new Token(start, text);
 
+        // TODO(kasperl): Deal with null, undefined, true, and false in
+        // a cleaner and faster way.
         if (OPERATORS.indexOf(text) !== -1) {
           result.withOp(text);
         } else {
@@ -221,7 +235,7 @@ var Scanner = exports.Scanner = (function () {
       value: function scanNumber(start) {
         assert(isDigit(this.peek));
         var simple = this.index === start;
-        this.advance();
+        this.advance(); // Skip initial digit.
 
         while (true) {
           if (isDigit(this.peek)) {} else if (this.peek === $PERIOD) {
@@ -259,7 +273,7 @@ var Scanner = exports.Scanner = (function () {
         var start = this.index;
         var quote = this.peek;
 
-        this.advance();
+        this.advance(); // Skip initial quote.
 
         var buffer;
         var marker = this.index;
@@ -276,6 +290,8 @@ var Scanner = exports.Scanner = (function () {
             var unescaped;
 
             if (this.peek === $u) {
+              // TODO(kasperl): Check bounds? Make sure we have test
+              // coverage for this.
               var hex = this.input.substring(this.index + 1, this.index + 5);
 
               if (!/[A-Z0-9]{4}/.test(hex)) {
@@ -302,9 +318,10 @@ var Scanner = exports.Scanner = (function () {
         }
 
         var last = this.input.substring(marker, this.index);
-        this.advance();
+        this.advance(); // Skip terminating quote.
         var text = this.input.substring(start, this.index);
 
+        // Compute the unescaped string value.
         var unescaped = last;
 
         if (buffer != null) {
@@ -331,6 +348,9 @@ var Scanner = exports.Scanner = (function () {
     error: {
       value: function error(message) {
         var offset = arguments[1] === undefined ? 0 : arguments[1];
+
+        // TODO(kasperl): Try to get rid of the offset. It is only used to match
+        // the error expectations in the lexer tests for numbers with exponents.
         var position = this.index + offset;
         throw new Error("Lexer Error: " + message + " at column " + position + " in expression [" + this.input + "]");
       },
@@ -341,7 +361,6 @@ var Scanner = exports.Scanner = (function () {
 
   return Scanner;
 })();
-
 
 var OPERATORS = ["undefined", "null", "true", "false", "+", "-", "*", "/", "%", "^", "=", "==", "===", "!=", "!==", "<", ">", "<=", ">=", "&&", "||", "&", "|", "!", "?"];
 
@@ -447,4 +466,8 @@ function assert(condition, message) {
     throw message || "Assertion failed";
   }
 }
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+// Do nothing.

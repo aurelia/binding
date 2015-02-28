@@ -3,9 +3,14 @@ define(["exports"], function (exports) {
 
   var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
+  var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
   var PathObserver = exports.PathObserver = (function () {
     function PathObserver(leftObserver, getRightObserver, value) {
       var _this = this;
+
+      _classCallCheck(this, PathObserver);
+
       this.leftObserver = leftObserver;
 
       this.disposeLeft = leftObserver.subscribe(function (newValue) {
@@ -20,6 +25,7 @@ define(["exports"], function (exports) {
       updateRight: {
         value: function updateRight(observer) {
           var _this = this;
+
           this.rightObserver = observer;
 
           if (this.disposeRight) {
@@ -77,5 +83,8 @@ define(["exports"], function (exports) {
 
     return PathObserver;
   })();
-  exports.__esModule = true;
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 });

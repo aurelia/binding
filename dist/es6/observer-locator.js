@@ -7,10 +7,13 @@ import {
   SetterObserver,
   OoObjectObserver,
   OoPropertyObserver,
-  ValueAttributeObserver,
-  DataAttributeObserver
+  ElementObserver
 } from './property-observation';
 import {All} from 'aurelia-dependency-injection';
+import {
+  hasDeclaredDependencies,
+  ComputedPropertyObserver
+} from './computed-observation';
 
 if(typeof Object.getPropertyDescriptor !== 'function'){
  Object.getPropertyDescriptor = function (subject, name) {
@@ -127,14 +130,15 @@ export class ObserverLocator {
 
     if(obj instanceof Element){
       handler = this.eventManager.getElementHandler(obj, propertyName);
-      if(handler){
-        return new ValueAttributeObserver(handler, obj, propertyName);
-      } else if (DataAttributeObserver.handlesProperty(propertyName)) {
-        return new DataAttributeObserver(obj, propertyName);
-      }
+      return new ElementObserver(obj, propertyName, handler);
     }
 
     descriptor = Object.getPropertyDescriptor(obj, propertyName);
+
+    if (hasDeclaredDependencies(descriptor)) {
+      return new ComputedPropertyObserver(obj, propertyName, descriptor, this)
+    }
+
     if(descriptor && (descriptor.get || descriptor.set)){
       // attempt to use an adapter before resorting to dirty checking.
       observationAdapter = this.getObservationAdapter(obj, propertyName, descriptor);

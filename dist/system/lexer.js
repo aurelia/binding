@@ -1,8 +1,5 @@
 System.register([], function (_export) {
-  "use strict";
-
-  var _prototypeProperties, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP;
-
+  var _prototypeProperties, _classCallCheck, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP;
 
   function isWhitespace(code) {
     return code >= $TAB && code <= $SPACE || code === $NBSP;
@@ -53,10 +50,16 @@ System.register([], function (_export) {
   return {
     setters: [],
     execute: function () {
+      "use strict";
+
       _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
+
+      _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
       Token = _export("Token", (function () {
         function Token(index, text) {
+          _classCallCheck(this, Token);
+
           this.index = index;
           this.text = text;
         }
@@ -98,7 +101,9 @@ System.register([], function (_export) {
         return Token;
       })());
       Lexer = _export("Lexer", (function () {
-        function Lexer() {}
+        function Lexer() {
+          _classCallCheck(this, Lexer);
+        }
 
         _prototypeProperties(Lexer, null, {
           lex: {
@@ -123,6 +128,8 @@ System.register([], function (_export) {
       })());
       Scanner = _export("Scanner", (function () {
         function Scanner(input) {
+          _classCallCheck(this, Scanner);
+
           this.input = input;
           this.length = input.length;
           this.peek = 0;
@@ -134,6 +141,7 @@ System.register([], function (_export) {
         _prototypeProperties(Scanner, null, {
           scanToken: {
             value: function scanToken() {
+              // Skip whitespace.
               while (this.peek <= $SPACE) {
                 if (++this.index >= this.length) {
                   this.peek = $EOF;
@@ -143,6 +151,7 @@ System.register([], function (_export) {
                 }
               }
 
+              // Handle identifiers and numbers.
               if (isIdentifierStart(this.peek)) {
                 return this.scanIdentifier();
               }
@@ -259,6 +268,8 @@ System.register([], function (_export) {
               var text = this.input.substring(start, this.index);
               var result = new Token(start, text);
 
+              // TODO(kasperl): Deal with null, undefined, true, and false in
+              // a cleaner and faster way.
               if (OPERATORS.indexOf(text) !== -1) {
                 result.withOp(text);
               } else {
@@ -274,7 +285,7 @@ System.register([], function (_export) {
             value: function scanNumber(start) {
               assert(isDigit(this.peek));
               var simple = this.index === start;
-              this.advance();
+              this.advance(); // Skip initial digit.
 
               while (true) {
                 if (isDigit(this.peek)) {} else if (this.peek === $PERIOD) {
@@ -312,7 +323,7 @@ System.register([], function (_export) {
               var start = this.index;
               var quote = this.peek;
 
-              this.advance();
+              this.advance(); // Skip initial quote.
 
               var buffer;
               var marker = this.index;
@@ -329,6 +340,8 @@ System.register([], function (_export) {
                   var unescaped;
 
                   if (this.peek === $u) {
+                    // TODO(kasperl): Check bounds? Make sure we have test
+                    // coverage for this.
                     var hex = this.input.substring(this.index + 1, this.index + 5);
 
                     if (!/[A-Z0-9]{4}/.test(hex)) {
@@ -355,9 +368,10 @@ System.register([], function (_export) {
               }
 
               var last = this.input.substring(marker, this.index);
-              this.advance();
+              this.advance(); // Skip terminating quote.
               var text = this.input.substring(start, this.index);
 
+              // Compute the unescaped string value.
               var unescaped = last;
 
               if (buffer != null) {
@@ -384,6 +398,9 @@ System.register([], function (_export) {
           error: {
             value: function error(message) {
               var offset = arguments[1] === undefined ? 0 : arguments[1];
+
+              // TODO(kasperl): Try to get rid of the offset. It is only used to match
+              // the error expectations in the lexer tests for numbers with exponents.
               var position = this.index + offset;
               throw new Error("Lexer Error: " + message + " at column " + position + " in expression [" + this.input + "]");
             },
@@ -448,3 +465,5 @@ System.register([], function (_export) {
     }
   };
 });
+
+// Do nothing.

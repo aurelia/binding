@@ -4,8 +4,9 @@ var _prototypeProperties = function (child, staticProps, instanceProps) { if (st
 
 var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
-var ResourceType = require("aurelia-metadata").ResourceType;
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
+var ResourceType = require("aurelia-metadata").ResourceType;
 
 if (typeof String.prototype.endsWith !== "function") {
   String.prototype.endsWith = function (suffix) {
@@ -19,6 +20,8 @@ function camelCase(name) {
 
 var ValueConverter = exports.ValueConverter = (function (ResourceType) {
   function ValueConverter(name) {
+    _classCallCheck(this, ValueConverter);
+
     this.name = name;
   }
 
@@ -54,4 +57,7 @@ var ValueConverter = exports.ValueConverter = (function (ResourceType) {
 
   return ValueConverter;
 })(ResourceType);
-exports.__esModule = true;
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});

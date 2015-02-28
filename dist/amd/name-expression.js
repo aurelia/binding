@@ -3,8 +3,12 @@ define(["exports"], function (exports) {
 
   var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
+  var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
   var NameExpression = exports.NameExpression = (function () {
     function NameExpression(name, mode) {
+      _classCallCheck(this, NameExpression);
+
       this.property = name;
       this.discrete = true;
       this.mode = (mode || "view-model").toLowerCase();
@@ -22,8 +26,11 @@ define(["exports"], function (exports) {
 
     return NameExpression;
   })();
+
   var NameBinder = (function () {
     function NameBinder(property, target, mode) {
+      _classCallCheck(this, NameBinder);
+
       this.property = property;
 
       switch (mode) {
@@ -67,5 +74,7 @@ define(["exports"], function (exports) {
     return NameBinder;
   })();
 
-  exports.__esModule = true;
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 });

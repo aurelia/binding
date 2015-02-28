@@ -1,12 +1,11 @@
-System.register(["aurelia-metadata", "./value-converter", "./event-manager", "./observer-locator", "./array-change-records", "./binding-modes", "./parser", "./binding-expression", "./listener-expression", "./name-expression", "./call-expression", "./dirty-checking", "./map-change-records"], function (_export) {
-  "use strict";
-
+System.register(["aurelia-metadata", "./value-converter", "./event-manager", "./observer-locator", "./array-change-records", "./binding-modes", "./parser", "./binding-expression", "./listener-expression", "./name-expression", "./call-expression", "./dirty-checking", "./map-change-records", "./computed-observation"], function (_export) {
   var Metadata, ValueConverter;
   return {
     setters: [function (_aureliaMetadata) {
       Metadata = _aureliaMetadata.Metadata;
     }, function (_valueConverter) {
       ValueConverter = _valueConverter.ValueConverter;
+
       _export("ValueConverter", _valueConverter.ValueConverter);
     }, function (_eventManager) {
       _export("EventManager", _eventManager.EventManager);
@@ -34,8 +33,14 @@ System.register(["aurelia-metadata", "./value-converter", "./event-manager", "./
       _export("DirtyChecker", _dirtyChecking.DirtyChecker);
     }, function (_mapChangeRecords) {
       _export("getChangeRecords", _mapChangeRecords.getChangeRecords);
+    }, function (_computedObservation) {
+      _export("ComputedObservationAdapter", _computedObservation.ComputedObservationAdapter);
+
+      _export("declarePropertyDependencies", _computedObservation.declarePropertyDependencies);
     }],
     execute: function () {
+      "use strict";
+
       Metadata.configure.classHelper("valueConverter", ValueConverter);
     }
   };

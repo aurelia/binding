@@ -13,5 +13,6 @@ export {NameExpression} from './name-expression';
 export {CallExpression} from './call-expression';
 export {DirtyChecker} from './dirty-checking';
 export {getChangeRecords} from './map-change-records';
+export {ComputedObservationAdapter, declarePropertyDependencies} from './computed-observation';
 
 Metadata.configure.classHelper('valueConverter', ValueConverter);

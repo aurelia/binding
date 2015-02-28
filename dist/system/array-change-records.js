@@ -1,7 +1,6 @@
 System.register([], function (_export) {
-  "use strict";
-
   var EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice;
+
   _export("calcSplices", calcSplices);
 
   _export("projectArraySplices", projectArraySplices);
@@ -29,14 +28,26 @@ System.register([], function (_export) {
   }
 
   function intersect(start1, end1, start2, end2) {
-    if (end1 < start2 || end2 < start1) return -1;
-
-    if (end1 == start2 || end2 == start1) return 0;
-
+    // Disjoint
+    if (end1 < start2 || end2 < start1) {
+      return -1;
+    } // Adjacent
+    if (end1 == start2 || end2 == start1) {
+      return 0;
+    } // Non-zero intersect, span1 first
     if (start1 < start2) {
-      if (end1 < end2) return end1 - start2;else return end2 - start2;
+      if (end1 < end2) {
+        return end1 - start2; // Overlap
+      } else {
+        return end2 - start2; // Contained
+      }
     } else {
-      if (end2 < end1) return end2 - start1;else return end1 - start1;
+      // Non-zero intersect, span2 first
+      if (end2 < end1) {
+        return end2 - start1; // Overlap
+      } else {
+        return end1 - start1; // Contained
+      }
     }
   }
 
@@ -55,6 +66,8 @@ System.register([], function (_export) {
       var intersectCount = intersect(splice.index, splice.index + splice.removed.length, current.index, current.index + current.addedCount);
 
       if (intersectCount >= 0) {
+        // Merge the two splices
+
         splices.splice(i, 1);
         i--;
 
@@ -64,17 +77,20 @@ System.register([], function (_export) {
         var deleteCount = splice.removed.length + current.removed.length - intersectCount;
 
         if (!splice.addedCount && !deleteCount) {
+          // merged splice is a noop. discard.
           inserted = true;
         } else {
           var removed = current.removed;
 
           if (splice.index < current.index) {
+            // some prefix of splice.removed is prepended to current.removed.
             var prepend = splice.removed.slice(0, current.index - splice.index);
             Array.prototype.push.apply(prepend, removed);
             removed = prepend;
           }
 
           if (splice.index + splice.removed.length > current.index + current.addedCount) {
+            // some suffix of splice.removed is appended to current.removed.
             var append = splice.removed.slice(current.index + current.addedCount - splice.index);
             Array.prototype.push.apply(removed, append);
           }
@@ -85,6 +101,8 @@ System.register([], function (_export) {
           }
         }
       } else if (splice.index < current.index) {
+        // Insert splice here.
+
         inserted = true;
 
         splices.splice(i, 0, splice);
@@ -114,7 +132,7 @@ System.register([], function (_export) {
           if (!isIndex(record.name)) continue;
           var index = toNumber(record.name);
           if (index < 0) continue;
-          mergeSplice(splices, index, [record.oldValue], 0);
+          mergeSplice(splices, index, [record.oldValue], record.type === "delete" ? 0 : 1);
           break;
         default:
           console.error("Unexpected record type: " + JSON.stringify(record));
@@ -140,25 +158,42 @@ System.register([], function (_export) {
 
     return splices;
   }
+
   return {
     setters: [],
     execute: function () {
+      "use strict";
+
       EDIT_LEAVE = 0;
       EDIT_UPDATE = 1;
       EDIT_ADD = 2;
       EDIT_DELETE = 3;
       ArraySplice.prototype = {
-        calcEditDistances: function (current, currentStart, currentEnd, old, oldStart, oldEnd) {
+        // Note: This function is *based* on the computation of the Levenshtein
+        // "edit" distance. The one change is that "updates" are treated as two
+        // edits - not one. With Array splices, an update is really a delete
+        // followed by an add. By retaining this, we optimize for "keeping" the
+        // maximum array items in the original array. For example:
+        //
+        //   'xxxx123' -> '123yyyy'
+        //
+        // With 1-edit updates, the shortest path would be just to update all seven
+        // characters. With 2-edit updates, we delete 4, leave 3, and add 4. This
+        // leaves the substring '123' intact.
+        calcEditDistances: function calcEditDistances(current, currentStart, currentEnd, old, oldStart, oldEnd) {
+          // "Deletion" columns
           var rowCount = oldEnd - oldStart + 1;
           var columnCount = currentEnd - currentStart + 1;
           var distances = new Array(rowCount);
           var i, j, north, west;
 
+          // "Addition" rows. Initialize null column.
           for (i = 0; i < rowCount; ++i) {
             distances[i] = new Array(columnCount);
             distances[i][0] = i;
           }
 
+          // Initialize null row
           for (j = 0; j < columnCount; ++j) {
             distances[0][j] = j;
           }
@@ -175,7 +210,11 @@ System.register([], function (_export) {
 
           return distances;
         },
-        spliceOperationsFromEditDistances: function (distances) {
+
+        // This starts at the final weight, and walks "backward" by finding
+        // the minimum previous weight recursively until the origin of the weight
+        // matrix.
+        spliceOperationsFromEditDistances: function spliceOperationsFromEditDistances(distances) {
           var i = distances.length - 1;
           var j = distances[0].length - 1;
           var current = distances[i][j];
@@ -221,7 +260,32 @@ System.register([], function (_export) {
           edits.reverse();
           return edits;
         },
-        calcSplices: function (current, currentStart, currentEnd, old, oldStart, oldEnd) {
+
+        /**
+         * Splice Projection functions:
+         *
+         * A splice map is a representation of how a previous array of items
+         * was transformed into a new array of items. Conceptually it is a list of
+         * tuples of
+         *
+         *   <index, removed, addedCount>
+         *
+         * which are kept in ascending index order of. The tuple represents that at
+         * the |index|, |removed| sequence of items were removed, and counting forward
+         * from |index|, |addedCount| items were added.
+         */
+
+        /**
+         * Lacking individual splice mutation information, the minimal set of
+         * splices can be synthesized given the previous state and final state of an
+         * array. The basic approach is to calculate the edit distance matrix and
+         * choose the shortest path through it.
+         *
+         * Complexity: O(l * p)
+         *   l: The length of the current array
+         *   p: The length of the old array
+         */
+        calcSplices: function calcSplices(current, currentStart, currentEnd, old, oldStart, oldEnd) {
           var prefixCount = 0;
           var suffixCount = 0;
 
@@ -235,16 +299,16 @@ System.register([], function (_export) {
           currentEnd -= suffixCount;
           oldEnd -= suffixCount;
 
-          if (currentEnd - currentStart == 0 && oldEnd - oldStart == 0) return [];
-
-          if (currentStart == currentEnd) {
+          if (currentEnd - currentStart == 0 && oldEnd - oldStart == 0) {
+            return [];
+          }if (currentStart == currentEnd) {
             var splice = newSplice(currentStart, [], 0);
             while (oldStart < oldEnd) splice.removed.push(old[oldStart++]);
 
             return [splice];
-          } else if (oldStart == oldEnd) return [newSplice(currentStart, [], currentEnd - currentStart)];
-
-          var ops = this.spliceOperationsFromEditDistances(this.calcEditDistances(current, currentStart, currentEnd, old, oldStart, oldEnd));
+          } else if (oldStart == oldEnd) {
+            return [newSplice(currentStart, [], currentEnd - currentStart)];
+          }var ops = this.spliceOperationsFromEditDistances(this.calcEditDistances(current, currentStart, currentEnd, old, oldStart, oldEnd));
 
           var splice = undefined;
           var splices = [];
@@ -291,12 +355,13 @@ System.register([], function (_export) {
           return splices;
         },
 
-        sharedPrefix: function (current, old, searchLength) {
-          for (var i = 0; i < searchLength; ++i) if (!this.equals(current[i], old[i])) return i;
-          return searchLength;
+        sharedPrefix: function sharedPrefix(current, old, searchLength) {
+          for (var i = 0; i < searchLength; ++i) if (!this.equals(current[i], old[i])) {
+            return i;
+          }return searchLength;
         },
 
-        sharedSuffix: function (current, old, searchLength) {
+        sharedSuffix: function sharedSuffix(current, old, searchLength) {
           var index1 = current.length;
           var index2 = old.length;
           var count = 0;
@@ -305,11 +370,11 @@ System.register([], function (_export) {
           return count;
         },
 
-        calculateSplices: function (current, previous) {
+        calculateSplices: function calculateSplices(current, previous) {
           return this.calcSplices(current, 0, current.length, previous, 0, previous.length);
         },
 
-        equals: function (currentValue, previousValue) {
+        equals: function equals(currentValue, previousValue) {
           return currentValue === previousValue;
         }
       };

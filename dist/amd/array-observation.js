@@ -1,12 +1,18 @@
-define(["exports", "./array-change-records"], function (exports, _arrayChangeRecords) {
+define(["exports", "./array-change-records", "./collection-observation"], function (exports, _arrayChangeRecords, _collectionObservation) {
   "use strict";
 
   var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-  exports.getArrayObserver = getArrayObserver;
-  var calcSplices = _arrayChangeRecords.calcSplices;
-  var projectArraySplices = _arrayChangeRecords.projectArraySplices;
+  var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
+  var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+
+  var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
+  exports.getArrayObserver = getArrayObserver;
+  var projectArraySplices = _arrayChangeRecords.projectArraySplices;
+  var ModifyCollectionObserver = _collectionObservation.ModifyCollectionObserver;
+  var CollectionLengthObserver = _collectionObservation.CollectionLengthObserver;
 
   var arrayProto = Array.prototype,
       hasArrayObserve = (function detectArrayObserve() {
@@ -26,9 +32,9 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
     arr.length = 0;
 
     Object.deliverChangeRecords(callback);
-    if (records.length !== 2) return false;
-
-    if (records[0].type != "splice" || records[1].type != "splice") {
+    if (records.length !== 2) {
+      return false;
+    }if (records[0].type != "splice" || records[1].type != "splice") {
       return false;
     }
 
@@ -45,15 +51,14 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
     }
   }
 
-  var ModifyArrayObserver = (function () {
+  var ModifyArrayObserver = (function (ModifyCollectionObserver) {
     function ModifyArrayObserver(taskQueue, array) {
-      this.taskQueue = taskQueue;
-      this.callbacks = [];
-      this.changeRecords = [];
-      this.queued = false;
-      this.array = array;
-      this.oldArray = null;
+      _classCallCheck(this, ModifyArrayObserver);
+
+      _get(Object.getPrototypeOf(ModifyArrayObserver.prototype), "constructor", this).call(this, taskQueue, array);
     }
+
+    _inherits(ModifyArrayObserver, ModifyCollectionObserver);
 
     _prototypeProperties(ModifyArrayObserver, {
       create: {
@@ -137,99 +142,15 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
         writable: true,
         configurable: true
       }
-    }, {
-      subscribe: {
-        value: function subscribe(callback) {
-          var callbacks = this.callbacks;
-          callbacks.push(callback);
-          return function () {
-            callbacks.splice(callbacks.indexOf(callback), 1);
-          };
-        },
-        writable: true,
-        configurable: true
-      },
-      addChangeRecord: {
-        value: function addChangeRecord(changeRecord) {
-          if (!this.callbacks.length) {
-            return;
-          }
-
-          this.changeRecords.push(changeRecord);
-
-          if (!this.queued) {
-            this.queued = true;
-            this.taskQueue.queueMicroTask(this);
-          }
-        },
-        writable: true,
-        configurable: true
-      },
-      reset: {
-        value: function reset(oldArray) {
-          if (!this.callbacks.length) {
-            return;
-          }
-
-          this.oldArray = oldArray;
-
-          if (!this.queued) {
-            this.queued = true;
-            this.taskQueue.queueMicroTask(this);
-          }
-        },
-        writable: true,
-        configurable: true
-      },
-      getObserver: {
-        value: function getObserver(propertyName) {
-          if (propertyName == "length") {
-            return this.lengthObserver || (this.lengthObserver = new ArrayLengthObserver(this.array));
-          } else {
-            throw new Error("You cannot observe the " + propertyName + " property of an array.");
-          }
-        },
-        writable: true,
-        configurable: true
-      },
-      call: {
-        value: function call() {
-          var callbacks = this.callbacks,
-              i = callbacks.length,
-              changeRecords = this.changeRecords,
-              oldArray = this.oldArray,
-              splices;
-
-          this.queued = false;
-          this.changeRecords = [];
-          this.oldArray = null;
-
-          if (i) {
-            if (oldArray) {
-              splices = calcSplices(this.array, 0, this.array.length, oldArray, 0, oldArray.length);
-            } else {
-              splices = projectArraySplices(this.array, changeRecords);
-            }
-
-            while (i--) {
-              callbacks[i](splices);
-            }
-          }
-
-          if (this.lengthObserver) {
-            this.lengthObserver(this.array.length);
-          }
-        },
-        writable: true,
-        configurable: true
-      }
     });
 
     return ModifyArrayObserver;
-  })();
+  })(ModifyCollectionObserver);
 
   var ArrayObserveObserver = (function () {
     function ArrayObserveObserver(array) {
+      _classCallCheck(this, ArrayObserveObserver);
+
       this.array = array;
       this.callbacks = [];
       this.observing = false;
@@ -239,6 +160,7 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
       subscribe: {
         value: function subscribe(callback) {
           var _this = this;
+
           var callbacks = this.callbacks;
 
           callbacks.push(callback);
@@ -260,7 +182,7 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
       getObserver: {
         value: function getObserver(propertyName) {
           if (propertyName == "length") {
-            return this.lengthObserver || (this.lengthObserver = new ArrayLengthObserver(this.array));
+            return this.lengthObserver || (this.lengthObserver = new CollectionLengthObserver(this.array));
           } else {
             throw new Error("You cannot observe the " + propertyName + " property of an array.");
           }
@@ -278,7 +200,7 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
             return;
           }
 
-          var splices = projectArraySplices(this.array, changeRecords);
+          splices = projectArraySplices(this.array, changeRecords);
 
           while (i--) {
             callbacks[i](splices);
@@ -296,58 +218,7 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
     return ArrayObserveObserver;
   })();
 
-  var ArrayLengthObserver = (function () {
-    function ArrayLengthObserver(array) {
-      this.array = array;
-      this.callbacks = [];
-      this.currentValue = array.length;
-    }
-
-    _prototypeProperties(ArrayLengthObserver, null, {
-      getValue: {
-        value: function getValue() {
-          return this.array.length;
-        },
-        writable: true,
-        configurable: true
-      },
-      setValue: {
-        value: function setValue(newValue) {
-          this.array.length = newValue;
-        },
-        writable: true,
-        configurable: true
-      },
-      subscribe: {
-        value: function subscribe(callback) {
-          var callbacks = this.callbacks;
-          callbacks.push(callback);
-          return function () {
-            callbacks.splice(callbacks.indexOf(callback), 1);
-          };
-        },
-        writable: true,
-        configurable: true
-      },
-      call: {
-        value: function call(newValue) {
-          var callbacks = this.callbacks,
-              i = callbacks.length,
-              oldValue = this.currentValue;
-
-          while (i--) {
-            callbacks[i](newValue, oldValue);
-          }
-
-          this.currentValue = newValue;
-        },
-        writable: true,
-        configurable: true
-      }
-    });
-
-    return ArrayLengthObserver;
-  })();
-
-  exports.__esModule = true;
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 });

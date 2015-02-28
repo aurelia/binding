@@ -3,6 +3,8 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
 
   var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
+  var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
   var Lexer = _lexer.Lexer;
   var Token = _lexer.Token;
   var Expression = _ast.Expression;
@@ -24,11 +26,12 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
   var LiteralObject = _ast.LiteralObject;
   var LiteralString = _ast.LiteralString;
 
-
   var EOF = new Token(-1, null);
 
   var Parser = exports.Parser = (function () {
     function Parser() {
+      _classCallCheck(this, Parser);
+
       this.cache = {};
       this.lexer = new Lexer();
     }
@@ -47,8 +50,11 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
 
     return Parser;
   })();
+
   var ParserImplementation = exports.ParserImplementation = (function () {
     function ParserImplementation(lexer, input) {
+      _classCallCheck(this, ParserImplementation);
+
       this.index = 0;
       this.input = input;
       this.tokens = lexer.lex(input);
@@ -98,11 +104,13 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
 
           while (this.optional("|")) {
             var name = this.peek.text,
-                args = [];
+                // TODO(kasperl): Restrict to identifier?
+            args = [];
 
             this.advance();
 
             while (this.optional(":")) {
+              // TODO(kasperl): Is this really supposed to be expressions?
               args.push(this.parseExpression());
             }
 
@@ -267,7 +275,7 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
       parsePrefix: {
         value: function parsePrefix() {
           if (this.optional("+")) {
-            return this.parsePrefix();
+            return this.parsePrefix(); // TODO(kasperl): This is different than the original parser.
           } else if (this.optional("-")) {
             return new Binary("-", new LiteralPrimitive(0), this.parsePrefix());
           } else if (this.optional("!")) {
@@ -285,7 +293,7 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
 
           while (true) {
             if (this.optional(".")) {
-              var name = this.peek.text;
+              var name = this.peek.text; // TODO(kasperl): Check that this is an identifier. Are keywords okay?
 
               this.advance();
 
@@ -371,6 +379,8 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
 
           if (this.peek.text !== "}") {
             do {
+              // TODO(kasperl): Stricter checking. Only allow identifiers
+              // and strings as keys. Maybe also keywords?
               var value = this.peek.value;
               keys.push(typeof value === "string" ? value : this.peek.text);
 
@@ -446,5 +456,8 @@ define(["exports", "./lexer", "./ast"], function (exports, _lexer, _ast) {
 
     return ParserImplementation;
   })();
-  exports.__esModule = true;
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 });

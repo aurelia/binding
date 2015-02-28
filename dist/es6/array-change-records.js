@@ -369,7 +369,7 @@ function createInitialSplices(array, changeRecords) {
         var index = toNumber(record.name);
         if (index < 0)
           continue;
-        mergeSplice(splices, index, [record.oldValue], 0);
+        mergeSplice(splices, index, [record.oldValue], record.type === 'delete' ? 0 : 1);
         break;
       default:
         console.error('Unexpected record type: ' + JSON.stringify(record));

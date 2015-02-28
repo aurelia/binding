@@ -1,4 +1,5 @@
-import {calcSplices, projectArraySplices} from './array-change-records';
+import {projectArraySplices} from './array-change-records';
+import {ModifyCollectionObserver, CollectionLengthObserver} from './collection-observation';
 
 var arrayProto = Array.prototype,
     hasArrayObserve = (function detectArrayObserve() {
@@ -39,85 +40,9 @@ export function getArrayObserver(taskQueue, array){
   }
 }
 
-class ModifyArrayObserver {
+class ModifyArrayObserver extends ModifyCollectionObserver {
   constructor(taskQueue, array){
-    this.taskQueue = taskQueue;
-    this.callbacks = [];
-    this.changeRecords = [];
-    this.queued = false;
-    this.array = array;
-    this.oldArray = null;
-  }
-
-  subscribe(callback){
-    var callbacks = this.callbacks;
-    callbacks.push(callback);
-    return function(){
-      callbacks.splice(callbacks.indexOf(callback), 1);
-    };
-  }
-
-  addChangeRecord(changeRecord){
-    if(!this.callbacks.length){
-      return;
-    }
-
-    this.changeRecords.push(changeRecord);
-
-    if(!this.queued){
-      this.queued = true;
-      this.taskQueue.queueMicroTask(this);
-    }
-  }
-
-  reset(oldArray){
-    if(!this.callbacks.length){
-      return;
-    }
-
-    this.oldArray = oldArray;
-
-    if(!this.queued){
-      this.queued = true;
-      this.taskQueue.queueMicroTask(this);
-    }
-  }
-
-  getObserver(propertyName){
-    if(propertyName == 'length'){
-      return this.lengthObserver || (this.lengthObserver = new ArrayLengthObserver(this.array));
-    }else{
-      throw new Error(`You cannot observe the ${propertyName} property of an array.`);
-    }
-  }
-
-  call(){
-    var callbacks = this.callbacks,
-        i = callbacks.length,
-        changeRecords = this.changeRecords,
-        oldArray = this.oldArray,
-        splices;
-
-    this.queued = false;
-    this.changeRecords = [];
-    this.oldArray = null;
-
-    if(i){
-      if(oldArray){
-        //we might need to combine this with existing change records....
-        splices = calcSplices(this.array, 0, this.array.length, oldArray, 0, oldArray.length);
-      }else{
-        splices = projectArraySplices(this.array, changeRecords);
-      }
-
-      while(i--) {
-        callbacks[i](splices);
-      }
-    }
-
-    if(this.lengthObserver){
-      this.lengthObserver(this.array.length);
-    }
+    super(taskQueue, array);
   }
 
   static create(taskQueue, array){
@@ -223,7 +148,7 @@ class ArrayObserveObserver {
 
   getObserver(propertyName){
     if(propertyName == 'length'){
-      return this.lengthObserver || (this.lengthObserver = new ArrayLengthObserver(this.array));
+      return this.lengthObserver || (this.lengthObserver = new CollectionLengthObserver(this.array));
     }else{
       throw new Error(`You cannot observe the ${propertyName} property of an array.`);
     }
@@ -238,7 +163,7 @@ class ArrayObserveObserver {
       return;
     }
 
-    var splices = projectArraySplices(this.array, changeRecords);
+    splices = projectArraySplices(this.array, changeRecords);
 
     while(i--) {
       callbacks[i](splices);
@@ -247,41 +172,5 @@ class ArrayObserveObserver {
     if(this.lengthObserver){
       this.lengthObserver.call(this.array.length);
     }
-  }
-}
-
-class ArrayLengthObserver {
-  constructor(array){
-    this.array = array;
-    this.callbacks = [];
-    this.currentValue = array.length;
-  }
-
-  getValue(){
-    return this.array.length;
-  }
-
-  setValue(newValue){
-    this.array.length = newValue;
-  }
-
-  subscribe(callback){
-    var callbacks = this.callbacks;
-    callbacks.push(callback);
-    return function(){
-      callbacks.splice(callbacks.indexOf(callback), 1);
-    };
-  }
-
-  call(newValue){
-    var callbacks = this.callbacks,
-        i = callbacks.length,
-        oldValue = this.currentValue;
-
-    while(i--) {
-      callbacks[i](newValue, oldValue);
-    }
-
-    this.currentValue = newValue;
   }
 }

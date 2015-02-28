@@ -1,17 +1,22 @@
 System.register(["./binding-modes"], function (_export) {
-  "use strict";
+  var ONE_WAY, TWO_WAY, _prototypeProperties, _classCallCheck, BindingExpression, Binding;
 
-  var ONE_WAY, TWO_WAY, _prototypeProperties, BindingExpression, Binding;
   return {
     setters: [function (_bindingModes) {
       ONE_WAY = _bindingModes.ONE_WAY;
       TWO_WAY = _bindingModes.TWO_WAY;
     }],
     execute: function () {
+      "use strict";
+
       _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
+
+      _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
       BindingExpression = _export("BindingExpression", (function () {
         function BindingExpression(observerLocator, targetProperty, sourceExpression, mode, valueConverterLookupFunction, attribute) {
+          _classCallCheck(this, BindingExpression);
+
           this.observerLocator = observerLocator;
           this.targetProperty = targetProperty;
           this.sourceExpression = sourceExpression;
@@ -33,8 +38,11 @@ System.register(["./binding-modes"], function (_export) {
 
         return BindingExpression;
       })());
+
       Binding = (function () {
         function Binding(observerLocator, sourceExpression, target, targetProperty, mode, valueConverterLookupFunction) {
+          _classCallCheck(this, Binding);
+
           this.observerLocator = observerLocator;
           this.sourceExpression = sourceExpression;
           this.targetProperty = observerLocator.getObserver(target, targetProperty);
@@ -53,6 +61,7 @@ System.register(["./binding-modes"], function (_export) {
           bind: {
             value: function bind(source) {
               var _this = this;
+
               var targetProperty = this.targetProperty,
                   info;
 

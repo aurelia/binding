@@ -1,14 +1,19 @@
 System.register([], function (_export) {
-  "use strict";
+  var _prototypeProperties, _classCallCheck, DirtyChecker, DirtyCheckProperty;
 
-  var _prototypeProperties, DirtyChecker, DirtyCheckProperty;
   return {
     setters: [],
     execute: function () {
+      "use strict";
+
       _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
+
+      _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
       DirtyChecker = _export("DirtyChecker", (function () {
         function DirtyChecker() {
+          _classCallCheck(this, DirtyChecker);
+
           this.tracked = [];
           this.checkDelay = 120;
         }
@@ -38,6 +43,7 @@ System.register([], function (_export) {
           scheduleDirtyCheck: {
             value: function scheduleDirtyCheck() {
               var _this = this;
+
               setTimeout(function () {
                 return _this.check();
               }, this.checkDelay);
@@ -71,6 +77,8 @@ System.register([], function (_export) {
       })());
       DirtyCheckProperty = _export("DirtyCheckProperty", (function () {
         function DirtyCheckProperty(dirtyChecker, obj, propertyName) {
+          _classCallCheck(this, DirtyCheckProperty);
+
           this.dirtyChecker = dirtyChecker;
           this.obj = obj;
           this.propertyName = propertyName;

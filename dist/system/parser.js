@@ -1,7 +1,6 @@
 System.register(["./lexer", "./ast"], function (_export) {
-  "use strict";
+  var Lexer, Token, Expression, ArrayOfExpression, Chain, ValueConverter, Assign, Conditional, AccessScope, AccessMember, AccessKeyed, CallScope, CallFunction, CallMember, PrefixNot, Binary, LiteralPrimitive, LiteralArray, LiteralObject, LiteralString, _prototypeProperties, _classCallCheck, EOF, Parser, ParserImplementation;
 
-  var Lexer, Token, Expression, ArrayOfExpression, Chain, ValueConverter, Assign, Conditional, AccessScope, AccessMember, AccessKeyed, CallScope, CallFunction, CallMember, PrefixNot, Binary, LiteralPrimitive, LiteralArray, LiteralObject, LiteralString, _prototypeProperties, EOF, Parser, ParserImplementation;
   return {
     setters: [function (_lexer) {
       Lexer = _lexer.Lexer;
@@ -27,11 +26,17 @@ System.register(["./lexer", "./ast"], function (_export) {
       LiteralString = _ast.LiteralString;
     }],
     execute: function () {
+      "use strict";
+
       _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
+
+      _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
       EOF = new Token(-1, null);
       Parser = _export("Parser", (function () {
         function Parser() {
+          _classCallCheck(this, Parser);
+
           this.cache = {};
           this.lexer = new Lexer();
         }
@@ -52,6 +57,8 @@ System.register(["./lexer", "./ast"], function (_export) {
       })());
       ParserImplementation = _export("ParserImplementation", (function () {
         function ParserImplementation(lexer, input) {
+          _classCallCheck(this, ParserImplementation);
+
           this.index = 0;
           this.input = input;
           this.tokens = lexer.lex(input);
@@ -101,11 +108,13 @@ System.register(["./lexer", "./ast"], function (_export) {
 
               while (this.optional("|")) {
                 var name = this.peek.text,
-                    args = [];
+                    // TODO(kasperl): Restrict to identifier?
+                args = [];
 
                 this.advance();
 
                 while (this.optional(":")) {
+                  // TODO(kasperl): Is this really supposed to be expressions?
                   args.push(this.parseExpression());
                 }
 
@@ -270,7 +279,7 @@ System.register(["./lexer", "./ast"], function (_export) {
           parsePrefix: {
             value: function parsePrefix() {
               if (this.optional("+")) {
-                return this.parsePrefix();
+                return this.parsePrefix(); // TODO(kasperl): This is different than the original parser.
               } else if (this.optional("-")) {
                 return new Binary("-", new LiteralPrimitive(0), this.parsePrefix());
               } else if (this.optional("!")) {
@@ -288,7 +297,7 @@ System.register(["./lexer", "./ast"], function (_export) {
 
               while (true) {
                 if (this.optional(".")) {
-                  var name = this.peek.text;
+                  var name = this.peek.text; // TODO(kasperl): Check that this is an identifier. Are keywords okay?
 
                   this.advance();
 
@@ -374,6 +383,8 @@ System.register(["./lexer", "./ast"], function (_export) {
 
               if (this.peek.text !== "}") {
                 do {
+                  // TODO(kasperl): Stricter checking. Only allow identifiers
+                  // and strings as keys. Maybe also keywords?
                   var value = this.peek.value;
                   keys.push(typeof value === "string" ? value : this.peek.text);
 

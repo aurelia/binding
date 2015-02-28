@@ -3,15 +3,18 @@ define(["exports"], function (exports) {
 
   var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
+  var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
   var SetterObserver = exports.SetterObserver = (function () {
     function SetterObserver(taskQueue, obj, propertyName) {
+      _classCallCheck(this, SetterObserver);
+
       this.taskQueue = taskQueue;
       this.obj = obj;
       this.propertyName = propertyName;
       this.callbacks = [];
       this.queued = false;
       this.observing = false;
-      this.isSVG = obj instanceof SVGElement;
     }
 
     _prototypeProperties(SetterObserver, null, {
@@ -24,11 +27,7 @@ define(["exports"], function (exports) {
       },
       setValue: {
         value: function setValue(newValue) {
-          if (this.isSVG) {
-            this.obj.setAttributeNS(null, this.propertyName, newValue);
-          } else {
-            this.obj[this.propertyName] = newValue;
-          }
+          this.obj[this.propertyName] = newValue;
         },
         writable: true,
         configurable: true
@@ -112,8 +111,11 @@ define(["exports"], function (exports) {
 
     return SetterObserver;
   })();
+
   var OoObjectObserver = exports.OoObjectObserver = (function () {
     function OoObjectObserver(obj, observerLocator) {
+      _classCallCheck(this, OoObjectObserver);
+
       this.obj = obj;
       this.observers = {};
       this.observerLocator = observerLocator;
@@ -123,6 +125,7 @@ define(["exports"], function (exports) {
       subscribe: {
         value: function subscribe(propertyObserver, callback) {
           var _this = this;
+
           var callbacks = propertyObserver.callbacks;
           callbacks.push(callback);
 
@@ -183,13 +186,15 @@ define(["exports"], function (exports) {
 
     return OoObjectObserver;
   })();
+
   var OoPropertyObserver = exports.OoPropertyObserver = (function () {
     function OoPropertyObserver(owner, obj, propertyName) {
+      _classCallCheck(this, OoPropertyObserver);
+
       this.owner = owner;
       this.obj = obj;
       this.propertyName = propertyName;
       this.callbacks = [];
-      this.isSVG = obj instanceof SVGElement;
     }
 
     _prototypeProperties(OoPropertyObserver, null, {
@@ -202,11 +207,7 @@ define(["exports"], function (exports) {
       },
       setValue: {
         value: function setValue(newValue) {
-          if (this.isSVG) {
-            this.obj.setAttributeNS(null, this.propertyName, newValue);
-          } else {
-            this.obj[this.propertyName] = newValue;
-          }
+          this.obj[this.propertyName] = newValue;
         },
         writable: true,
         configurable: true
@@ -234,19 +235,22 @@ define(["exports"], function (exports) {
 
     return OoPropertyObserver;
   })();
+
   var UndefinedPropertyObserver = exports.UndefinedPropertyObserver = (function () {
     function UndefinedPropertyObserver(owner, obj, propertyName) {
+      _classCallCheck(this, UndefinedPropertyObserver);
+
       this.owner = owner;
       this.obj = obj;
       this.propertyName = propertyName;
       this.callbackMap = new Map();
-      this.callbacks = [];
-      this.isSVG = obj instanceof SVGElement;
+      this.callbacks = []; // unused here, but required by owner OoObjectObserver.
     }
 
     _prototypeProperties(UndefinedPropertyObserver, null, {
       getValue: {
         value: function getValue() {
+          // delegate this to the actual observer if possible.
           if (this.actual) {
             return this.actual.getValue();
           }
@@ -257,15 +261,13 @@ define(["exports"], function (exports) {
       },
       setValue: {
         value: function setValue(newValue) {
+          // delegate this to the actual observer if possible.
           if (this.actual) {
             this.actual.setValue(newValue);
             return;
           }
-          if (this.isSVG) {
-            this.obj.setAttributeNS(null, this.propertyName, newValue);
-          } else {
-            this.obj[this.propertyName] = newValue;
-          }
+          // define the property and trigger the callbacks.
+          this.obj[this.propertyName] = newValue;
           this.trigger(newValue, undefined);
         },
         writable: true,
@@ -275,15 +277,38 @@ define(["exports"], function (exports) {
         value: function trigger(newValue, oldValue) {
           var callback;
 
+          // we only care about this event one time:  when the property becomes defined.
           if (this.subscription) {
             this.subscription();
           }
 
+          // get the actual observer.
           this.getObserver();
 
-          for (var _iterator = this.callbackMap.keys()[Symbol.iterator](), _step; !(_step = _iterator.next()).done;) {
-            callback = _step.value;
-            callback(newValue, oldValue);
+          // invoke the callbacks.
+          var _iteratorNormalCompletion = true;
+          var _didIteratorError = false;
+          var _iteratorError = undefined;
+
+          try {
+            for (var _iterator = this.callbackMap.keys()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+              callback = _step.value;
+
+              callback(newValue, oldValue);
+            }
+          } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion && _iterator["return"]) {
+                _iterator["return"]();
+              }
+            } finally {
+              if (_didIteratorError) {
+                throw _iteratorError;
+              }
+            }
           }
         },
         writable: true,
@@ -293,18 +318,41 @@ define(["exports"], function (exports) {
         value: function getObserver() {
           var callback, observerLocator;
 
+          // has the property has been defined?
           if (!Object.getOwnPropertyDescriptor(this.obj, this.propertyName)) {
             return;
           }
 
+          // get the actual observer.
           observerLocator = this.owner.observerLocator;
           delete this.owner.observers[this.propertyName];
           delete observerLocator.getObserversLookup(this.obj, observerLocator)[this.propertyName];
           this.actual = observerLocator.getObserver(this.obj, this.propertyName);
 
-          for (var _iterator = this.callbackMap.keys()[Symbol.iterator](), _step; !(_step = _iterator.next()).done;) {
-            callback = _step.value;
-            this.callbackMap.set(callback, this.actual.subscribe(callback));
+          // attach any existing callbacks to the actual observer.
+          var _iteratorNormalCompletion = true;
+          var _didIteratorError = false;
+          var _iteratorError = undefined;
+
+          try {
+            for (var _iterator = this.callbackMap.keys()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+              callback = _step.value;
+
+              this.callbackMap.set(callback, this.actual.subscribe(callback));
+            }
+          } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion && _iterator["return"]) {
+                _iterator["return"]();
+              }
+            } finally {
+              if (_didIteratorError) {
+                throw _iteratorError;
+              }
+            }
           }
         },
         writable: true,
@@ -313,20 +361,27 @@ define(["exports"], function (exports) {
       subscribe: {
         value: function subscribe(callback) {
           var _this = this;
+
+          // attempt to get the actual observer in case the property has become
+          // defined since the ObserverLocator returned [this].
           if (!this.actual) {
             this.getObserver();
           }
 
+          // if we have the actual observer, use it.
           if (this.actual) {
             return this.actual.subscribe(callback);
           }
 
+          // start listening for the property to become defined.
           if (!this.subscription) {
             this.subscription = this.owner.subscribe(this);
           }
 
+          // cache the callback.
           this.callbackMap.set(callback, null);
 
+          // return the method to dispose the subscription.
           return function () {
             var actualDispose = _this.callbackMap.get(callback);
             if (actualDispose) actualDispose();
@@ -340,31 +395,56 @@ define(["exports"], function (exports) {
 
     return UndefinedPropertyObserver;
   })();
-  var ValueAttributeObserver = exports.ValueAttributeObserver = (function () {
-    function ValueAttributeObserver(handler, element, propertyName) {
+
+  var ElementObserver = exports.ElementObserver = (function () {
+    function ElementObserver(element, propertyName, handler) {
+      var _this = this;
+
+      _classCallCheck(this, ElementObserver);
+
+      var xlinkResult = /^xlink:(.+)$/.exec(propertyName);
+
       this.element = element;
       this.propertyName = propertyName;
-      this.callbacks = [];
-      this.oldValue = element[propertyName];
       this.handler = handler;
+      this.callbacks = [];
+
+      if (xlinkResult) {
+        // xlink namespaced attributes require getAttributeNS/setAttributeNS
+        // (even though the NS version doesn't work for other namespaces
+        // in html5 documents)
+        propertyName = xlinkResult[1];
+        this.getValue = function () {
+          return element.getAttributeNS("http://www.w3.org/1999/xlink", propertyName);
+        };
+        this.setValue = function (newValue) {
+          return element.setAttributeNS("http://www.w3.org/1999/xlink", propertyName, newValue);
+        };
+      } else if (/^\w+:|^data-|^aria-/.test(propertyName) || element instanceof SVGElement) {
+        // namespaced attributes, data-* attributes, aria-* attributes and any native SVGElement attribute require getAttribute/setAttribute
+        this.getValue = function () {
+          return element.getAttribute(propertyName);
+        };
+        this.setValue = function (newValue) {
+          return element.setAttribute(propertyName, newValue);
+        };
+      } else {
+        // everything else uses standard property accessor/assignment.
+        this.getValue = function () {
+          return element[propertyName];
+        };
+        this.setValue = function (newValue) {
+          element[propertyName] = newValue;
+          if (handler) {
+            _this.call();
+          }
+        };
+      }
+
+      this.oldValue = this.getValue();
     }
 
-    _prototypeProperties(ValueAttributeObserver, null, {
-      getValue: {
-        value: function getValue() {
-          return this.element[this.propertyName];
-        },
-        writable: true,
-        configurable: true
-      },
-      setValue: {
-        value: function setValue(newValue) {
-          this.element[this.propertyName] = newValue;
-          this.call();
-        },
-        writable: true,
-        configurable: true
-      },
+    _prototypeProperties(ElementObserver, null, {
       call: {
         value: function call() {
           var callbacks = this.callbacks,
@@ -384,6 +464,12 @@ define(["exports"], function (exports) {
       subscribe: {
         value: function subscribe(callback) {
           var that = this;
+
+          if (!this.handler) {
+            // todo: consider adding logic to use DirtyChecking for "native" Element
+            // properties and O.o/SetterObserver/etc for "ad-hoc" Element properties.
+            throw new Error("Observation of an Element's \"" + this.propertyName + "\" is not supported.");
+          }
 
           if (!this.disposeHandler) {
             this.disposeHandler = this.handler.subscribe(this.element, this.propertyName, this.call.bind(this));
@@ -406,46 +492,10 @@ define(["exports"], function (exports) {
       }
     });
 
-    return ValueAttributeObserver;
-  })();
-  var DataAttributeObserver = exports.DataAttributeObserver = (function () {
-    function DataAttributeObserver(element, propertyName) {
-      this.element = element;
-      this.propertyName = propertyName;
-    }
-
-    _prototypeProperties(DataAttributeObserver, null, {
-      getValue: {
-        value: function getValue() {
-          return this.element.getAttribute(this.propertyName);
-        },
-        writable: true,
-        configurable: true
-      },
-      setValue: {
-        value: function setValue(newValue) {
-          this.element.setAttribute(this.propertyName, newValue);
-        },
-        writable: true,
-        configurable: true
-      },
-      subscribe: {
-        value: function subscribe(callback) {
-          var propertyName = this.propertyName,
-              tagName = this.element.tagName;
-          throw new Error("Cannot observe property " + propertyName + " of " + tagName + ". No events found.");
-        },
-        writable: true,
-        configurable: true
-      }
-    });
-
-    return DataAttributeObserver;
+    return ElementObserver;
   })();
 
-
-  DataAttributeObserver.handlesProperty = function (propertyName) {
-    return /^(data)|(aria)-/.test(propertyName);
-  };
-  exports.__esModule = true;
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 });

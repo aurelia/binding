@@ -1,7 +1,9 @@
-define(["exports", "aurelia-task-queue", "./array-observation", "./map-observation", "./event-manager", "./dirty-checking", "./property-observation", "aurelia-dependency-injection"], function (exports, _aureliaTaskQueue, _arrayObservation, _mapObservation, _eventManager, _dirtyChecking, _propertyObservation, _aureliaDependencyInjection) {
+define(["exports", "aurelia-task-queue", "./array-observation", "./map-observation", "./event-manager", "./dirty-checking", "./property-observation", "aurelia-dependency-injection", "./computed-observation"], function (exports, _aureliaTaskQueue, _arrayObservation, _mapObservation, _eventManager, _dirtyChecking, _propertyObservation, _aureliaDependencyInjection, _computedObservation) {
   "use strict";
 
   var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
+
+  var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
   var TaskQueue = _aureliaTaskQueue.TaskQueue;
   var getArrayObserver = _arrayObservation.getArrayObserver;
@@ -12,10 +14,10 @@ define(["exports", "aurelia-task-queue", "./array-observation", "./map-observati
   var SetterObserver = _propertyObservation.SetterObserver;
   var OoObjectObserver = _propertyObservation.OoObjectObserver;
   var OoPropertyObserver = _propertyObservation.OoPropertyObserver;
-  var ValueAttributeObserver = _propertyObservation.ValueAttributeObserver;
-  var DataAttributeObserver = _propertyObservation.DataAttributeObserver;
+  var ElementObserver = _propertyObservation.ElementObserver;
   var All = _aureliaDependencyInjection.All;
-
+  var hasDeclaredDependencies = _computedObservation.hasDeclaredDependencies;
+  var ComputedPropertyObserver = _computedObservation.ComputedPropertyObserver;
 
   if (typeof Object.getPropertyDescriptor !== "function") {
     Object.getPropertyDescriptor = function (subject, name) {
@@ -47,9 +49,9 @@ define(["exports", "aurelia-task-queue", "./array-observation", "./map-observati
     delete test.id;
 
     Object.deliverChangeRecords(callback);
-    if (records.length !== 3) return false;
-
-    if (records[0].type != "add" || records[1].type != "update" || records[2].type != "delete") {
+    if (records.length !== 3) {
+      return false;
+    }if (records[0].type != "add" || records[1].type != "update" || records[2].type != "delete") {
       return false;
     }
 
@@ -90,6 +92,8 @@ define(["exports", "aurelia-task-queue", "./array-observation", "./map-observati
 
   var ObserverLocator = exports.ObserverLocator = (function () {
     function ObserverLocator(taskQueue, eventManager, dirtyChecker, observationAdapters) {
+      _classCallCheck(this, ObserverLocator);
+
       this.taskQueue = taskQueue;
       this.eventManager = eventManager;
       this.dirtyChecker = dirtyChecker;
@@ -130,7 +134,9 @@ define(["exports", "aurelia-task-queue", "./array-observation", "./map-observati
           var i, ii, observationAdapter;
           for (i = 0, ii = this.observationAdapters.length; i < ii; i++) {
             observationAdapter = this.observationAdapters[i];
-            if (observationAdapter.handlesProperty(obj, propertyName, descriptor)) return observationAdapter;
+            if (observationAdapter.handlesProperty(obj, propertyName, descriptor)) {
+              return observationAdapter;
+            }
           }
           return null;
         },
@@ -143,18 +149,21 @@ define(["exports", "aurelia-task-queue", "./array-observation", "./map-observati
 
           if (obj instanceof Element) {
             handler = this.eventManager.getElementHandler(obj, propertyName);
-            if (handler) {
-              return new ValueAttributeObserver(handler, obj, propertyName);
-            } else if (DataAttributeObserver.handlesProperty(propertyName)) {
-              return new DataAttributeObserver(obj, propertyName);
-            }
+            return new ElementObserver(obj, propertyName, handler);
           }
 
           descriptor = Object.getPropertyDescriptor(obj, propertyName);
+
+          if (hasDeclaredDependencies(descriptor)) {
+            return new ComputedPropertyObserver(obj, propertyName, descriptor, this);
+          }
+
           if (descriptor && (descriptor.get || descriptor.set)) {
+            // attempt to use an adapter before resorting to dirty checking.
             observationAdapter = this.getObservationAdapter(obj, propertyName, descriptor);
-            if (observationAdapter) return observationAdapter.getObserver(obj, propertyName, descriptor);
-            return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
+            if (observationAdapter) {
+              return observationAdapter.getObserver(obj, propertyName, descriptor);
+            }return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
           }
 
           if (hasObjectObserve) {
@@ -177,7 +186,7 @@ define(["exports", "aurelia-task-queue", "./array-observation", "./map-observati
       },
       getArrayObserver: {
         value: (function (_getArrayObserver) {
-          var _getArrayObserverWrapper = function getArrayObserver() {
+          var _getArrayObserverWrapper = function getArrayObserver(_x) {
             return _getArrayObserver.apply(this, arguments);
           };
 
@@ -198,7 +207,7 @@ define(["exports", "aurelia-task-queue", "./array-observation", "./map-observati
       },
       getMapObserver: {
         value: (function (_getMapObserver) {
-          var _getMapObserverWrapper = function getMapObserver() {
+          var _getMapObserverWrapper = function getMapObserver(_x2) {
             return _getMapObserver.apply(this, arguments);
           };
 
@@ -221,8 +230,11 @@ define(["exports", "aurelia-task-queue", "./array-observation", "./map-observati
 
     return ObserverLocator;
   })();
+
   var ObjectObservationAdapter = exports.ObjectObservationAdapter = (function () {
-    function ObjectObservationAdapter() {}
+    function ObjectObservationAdapter() {
+      _classCallCheck(this, ObjectObservationAdapter);
+    }
 
     _prototypeProperties(ObjectObservationAdapter, null, {
       handlesProperty: {
@@ -243,5 +255,8 @@ define(["exports", "aurelia-task-queue", "./array-observation", "./map-observati
 
     return ObjectObservationAdapter;
   })();
-  exports.__esModule = true;
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 });

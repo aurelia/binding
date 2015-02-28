@@ -3,9 +3,14 @@ define(["exports"], function (exports) {
 
   var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
+  var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
   var CompositeObserver = exports.CompositeObserver = (function () {
     function CompositeObserver(observers, evaluate) {
       var _this = this;
+
+      _classCallCheck(this, CompositeObserver);
+
       this.subscriptions = new Array(observers.length);
       this.evaluate = evaluate;
 
@@ -54,5 +59,8 @@ define(["exports"], function (exports) {
 
     return CompositeObserver;
   })();
-  exports.__esModule = true;
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 });

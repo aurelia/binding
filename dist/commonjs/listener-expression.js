@@ -2,8 +2,12 @@
 
 var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
 var ListenerExpression = exports.ListenerExpression = (function () {
   function ListenerExpression(eventManager, targetEvent, sourceExpression, delegate, preventDefault) {
+    _classCallCheck(this, ListenerExpression);
+
     this.eventManager = eventManager;
     this.targetEvent = targetEvent;
     this.sourceExpression = sourceExpression;
@@ -24,8 +28,11 @@ var ListenerExpression = exports.ListenerExpression = (function () {
 
   return ListenerExpression;
 })();
+
 var Listener = (function () {
   function Listener(eventManager, targetEvent, delegate, sourceExpression, target, preventDefault) {
+    _classCallCheck(this, Listener);
+
     this.eventManager = eventManager;
     this.targetEvent = targetEvent;
     this.delegate = delegate;
@@ -38,6 +45,7 @@ var Listener = (function () {
     bind: {
       value: function bind(source) {
         var _this = this;
+
         if (this._disposeListener) {
           if (this.source === source) {
             return;
@@ -76,4 +84,6 @@ var Listener = (function () {
   return Listener;
 })();
 
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});

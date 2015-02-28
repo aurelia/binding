@@ -1,74 +1,27 @@
-define(["exports", "./map-change-records"], function (exports, _mapChangeRecords) {
+define(["exports", "./array-change-records"], function (exports, _arrayChangeRecords) {
   "use strict";
 
   var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
-  exports.getMapObserver = getMapObserver;
-  var getEntries = _mapChangeRecords.getEntries;
-  var getChangeRecords = _mapChangeRecords.getChangeRecords;
+  var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
+  var calcSplices = _arrayChangeRecords.calcSplices;
+  var projectArraySplices = _arrayChangeRecords.projectArraySplices;
 
-  var mapProto = Map.prototype;
+  var ModifyCollectionObserver = exports.ModifyCollectionObserver = (function () {
+    function ModifyCollectionObserver(taskQueue, collection) {
+      _classCallCheck(this, ModifyCollectionObserver);
 
-  function getMapObserver(taskQueue, map) {
-    return ModifyMapObserver.create(taskQueue, map);
-  }
-
-  var ModifyMapObserver = (function () {
-    function ModifyMapObserver(taskQueue, map) {
       this.taskQueue = taskQueue;
+      this.queued = false;
       this.callbacks = [];
       this.changeRecords = [];
-      this.queued = false;
-      this.map = map;
-      this.oldMap = null;
+      this.oldCollection = null;
+      this.collection = collection;
+      this.lengthPropertyName = collection instanceof Map ? "size" : "length";
     }
 
-    _prototypeProperties(ModifyMapObserver, {
-      create: {
-        value: function create(taskQueue, map) {
-          var observer = new ModifyMapObserver(taskQueue, map);
-
-          map.set = function () {
-            var oldValue = map.get(arguments[0]);
-            var type = oldValue ? "update" : "add";
-            var methodCallResult = mapProto.set.apply(map, arguments);
-            observer.addChangeRecord({
-              type: type,
-              object: map,
-              key: arguments[0],
-              oldValue: oldValue
-            });
-            return methodCallResult;
-          };
-
-          map["delete"] = function () {
-            var oldValue = map.get(arguments[0]);
-            var methodCallResult = mapProto["delete"].apply(map, arguments);
-            observer.addChangeRecord({
-              type: "delete",
-              object: map,
-              key: arguments[0],
-              oldValue: oldValue
-            });
-            return methodCallResult;
-          };
-
-          map.clear = function () {
-            var methodCallResult = mapProto.clear.apply(map, arguments);
-            observer.addChangeRecord({
-              type: "clear",
-              object: map
-            });
-            return methodCallResult;
-          };
-
-          return observer;
-        },
-        writable: true,
-        configurable: true
-      }
-    }, {
+    _prototypeProperties(ModifyCollectionObserver, null, {
       subscribe: {
         value: function subscribe(callback) {
           var callbacks = this.callbacks;
@@ -97,12 +50,12 @@ define(["exports", "./map-change-records"], function (exports, _mapChangeRecords
         configurable: true
       },
       reset: {
-        value: function reset() {
+        value: function reset(oldCollection) {
           if (!this.callbacks.length) {
             return;
           }
 
-          this.oldMap = this.map;
+          this.oldCollection = oldCollection;
 
           if (!this.queued) {
             this.queued = true;
@@ -114,10 +67,10 @@ define(["exports", "./map-change-records"], function (exports, _mapChangeRecords
       },
       getObserver: {
         value: function getObserver(propertyName) {
-          if (propertyName == "size") {
-            return this.lengthObserver || (this.lengthObserver = new MapLengthObserver(this.map));
+          if (propertyName == this.lengthPropertyName) {
+            return this.lengthObserver || (this.lengthObserver = new CollectionLengthObserver(this.collection, this.lengthPropertyName));
           } else {
-            throw new Error("You cannot observe the " + propertyName + " property of a map.");
+            throw new Error("You cannot observe the " + propertyName + " property of an array.");
           }
         },
         writable: true,
@@ -128,17 +81,28 @@ define(["exports", "./map-change-records"], function (exports, _mapChangeRecords
           var callbacks = this.callbacks,
               i = callbacks.length,
               changeRecords = this.changeRecords,
-              oldMap = this.oldMap,
+              oldCollection = this.oldCollection,
               records;
 
           this.queued = false;
           this.changeRecords = [];
+          this.oldCollection = null;
 
           if (i) {
-            if (oldMap) {
-              records = getChangeRecords(oldMap);
+            if (oldCollection) {
+              // TODO (martingust) we might want to refactor this to a common, independent of collection type, way of getting the records
+              if (this.collection instanceof Map) {
+                records = getChangeRecords(oldCollection);
+              } else {
+                //we might need to combine this with existing change records....
+                records = calcSplices(this.collection, 0, this.collection.length, oldCollection, 0, oldCollection.length);
+              }
             } else {
-              records = changeRecords;
+              if (this.collection instanceof Map) {
+                records = changeRecords;
+              } else {
+                records = projectArraySplices(this.collection, changeRecords);
+              }
             }
 
             while (i--) {
@@ -147,7 +111,7 @@ define(["exports", "./map-change-records"], function (exports, _mapChangeRecords
           }
 
           if (this.lengthObserver) {
-            this.lengthObserver(this.map.size);
+            this.lengthObserver(this.array.length);
           }
         },
         writable: true,
@@ -155,27 +119,30 @@ define(["exports", "./map-change-records"], function (exports, _mapChangeRecords
       }
     });
 
-    return ModifyMapObserver;
+    return ModifyCollectionObserver;
   })();
 
-  var MapLengthObserver = (function () {
-    function MapLengthObserver(map) {
-      this.map = map;
+  var CollectionLengthObserver = exports.CollectionLengthObserver = (function () {
+    function CollectionLengthObserver(collection) {
+      _classCallCheck(this, CollectionLengthObserver);
+
+      this.collection = collection;
       this.callbacks = [];
-      this.currentValue = map.size;
+      this.lengthPropertyName = collection instanceof Map ? "size" : "length";
+      this.currentValue = collection[this.lengthPropertyName];
     }
 
-    _prototypeProperties(MapLengthObserver, null, {
+    _prototypeProperties(CollectionLengthObserver, null, {
       getValue: {
         value: function getValue() {
-          return this.map.size;
+          return this.collection[this.lengthPropertyName];
         },
         writable: true,
         configurable: true
       },
       setValue: {
         value: function setValue(newValue) {
-          this.map.size = newValue;
+          this.collection[this.lengthPropertyName] = newValue;
         },
         writable: true,
         configurable: true
@@ -208,8 +175,10 @@ define(["exports", "./map-change-records"], function (exports, _mapChangeRecords
       }
     });
 
-    return MapLengthObserver;
+    return CollectionLengthObserver;
   })();
 
-  exports.__esModule = true;
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 });

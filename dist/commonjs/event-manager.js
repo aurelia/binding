@@ -2,8 +2,12 @@
 
 var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
 var DefaultEventStrategy = (function () {
   function DefaultEventStrategy() {
+    _classCallCheck(this, DefaultEventStrategy);
+
     this.delegatedEvents = {};
   }
 
@@ -51,6 +55,7 @@ var DefaultEventStrategy = (function () {
     createDirectEventCallback: {
       value: function createDirectEventCallback(callback) {
         var _this = this;
+
         return function (event) {
           _this.handleCallbackResult(callback(event));
         };
@@ -102,6 +107,8 @@ var DefaultEventStrategy = (function () {
 
 var EventManager = exports.EventManager = (function () {
   function EventManager() {
+    _classCallCheck(this, EventManager);
+
     this.elementHandlerLookup = {};
     this.eventStrategyLookup = {};
 
@@ -195,4 +202,9 @@ var EventManager = exports.EventManager = (function () {
 
   return EventManager;
 })();
-exports.__esModule = true;
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+//todo: coroutine via result?

@@ -1,15 +1,21 @@
 System.register([], function (_export) {
-  "use strict";
+  var _prototypeProperties, _classCallCheck, CompositeObserver;
 
-  var _prototypeProperties, CompositeObserver;
   return {
     setters: [],
     execute: function () {
+      "use strict";
+
       _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
+
+      _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
       CompositeObserver = _export("CompositeObserver", (function () {
         function CompositeObserver(observers, evaluate) {
           var _this = this;
+
+          _classCallCheck(this, CompositeObserver);
+
           this.subscriptions = new Array(observers.length);
           this.evaluate = evaluate;
 

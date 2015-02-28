@@ -1,7 +1,6 @@
-System.register(["./map-change-records"], function (_export) {
-  "use strict";
+System.register(["./map-change-records", "./collection-observation"], function (_export) {
+  var getEntries, getChangeRecords, ModifyCollectionObserver, _prototypeProperties, _get, _inherits, _classCallCheck, mapProto, ModifyMapObserver;
 
-  var getEntries, getChangeRecords, _prototypeProperties, mapProto, ModifyMapObserver, MapLengthObserver;
   _export("getMapObserver", getMapObserver);
 
   function getMapObserver(taskQueue, map) {
@@ -12,20 +11,30 @@ System.register(["./map-change-records"], function (_export) {
     setters: [function (_mapChangeRecords) {
       getEntries = _mapChangeRecords.getEntries;
       getChangeRecords = _mapChangeRecords.getChangeRecords;
+    }, function (_collectionObservation) {
+      ModifyCollectionObserver = _collectionObservation.ModifyCollectionObserver;
     }],
     execute: function () {
+      "use strict";
+
       _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
+      _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+      _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+
+      _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
       mapProto = Map.prototype;
-      ModifyMapObserver = (function () {
+
+      ModifyMapObserver = (function (ModifyCollectionObserver) {
         function ModifyMapObserver(taskQueue, map) {
-          this.taskQueue = taskQueue;
-          this.callbacks = [];
-          this.changeRecords = [];
-          this.queued = false;
-          this.map = map;
-          this.oldMap = null;
+          _classCallCheck(this, ModifyMapObserver);
+
+          _get(Object.getPrototypeOf(ModifyMapObserver.prototype), "constructor", this).call(this, taskQueue, map);
         }
+
+        _inherits(ModifyMapObserver, ModifyCollectionObserver);
 
         _prototypeProperties(ModifyMapObserver, {
           create: {
@@ -71,147 +80,10 @@ System.register(["./map-change-records"], function (_export) {
             writable: true,
             configurable: true
           }
-        }, {
-          subscribe: {
-            value: function subscribe(callback) {
-              var callbacks = this.callbacks;
-              callbacks.push(callback);
-              return function () {
-                callbacks.splice(callbacks.indexOf(callback), 1);
-              };
-            },
-            writable: true,
-            configurable: true
-          },
-          addChangeRecord: {
-            value: function addChangeRecord(changeRecord) {
-              if (this.callbacks.length === 0) {
-                return;
-              }
-
-              this.changeRecords.push(changeRecord);
-
-              if (!this.queued) {
-                this.queued = true;
-                this.taskQueue.queueMicroTask(this);
-              }
-            },
-            writable: true,
-            configurable: true
-          },
-          reset: {
-            value: function reset() {
-              if (!this.callbacks.length) {
-                return;
-              }
-
-              this.oldMap = this.map;
-
-              if (!this.queued) {
-                this.queued = true;
-                this.taskQueue.queueMicroTask(this);
-              }
-            },
-            writable: true,
-            configurable: true
-          },
-          getObserver: {
-            value: function getObserver(propertyName) {
-              if (propertyName == "size") {
-                return this.lengthObserver || (this.lengthObserver = new MapLengthObserver(this.map));
-              } else {
-                throw new Error("You cannot observe the " + propertyName + " property of a map.");
-              }
-            },
-            writable: true,
-            configurable: true
-          },
-          call: {
-            value: function call() {
-              var callbacks = this.callbacks,
-                  i = callbacks.length,
-                  changeRecords = this.changeRecords,
-                  oldMap = this.oldMap,
-                  records;
-
-              this.queued = false;
-              this.changeRecords = [];
-
-              if (i) {
-                if (oldMap) {
-                  records = getChangeRecords(oldMap);
-                } else {
-                  records = changeRecords;
-                }
-
-                while (i--) {
-                  callbacks[i](records);
-                }
-              }
-
-              if (this.lengthObserver) {
-                this.lengthObserver(this.map.size);
-              }
-            },
-            writable: true,
-            configurable: true
-          }
         });
 
         return ModifyMapObserver;
-      })();
-      MapLengthObserver = (function () {
-        function MapLengthObserver(map) {
-          this.map = map;
-          this.callbacks = [];
-          this.currentValue = map.size;
-        }
-
-        _prototypeProperties(MapLengthObserver, null, {
-          getValue: {
-            value: function getValue() {
-              return this.map.size;
-            },
-            writable: true,
-            configurable: true
-          },
-          setValue: {
-            value: function setValue(newValue) {
-              this.map.size = newValue;
-            },
-            writable: true,
-            configurable: true
-          },
-          subscribe: {
-            value: function subscribe(callback) {
-              var callbacks = this.callbacks;
-              callbacks.push(callback);
-              return function () {
-                callbacks.splice(callbacks.indexOf(callback), 1);
-              };
-            },
-            writable: true,
-            configurable: true
-          },
-          call: {
-            value: function call(newValue) {
-              var callbacks = this.callbacks,
-                  i = callbacks.length,
-                  oldValue = this.currentValue;
-
-              while (i--) {
-                callbacks[i](newValue, oldValue);
-              }
-
-              this.currentValue = newValue;
-            },
-            writable: true,
-            configurable: true
-          }
-        });
-
-        return MapLengthObserver;
-      })();
+      })(ModifyCollectionObserver);
     }
   };
 });

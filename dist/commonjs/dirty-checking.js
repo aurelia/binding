@@ -2,8 +2,12 @@
 
 var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
 var DirtyChecker = exports.DirtyChecker = (function () {
   function DirtyChecker() {
+    _classCallCheck(this, DirtyChecker);
+
     this.tracked = [];
     this.checkDelay = 120;
   }
@@ -33,6 +37,7 @@ var DirtyChecker = exports.DirtyChecker = (function () {
     scheduleDirtyCheck: {
       value: function scheduleDirtyCheck() {
         var _this = this;
+
         setTimeout(function () {
           return _this.check();
         }, this.checkDelay);
@@ -64,8 +69,11 @@ var DirtyChecker = exports.DirtyChecker = (function () {
 
   return DirtyChecker;
 })();
+
 var DirtyCheckProperty = exports.DirtyCheckProperty = (function () {
   function DirtyCheckProperty(dirtyChecker, obj, propertyName) {
+    _classCallCheck(this, DirtyCheckProperty);
+
     this.dirtyChecker = dirtyChecker;
     this.obj = obj;
     this.propertyName = propertyName;
@@ -157,4 +165,7 @@ var DirtyCheckProperty = exports.DirtyCheckProperty = (function () {
 
   return DirtyCheckProperty;
 })();
-exports.__esModule = true;
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});

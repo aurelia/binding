@@ -7,10 +7,15 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
   var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
 
+  var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
   var PathObserver = _pathObserver.PathObserver;
   var CompositeObserver = _compositeObserver.CompositeObserver;
+
   var Expression = exports.Expression = (function () {
     function Expression() {
+      _classCallCheck(this, Expression);
+
       this.isChain = false;
       this.isAssignable = false;
     }
@@ -41,8 +46,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
     return Expression;
   })();
+
   var Chain = exports.Chain = (function (Expression) {
     function Chain(expressions) {
+      _classCallCheck(this, Chain);
+
       _get(Object.getPrototypeOf(Chain.prototype), "constructor", this).call(this);
 
       this.expressions = expressions;
@@ -84,8 +92,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
     return Chain;
   })(Expression);
+
   var ValueConverter = exports.ValueConverter = (function (Expression) {
     function ValueConverter(expression, name, args, allArgs) {
+      _classCallCheck(this, ValueConverter);
+
       _get(Object.getPrototypeOf(ValueConverter.prototype), "constructor", this).call(this);
 
       this.expression = expression;
@@ -139,6 +150,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
       connect: {
         value: function connect(binding, scope) {
           var _this = this;
+
           var observer,
               childObservers = [],
               i,
@@ -173,8 +185,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
     return ValueConverter;
   })(Expression);
+
   var Assign = exports.Assign = (function (Expression) {
     function Assign(target, value) {
+      _classCallCheck(this, Assign);
+
       _get(Object.getPrototypeOf(Assign.prototype), "constructor", this).call(this);
 
       this.target = target;
@@ -209,8 +224,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
     return Assign;
   })(Expression);
+
   var Conditional = exports.Conditional = (function (Expression) {
     function Conditional(condition, yes, no) {
+      _classCallCheck(this, Conditional);
+
       _get(Object.getPrototypeOf(Conditional.prototype), "constructor", this).call(this);
 
       this.condition = condition;
@@ -238,6 +256,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
       connect: {
         value: function connect(binding, scope) {
           var _this = this;
+
           var conditionInfo = this.condition.connect(binding, scope),
               yesInfo = this.yes.connect(binding, scope),
               noInfo = this.no.connect(binding, scope),
@@ -274,8 +293,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
     return Conditional;
   })(Expression);
+
   var AccessScope = exports.AccessScope = (function (Expression) {
     function AccessScope(name) {
+      _classCallCheck(this, AccessScope);
+
       _get(Object.getPrototypeOf(AccessScope.prototype), "constructor", this).call(this);
 
       this.name = name;
@@ -322,8 +344,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
     return AccessScope;
   })(Expression);
+
   var AccessMember = exports.AccessMember = (function (Expression) {
     function AccessMember(object, name) {
+      _classCallCheck(this, AccessMember);
+
       _get(Object.getPrototypeOf(AccessMember.prototype), "constructor", this).call(this);
 
       this.object = object;
@@ -366,6 +391,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
       connect: {
         value: function connect(binding, scope) {
           var _this = this;
+
           var info = this.object.connect(binding, scope),
               objectInstance = info.value,
               objectObserver = info.observer,
@@ -384,7 +410,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
           }
 
           return {
-            value: objectInstance == null ? null : objectInstance[this.name],
+            value: objectInstance == null ? null : objectInstance[this.name], //TODO: use prop abstraction
             observer: observer
           };
         },
@@ -395,8 +421,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
     return AccessMember;
   })(Expression);
+
   var AccessKeyed = exports.AccessKeyed = (function (Expression) {
     function AccessKeyed(object, key) {
+      _classCallCheck(this, AccessKeyed);
+
       _get(Object.getPrototypeOf(AccessKeyed.prototype), "constructor", this).call(this);
 
       this.object = object;
@@ -435,6 +464,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
       connect: {
         value: function connect(binding, scope) {
           var _this = this;
+
           var objectInfo = this.object.connect(binding, scope),
               keyInfo = this.key.connect(binding, scope),
               childObservers = [],
@@ -466,8 +496,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
     return AccessKeyed;
   })(Expression);
+
   var CallScope = exports.CallScope = (function (Expression) {
     function CallScope(name, args) {
+      _classCallCheck(this, CallScope);
+
       _get(Object.getPrototypeOf(CallScope.prototype), "constructor", this).call(this);
 
       this.name = name;
@@ -495,6 +528,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
       connect: {
         value: function connect(binding, scope) {
           var _this = this;
+
           var observer,
               childObservers = [],
               i,
@@ -529,8 +563,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
     return CallScope;
   })(Expression);
+
   var CallMember = exports.CallMember = (function (Expression) {
     function CallMember(object, name, args) {
+      _classCallCheck(this, CallMember);
+
       _get(Object.getPrototypeOf(CallMember.prototype), "constructor", this).call(this);
 
       this.object = object;
@@ -560,6 +597,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
       connect: {
         value: function connect(binding, scope) {
           var _this = this;
+
           var observer,
               objectInfo = this.object.connect(binding, scope),
               childObservers = [],
@@ -599,8 +637,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
     return CallMember;
   })(Expression);
+
   var CallFunction = exports.CallFunction = (function (Expression) {
     function CallFunction(func, args) {
+      _classCallCheck(this, CallFunction);
+
       _get(Object.getPrototypeOf(CallFunction.prototype), "constructor", this).call(this);
 
       this.func = func;
@@ -633,6 +674,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
       connect: {
         value: function connect(binding, scope) {
           var _this = this;
+
           var observer,
               funcInfo = this.func.connect(binding, scope),
               childObservers = [],
@@ -672,8 +714,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
     return CallFunction;
   })(Expression);
+
   var Binary = exports.Binary = (function (Expression) {
     function Binary(operation, left, right) {
+      _classCallCheck(this, Binary);
+
       _get(Object.getPrototypeOf(Binary.prototype), "constructor", this).call(this);
 
       this.operation = operation;
@@ -708,16 +753,21 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
               return left !== right;
           }
 
+          // Null check for the operations.
           if (left === null || right === null) {
             switch (this.operation) {
               case "+":
-                if (left != null) return left;
-                if (right != null) return right;
-                return 0;
+                if (left != null) {
+                  return left;
+                }if (right != null) {
+                  return right;
+                }return 0;
               case "-":
-                if (left != null) return left;
-                if (right != null) return 0 - right;
-                return 0;
+                if (left != null) {
+                  return left;
+                }if (right != null) {
+                  return 0 - right;
+                }return 0;
             }
 
             return null;
@@ -763,6 +813,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
       connect: {
         value: function connect(binding, scope) {
           var _this = this;
+
           var leftInfo = this.left.connect(binding, scope),
               rightInfo = this.right.connect(binding, scope),
               childObservers = [],
@@ -794,8 +845,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
     return Binary;
   })(Expression);
+
   var PrefixNot = exports.PrefixNot = (function (Expression) {
     function PrefixNot(operation, expression) {
+      _classCallCheck(this, PrefixNot);
+
       _get(Object.getPrototypeOf(PrefixNot.prototype), "constructor", this).call(this);
 
       this.operation = operation;
@@ -822,6 +876,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
       connect: {
         value: function connect(binding, scope) {
           var _this = this;
+
           var info = this.expression.connect(binding, scope),
               observer;
 
@@ -843,8 +898,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
     return PrefixNot;
   })(Expression);
+
   var LiteralPrimitive = exports.LiteralPrimitive = (function (Expression) {
     function LiteralPrimitive(value) {
+      _classCallCheck(this, LiteralPrimitive);
+
       _get(Object.getPrototypeOf(LiteralPrimitive.prototype), "constructor", this).call(this);
 
       this.value = value;
@@ -878,8 +936,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
     return LiteralPrimitive;
   })(Expression);
+
   var LiteralString = exports.LiteralString = (function (Expression) {
     function LiteralString(value) {
+      _classCallCheck(this, LiteralString);
+
       _get(Object.getPrototypeOf(LiteralString.prototype), "constructor", this).call(this);
 
       this.value = value;
@@ -913,8 +974,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
     return LiteralString;
   })(Expression);
+
   var LiteralArray = exports.LiteralArray = (function (Expression) {
     function LiteralArray(elements) {
+      _classCallCheck(this, LiteralArray);
+
       _get(Object.getPrototypeOf(LiteralArray.prototype), "constructor", this).call(this);
 
       this.elements = elements;
@@ -949,6 +1013,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
       connect: {
         value: function connect(binding, scope) {
           var _this = this;
+
           var observer,
               childObservers = [],
               results = [],
@@ -986,8 +1051,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
     return LiteralArray;
   })(Expression);
+
   var LiteralObject = exports.LiteralObject = (function (Expression) {
     function LiteralObject(keys, values) {
+      _classCallCheck(this, LiteralObject);
+
       _get(Object.getPrototypeOf(LiteralObject.prototype), "constructor", this).call(this);
 
       this.keys = keys;
@@ -1024,6 +1092,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
       connect: {
         value: function connect(binding, scope) {
           var _this = this;
+
           var observer,
               childObservers = [],
               instance = {},
@@ -1061,8 +1130,11 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
     return LiteralObject;
   })(Expression);
+
   var Unparser = exports.Unparser = (function () {
     function Unparser(buffer) {
+      _classCallCheck(this, Unparser);
+
       this.buffer = buffer;
     }
 
@@ -1297,9 +1369,9 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
     return Unparser;
   })();
 
-
   var evalListCache = [[], [0], [0, 0], [0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0]];
 
+  /// Evaluate the [list] in context of the [scope].
   function evalList(scope, list, valueConverters) {
     var length = list.length,
         cacheLength,
@@ -1318,8 +1390,10 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
     return result;
   }
 
+  /// Add the two arguments with automatic type conversion.
   function autoConvertAdd(a, b) {
     if (a != null && b != null) {
+      // TODO(deboer): Support others.
       if (typeof a == "string" && typeof b != "string") {
         return a + b.toString();
       }
@@ -1383,5 +1457,7 @@ define(["exports", "./path-observer", "./composite-observer"], function (exports
 
     return value;
   }
-  exports.__esModule = true;
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 });

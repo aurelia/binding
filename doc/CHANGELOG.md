@@ -1,3 +1,13 @@
+### 0.3.6 (2015-02-28)
+
+
+#### Bug Fixes
+
+* **array-change-record:** provide correct addedCount ([d846b5d1](http://github.com/aurelia/binding/commit/d846b5d1d7330707bea23d18796795c39b702e19))
+* **map-observation:** instantiate ModifyMapObserver ([b0737c47](http://github.com/aurelia/binding/commit/b0737c47b69725a8b49f63ec7a06d39f9406e243))
+* **package:** update dependencies ([b3ffcd5f](http://github.com/aurelia/binding/commit/b3ffcd5fd378a8ae4bce54c1949581447b5e2d92))
+
+
 ### 0.3.5 (2015-02-18)
 
 

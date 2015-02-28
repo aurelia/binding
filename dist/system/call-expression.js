@@ -1,14 +1,19 @@
 System.register([], function (_export) {
-  "use strict";
+  var _prototypeProperties, _classCallCheck, CallExpression, Call;
 
-  var _prototypeProperties, CallExpression, Call;
   return {
     setters: [],
     execute: function () {
+      "use strict";
+
       _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
+
+      _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
       CallExpression = _export("CallExpression", (function () {
         function CallExpression(observerLocator, targetProperty, sourceExpression, valueConverterLookupFunction) {
+          _classCallCheck(this, CallExpression);
+
           this.observerLocator = observerLocator;
           this.targetProperty = targetProperty;
           this.sourceExpression = sourceExpression;
@@ -27,8 +32,11 @@ System.register([], function (_export) {
 
         return CallExpression;
       })());
+
       Call = (function () {
         function Call(observerLocator, sourceExpression, target, targetProperty, valueConverterLookupFunction) {
+          _classCallCheck(this, Call);
+
           this.sourceExpression = sourceExpression;
           this.target = target;
           this.targetProperty = observerLocator.getObserver(target, targetProperty);
@@ -39,6 +47,7 @@ System.register([], function (_export) {
           bind: {
             value: function bind(source) {
               var _this = this;
+
               if (this.source === source) {
                 return;
               }
