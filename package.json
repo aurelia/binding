@@ -25,9 +25,9 @@
       "lib": "dist"
     },
     "dependencies": {
-      "aurelia-dependency-injection": "^0.4.1",
-      "aurelia-metadata": "^0.3.0",
-      "aurelia-task-queue": "^0.2.2"
+      "aurelia-dependency-injection": "github:aurelia/dependency-injection@^0.4.4",
+      "aurelia-metadata": "github:aurelia/metadata@^0.3.2",
+      "aurelia-task-queue": "github:aurelia/task-queue@^0.2.4"
     }
   },
   "devDependencies": {
