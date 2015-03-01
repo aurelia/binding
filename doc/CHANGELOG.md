@@ -1,3 +1,11 @@
+### 0.3.7 (2015-02-28)
+
+
+#### Bug Fixes
+
+* **package:** change jspm directories ([91c6f8d1](http://github.com/aurelia/binding/commit/91c6f8d18380c45222ae996df3c668da782f04d2))
+
+
 ### 0.3.6 (2015-02-28)
 
 
