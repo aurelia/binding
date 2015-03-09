@@ -173,7 +173,7 @@ describe('ElementObserver', () => {
     var el = createSvgUseElement(),
         observer = locator.getObserver(el, 'xlink:href');
     expect(observer instanceof ElementObserver).toBe(true);
-    expect(() => observer.subscribe(() =>{})).toThrow(new Error('Observation of an Element\'s "xlink:href" is not supported.'));
+    expect(() => observer.subscribe(() =>{})).toThrow(new Error('Observation of an Element\'s "xlink:href" property is not supported.'));
     expect(observer.getValue()).toBe('#shape1');
     observer.setValue('#shape2');
     expect(observer.getValue()).toBe('#shape2');
@@ -183,7 +183,7 @@ describe('ElementObserver', () => {
     var el = createSvgUseElement(),
         observer = locator.getObserver(el, 'foo:bar');
     expect(observer instanceof ElementObserver).toBe(true);
-    expect(() => observer.subscribe(() =>{})).toThrow(new Error('Observation of an Element\'s "foo:bar" is not supported.'));
+    expect(() => observer.subscribe(() =>{})).toThrow(new Error('Observation of an Element\'s "foo:bar" property is not supported.'));
     expect(observer.getValue()).toBe('baz');
     observer.setValue('qux');
     expect(observer.getValue()).toBe('qux');
@@ -193,7 +193,7 @@ describe('ElementObserver', () => {
     var el = createElement('<h1 data-foo="bar"></h1>'),
         observer = locator.getObserver(el, 'data-foo');
     expect(observer instanceof ElementObserver).toBe(true);
-    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "data-foo" is not supported.'));
+    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "data-foo" property is not supported.'));
     expect(observer.getValue()).toBe('bar');
     observer.setValue('baz');
     expect(observer.getValue()).toBe('baz');
@@ -203,7 +203,7 @@ describe('ElementObserver', () => {
     var el = createElement('<h1 aria-hidden="true"></h1>'),
         observer = locator.getObserver(el, 'aria-hidden');
     expect(observer instanceof ElementObserver).toBe(true);
-    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "aria-hidden" is not supported.'));
+    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "aria-hidden" property is not supported.'));
     expect(observer.getValue()).toBe('true');
     observer.setValue('false');
     expect(observer.getValue()).toBe('false');
@@ -213,7 +213,7 @@ describe('ElementObserver', () => {
     var el = createElement('<svg data-foo="bar"></svg>'),
         observer = locator.getObserver(el, 'data-foo');
     expect(observer instanceof ElementObserver).toBe(true);
-    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "data-foo" is not supported.'));
+    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "data-foo" property is not supported.'));
     expect(observer.getValue()).toBe('bar');
     observer.setValue('baz');
     expect(observer.getValue()).toBe('baz');
@@ -223,7 +223,7 @@ describe('ElementObserver', () => {
     var el = createElement('<svg aria-hidden="true"></svg>'),
         observer = locator.getObserver(el, 'aria-hidden');
     expect(observer instanceof ElementObserver).toBe(true);
-    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "aria-hidden" is not supported.'));
+    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "aria-hidden" property is not supported.'));
     expect(observer.getValue()).toBe('true');
     observer.setValue('false');
     expect(observer.getValue()).toBe('false');
@@ -270,10 +270,44 @@ describe('ElementObserver', () => {
       var el = createElement(test.tag),
           observer = locator.getObserver(el, test.attr);
       expect(observer instanceof ElementObserver).toBe(true);
-      expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "' + test.attr + '" is not supported.'));
+      expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "' + test.attr + '" property is not supported.'));
       expect(observer.getValue()).toBe(test.old);
       observer.setValue(test.new);
       expect(observer.getValue()).toBe(test.new);
     });
+  });
+
+  it('style attribute', () => {
+    var el = createElement('<div></div>'),
+        attrs = ['style', 'css'],
+        i, observer;
+
+    for(i = 0; i < attrs.length; i++) {
+      observer = locator.getObserver(el, attrs[i]);
+      expect(observer instanceof ElementObserver).toBe(true);
+      expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "' + attrs[i] + '" property is not supported.'));
+
+      observer.setValue('width: 30px; height: 20px; background-color: red;');
+      expect(observer.getValue()).toBe('width: 30px; height: 20px; background-color: red;');
+      expect(el.style.height).toBe('20px');
+      expect(el.style.width).toBe('30px');
+      expect(el.style.backgroundColor).toBe('red');
+
+      observer.setValue('');
+      expect(el.style.height).toBe('');
+      expect(el.style.width).toBe('');
+      expect(el.style.backgroundColor).toBe('');
+
+      observer.setValue({ width: '50px', height: '40px', 'background-color': 'blue' });
+      expect(observer.getValue()).toBe('width: 50px; height: 40px; background-color: blue;');
+      expect(el.style.height).toBe('40px');
+      expect(el.style.width).toBe('50px');
+      expect(el.style.backgroundColor).toBe('blue');
+
+      observer.setValue({});
+      expect(el.style.height).toBe('');
+      expect(el.style.width).toBe('');
+      expect(el.style.backgroundColor).toBe('');
+    }
   });
 });
