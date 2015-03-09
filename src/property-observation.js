@@ -315,7 +315,7 @@ export class ElementObserver {
 
     if(!this.disposeHandler){
       this.disposeHandler = this.handler
-        .subscribe(this.element, this.propertyName, this.call.bind(this));
+        .subscribe(this.element, this.call.bind(this));
     }
 
     var callbacks = this.callbacks;
