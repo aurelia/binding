@@ -277,6 +277,15 @@ export class ElementObserver {
       // namespaced attributes, data-* attributes, aria-* attributes and any native SVGElement attribute require getAttribute/setAttribute
       this.getValue = () => element.getAttribute(propertyName);
       this.setValue = newValue => element.setAttribute(propertyName, newValue);
+    } else if (propertyName === 'style' || propertyName === 'css') {
+      // style and css attributes map to element.style.cssText with special handling for object values.
+      this.getValue = () => element.style.cssText;
+      this.setValue = newValue => {
+        if (newValue instanceof Object) {
+          newValue = flattenCss(newValue);
+        }
+        element.style.cssText = newValue;
+      };
     } else {
       // everything else uses standard property accessor/assignment.
       this.getValue = () => element[propertyName];
@@ -310,7 +319,7 @@ export class ElementObserver {
     if (!this.handler) {
       // todo: consider adding logic to use DirtyChecking for "native" Element
       // properties and O.o/SetterObserver/etc for "ad-hoc" Element properties.
-      throw new Error('Observation of an Element\'s "' + this.propertyName + '" is not supported.');
+      throw new Error('Observation of an Element\'s "' + this.propertyName + '" property is not supported.');
     }
 
     if(!this.disposeHandler){
@@ -330,4 +339,14 @@ export class ElementObserver {
       }
     };
   }
+}
+
+function flattenCss(object) {
+  var s = '';
+  for(var propertyName in object) {
+    if (object.hasOwnProperty(propertyName)){
+      s += propertyName + ': ' + object[propertyName] + '; ';
+    }
+  }
+  return s;
 }
