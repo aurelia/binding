@@ -25,7 +25,7 @@ class Listener {
     this.eventManager = eventManager;
     this.targetEvent = targetEvent;
     this.delegate = delegate;
-    this.sourceExpression = sourceExpression
+    this.sourceExpression = sourceExpression;
     this.target = target;
     this.preventDefault = preventDefault;
   }
