@@ -8,7 +8,7 @@ import {
   ElementObserver
 } from '../src/property-observation';
 
-export function createElement(html) {
+function createElement(html) {
   var div = document.createElement('div');
   div.innerHTML = html;
   return div.firstChild;
@@ -234,7 +234,6 @@ describe('ElementObserver', () => {
         { tag: '<input type="text" value="foo" />', attr: 'value', old: 'foo', new: 'bar' },
         { tag: '<input type="checkbox" checked="true" />', attr: 'checked', old: true, new: false },
         { tag: '<textarea>foo</textarea>', attr: 'value', old: 'foo', new: 'bar' },
-        { tag: '<select value="1"><option value="1">A</option><option value="2">B</option></select>', attr: 'value', old: '1', new: '2' },
       ],
       remaining = cases.length;
     cases.forEach(test => {

@@ -333,7 +333,7 @@ export class ElementObserver {
 
     return function(){
       callbacks.splice(callbacks.indexOf(callback), 1);
-      if(callback.length === 0){
+      if(callbacks.length === 0){
         that.disposeHandler();
         that.disposeHandler = null;
       }
@@ -349,4 +349,134 @@ function flattenCss(object) {
     }
   }
   return s;
+}
+
+export class SelectValueObserver {
+  constructor(element, handler, observerLocator){
+    this.element = element;
+    this.handler = handler;
+    this.observerLocator = observerLocator;
+  }
+
+  getValue() {
+    return this.value;
+  }
+
+  setValue(newValue) {
+    if (newValue !== null && newValue !== undefined && this.element.multiple && !Array.isArray(newValue)) {
+      throw new Error('Only null or Array instances can be bound to a multi-select.')
+    }
+    if (this.value === newValue) {
+      return;
+    }
+    // unsubscribe from old array.
+    if (this.arraySubscription) {
+      this.arraySubscription();
+      this.arraySubscription = null;
+    }
+    // subscribe to new array.
+    if (Array.isArray(newValue)) {
+      this.arraySubscription = this.observerLocator.getArrayObserver(newValue)
+        .subscribe(this.synchronizeOptions.bind(this));
+    }
+    // assign and sync element.
+    this.value = newValue;
+    this.synchronizeOptions();
+  }
+
+  synchronizeOptions() {
+    var value = this.value, i, options, option, optionValue, clear, isArray;
+
+    if (value === null || value === undefined) {
+      clear = true;
+    } else if (Array.isArray(value)) {
+      isArray = true;
+    }
+
+    options = this.element.options;
+    i = options.length;
+    while(i--) {
+      option = options.item(i);
+      if (clear) {
+        option.selected = false;
+        continue;
+      }
+      optionValue = option.hasOwnProperty('model') ? option.model : option.value;
+      if (isArray) {
+        option.selected = value.indexOf(optionValue) !== -1;
+        continue;
+      }
+      option.selected = value === optionValue;
+    }
+  }
+
+  synchronizeValue(){
+    var selectedOptions = this.element.selectedOptions,
+        count = selectedOptions.length,
+        option, i, value;
+
+    if (this.element.multiple) {
+      value = [];
+      for(i = 0; i < count; i++) {
+        option = selectedOptions.item(i);
+        value[i] = option.hasOwnProperty('model') ? option.model : option.value;
+      }
+    } else if (count === 0) {
+      value = null;
+    } else {
+      option = selectedOptions.item(0);
+      value = option.hasOwnProperty('model') ? option.model : option.value;
+    }
+
+    this.oldValue = this.value;
+    this.value = value;
+    this.call();
+  }
+
+  call(){
+    var callbacks = this.callbacks,
+        i = callbacks.length,
+        oldValue = this.oldValue,
+        newValue = this.value;
+
+    while(i--) {
+      callbacks[i](newValue, oldValue);
+    }
+  }
+
+  subscribe(callback) {
+    if(!this.callbacks) {
+      this.callbacks = [];
+      this.disposeHandler = this.handler
+        .subscribe(this.element, this.synchronizeValue.bind(this, false));
+    }
+
+    this.callbacks.push(callback);
+    return this.unsubscribe.bind(this, callback);
+  }
+
+  unsubscribe(callback) {
+    var callbacks = this.callbacks;
+    callbacks.splice(callbacks.indexOf(callback), 1);
+    if(callbacks.length === 0){
+      this.disposeHandler();
+      this.disposeHandler = null;
+      this.callbacks = null;
+    }
+  }
+
+  bind() {
+    this.domObserver = new MutationObserver(this.synchronizeOptions.bind(this));
+    this.domObserver.observe(this.element, { childList: true, subtree: true });
+  }
+
+  unbind() {
+    this.domObserver.disconnect();
+    this.domObserver = null;
+
+    if (this.arraySubscription) {
+      this.arraySubscription();
+      this.arraySubscription = null;
+    }
+  }
 }
