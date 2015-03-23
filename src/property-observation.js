@@ -411,21 +411,23 @@ export class SelectValueObserver {
   }
 
   synchronizeValue(){
-    var selectedOptions = this.element.selectedOptions,
-        count = selectedOptions.length,
-        option, i, value;
+    var options = this.element.options, option, i, ii, count = 0, value = [];
 
-    if (this.element.multiple) {
-      value = [];
-      for(i = 0; i < count; i++) {
-        option = selectedOptions.item(i);
-        value[i] = option.hasOwnProperty('model') ? option.model : option.value;
+    for(i = 0, ii = options.length; i < ii; i++) {
+      option = options.item(i);
+      if (!option.selected) {
+        continue;
       }
-    } else if (count === 0) {
-      value = null;
-    } else {
-      option = selectedOptions.item(0);
-      value = option.hasOwnProperty('model') ? option.model : option.value;
+      value[count] = option.hasOwnProperty('model') ? option.model : option.value;
+      count++;
+    }
+
+    if (!this.element.multiple) {
+      if (count === 0) {
+        value = null;
+      } else {
+        value = value[0];
+      }
     }
 
     this.oldValue = this.value;
@@ -479,34 +481,4 @@ export class SelectValueObserver {
       this.arraySubscription = null;
     }
   }
-}
-
-// polyfill HTMLSelectElement.selectedOptions
-class SelectedOptions {
-  constructor(element) {
-    var options = element.options, option, selected = [], i, ii;
-    for (i = 0, ii = options.length; i < ii; i++) {
-      option = options[i];
-      if (option.selected) {
-        selected.push(option);
-      }
-    }
-    this.selected = selected;
-    this.length = selected.length;
-  }
-
-  item(i) {
-    return this.selected[i];
-  }
-}
-
-if (!HTMLSelectElement.prototype.selectedOptions) {
-  Object.defineProperty(
-    HTMLSelectElement.prototype,
-    'selectedOptions',
-    {
-      get: function() {
-        return new SelectedOptions(this);
-      }
-    });
 }

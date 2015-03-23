@@ -36,21 +36,23 @@ describe('select element value binding', () => {
   });
 
   function getElementValue(element) {
-    var selectedOptions = element.selectedOptions,
-        count = selectedOptions.length,
-        option, i, value;
+    var options = element.options, option, i, ii, count = 0, value = [];
 
-    if (element.multiple) {
-      value = [];
-      for(i = 0; i < count; i++) {
-        option = selectedOptions.item(i);
-        value[i] = option.hasOwnProperty('model') ? option.model : option.value;
+    for(i = 0, ii = options.length; i < ii; i++) {
+      option = options.item(i);
+      if (!option.selected) {
+        continue;
       }
-    } else if (count === 0) {
-      value = null;
-    } else {
-      option = selectedOptions.item(0);
-      value = option.hasOwnProperty('model') ? option.model : option.value;
+      value[count] = option.hasOwnProperty('model') ? option.model : option.value;
+      count++;
+    }
+
+    if (!element.multiple) {
+      if (count === 0) {
+        value = null;
+      } else {
+        value = value[0];
+      }
     }
     return value;
   }
