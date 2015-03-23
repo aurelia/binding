@@ -480,3 +480,33 @@ export class SelectValueObserver {
     }
   }
 }
+
+// polyfill HTMLSelectElement.selectedOptions
+class SelectedOptions {
+  constructor(element) {
+    var options = element.options, option, selected = [], i, ii;
+    for (i = 0, ii = options.length; i < ii; i++) {
+      option = options[i];
+      if (option.selected) {
+        selected.push(option);
+      }
+    }
+    this.selected = selected;
+    this.length = selected.length;
+  }
+
+  item(i) {
+    return this.selected[i];
+  }
+}
+
+if (!HTMLSelectElement.prototype.selectedOptions) {
+  Object.defineProperty(
+    HTMLSelectElement.prototype,
+    'selectedOptions',
+    {
+      get: function() {
+        return new SelectedOptions(this);
+      }
+    });
+}
