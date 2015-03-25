@@ -277,6 +277,15 @@ export class ElementObserver {
       // namespaced attributes, data-* attributes, aria-* attributes and any native SVGElement attribute require getAttribute/setAttribute
       this.getValue = () => element.getAttribute(propertyName);
       this.setValue = newValue => element.setAttribute(propertyName, newValue);
+    } else if (propertyName === 'style' || propertyName === 'css') {
+      // style and css attributes map to element.style.cssText with special handling for object values.
+      this.getValue = () => element.style.cssText;
+      this.setValue = newValue => {
+        if (newValue instanceof Object) {
+          newValue = flattenCss(newValue);
+        }
+        element.style.cssText = newValue;
+      };
     } else {
       // everything else uses standard property accessor/assignment.
       this.getValue = () => element[propertyName];
@@ -310,12 +319,12 @@ export class ElementObserver {
     if (!this.handler) {
       // todo: consider adding logic to use DirtyChecking for "native" Element
       // properties and O.o/SetterObserver/etc for "ad-hoc" Element properties.
-      throw new Error('Observation of an Element\'s "' + this.propertyName + '" is not supported.');
+      throw new Error('Observation of an Element\'s "' + this.propertyName + '" property is not supported.');
     }
 
     if(!this.disposeHandler){
       this.disposeHandler = this.handler
-        .subscribe(this.element, this.propertyName, this.call.bind(this));
+        .subscribe(this.element, this.call.bind(this));
     }
 
     var callbacks = this.callbacks;
@@ -324,10 +333,152 @@ export class ElementObserver {
 
     return function(){
       callbacks.splice(callbacks.indexOf(callback), 1);
-      if(callback.length === 0){
+      if(callbacks.length === 0){
         that.disposeHandler();
         that.disposeHandler = null;
       }
     };
+  }
+}
+
+function flattenCss(object) {
+  var s = '';
+  for(var propertyName in object) {
+    if (object.hasOwnProperty(propertyName)){
+      s += propertyName + ': ' + object[propertyName] + '; ';
+    }
+  }
+  return s;
+}
+
+export class SelectValueObserver {
+  constructor(element, handler, observerLocator){
+    this.element = element;
+    this.handler = handler;
+    this.observerLocator = observerLocator;
+  }
+
+  getValue() {
+    return this.value;
+  }
+
+  setValue(newValue) {
+    if (newValue !== null && newValue !== undefined && this.element.multiple && !Array.isArray(newValue)) {
+      throw new Error('Only null or Array instances can be bound to a multi-select.')
+    }
+    if (this.value === newValue) {
+      return;
+    }
+    // unsubscribe from old array.
+    if (this.arraySubscription) {
+      this.arraySubscription();
+      this.arraySubscription = null;
+    }
+    // subscribe to new array.
+    if (Array.isArray(newValue)) {
+      this.arraySubscription = this.observerLocator.getArrayObserver(newValue)
+        .subscribe(this.synchronizeOptions.bind(this));
+    }
+    // assign and sync element.
+    this.value = newValue;
+    this.synchronizeOptions();
+  }
+
+  synchronizeOptions() {
+    var value = this.value, i, options, option, optionValue, clear, isArray;
+
+    if (value === null || value === undefined) {
+      clear = true;
+    } else if (Array.isArray(value)) {
+      isArray = true;
+    }
+
+    options = this.element.options;
+    i = options.length;
+    while(i--) {
+      option = options.item(i);
+      if (clear) {
+        option.selected = false;
+        continue;
+      }
+      optionValue = option.hasOwnProperty('model') ? option.model : option.value;
+      if (isArray) {
+        option.selected = value.indexOf(optionValue) !== -1;
+        continue;
+      }
+      option.selected = value === optionValue;
+    }
+  }
+
+  synchronizeValue(){
+    var options = this.element.options, option, i, ii, count = 0, value = [];
+
+    for(i = 0, ii = options.length; i < ii; i++) {
+      option = options.item(i);
+      if (!option.selected) {
+        continue;
+      }
+      value[count] = option.hasOwnProperty('model') ? option.model : option.value;
+      count++;
+    }
+
+    if (!this.element.multiple) {
+      if (count === 0) {
+        value = null;
+      } else {
+        value = value[0];
+      }
+    }
+
+    this.oldValue = this.value;
+    this.value = value;
+    this.call();
+  }
+
+  call(){
+    var callbacks = this.callbacks,
+        i = callbacks.length,
+        oldValue = this.oldValue,
+        newValue = this.value;
+
+    while(i--) {
+      callbacks[i](newValue, oldValue);
+    }
+  }
+
+  subscribe(callback) {
+    if(!this.callbacks) {
+      this.callbacks = [];
+      this.disposeHandler = this.handler
+        .subscribe(this.element, this.synchronizeValue.bind(this, false));
+    }
+
+    this.callbacks.push(callback);
+    return this.unsubscribe.bind(this, callback);
+  }
+
+  unsubscribe(callback) {
+    var callbacks = this.callbacks;
+    callbacks.splice(callbacks.indexOf(callback), 1);
+    if(callbacks.length === 0){
+      this.disposeHandler();
+      this.disposeHandler = null;
+      this.callbacks = null;
+    }
+  }
+
+  bind() {
+    this.domObserver = new MutationObserver(this.synchronizeOptions.bind(this));
+    this.domObserver.observe(this.element, { childList: true, subtree: true });
+  }
+
+  unbind() {
+    this.domObserver.disconnect();
+    this.domObserver = null;
+
+    if (this.arraySubscription) {
+      this.arraySubscription();
+      this.arraySubscription = null;
+    }
   }
 }

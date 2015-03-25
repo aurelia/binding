@@ -1,3 +1,11 @@
+## 0.4.0 (2015-03-25)
+
+
+#### Bug Fixes
+
+* **value-converter:** update to plug into new resource pipeline ([4e8c99d9](http://github.com/aurelia/binding/commit/4e8c99d9733cc9997754f40c78104e633ecab485))
+
+
 ### 0.3.7 (2015-02-28)
 
 

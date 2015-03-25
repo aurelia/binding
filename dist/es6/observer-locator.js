@@ -7,7 +7,8 @@ import {
   SetterObserver,
   OoObjectObserver,
   OoPropertyObserver,
-  ElementObserver
+  ElementObserver,
+  SelectValueObserver,
 } from './property-observation';
 import {All} from 'aurelia-dependency-injection';
 import {
@@ -130,6 +131,9 @@ export class ObserverLocator {
 
     if(obj instanceof Element){
       handler = this.eventManager.getElementHandler(obj, propertyName);
+      if (propertyName === 'value' && obj.tagName.toLowerCase() === 'select') {
+        return new SelectValueObserver(obj, handler, this);
+      }
       return new ElementObserver(obj, propertyName, handler);
     }
 

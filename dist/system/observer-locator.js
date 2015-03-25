@@ -1,5 +1,5 @@
 System.register(["aurelia-task-queue", "./array-observation", "./map-observation", "./event-manager", "./dirty-checking", "./property-observation", "aurelia-dependency-injection", "./computed-observation"], function (_export) {
-  var TaskQueue, getArrayObserver, getMapObserver, EventManager, DirtyChecker, DirtyCheckProperty, SetterObserver, OoObjectObserver, OoPropertyObserver, ElementObserver, All, hasDeclaredDependencies, ComputedPropertyObserver, _prototypeProperties, _classCallCheck, hasObjectObserve, ObserverLocator, ObjectObservationAdapter;
+  var TaskQueue, getArrayObserver, getMapObserver, EventManager, DirtyChecker, DirtyCheckProperty, SetterObserver, OoObjectObserver, OoPropertyObserver, ElementObserver, SelectValueObserver, All, hasDeclaredDependencies, ComputedPropertyObserver, _prototypeProperties, _classCallCheck, hasObjectObserve, ObserverLocator, ObjectObservationAdapter;
 
   function createObserversLookup(obj) {
     var value = {};
@@ -48,6 +48,7 @@ System.register(["aurelia-task-queue", "./array-observation", "./map-observation
       OoObjectObserver = _propertyObservation.OoObjectObserver;
       OoPropertyObserver = _propertyObservation.OoPropertyObserver;
       ElementObserver = _propertyObservation.ElementObserver;
+      SelectValueObserver = _propertyObservation.SelectValueObserver;
     }, function (_aureliaDependencyInjection) {
       All = _aureliaDependencyInjection.All;
     }, function (_computedObservation) {
@@ -161,6 +162,9 @@ System.register(["aurelia-task-queue", "./array-observation", "./map-observation
 
               if (obj instanceof Element) {
                 handler = this.eventManager.getElementHandler(obj, propertyName);
+                if (propertyName === "value" && obj.tagName.toLowerCase() === "select") {
+                  return new SelectValueObserver(obj, handler, this);
+                }
                 return new ElementObserver(obj, propertyName, handler);
               }
 

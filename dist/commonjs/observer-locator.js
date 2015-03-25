@@ -23,6 +23,7 @@ var SetterObserver = _propertyObservation.SetterObserver;
 var OoObjectObserver = _propertyObservation.OoObjectObserver;
 var OoPropertyObserver = _propertyObservation.OoPropertyObserver;
 var ElementObserver = _propertyObservation.ElementObserver;
+var SelectValueObserver = _propertyObservation.SelectValueObserver;
 
 var All = require("aurelia-dependency-injection").All;
 
@@ -161,6 +162,9 @@ var ObserverLocator = exports.ObserverLocator = (function () {
 
         if (obj instanceof Element) {
           handler = this.eventManager.getElementHandler(obj, propertyName);
+          if (propertyName === "value" && obj.tagName.toLowerCase() === "select") {
+            return new SelectValueObserver(obj, handler, this);
+          }
           return new ElementObserver(obj, propertyName, handler);
         }
 

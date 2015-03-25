@@ -15,6 +15,7 @@ define(["exports", "aurelia-task-queue", "./array-observation", "./map-observati
   var OoObjectObserver = _propertyObservation.OoObjectObserver;
   var OoPropertyObserver = _propertyObservation.OoPropertyObserver;
   var ElementObserver = _propertyObservation.ElementObserver;
+  var SelectValueObserver = _propertyObservation.SelectValueObserver;
   var All = _aureliaDependencyInjection.All;
   var hasDeclaredDependencies = _computedObservation.hasDeclaredDependencies;
   var ComputedPropertyObserver = _computedObservation.ComputedPropertyObserver;
@@ -149,6 +150,9 @@ define(["exports", "aurelia-task-queue", "./array-observation", "./map-observati
 
           if (obj instanceof Element) {
             handler = this.eventManager.getElementHandler(obj, propertyName);
+            if (propertyName === "value" && obj.tagName.toLowerCase() === "select") {
+              return new SelectValueObserver(obj, handler, this);
+            }
             return new ElementObserver(obj, propertyName, handler);
           }
 

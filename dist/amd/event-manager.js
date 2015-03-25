@@ -141,24 +141,33 @@ define(["exports"], function (exports) {
     _prototypeProperties(EventManager, null, {
       registerElementConfig: {
         value: function registerElementConfig(config) {
-          this.elementHandlerLookup[config.tagName.toLowerCase()] = {
-            subscribe: function subscribe(target, property, callback) {
-              var events = config.properties[property];
-              if (events) {
-                events.forEach(function (changeEvent) {
-                  target.addEventListener(changeEvent, callback, false);
-                });
+          var tagName = config.tagName.toLowerCase(),
+              properties = config.properties,
+              propertyName;
+          this.elementHandlerLookup[tagName] = {};
+          for (propertyName in properties) {
+            if (properties.hasOwnProperty(propertyName)) {
+              this.registerElementPropertyConfig(tagName, propertyName, properties[propertyName]);
+            }
+          }
+        },
+        writable: true,
+        configurable: true
+      },
+      registerElementPropertyConfig: {
+        value: function registerElementPropertyConfig(tagName, propertyName, events) {
+          this.elementHandlerLookup[tagName][propertyName] = {
+            subscribe: function subscribe(target, callback) {
+              events.forEach(function (changeEvent) {
+                target.addEventListener(changeEvent, callback, false);
+              });
 
-                return function () {
-                  events.forEach(function (changeEvent) {
-                    target.removeEventListener(changeEvent, callback);
-                  });
-                };
-              } else {
-                throw new Error("Cannot observe property " + property + " of " + config.tagName + ". No events found.");
-              }
-            },
-            properties: config.properties
+              return function () {
+                events.forEach(function (changeEvent) {
+                  target.removeEventListener(changeEvent, callback);
+                });
+              };
+            }
           };
         },
         writable: true,
@@ -180,10 +189,15 @@ define(["exports"], function (exports) {
       },
       getElementHandler: {
         value: function getElementHandler(target, propertyName) {
+          var tagName,
+              lookup = this.elementHandlerLookup;
           if (target.tagName) {
-            var handler = this.elementHandlerLookup[target.tagName.toLowerCase()];
-            if (handler && handler.properties[propertyName]) {
-              return handler;
+            tagName = target.tagName.toLowerCase();
+            if (lookup[tagName] && lookup[tagName][propertyName]) {
+              return lookup[tagName][propertyName];
+            }
+            if (propertyName === "textContent" || propertyName === "innerHTML") {
+              return lookup.input.value;
             }
           }
 

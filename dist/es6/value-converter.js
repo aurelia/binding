@@ -21,12 +21,15 @@ export class ValueConverter extends ResourceType {
     }
   }
 
-  load(container, target){
+  analyze(container, target){
     this.instance = container.get(target);
-    return Promise.resolve(this);
   }
 
   register(registry, name){
     registry.registerValueConverter(name || this.name, this.instance);
+  }
+
+  load(container, target){
+    return Promise.resolve(this);
   }
 }

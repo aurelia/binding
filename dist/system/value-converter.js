@@ -42,10 +42,9 @@ System.register(["aurelia-metadata"], function (_export) {
             configurable: true
           }
         }, {
-          load: {
-            value: function load(container, target) {
+          analyze: {
+            value: function analyze(container, target) {
               this.instance = container.get(target);
-              return Promise.resolve(this);
             },
             writable: true,
             configurable: true
@@ -53,6 +52,13 @@ System.register(["aurelia-metadata"], function (_export) {
           register: {
             value: function register(registry, name) {
               registry.registerValueConverter(name || this.name, this.instance);
+            },
+            writable: true,
+            configurable: true
+          },
+          load: {
+            value: function load(container, target) {
+              return Promise.resolve(this);
             },
             writable: true,
             configurable: true

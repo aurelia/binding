@@ -9,15 +9,16 @@ System.config({
 
 System.config({
   "map": {
-    "aurelia-dependency-injection": "github:aurelia/dependency-injection@0.4.5",
-    "aurelia-metadata": "github:aurelia/metadata@0.3.3",
+    "aurelia-dependency-injection": "github:aurelia/dependency-injection@0.5.0",
+    "aurelia-metadata": "github:aurelia/metadata@0.3.4",
     "aurelia-task-queue": "github:aurelia/task-queue@0.2.5",
-    "github:aurelia/dependency-injection@0.4.5": {
-      "aurelia-metadata": "github:aurelia/metadata@0.3.3",
+    "github:aurelia/dependency-injection@0.5.0": {
+      "aurelia-logging": "github:aurelia/logging@0.2.6",
+      "aurelia-metadata": "github:aurelia/metadata@0.3.4",
       "core-js": "npm:core-js@0.4.10"
     },
     "github:jspm/nodelibs-process@0.1.1": {
-      "process": "npm:process@0.10.0"
+      "process": "npm:process@0.10.1"
     },
     "npm:core-js@0.4.10": {
       "process": "github:jspm/nodelibs-process@0.1.1"

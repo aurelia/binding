@@ -61,6 +61,10 @@ var Binding = (function () {
         var targetProperty = this.targetProperty,
             info;
 
+        if ("bind" in targetProperty) {
+          targetProperty.bind();
+        }
+
         if (this.mode == ONE_WAY || this.mode == TWO_WAY) {
           if (this._disposeObserver) {
             if (this.source === source) {
@@ -105,6 +109,9 @@ var Binding = (function () {
     },
     unbind: {
       value: function unbind() {
+        if ("unbind" in this.targetProperty) {
+          this.targetProperty.unbind();
+        }
         if (this._disposeObserver) {
           this._disposeObserver();
           this._disposeObserver = null;
