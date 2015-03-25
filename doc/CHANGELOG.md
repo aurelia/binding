@@ -1,8 +1,14 @@
 ## 0.4.0 (2015-03-25)
 
+#### Features
+
+* **EventManager:** enable two-way binding of contenteditable elements
+* **ObserverLocator:** support value binding select elements
 
 #### Bug Fixes
 
+* **SelectValueObserver:** Safari and Internet Explorer
+* **SelectValueObserver:** internet explorer fix
 * **value-converter:** update to plug into new resource pipeline ([4e8c99d9](http://github.com/aurelia/binding/commit/4e8c99d9733cc9997754f40c78104e633ecab485))
 
 
@@ -152,4 +158,3 @@
 #### Bug Fixes
 
 * **observer-locator:** add Object.getPropertyDescriptor polyfill ([949cd344](http://github.com/aurelia/binding/commit/949cd344962614458defe0faa691347497e5abf6))
-
