@@ -487,3 +487,121 @@ export class SelectValueObserver {
     }
   }
 }
+
+export class CheckedObserver {
+  constructor(element, handler, observerLocator){
+    this.element = element;
+    this.handler = handler;
+    this.observerLocator = observerLocator;
+  }
+
+  getValue() {
+    return this.value;
+  }
+
+  setValue(newValue) {
+    if (this.value === newValue) {
+      return;
+    }
+    // unsubscribe from old array.
+    if (this.arraySubscription) {
+      this.arraySubscription();
+      this.arraySubscription = null;
+    }
+    // subscribe to new array.
+    if (this.element.type === 'checkbox' && Array.isArray(newValue)) {
+      this.arraySubscription = this.observerLocator.getArrayObserver(newValue)
+        .subscribe(this.synchronizeElement.bind(this));
+    }
+    // assign and sync element.
+    this.value = newValue;
+    this.synchronizeElement();
+    // queue up an initial sync after the bindings have been evaluated.
+    if (!this.element.hasOwnProperty('model') && !this.initialSync) {
+      this.initialSync = true;
+      this.observerLocator.taskQueue.queueMicroTask({ call: () => this.synchronizeElement() });
+    }
+  }
+
+  synchronizeElement() {
+    var value = this.value,
+        element = this.element,
+        elementValue = element.hasOwnProperty('model') ? element.model : element.value,
+        isRadio = element.type === 'radio';
+
+    element.checked =
+      isRadio && value === elementValue
+      || !isRadio && value === true
+      || !isRadio && Array.isArray(value) && value.indexOf(elementValue) !== -1;
+  }
+
+  synchronizeValue(){
+    var value = this.value,
+        element = this.element,
+        elementValue = element.hasOwnProperty('model') ? element.model : element.value,
+        index;
+
+    if (element.type === 'checkbox') {
+      if (Array.isArray(value)) {
+        index = value.indexOf(elementValue);
+        if (element.checked && index === -1) {
+          value.push(elementValue);
+        } else if (!element.checked && index !== -1) {
+          value.splice(index, 1);
+        }
+        // don't invoke callbacks.
+        return;
+      } else {
+        value = element.checked;
+      }
+    } else if (element.checked) {
+      value = elementValue;
+    } else {
+      // don't invoke callbacks.
+      return;
+    }
+
+    this.oldValue = this.value;
+    this.value = value;
+    this.call();
+  }
+
+  call(){
+    var callbacks = this.callbacks,
+        i = callbacks.length,
+        oldValue = this.oldValue,
+        newValue = this.value;
+
+    while(i--) {
+      callbacks[i](newValue, oldValue);
+    }
+  }
+
+  subscribe(callback) {
+    if(!this.callbacks) {
+      this.callbacks = [];
+      this.disposeHandler = this.handler
+        .subscribe(this.element, this.synchronizeValue.bind(this, false));
+    }
+
+    this.callbacks.push(callback);
+    return this.unsubscribe.bind(this, callback);
+  }
+
+  unsubscribe(callback) {
+    var callbacks = this.callbacks;
+    callbacks.splice(callbacks.indexOf(callback), 1);
+    if(callbacks.length === 0){
+      this.disposeHandler();
+      this.disposeHandler = null;
+      this.callbacks = null;
+    }
+  }
+
+  unbind() {
+    if (this.arraySubscription) {
+      this.arraySubscription();
+      this.arraySubscription = null;
+    }
+  }
+}

@@ -232,7 +232,6 @@ describe('ElementObserver', () => {
   it('value attributes', (done) => {
     var cases = [
         { tag: '<input type="text" value="foo" />', attr: 'value', old: 'foo', new: 'bar' },
-        { tag: '<input type="checkbox" checked="true" />', attr: 'checked', old: true, new: false },
         { tag: '<textarea>foo</textarea>', attr: 'value', old: 'foo', new: 'bar' },
       ],
       remaining = cases.length;
