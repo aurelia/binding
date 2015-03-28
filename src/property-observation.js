@@ -382,6 +382,11 @@ export class SelectValueObserver {
     // assign and sync element.
     this.value = newValue;
     this.synchronizeOptions();
+    // queue up an initial sync after the bindings have been evaluated.
+    if (this.element.options.length > 0 && !this.initialSync) {
+      this.initialSync = true;
+      this.observerLocator.taskQueue.queueMicroTask({ call: () => this.synchronizeOptions() });
+    }
   }
 
   synchronizeOptions() {

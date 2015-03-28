@@ -409,4 +409,59 @@ describe('select element value binding', () => {
       document.body.removeChild(el);
     });
   });
+
+  describe('option value bound after select value bound', () => {
+    var obj, el, binding, binding2;
+
+    beforeAll(() => {
+      var targetProperty, sourceExpression, bindingExpression,
+          targetProperty2, sourceExpression2, bindingExpression2;
+      obj = { selectedItem: 'B', optionB: 'B' };
+      el = createElement(
+        `<select>
+          <option value="A">Option A</option>
+          <option          >Option B</option>
+          <option value="C">Option C</option>
+        </select>`);
+      document.body.appendChild(el);
+      targetProperty = observerLocator.getObserver(el, 'value');
+      sourceExpression = new AccessScope('selectedItem');
+      bindingExpression = new BindingExpression(
+        observerLocator,
+        'value',
+        sourceExpression,
+        TWO_WAY,
+        valueConverterLookupFunction,
+        undefined);
+      binding = bindingExpression.createBinding(el),
+
+      targetProperty2 = observerLocator.getObserver(el.options.item(1), 'value');
+      sourceExpression2 = new AccessScope('optionB');
+      bindingExpression2 = new BindingExpression(
+        observerLocator,
+        'value',
+        sourceExpression2,
+        ONE_WAY,
+        valueConverterLookupFunction,
+        undefined);
+      binding2 = bindingExpression2.createBinding(el.options.item(1));
+    });
+
+    it('binds', done => {
+      var targetProperty = binding.targetProperty;
+      // select-value bind.
+      binding.bind(obj);
+      expect(el.options.item(1).selected).toBe(false);
+      // now bind the option value.
+      binding2.bind(obj);
+      setTimeout(() => {
+        expect(el.options.item(1).selected).toBe(true);
+        done();
+      }, 100);
+    });
+
+    afterAll(() => {
+      document.body.removeChild(el);
+    });
+  });
 });
