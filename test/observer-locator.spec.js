@@ -4,9 +4,16 @@ import {TestObservationAdapter, AdapterPropertyObserver} from './adapter';
 import {DirtyCheckProperty} from '../src/dirty-checking';
 import {
   OoPropertyObserver,
-  UndefinedPropertyObserver,
-  ElementObserver
+  UndefinedPropertyObserver
 } from '../src/property-observation';
+import {
+  ValueAttributeObserver,
+  XLinkAttributeObserver,
+  DataAttributeObserver,
+  StyleObserver,
+  SelectValueObserver,
+  CheckedObserver
+} from '../src/element-observation';
 
 export function createElement(html) {
   var div = document.createElement('div');
@@ -33,18 +40,58 @@ describe('ObserverLocator', () => {
     expect(observer instanceof UndefinedPropertyObserver).toBe(true);
   });
 
-  it('uses ElementObserver for Elements', () => {
+  it('uses OoPropertyObserver for ad-hoc properties on Elements', () => {
     var obj = createElement('<h1></h1>'),
-        observer = locator.getObserver(obj, 'foo');
+        observer;
+    obj.foo = 'bar';
+    observer = locator.getObserver(obj, 'foo');
     expect(obj instanceof Element).toBe(true);
-    expect(observer instanceof ElementObserver).toBe(true);
+    expect(observer instanceof OoPropertyObserver).toBe(true);
   });
 
-  it('uses ElementObserver for SVGElements', () => {
-    var obj = createElement('<svg></svg>'),
-        observer = locator.getObserver(obj, 'foo');
-    expect(obj instanceof SVGElement).toBe(true);
-    expect(observer instanceof ElementObserver).toBe(true);
+  it('uses ValueAttributeObserver for element value attributes', () => {
+    var obj = createElement('<input />'),
+        observer = locator.getObserver(obj, 'value');
+    expect(observer instanceof ValueAttributeObserver).toBe(true);
+    obj = createElement('<textarea></textarea'),
+    observer = locator.getObserver(obj, 'value');
+    expect(observer instanceof ValueAttributeObserver).toBe(true);
+  });
+
+  it('uses DataAttributeObserver for data-* attributes', () => {
+    var obj = createElement('<input data-foo="bar" />'),
+        observer = locator.getObserver(obj, 'data-foo');
+    expect(observer instanceof DataAttributeObserver).toBe(true);
+  });
+
+  it('uses DataAttributeObserver for aria-* attributes', () => {
+    var obj = createElement('<input aria-hidden="bar" />'),
+        observer = locator.getObserver(obj, 'aria-hidden');
+    expect(observer instanceof DataAttributeObserver).toBe(true);
+  });
+
+  it('uses CheckedObserver for input checked attributes', () => {
+    var obj = createElement('<input />'),
+        observer = locator.getObserver(obj, 'checked');
+    expect(observer instanceof CheckedObserver).toBe(true);
+  });
+
+  it('uses SelectValueObserver for select value attributes', () => {
+    var obj = createElement('<select></select>'),
+        observer = locator.getObserver(obj, 'value');
+    expect(observer instanceof SelectValueObserver).toBe(true);
+  });
+
+  it('uses StyleObserver for style attributes', () => {
+    var obj = createElement('<select></select>'),
+        observer = locator.getObserver(obj, 'style');
+    expect(observer instanceof StyleObserver).toBe(true);
+  });
+
+  it('uses StyleObserver for css attributes', () => {
+    var obj = createElement('<select></select>'),
+        observer = locator.getObserver(obj, 'css');
+    expect(observer instanceof StyleObserver).toBe(true);
   });
 
   it('uses DirtyCheckProperty for defined, complex properties on pojos', () => {

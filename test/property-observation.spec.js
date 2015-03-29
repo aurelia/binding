@@ -5,8 +5,13 @@ import {DirtyCheckProperty, DirtyChecking} from '../src/dirty-checking';
 import {
   OoPropertyObserver,
   UndefinedPropertyObserver,
-  ElementObserver
 } from '../src/property-observation';
+import {
+  ValueAttributeObserver,
+  XLinkAttributeObserver,
+  DataAttributeObserver,
+  StyleObserver
+} from '../src/element-observation';
 
 function createElement(html) {
   var div = document.createElement('div');
@@ -67,7 +72,6 @@ describe('OoPropertyObserver', () => {
     var dispose = observer.subscribe(() => {});
     expect(observer.owner.observing).toBe(true);
     dispose();
-    //expect(observer.owner.observing).toBe(false);  // this is failing.  need to find out what the intended behavior is.
   });
 
   it('keeps observing if there are callbacks', () => {
@@ -163,7 +167,7 @@ describe('UndefinedPropertyObserver', () => {
   });
 });
 
-describe('ElementObserver', () => {
+describe('element observation', () => {
   var locator;
   beforeAll(() => {
     locator = new ObserverLocator(new TaskQueue(), new EventManager(), new DirtyChecker(), []);
@@ -172,8 +176,8 @@ describe('ElementObserver', () => {
   it('observes xlink namespaced attributes', () => {
     var el = createSvgUseElement(),
         observer = locator.getObserver(el, 'xlink:href');
-    expect(observer instanceof ElementObserver).toBe(true);
-    expect(() => observer.subscribe(() =>{})).toThrow(new Error('Observation of an Element\'s "xlink:href" property is not supported.'));
+    expect(observer instanceof XLinkAttributeObserver).toBe(true);
+    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "xlink:href" property is not supported.'));
     expect(observer.getValue()).toBe('#shape1');
     observer.setValue('#shape2');
     expect(observer.getValue()).toBe('#shape2');
@@ -182,8 +186,8 @@ describe('ElementObserver', () => {
   it('observes non-xlink namespaced attributes', () => {
     var el = createSvgUseElement(),
         observer = locator.getObserver(el, 'foo:bar');
-    expect(observer instanceof ElementObserver).toBe(true);
-    expect(() => observer.subscribe(() =>{})).toThrow(new Error('Observation of an Element\'s "foo:bar" property is not supported.'));
+    expect(observer instanceof DataAttributeObserver).toBe(true);
+    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "foo:bar" property is not supported.'));
     expect(observer.getValue()).toBe('baz');
     observer.setValue('qux');
     expect(observer.getValue()).toBe('qux');
@@ -192,7 +196,7 @@ describe('ElementObserver', () => {
   it('observes data-* attributes on Elements', () => {
     var el = createElement('<h1 data-foo="bar"></h1>'),
         observer = locator.getObserver(el, 'data-foo');
-    expect(observer instanceof ElementObserver).toBe(true);
+    expect(observer instanceof DataAttributeObserver).toBe(true);
     expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "data-foo" property is not supported.'));
     expect(observer.getValue()).toBe('bar');
     observer.setValue('baz');
@@ -202,7 +206,7 @@ describe('ElementObserver', () => {
   it('observes aria-* attributes on Elements', () => {
     var el = createElement('<h1 aria-hidden="true"></h1>'),
         observer = locator.getObserver(el, 'aria-hidden');
-    expect(observer instanceof ElementObserver).toBe(true);
+    expect(observer instanceof DataAttributeObserver).toBe(true);
     expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "aria-hidden" property is not supported.'));
     expect(observer.getValue()).toBe('true');
     observer.setValue('false');
@@ -212,7 +216,7 @@ describe('ElementObserver', () => {
   it('observes data-* attributes on SVGElements', () => {
     var el = createElement('<svg data-foo="bar"></svg>'),
         observer = locator.getObserver(el, 'data-foo');
-    expect(observer instanceof ElementObserver).toBe(true);
+    expect(observer instanceof DataAttributeObserver).toBe(true);
     expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "data-foo" property is not supported.'));
     expect(observer.getValue()).toBe('bar');
     observer.setValue('baz');
@@ -222,7 +226,7 @@ describe('ElementObserver', () => {
   it('observes aria-* attributes on SVGElements', () => {
     var el = createElement('<svg aria-hidden="true"></svg>'),
         observer = locator.getObserver(el, 'aria-hidden');
-    expect(observer instanceof ElementObserver).toBe(true);
+    expect(observer instanceof DataAttributeObserver).toBe(true);
     expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "aria-hidden" property is not supported.'));
     expect(observer.getValue()).toBe('true');
     observer.setValue('false');
@@ -240,7 +244,7 @@ describe('ElementObserver', () => {
           observer = locator.getObserver(el, test.attr),
           callback = jasmine.createSpy('callback'),
           dispose = observer.subscribe(callback);
-      expect(observer instanceof ElementObserver).toBe(true);
+      expect(observer instanceof ValueAttributeObserver).toBe(true);
       expect(observer.getValue()).toBe(test.old);
       observer.setValue(test.new);
       expect(observer.getValue()).toBe(test.new);
@@ -255,20 +259,17 @@ describe('ElementObserver', () => {
     });
   });
 
-  it('direct-access properties on Elements and SVGElements', () => {
+  it('native properties of Elements and SVGElements', () => {
     var cases = [
       { tag: '<input type="text" />', attr: 'type', old: 'text', new: 'checkbox' },
       { tag: '<input id="foo" />', attr: 'id', old: 'foo', new: 'bar' },
-      { tag: '<h1>test</h1>', attr: 'foo', old: undefined, new: 'bar' },
-      //{ tag: '<h1 foo="bar">test</h1>', attr: 'foo', old: 'bar', new: 'baz' },
       { tag: '<svg width="100"></svg>', attr: 'width', old: '100', new: '200' },
       { tag: '<svg viewBox="0 0 100 100"></svg>', attr: 'viewBox', old: '0 0 100 100', new: '0 0 200 200' },
     ];
     cases.forEach(test => {
       var el = createElement(test.tag),
           observer = locator.getObserver(el, test.attr);
-      expect(observer instanceof ElementObserver).toBe(true);
-      expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "' + test.attr + '" property is not supported.'));
+      expect(observer instanceof OoPropertyObserver || observer instanceof DirtyCheckProperty || observer instanceof DataAttributeObserver).toBe(true);
       expect(observer.getValue()).toBe(test.old);
       observer.setValue(test.new);
       expect(observer.getValue()).toBe(test.new);
@@ -282,7 +283,7 @@ describe('ElementObserver', () => {
 
     for(i = 0; i < attrs.length; i++) {
       observer = locator.getObserver(el, attrs[i]);
-      expect(observer instanceof ElementObserver).toBe(true);
+      expect(observer instanceof StyleObserver).toBe(true);
       expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "' + attrs[i] + '" property is not supported.'));
 
       observer.setValue('width: 30px; height: 20px; background-color: red;');
@@ -307,5 +308,37 @@ describe('ElementObserver', () => {
       expect(el.style.width).toBe('');
       expect(el.style.backgroundColor).toBe('');
     }
+  });
+
+  describe('ad-hoc properites on Elements', () => {
+    var obj, observer;
+
+    beforeAll(() => {
+      var locator = new ObserverLocator(new TaskQueue(), new EventManager(), new DirtyChecker(), []);
+      obj = createElement('<foobar></foobar>');
+      obj.foo = 'bar';
+      observer = locator.getObserver(obj, 'foo');
+    });
+
+    it('should be an OoPropertyObserver', () => {
+      expect(observer instanceof OoPropertyObserver).toBe(true);
+    });
+
+    it('implements the property observer api', done => {
+      executeSharedPropertyObserverTests(obj, observer, done, 0);
+    });
+
+    it('stops observing if there are no callbacks', () => {
+      var dispose = observer.subscribe(() => {});
+      expect(observer.owner.observing).toBe(true);
+      dispose();
+    });
+
+    it('keeps observing if there are callbacks', () => {
+      var dispose = observer.subscribe(() => {});
+      observer.subscribe(function(){});
+      dispose();
+      expect(observer.owner.observing).toBe(true);
+    });
   });
 });
