@@ -22,8 +22,15 @@ var _propertyObservation = require("./property-observation");
 var SetterObserver = _propertyObservation.SetterObserver;
 var OoObjectObserver = _propertyObservation.OoObjectObserver;
 var OoPropertyObserver = _propertyObservation.OoPropertyObserver;
-var ElementObserver = _propertyObservation.ElementObserver;
-var SelectValueObserver = _propertyObservation.SelectValueObserver;
+
+var _elementObservation = require("./element-observation");
+
+var SelectValueObserver = _elementObservation.SelectValueObserver;
+var CheckedObserver = _elementObservation.CheckedObserver;
+var ValueAttributeObserver = _elementObservation.ValueAttributeObserver;
+var XLinkAttributeObserver = _elementObservation.XLinkAttributeObserver;
+var DataAttributeObserver = _elementObservation.DataAttributeObserver;
+var StyleObserver = _elementObservation.StyleObserver;
 
 var All = require("aurelia-dependency-injection").All;
 
@@ -158,14 +165,29 @@ var ObserverLocator = exports.ObserverLocator = (function () {
     },
     createPropertyObserver: {
       value: function createPropertyObserver(obj, propertyName) {
-        var observerLookup, descriptor, handler, observationAdapter;
+        var observerLookup, descriptor, handler, observationAdapter, xlinkResult;
 
         if (obj instanceof Element) {
           handler = this.eventManager.getElementHandler(obj, propertyName);
           if (propertyName === "value" && obj.tagName.toLowerCase() === "select") {
             return new SelectValueObserver(obj, handler, this);
           }
-          return new ElementObserver(obj, propertyName, handler);
+          if (propertyName === "checked" && obj.tagName.toLowerCase() === "input") {
+            return new CheckedObserver(obj, handler, this);
+          }
+          if (handler) {
+            return new ValueAttributeObserver(obj, propertyName, handler);
+          }
+          xlinkResult = /^xlink:(.+)$/.exec(propertyName);
+          if (xlinkResult) {
+            return new XLinkAttributeObserver(obj, propertyName, xlinkResult[1]);
+          }
+          if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof SVGElement) {
+            return new DataAttributeObserver(obj, propertyName);
+          }
+          if (propertyName === "style" || propertyName === "css") {
+            return new StyleObserver(obj, propertyName);
+          }
         }
 
         descriptor = Object.getPropertyDescriptor(obj, propertyName);

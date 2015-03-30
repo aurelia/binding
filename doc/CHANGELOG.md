@@ -1,3 +1,16 @@
+### 0.4.1 (2015-03-30)
+
+
+#### Bug Fixes
+
+* **SelectValueObserver:** handle late bound option values ([8a6b8f00](http://github.com/aurelia/binding/commit/8a6b8f0006458ce77f3dbd4c3f1d975d6614175a), closes [#54](http://github.com/aurelia/binding/issues/54))
+
+
+#### Features
+
+* **CheckedObserver:** checked binding ([1200935a](http://github.com/aurelia/binding/commit/1200935ad7fa9b1e5e75d71a46ab1531cb1c3de6), closes [#43](http://github.com/aurelia/binding/issues/43))
+
+
 ## 0.4.0 (2015-03-25)
 
 #### Features

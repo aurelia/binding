@@ -1,5 +1,5 @@
-System.register(["aurelia-task-queue", "./array-observation", "./map-observation", "./event-manager", "./dirty-checking", "./property-observation", "aurelia-dependency-injection", "./computed-observation"], function (_export) {
-  var TaskQueue, getArrayObserver, getMapObserver, EventManager, DirtyChecker, DirtyCheckProperty, SetterObserver, OoObjectObserver, OoPropertyObserver, ElementObserver, SelectValueObserver, All, hasDeclaredDependencies, ComputedPropertyObserver, _prototypeProperties, _classCallCheck, hasObjectObserve, ObserverLocator, ObjectObservationAdapter;
+System.register(["aurelia-task-queue", "./array-observation", "./map-observation", "./event-manager", "./dirty-checking", "./property-observation", "./element-observation", "aurelia-dependency-injection", "./computed-observation"], function (_export) {
+  var TaskQueue, getArrayObserver, getMapObserver, EventManager, DirtyChecker, DirtyCheckProperty, SetterObserver, OoObjectObserver, OoPropertyObserver, SelectValueObserver, CheckedObserver, ValueAttributeObserver, XLinkAttributeObserver, DataAttributeObserver, StyleObserver, All, hasDeclaredDependencies, ComputedPropertyObserver, _prototypeProperties, _classCallCheck, hasObjectObserve, ObserverLocator, ObjectObservationAdapter;
 
   function createObserversLookup(obj) {
     var value = {};
@@ -47,8 +47,13 @@ System.register(["aurelia-task-queue", "./array-observation", "./map-observation
       SetterObserver = _propertyObservation.SetterObserver;
       OoObjectObserver = _propertyObservation.OoObjectObserver;
       OoPropertyObserver = _propertyObservation.OoPropertyObserver;
-      ElementObserver = _propertyObservation.ElementObserver;
-      SelectValueObserver = _propertyObservation.SelectValueObserver;
+    }, function (_elementObservation) {
+      SelectValueObserver = _elementObservation.SelectValueObserver;
+      CheckedObserver = _elementObservation.CheckedObserver;
+      ValueAttributeObserver = _elementObservation.ValueAttributeObserver;
+      XLinkAttributeObserver = _elementObservation.XLinkAttributeObserver;
+      DataAttributeObserver = _elementObservation.DataAttributeObserver;
+      StyleObserver = _elementObservation.StyleObserver;
     }, function (_aureliaDependencyInjection) {
       All = _aureliaDependencyInjection.All;
     }, function (_computedObservation) {
@@ -158,14 +163,29 @@ System.register(["aurelia-task-queue", "./array-observation", "./map-observation
           },
           createPropertyObserver: {
             value: function createPropertyObserver(obj, propertyName) {
-              var observerLookup, descriptor, handler, observationAdapter;
+              var observerLookup, descriptor, handler, observationAdapter, xlinkResult;
 
               if (obj instanceof Element) {
                 handler = this.eventManager.getElementHandler(obj, propertyName);
                 if (propertyName === "value" && obj.tagName.toLowerCase() === "select") {
                   return new SelectValueObserver(obj, handler, this);
                 }
-                return new ElementObserver(obj, propertyName, handler);
+                if (propertyName === "checked" && obj.tagName.toLowerCase() === "input") {
+                  return new CheckedObserver(obj, handler, this);
+                }
+                if (handler) {
+                  return new ValueAttributeObserver(obj, propertyName, handler);
+                }
+                xlinkResult = /^xlink:(.+)$/.exec(propertyName);
+                if (xlinkResult) {
+                  return new XLinkAttributeObserver(obj, propertyName, xlinkResult[1]);
+                }
+                if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof SVGElement) {
+                  return new DataAttributeObserver(obj, propertyName);
+                }
+                if (propertyName === "style" || propertyName === "css") {
+                  return new StyleObserver(obj, propertyName);
+                }
               }
 
               descriptor = Object.getPropertyDescriptor(obj, propertyName);

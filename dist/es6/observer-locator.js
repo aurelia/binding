@@ -6,10 +6,16 @@ import {DirtyChecker, DirtyCheckProperty} from './dirty-checking';
 import {
   SetterObserver,
   OoObjectObserver,
-  OoPropertyObserver,
-  ElementObserver,
-  SelectValueObserver,
+  OoPropertyObserver
 } from './property-observation';
+import {
+  SelectValueObserver,
+  CheckedObserver,
+  ValueAttributeObserver,
+  XLinkAttributeObserver,
+  DataAttributeObserver,
+  StyleObserver
+} from './element-observation';
 import {All} from 'aurelia-dependency-injection';
 import {
   hasDeclaredDependencies,
@@ -127,14 +133,29 @@ export class ObserverLocator {
   }
 
   createPropertyObserver(obj, propertyName){
-    var observerLookup, descriptor, handler, observationAdapter;
+    var observerLookup, descriptor, handler, observationAdapter, xlinkResult;
 
     if(obj instanceof Element){
       handler = this.eventManager.getElementHandler(obj, propertyName);
       if (propertyName === 'value' && obj.tagName.toLowerCase() === 'select') {
         return new SelectValueObserver(obj, handler, this);
       }
-      return new ElementObserver(obj, propertyName, handler);
+      if (propertyName ==='checked' && obj.tagName.toLowerCase() === 'input') {
+        return new CheckedObserver(obj, handler, this);
+      }
+      if (handler) {
+        return new ValueAttributeObserver(obj, propertyName, handler);
+      }
+      xlinkResult = /^xlink:(.+)$/.exec(propertyName);
+      if (xlinkResult) {
+        return new XLinkAttributeObserver(obj, propertyName, xlinkResult[1]);
+      }
+      if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof SVGElement) {
+        return new DataAttributeObserver(obj, propertyName);
+      }
+      if (propertyName === 'style' || propertyName === 'css') {
+        return new StyleObserver(obj, propertyName);
+      }
     }
 
     descriptor = Object.getPropertyDescriptor(obj, propertyName);
