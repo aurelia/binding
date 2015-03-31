@@ -1,14 +1,14 @@
-import {ValueConverter} from '../src/index';
+import {ValueConverterResource} from '../src/index';
 
 describe('ValueConverter', () => {
   it('uses ends with ValueConverter convention', () => {
-    expect(ValueConverter.convention('FooValueConverter')).toBeDefined();
-    expect(ValueConverter.convention('FooValueConverter') instanceof ValueConverter).toBe(true);
-    expect(ValueConverter.convention('FooBar')).toBeUndefined();
+    expect(ValueConverterResource.convention('FooValueConverter')).toBeDefined();
+    expect(ValueConverterResource.convention('FooValueConverter') instanceof ValueConverterResource).toBe(true);
+    expect(ValueConverterResource.convention('FooBar')).toBeUndefined();
   });
   it('uses camel case naming convention', () => {
-    expect(ValueConverter.convention('FooValueConverter').name).toBe('foo');
-    expect(ValueConverter.convention('FooBarValueConverter').name).toBe('fooBar');
-    expect(ValueConverter.convention('FooBarBazValueConverter').name).toBe('fooBarBaz');
+    expect(ValueConverterResource.convention('FooValueConverter').name).toBe('foo');
+    expect(ValueConverterResource.convention('FooBarValueConverter').name).toBe('fooBar');
+    expect(ValueConverterResource.convention('FooBarBazValueConverter').name).toBe('fooBarBaz');
   });
 });

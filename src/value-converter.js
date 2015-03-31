@@ -10,14 +10,14 @@ function camelCase(name){
   return name.charAt(0).toLowerCase() + name.slice(1);
 }
 
-export class ValueConverter extends ResourceType {
+export class ValueConverterResource extends ResourceType {
   constructor(name){
     this.name = name;
   }
 
   static convention(name){
     if(name.endsWith('ValueConverter')){
-      return new ValueConverter(camelCase(name.substring(0, name.length-14)));
+      return new ValueConverterResource(camelCase(name.substring(0, name.length-14)));
     }
   }
 
