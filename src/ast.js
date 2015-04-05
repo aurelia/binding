@@ -36,7 +36,7 @@ export class Chain extends Expression {
 
     for (i = 0; i < length; ++i) {
       last = expressions[i].evaluate(scope, valueConverters);
-      
+
       if (last !== null) {
         result = last;
       }
@@ -85,7 +85,7 @@ export class ValueConverter extends Expression {
 
     return this.allArgs[0].assign(scope, value, valueConverters);
   }
-  
+
   accept(visitor){
     visitor.visitValueConverter(this);
   }
@@ -98,7 +98,7 @@ export class ValueConverter extends Expression {
     for(i = 0, ii = this.allArgs.length; i<ii; ++i){
       exp = this.allArgs[i]
       expInfo = exp.connect(binding, scope);
-          
+
       if(expInfo.observer){
         childObservers.push(expInfo.observer);
       }
@@ -229,7 +229,7 @@ export class AccessMember extends Expression {
   evaluate(scope, valueConverters){
     var instance = this.object.evaluate(scope, valueConverters);
     return instance === null || instance === undefined
-      ? instance 
+      ? instance
       : instance[this.name];
   }
 
@@ -256,7 +256,7 @@ export class AccessMember extends Expression {
 
     if(objectObserver){
       observer = new PathObserver(
-        objectObserver, 
+        objectObserver,
         value => {
           if(value == null || value == undefined){
             return value;
@@ -354,7 +354,7 @@ export class CallScope extends Expression {
     for(i = 0, ii = this.args.length; i<ii; ++i){
       exp = this.args[i];
       expInfo = exp.connect(binding, scope);
-          
+
       if(expInfo.observer){
         childObservers.push(expInfo.observer);
       }
@@ -405,7 +405,7 @@ export class CallMember extends Expression {
     for(i = 0, ii = this.args.length; i<ii; ++i){
       exp = this.args[i];
       expInfo = exp.connect(binding, scope);
-          
+
       if(expInfo.observer){
         childObservers.push(expInfo.observer);
       }
@@ -459,7 +459,7 @@ export class CallFunction extends Expression {
     for(i = 0, ii = this.args.length; i<ii; ++i){
       exp = this.args[i];
       expInfo = exp.connect(binding, scope);
-          
+
       if(expInfo.observer){
         childObservers.push(expInfo.observer);
       }
@@ -674,7 +674,7 @@ export class LiteralArray extends Expression {
     for(i = 0, ii = this.elements.length; i<ii; ++i){
       exp = this.elements[i];
       expInfo = exp.connect(binding, scope);
-          
+
       if(expInfo.observer){
         childObservers.push(expInfo.observer);
       }
@@ -698,7 +698,7 @@ export class LiteralArray extends Expression {
 export class LiteralObject extends Expression {
   constructor(keys, values){
     super();
-    
+
     this.keys = keys;
     this.values = values;
   }
@@ -796,7 +796,7 @@ export class Unparser {
       if (i !== 0) {
         this.write(';');
       }
-      
+
       expressions[i].accept(this);
     }
   }
