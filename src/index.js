@@ -1,5 +1,5 @@
 import {Decorators, Metadata} from 'aurelia-metadata';
-import {ValueConverter} from './value-converter';
+import {ValueConverterResource} from './value-converter';
 
 export {EventManager} from './event-manager';
 export {ObserverLocator, ObjectObservationAdapter} from './observer-locator';
