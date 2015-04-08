@@ -934,7 +934,7 @@ function evalList(scope, list, valueConverters) {
       cacheLength, i;
 
   for (cacheLength = evalListCache.length; cacheLength <= length; ++cacheLength) {
-    _evalListCache.push([]);
+    evalListCache.push([]);
   }
 
   var result = evalListCache[length];
