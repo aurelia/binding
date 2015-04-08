@@ -13,7 +13,7 @@ export {NameExpression} from './name-expression';
 export {CallExpression} from './call-expression';
 export {DirtyChecker} from './dirty-checking';
 export {getChangeRecords} from './map-change-records';
-export {ComputedObservationAdapter, declarePropertyDependencies} from './computed-observation';
+export {ComputedPropertyObserver, declarePropertyDependencies} from './computed-observation';
 
 //ES7 Decorators
 export function valueConverter(name){
