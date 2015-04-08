@@ -29,6 +29,7 @@ export class CompositeObserver {
   dispose(){
     var subscriptions = this.subscriptions;
 
+    var i = subscriptions.length;
     while(i--) {
       subscriptions[i]();
     }
