@@ -1,5 +1,5 @@
 System.register([], function (_export) {
-  _export("getChangeRecords", getChangeRecords);
+  _export('getChangeRecords', getChangeRecords);
 
   function newRecord(type, object, key, oldValue) {
     return {
@@ -20,15 +20,15 @@ System.register([], function (_export) {
       for (var _iterator = map.keys()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
         var key = _step.value;
 
-        entries.push(newRecord("added", map, key));
+        entries.push(newRecord('added', map, key));
       }
     } catch (err) {
       _didIteratorError = true;
       _iteratorError = err;
     } finally {
       try {
-        if (!_iteratorNormalCompletion && _iterator["return"]) {
-          _iterator["return"]();
+        if (!_iteratorNormalCompletion && _iterator['return']) {
+          _iterator['return']();
         }
       } finally {
         if (_didIteratorError) {
@@ -43,7 +43,7 @@ System.register([], function (_export) {
   return {
     setters: [],
     execute: function () {
-      "use strict";
+      'use strict';
     }
   };
 });

@@ -1,16 +1,16 @@
 System.register([], function (_export) {
-  var _prototypeProperties, _classCallCheck, CompositeObserver;
+  var _classCallCheck, _createClass, CompositeObserver;
 
   return {
     setters: [],
     execute: function () {
       "use strict";
 
-      _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
-
       _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-      CompositeObserver = _export("CompositeObserver", (function () {
+      _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+      CompositeObserver = (function () {
         function CompositeObserver(observers, evaluate) {
           var _this = this;
 
@@ -26,44 +26,40 @@ System.register([], function (_export) {
           }
         }
 
-        _prototypeProperties(CompositeObserver, null, {
-          subscribe: {
-            value: function subscribe(callback) {
-              var that = this;
-              that.callback = callback;
-              return function () {
-                that.callback = null;
-              };
-            },
-            writable: true,
-            configurable: true
-          },
-          notify: {
-            value: function notify(newValue) {
-              var callback = this.callback;
-
-              if (callback) {
-                callback(newValue);
-              }
-            },
-            writable: true,
-            configurable: true
-          },
-          dispose: {
-            value: function dispose() {
-              var subscriptions = this.subscriptions;
-
-              while (i--) {
-                subscriptions[i]();
-              }
-            },
-            writable: true,
-            configurable: true
+        _createClass(CompositeObserver, [{
+          key: "subscribe",
+          value: function subscribe(callback) {
+            var that = this;
+            that.callback = callback;
+            return function () {
+              that.callback = null;
+            };
           }
-        });
+        }, {
+          key: "notify",
+          value: function notify(newValue) {
+            var callback = this.callback;
+
+            if (callback) {
+              callback(newValue);
+            }
+          }
+        }, {
+          key: "dispose",
+          value: function dispose() {
+            var subscriptions = this.subscriptions;
+
+            var i = subscriptions.length;
+            while (i--) {
+              subscriptions[i]();
+            }
+          }
+        }]);
 
         return CompositeObserver;
-      })());
+      })();
+
+      _export("CompositeObserver", CompositeObserver);
     }
   };
 });

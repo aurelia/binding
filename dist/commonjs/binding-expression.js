@@ -1,15 +1,16 @@
-"use strict";
+'use strict';
 
-var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _bindingModes = require("./binding-modes");
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
-var ONE_WAY = _bindingModes.ONE_WAY;
-var TWO_WAY = _bindingModes.TWO_WAY;
+var _ONE_WAY$TWO_WAY = require('./binding-modes');
 
-var BindingExpression = exports.BindingExpression = (function () {
+var BindingExpression = (function () {
   function BindingExpression(observerLocator, targetProperty, sourceExpression, mode, valueConverterLookupFunction, attribute) {
     _classCallCheck(this, BindingExpression);
 
@@ -22,18 +23,17 @@ var BindingExpression = exports.BindingExpression = (function () {
     this.discrete = false;
   }
 
-  _prototypeProperties(BindingExpression, null, {
-    createBinding: {
-      value: function createBinding(target) {
-        return new Binding(this.observerLocator, this.sourceExpression, target, this.targetProperty, this.mode, this.valueConverterLookupFunction);
-      },
-      writable: true,
-      configurable: true
+  _createClass(BindingExpression, [{
+    key: 'createBinding',
+    value: function createBinding(target) {
+      return new Binding(this.observerLocator, this.sourceExpression, target, this.targetProperty, this.mode, this.valueConverterLookupFunction);
     }
-  });
+  }]);
 
   return BindingExpression;
 })();
+
+exports.BindingExpression = BindingExpression;
 
 var Binding = (function () {
   function Binding(observerLocator, sourceExpression, target, targetProperty, mode, valueConverterLookupFunction) {
@@ -46,90 +46,79 @@ var Binding = (function () {
     this.valueConverterLookupFunction = valueConverterLookupFunction;
   }
 
-  _prototypeProperties(Binding, null, {
-    getObserver: {
-      value: function getObserver(obj, propertyName) {
-        return this.observerLocator.getObserver(obj, propertyName);
-      },
-      writable: true,
-      configurable: true
-    },
-    bind: {
-      value: function bind(source) {
-        var _this = this;
-
-        var targetProperty = this.targetProperty,
-            info;
-
-        if ("bind" in targetProperty) {
-          targetProperty.bind();
-        }
-
-        if (this.mode == ONE_WAY || this.mode == TWO_WAY) {
-          if (this._disposeObserver) {
-            if (this.source === source) {
-              return;
-            }
-
-            this.unbind();
-          }
-
-          info = this.sourceExpression.connect(this, source);
-
-          if (info.observer) {
-            this._disposeObserver = info.observer.subscribe(function (newValue) {
-              var existing = targetProperty.getValue();
-              if (newValue !== existing) {
-                targetProperty.setValue(newValue);
-              }
-            });
-          }
-
-          if (info.value !== undefined) {
-            targetProperty.setValue(info.value);
-          }
-
-          if (this.mode == TWO_WAY) {
-            this._disposeListener = targetProperty.subscribe(function (newValue) {
-              _this.sourceExpression.assign(source, newValue, _this.valueConverterLookupFunction);
-            });
-          }
-
-          this.source = source;
-        } else {
-          var value = this.sourceExpression.evaluate(source, this.valueConverterLookupFunction);
-
-          if (value !== undefined) {
-            targetProperty.setValue(value);
-          }
-        }
-      },
-      writable: true,
-      configurable: true
-    },
-    unbind: {
-      value: function unbind() {
-        if ("unbind" in this.targetProperty) {
-          this.targetProperty.unbind();
-        }
-        if (this._disposeObserver) {
-          this._disposeObserver();
-          this._disposeObserver = null;
-        }
-
-        if (this._disposeListener) {
-          this._disposeListener();
-          this._disposeListener = null;
-        }
-      },
-      writable: true,
-      configurable: true
+  _createClass(Binding, [{
+    key: 'getObserver',
+    value: function getObserver(obj, propertyName) {
+      return this.observerLocator.getObserver(obj, propertyName);
     }
-  });
+  }, {
+    key: 'bind',
+    value: function bind(source) {
+      var _this = this;
+
+      var targetProperty = this.targetProperty,
+          info;
+
+      if ('bind' in targetProperty) {
+        targetProperty.bind();
+      }
+
+      if (this.mode == _ONE_WAY$TWO_WAY.ONE_WAY || this.mode == _ONE_WAY$TWO_WAY.TWO_WAY) {
+        if (this._disposeObserver) {
+          if (this.source === source) {
+            return;
+          }
+
+          this.unbind();
+        }
+
+        info = this.sourceExpression.connect(this, source);
+
+        if (info.observer) {
+          this._disposeObserver = info.observer.subscribe(function (newValue) {
+            var existing = targetProperty.getValue();
+            if (newValue !== existing) {
+              targetProperty.setValue(newValue);
+            }
+          });
+        }
+
+        if (info.value !== undefined) {
+          targetProperty.setValue(info.value);
+        }
+
+        if (this.mode == _ONE_WAY$TWO_WAY.TWO_WAY) {
+          this._disposeListener = targetProperty.subscribe(function (newValue) {
+            _this.sourceExpression.assign(source, newValue, _this.valueConverterLookupFunction);
+          });
+        }
+
+        this.source = source;
+      } else {
+        var value = this.sourceExpression.evaluate(source, this.valueConverterLookupFunction);
+
+        if (value !== undefined) {
+          targetProperty.setValue(value);
+        }
+      }
+    }
+  }, {
+    key: 'unbind',
+    value: function unbind() {
+      if ('unbind' in this.targetProperty) {
+        this.targetProperty.unbind();
+      }
+      if (this._disposeObserver) {
+        this._disposeObserver();
+        this._disposeObserver = null;
+      }
+
+      if (this._disposeListener) {
+        this._disposeListener();
+        this._disposeListener = null;
+      }
+    }
+  }]);
 
   return Binding;
 })();
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});

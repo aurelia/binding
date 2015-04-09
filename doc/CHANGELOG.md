@@ -1,3 +1,23 @@
+## 0.5.0 (2015-04-09)
+
+
+#### Bug Fixes
+
+* **CompositeObserver:** initialize var i ([fbe42fa7](http://github.com/aurelia/binding/commit/fbe42fa70d48caeec4f96ecd57d4e97f37b9048b))
+* **evalList:** fix syntax error for evalListCache ([dfa1e114](http://github.com/aurelia/binding/commit/dfa1e114727efec23078cc4da6f8517cf4e3de4f))
+* **index:**
+  * fix export ComputedPropertyObserver ([142f093a](http://github.com/aurelia/binding/commit/142f093aa41d5712738cadf925d9ebfb9c969a00))
+  * incorrect import name ([3c88f272](http://github.com/aurelia/binding/commit/3c88f272658823e33b28b9b39a7020790b006ec0))
+* **map-observation:** remove missing import ([3f3a8e85](http://github.com/aurelia/binding/commit/3f3a8e8545b0823aeefa10c0e88c8d8d99ba8764))
+
+
+#### Features
+
+* **all:**
+  * update compile, decorators and core-js ([7c83df98](http://github.com/aurelia/binding/commit/7c83df98c0f87866c1e35e7c60d3c227ac8048ae))
+  * add decorators support ([ed0ff025](http://github.com/aurelia/binding/commit/ed0ff0258b3e764334cee9778a566ba526be18ee))
+
+
 ### 0.4.1 (2015-03-30)
 
 

@@ -5,9 +5,17 @@ System.register([], function (_export) {
     execute: function () {
       "use strict";
 
-      ONE_WAY = _export("ONE_WAY", 1);
-      TWO_WAY = _export("TWO_WAY", 2);
-      ONE_TIME = _export("ONE_TIME", 3);
+      ONE_WAY = 1;
+
+      _export("ONE_WAY", ONE_WAY);
+
+      TWO_WAY = 2;
+
+      _export("TWO_WAY", TWO_WAY);
+
+      ONE_TIME = 3;
+
+      _export("ONE_TIME", ONE_TIME);
     }
   };
 });

@@ -1,23 +1,19 @@
+import core from 'core-js';
 import {ResourceType} from 'aurelia-metadata';
-
-if (typeof String.prototype.endsWith !== 'function') {
-  String.prototype.endsWith = function(suffix) {
-    return this.indexOf(suffix, this.length - suffix.length) !== -1;
-  };
-}
 
 function camelCase(name){
   return name.charAt(0).toLowerCase() + name.slice(1);
 }
 
-export class ValueConverter extends ResourceType {
+export class ValueConverterResource extends ResourceType {
   constructor(name){
+    super();
     this.name = name;
   }
 
   static convention(name){
     if(name.endsWith('ValueConverter')){
-      return new ValueConverter(camelCase(name.substring(0, name.length-14)));
+      return new ValueConverterResource(camelCase(name.substring(0, name.length-14)));
     }
   }
 

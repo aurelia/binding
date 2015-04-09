@@ -1,6 +1,6 @@
 import {Lexer,Token} from './lexer';
-import {Expression,ArrayOfExpression,Chain,ValueConverter,Assign,
-        Conditional, AccessScope, AccessMember, AccessKeyed, 
+import {Expression, ArrayOfExpression, Chain, ValueConverter, Assign,
+        Conditional, AccessScope, AccessMember, AccessKeyed,
         CallScope, CallFunction, CallMember, PrefixNot,
         Binary, LiteralPrimitive, LiteralArray, LiteralObject, LiteralString} from './ast';
 
@@ -15,7 +15,7 @@ export class Parser {
   parse(input) {
     input = input || '';
 
-    return this.cache[input] 
+    return this.cache[input]
       || (this.cache[input] = new ParserImplementation(this.lexer, input).parseChain());
   }
 }
@@ -64,7 +64,7 @@ export class ParserImplementation {
 
     while (this.optional('|')) {
       var name = this.peek.text, // TODO(kasperl): Restrict to identifier?
-          args = [];  
+          args = [];
 
       this.advance();
 
@@ -206,7 +206,7 @@ export class ParserImplementation {
   }
 
   parsePrefix() {
-    if (this.optional('+')) { 
+    if (this.optional('+')) {
       return this.parsePrefix(); // TODO(kasperl): This is different than the original parser.
     } else if (this.optional('-')) {
       return new Binary('-', new LiteralPrimitive(0), this.parsePrefix());
@@ -223,7 +223,7 @@ export class ParserImplementation {
     while (true) {
       if (this.optional('.')) {
         var name = this.peek.text; // TODO(kasperl): Check that this is an identifier. Are keywords okay?
-        
+
         this.advance();
 
         if (this.optional('(')) {
@@ -292,7 +292,7 @@ export class ParserImplementation {
   }
 
   parseObject() {
-    var keys = [], 
+    var keys = [],
         values = [];
 
     this.expect('{');

@@ -1,14 +1,15 @@
-define(["exports", "./array-change-records"], function (exports, _arrayChangeRecords) {
-  "use strict";
+define(['exports', './array-change-records', './map-change-records'], function (exports, _arrayChangeRecords, _mapChangeRecords) {
+  'use strict';
 
-  var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
+  var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
 
-  var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-  var calcSplices = _arrayChangeRecords.calcSplices;
-  var projectArraySplices = _arrayChangeRecords.projectArraySplices;
+  Object.defineProperty(exports, '__esModule', {
+    value: true
+  });
 
-  var ModifyCollectionObserver = exports.ModifyCollectionObserver = (function () {
+  var ModifyCollectionObserver = (function () {
     function ModifyCollectionObserver(taskQueue, collection) {
       _classCallCheck(this, ModifyCollectionObserver);
 
@@ -18,167 +19,145 @@ define(["exports", "./array-change-records"], function (exports, _arrayChangeRec
       this.changeRecords = [];
       this.oldCollection = null;
       this.collection = collection;
-      this.lengthPropertyName = collection instanceof Map ? "size" : "length";
+      this.lengthPropertyName = collection instanceof Map ? 'size' : 'length';
     }
 
-    _prototypeProperties(ModifyCollectionObserver, null, {
-      subscribe: {
-        value: function subscribe(callback) {
-          var callbacks = this.callbacks;
-          callbacks.push(callback);
-          return function () {
-            callbacks.splice(callbacks.indexOf(callback), 1);
-          };
-        },
-        writable: true,
-        configurable: true
-      },
-      addChangeRecord: {
-        value: function addChangeRecord(changeRecord) {
-          if (this.callbacks.length === 0) {
-            return;
-          }
-
-          this.changeRecords.push(changeRecord);
-
-          if (!this.queued) {
-            this.queued = true;
-            this.taskQueue.queueMicroTask(this);
-          }
-        },
-        writable: true,
-        configurable: true
-      },
-      reset: {
-        value: function reset(oldCollection) {
-          if (!this.callbacks.length) {
-            return;
-          }
-
-          this.oldCollection = oldCollection;
-
-          if (!this.queued) {
-            this.queued = true;
-            this.taskQueue.queueMicroTask(this);
-          }
-        },
-        writable: true,
-        configurable: true
-      },
-      getObserver: {
-        value: function getObserver(propertyName) {
-          if (propertyName == this.lengthPropertyName) {
-            return this.lengthObserver || (this.lengthObserver = new CollectionLengthObserver(this.collection, this.lengthPropertyName));
-          } else {
-            throw new Error("You cannot observe the " + propertyName + " property of an array.");
-          }
-        },
-        writable: true,
-        configurable: true
-      },
-      call: {
-        value: function call() {
-          var callbacks = this.callbacks,
-              i = callbacks.length,
-              changeRecords = this.changeRecords,
-              oldCollection = this.oldCollection,
-              records;
-
-          this.queued = false;
-          this.changeRecords = [];
-          this.oldCollection = null;
-
-          if (i) {
-            if (oldCollection) {
-              // TODO (martingust) we might want to refactor this to a common, independent of collection type, way of getting the records
-              if (this.collection instanceof Map) {
-                records = getChangeRecords(oldCollection);
-              } else {
-                //we might need to combine this with existing change records....
-                records = calcSplices(this.collection, 0, this.collection.length, oldCollection, 0, oldCollection.length);
-              }
-            } else {
-              if (this.collection instanceof Map) {
-                records = changeRecords;
-              } else {
-                records = projectArraySplices(this.collection, changeRecords);
-              }
-            }
-
-            while (i--) {
-              callbacks[i](records);
-            }
-          }
-
-          if (this.lengthObserver) {
-            this.lengthObserver(this.array.length);
-          }
-        },
-        writable: true,
-        configurable: true
+    _createClass(ModifyCollectionObserver, [{
+      key: 'subscribe',
+      value: function subscribe(callback) {
+        var callbacks = this.callbacks;
+        callbacks.push(callback);
+        return function () {
+          callbacks.splice(callbacks.indexOf(callback), 1);
+        };
       }
-    });
+    }, {
+      key: 'addChangeRecord',
+      value: function addChangeRecord(changeRecord) {
+        if (this.callbacks.length === 0) {
+          return;
+        }
+
+        this.changeRecords.push(changeRecord);
+
+        if (!this.queued) {
+          this.queued = true;
+          this.taskQueue.queueMicroTask(this);
+        }
+      }
+    }, {
+      key: 'reset',
+      value: function reset(oldCollection) {
+        if (!this.callbacks.length) {
+          return;
+        }
+
+        this.oldCollection = oldCollection;
+
+        if (!this.queued) {
+          this.queued = true;
+          this.taskQueue.queueMicroTask(this);
+        }
+      }
+    }, {
+      key: 'getObserver',
+      value: function getObserver(propertyName) {
+        if (propertyName == this.lengthPropertyName) {
+          return this.lengthObserver || (this.lengthObserver = new CollectionLengthObserver(this.collection, this.lengthPropertyName));
+        } else {
+          throw new Error('You cannot observe the ' + propertyName + ' property of an array.');
+        }
+      }
+    }, {
+      key: 'call',
+      value: function call() {
+        var callbacks = this.callbacks,
+            i = callbacks.length,
+            changeRecords = this.changeRecords,
+            oldCollection = this.oldCollection,
+            records;
+
+        this.queued = false;
+        this.changeRecords = [];
+        this.oldCollection = null;
+
+        if (i) {
+          if (oldCollection) {
+            if (this.collection instanceof Map) {
+              records = _mapChangeRecords.getChangeRecords(oldCollection);
+            } else {
+              records = _arrayChangeRecords.calcSplices(this.collection, 0, this.collection.length, oldCollection, 0, oldCollection.length);
+            }
+          } else {
+            if (this.collection instanceof Map) {
+              records = changeRecords;
+            } else {
+              records = _arrayChangeRecords.projectArraySplices(this.collection, changeRecords);
+            }
+          }
+
+          while (i--) {
+            callbacks[i](records);
+          }
+        }
+
+        if (this.lengthObserver) {
+          this.lengthObserver(this.array.length);
+        }
+      }
+    }]);
 
     return ModifyCollectionObserver;
   })();
 
-  var CollectionLengthObserver = exports.CollectionLengthObserver = (function () {
+  exports.ModifyCollectionObserver = ModifyCollectionObserver;
+
+  var CollectionLengthObserver = (function () {
     function CollectionLengthObserver(collection) {
       _classCallCheck(this, CollectionLengthObserver);
 
       this.collection = collection;
       this.callbacks = [];
-      this.lengthPropertyName = collection instanceof Map ? "size" : "length";
+      this.lengthPropertyName = collection instanceof Map ? 'size' : 'length';
       this.currentValue = collection[this.lengthPropertyName];
     }
 
-    _prototypeProperties(CollectionLengthObserver, null, {
-      getValue: {
-        value: function getValue() {
-          return this.collection[this.lengthPropertyName];
-        },
-        writable: true,
-        configurable: true
-      },
-      setValue: {
-        value: function setValue(newValue) {
-          this.collection[this.lengthPropertyName] = newValue;
-        },
-        writable: true,
-        configurable: true
-      },
-      subscribe: {
-        value: function subscribe(callback) {
-          var callbacks = this.callbacks;
-          callbacks.push(callback);
-          return function () {
-            callbacks.splice(callbacks.indexOf(callback), 1);
-          };
-        },
-        writable: true,
-        configurable: true
-      },
-      call: {
-        value: function call(newValue) {
-          var callbacks = this.callbacks,
-              i = callbacks.length,
-              oldValue = this.currentValue;
-
-          while (i--) {
-            callbacks[i](newValue, oldValue);
-          }
-
-          this.currentValue = newValue;
-        },
-        writable: true,
-        configurable: true
+    _createClass(CollectionLengthObserver, [{
+      key: 'getValue',
+      value: function getValue() {
+        return this.collection[this.lengthPropertyName];
       }
-    });
+    }, {
+      key: 'setValue',
+      value: function setValue(newValue) {
+        this.collection[this.lengthPropertyName] = newValue;
+      }
+    }, {
+      key: 'subscribe',
+      value: function subscribe(callback) {
+        var callbacks = this.callbacks;
+        callbacks.push(callback);
+        return function () {
+          callbacks.splice(callbacks.indexOf(callback), 1);
+        };
+      }
+    }, {
+      key: 'call',
+      value: function call(newValue) {
+        var callbacks = this.callbacks,
+            i = callbacks.length,
+            oldValue = this.currentValue;
+
+        while (i--) {
+          callbacks[i](newValue, oldValue);
+        }
+
+        this.currentValue = newValue;
+      }
+    }]);
 
     return CollectionLengthObserver;
   })();
 
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
+  exports.CollectionLengthObserver = CollectionLengthObserver;
 });

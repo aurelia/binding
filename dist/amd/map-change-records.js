@@ -1,6 +1,9 @@
-define(["exports"], function (exports) {
-  "use strict";
+define(['exports'], function (exports) {
+  'use strict';
 
+  Object.defineProperty(exports, '__esModule', {
+    value: true
+  });
   exports.getChangeRecords = getChangeRecords;
   function newRecord(type, object, key, oldValue) {
     return {
@@ -21,15 +24,15 @@ define(["exports"], function (exports) {
       for (var _iterator = map.keys()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
         var key = _step.value;
 
-        entries.push(newRecord("added", map, key));
+        entries.push(newRecord('added', map, key));
       }
     } catch (err) {
       _didIteratorError = true;
       _iteratorError = err;
     } finally {
       try {
-        if (!_iteratorNormalCompletion && _iterator["return"]) {
-          _iterator["return"]();
+        if (!_iteratorNormalCompletion && _iterator['return']) {
+          _iterator['return']();
         }
       } finally {
         if (_didIteratorError) {
@@ -40,8 +43,4 @@ define(["exports"], function (exports) {
 
     return entries;
   }
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
 });

@@ -1,5 +1,8 @@
-"use strict";
+'use strict';
 
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 exports.calcSplices = calcSplices;
 exports.projectArraySplices = projectArraySplices;
 function isIndex(s) {
@@ -26,31 +29,17 @@ var EDIT_DELETE = 3;
 function ArraySplice() {}
 
 ArraySplice.prototype = {
-  // Note: This function is *based* on the computation of the Levenshtein
-  // "edit" distance. The one change is that "updates" are treated as two
-  // edits - not one. With Array splices, an update is really a delete
-  // followed by an add. By retaining this, we optimize for "keeping" the
-  // maximum array items in the original array. For example:
-  //
-  //   'xxxx123' -> '123yyyy'
-  //
-  // With 1-edit updates, the shortest path would be just to update all seven
-  // characters. With 2-edit updates, we delete 4, leave 3, and add 4. This
-  // leaves the substring '123' intact.
   calcEditDistances: function calcEditDistances(current, currentStart, currentEnd, old, oldStart, oldEnd) {
-    // "Deletion" columns
     var rowCount = oldEnd - oldStart + 1;
     var columnCount = currentEnd - currentStart + 1;
     var distances = new Array(rowCount);
     var i, j, north, west;
 
-    // "Addition" rows. Initialize null column.
     for (i = 0; i < rowCount; ++i) {
       distances[i] = new Array(columnCount);
       distances[i][0] = i;
     }
 
-    // Initialize null row
     for (j = 0; j < columnCount; ++j) {
       distances[0][j] = j;
     }
@@ -67,10 +56,6 @@ ArraySplice.prototype = {
 
     return distances;
   },
-
-  // This starts at the final weight, and walks "backward" by finding
-  // the minimum previous weight recursively until the origin of the weight
-  // matrix.
   spliceOperationsFromEditDistances: function spliceOperationsFromEditDistances(distances) {
     var i = distances.length - 1;
     var j = distances[0].length - 1;
@@ -117,31 +102,6 @@ ArraySplice.prototype = {
     edits.reverse();
     return edits;
   },
-
-  /**
-   * Splice Projection functions:
-   *
-   * A splice map is a representation of how a previous array of items
-   * was transformed into a new array of items. Conceptually it is a list of
-   * tuples of
-   *
-   *   <index, removed, addedCount>
-   *
-   * which are kept in ascending index order of. The tuple represents that at
-   * the |index|, |removed| sequence of items were removed, and counting forward
-   * from |index|, |addedCount| items were added.
-   */
-
-  /**
-   * Lacking individual splice mutation information, the minimal set of
-   * splices can be synthesized given the previous state and final state of an
-   * array. The basic approach is to calculate the edit distance matrix and
-   * choose the shortest path through it.
-   *
-   * Complexity: O(l * p)
-   *   l: The length of the current array
-   *   p: The length of the old array
-   */
   calcSplices: function calcSplices(current, currentStart, currentEnd, old, oldStart, oldEnd) {
     var prefixCount = 0;
     var suffixCount = 0;
@@ -243,25 +203,23 @@ function calcSplices(current, currentStart, currentEnd, old, oldStart, oldEnd) {
 }
 
 function intersect(start1, end1, start2, end2) {
-  // Disjoint
   if (end1 < start2 || end2 < start1) {
     return -1;
-  } // Adjacent
+  }
   if (end1 == start2 || end2 == start1) {
     return 0;
-  } // Non-zero intersect, span1 first
+  }
   if (start1 < start2) {
     if (end1 < end2) {
-      return end1 - start2; // Overlap
+      return end1 - start2;
     } else {
-      return end2 - start2; // Contained
+      return end2 - start2;
     }
   } else {
-    // Non-zero intersect, span2 first
     if (end2 < end1) {
-      return end2 - start1; // Overlap
+      return end2 - start1;
     } else {
-      return end1 - start1; // Contained
+      return end1 - start1;
     }
   }
 }
@@ -281,7 +239,6 @@ function mergeSplice(splices, index, removed, addedCount) {
     var intersectCount = intersect(splice.index, splice.index + splice.removed.length, current.index, current.index + current.addedCount);
 
     if (intersectCount >= 0) {
-      // Merge the two splices
 
       splices.splice(i, 1);
       i--;
@@ -292,20 +249,17 @@ function mergeSplice(splices, index, removed, addedCount) {
       var deleteCount = splice.removed.length + current.removed.length - intersectCount;
 
       if (!splice.addedCount && !deleteCount) {
-        // merged splice is a noop. discard.
         inserted = true;
       } else {
         var removed = current.removed;
 
         if (splice.index < current.index) {
-          // some prefix of splice.removed is prepended to current.removed.
           var prepend = splice.removed.slice(0, current.index - splice.index);
           Array.prototype.push.apply(prepend, removed);
           removed = prepend;
         }
 
         if (splice.index + splice.removed.length > current.index + current.addedCount) {
-          // some suffix of splice.removed is appended to current.removed.
           var append = splice.removed.slice(current.index + current.addedCount - splice.index);
           Array.prototype.push.apply(removed, append);
         }
@@ -316,7 +270,6 @@ function mergeSplice(splices, index, removed, addedCount) {
         }
       }
     } else if (splice.index < current.index) {
-      // Insert splice here.
 
       inserted = true;
 
@@ -338,19 +291,19 @@ function createInitialSplices(array, changeRecords) {
   for (var i = 0; i < changeRecords.length; i++) {
     var record = changeRecords[i];
     switch (record.type) {
-      case "splice":
+      case 'splice':
         mergeSplice(splices, record.index, record.removed.slice(), record.addedCount);
         break;
-      case "add":
-      case "update":
-      case "delete":
+      case 'add':
+      case 'update':
+      case 'delete':
         if (!isIndex(record.name)) continue;
         var index = toNumber(record.name);
         if (index < 0) continue;
-        mergeSplice(splices, index, [record.oldValue], record.type === "delete" ? 0 : 1);
+        mergeSplice(splices, index, [record.oldValue], record.type === 'delete' ? 0 : 1);
         break;
       default:
-        console.error("Unexpected record type: " + JSON.stringify(record));
+        console.error('Unexpected record type: ' + JSON.stringify(record));
         break;
     }
   }
@@ -373,7 +326,3 @@ function projectArraySplices(array, changeRecords) {
 
   return splices;
 }
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
