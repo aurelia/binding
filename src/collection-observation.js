@@ -1,4 +1,5 @@
 import {calcSplices, projectArraySplices} from './array-change-records';
+import {getChangeRecords} from './map-change-records';
 
 export class ModifyCollectionObserver {
 
