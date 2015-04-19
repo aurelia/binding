@@ -126,7 +126,15 @@ describe('select element value binding', () => {
       el.appendChild(option);
       setTimeout(() => {
         expect(el.value).toBe(obj.selectedItem);
-        done();
+        el.innerHTML =
+          `<option value="X">X</option>
+          <option value="Y">Y</option>
+          <option value="Z">Z</option>`;
+        setTimeout(() => {
+          expect(el.value).toBe('X');
+          expect(el.value).toBe(obj.selectedItem);
+          done();
+        });
       }, 0);
     });
 
