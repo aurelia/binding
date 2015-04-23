@@ -146,12 +146,8 @@ class ArrayObserveObserver {
     };
   }
 
-  getObserver(propertyName){
-    if(propertyName == 'length'){
-      return this.lengthObserver || (this.lengthObserver = new CollectionLengthObserver(this.array));
-    }else{
-      throw new Error(`You cannot observe the ${propertyName} property of an array.`);
-    }
+  getLengthObserver(){
+    return this.lengthObserver || (this.lengthObserver = new CollectionLengthObserver(this.array));
   }
 
   handleChanges(changeRecords){
@@ -159,14 +155,12 @@ class ArrayObserveObserver {
         i = callbacks.length,
         splices;
 
-    if(!i){
-      return;
-    }
+    if(i){
+      splices = projectArraySplices(this.array, changeRecords);
 
-    splices = projectArraySplices(this.array, changeRecords);
-
-    while(i--) {
-      callbacks[i](splices);
+      while(i--) {
+        callbacks[i](splices);
+      }
     }
 
     if(this.lengthObserver){

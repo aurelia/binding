@@ -178,11 +178,17 @@ export class ObserverLocator {
     }
 
     if(obj instanceof Array){
-      observerLookup = this.getArrayObserver(obj);
-      return observerLookup.getObserver(propertyName);
+      if (propertyName === 'length') {
+        return this.getArrayObserver(obj).getLengthObserver();
+      } else {
+        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
+      }
     }else if(obj instanceof Map){
-      observerLookup = this.getMapObserver(obj);
-      return observerLookup.getObserver(propertyName);
+      if (propertyName === 'size') {
+        return this.getMapObserver(obj).getLengthObserver();
+      } else {
+        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
+      }
     }
 
     return new SetterObserver(this.taskQueue, obj, propertyName);

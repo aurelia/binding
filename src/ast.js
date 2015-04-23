@@ -1,5 +1,6 @@
 import {PathObserver} from './path-observer';
 import {CompositeObserver} from './composite-observer';
+import {AccessKeyedObserver} from './access-keyed-observer';
 
 export class Expression {
   constructor(){
@@ -305,22 +306,8 @@ export class AccessKeyed extends Expression {
   connect(binding, scope){
     var objectInfo = this.object.connect(binding, scope),
         keyInfo = this.key.connect(binding, scope),
-        childObservers = [],
-        observer;
-
-    if(objectInfo.observer){
-      childObservers.push(objectInfo.observer);
-    }
-
-    if(keyInfo.observer){
-      childObservers.push(keyInfo.observer);
-    }
-
-    if(childObservers.length){
-      observer = new CompositeObserver(childObservers, () => {
-        return this.evaluate(scope, binding.valueConverterLookupFunction);
-      });
-    }
+        observer = new AccessKeyedObserver(objectInfo, keyInfo, binding.observerLocator,
+          () => this.evaluate(scope, binding.valueConverterLookupFunction));
 
     return {
       value:this.evaluate(scope, binding.valueConverterLookupFunction),
