@@ -3,6 +3,7 @@ import {TaskQueue} from 'aurelia-task-queue';
 import {TestObservationAdapter, AdapterPropertyObserver} from './adapter';
 import {DirtyCheckProperty, DirtyChecking} from '../src/dirty-checking';
 import {
+  SetterObserver,
   OoPropertyObserver,
   UndefinedPropertyObserver,
 } from '../src/property-observation';
@@ -46,8 +47,20 @@ function executeSharedPropertyObserverTests(obj, observer, done, callbackCheckDe
   expect(observer.getValue()).toBe('baz');
   setTimeout(() => {
     expect(callback).toHaveBeenCalledWith(newValue, oldValue);
-    dispose();
-    done();
+    oldValue = newValue;
+    newValue = 0;
+    observer.setValue(newValue);
+    setTimeout(() => {
+      expect(callback).toHaveBeenCalledWith(newValue, oldValue);
+      oldValue = newValue;
+      newValue = false;
+      observer.setValue(newValue);
+      setTimeout(() => {
+        expect(callback).toHaveBeenCalledWith(newValue, oldValue);
+        dispose();
+        done();
+      }, callbackCheckDelay);
+    }, callbackCheckDelay);
   }, callbackCheckDelay);
 }
 
@@ -79,6 +92,35 @@ describe('OoPropertyObserver', () => {
     observer.subscribe(function(){});
     dispose();
     expect(observer.owner.observing).toBe(true);
+  });
+});
+
+describe('SetterObserver', () => {
+  var obj, observer;
+
+  beforeAll(() => {
+    var taskQueue = new TaskQueue();
+    obj = { foo: 'bar' };
+    observer = new SetterObserver(taskQueue, obj, 'foo');
+  });
+
+  it('implements the property observer api', done => {
+    executeSharedPropertyObserverTests(obj, observer, done, 0);
+  });
+
+  it('stops observing if there are no callbacks', () => {
+    var dispose = observer.subscribe(() => {});
+    expect(observer.observing).toBe(true);
+    expect(observer.callbacks.length).toBe(1);
+    dispose();
+    expect(observer.callbacks.length).toBe(0);
+  });
+
+  it('keeps observing if there are callbacks', () => {
+    var dispose = observer.subscribe(() => {});
+    observer.subscribe(() => {});
+    dispose();
+    expect(observer.callbacks.length).toBe(1);
   });
 });
 
