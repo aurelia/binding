@@ -1,10 +1,9 @@
-import {ObserverLocator, EventManager, DirtyChecker} from '../src/index';
-import {TaskQueue} from 'aurelia-task-queue';
 import {TestObservationAdapter, AdapterPropertyObserver} from './adapter';
 import {DirtyCheckProperty} from '../src/dirty-checking';
 import {
   OoPropertyObserver,
-  UndefinedPropertyObserver
+  UndefinedPropertyObserver,
+  SetterObserver
 } from '../src/property-observation';
 import {
   ValueAttributeObserver,
@@ -14,39 +13,38 @@ import {
   SelectValueObserver,
   CheckedObserver
 } from '../src/element-observation';
-
-export function createElement(html) {
-  var div = document.createElement('div');
-  div.innerHTML = html;
-  return div.firstChild;
-}
+import {createElement, createObserverLocator} from './shared';
+import {hasObjectObserve, hasArrayObserve} from '../src/environment';
 
 describe('ObserverLocator', () => {
   var locator;
 
   beforeAll(() => {
-    locator = new ObserverLocator(new TaskQueue(), new EventManager(), new DirtyChecker(), [new TestObservationAdapter(() => locator)]);
+    locator = createObserverLocator([new TestObservationAdapter(() => locator)]);
   });
 
-  it('uses OoPropertyObserver for defined, primitive properties on pojos', () => {
+  it('uses ' + hasObjectObserve ? 'OoPropertyObserver' : 'SetterObserver' + ' for defined, primitive properties on pojos', () => {
     var obj = { foo: 'bar' },
-        observer = locator.getObserver(obj, 'foo');
-    expect(observer instanceof OoPropertyObserver).toBe(true);
+        observer = locator.getObserver(obj, 'foo'),
+        T = hasObjectObserve ? OoPropertyObserver : SetterObserver;
+    expect(observer instanceof T).toBe(true);
   });
 
-  it('uses UndefinedPropertyObserver for undefined properties on pojos', () => {
+  it('uses ' + hasObjectObserve ? 'UndefinedPropertyObserver' : 'SetterObserver' + ' for undefined properties on pojos', () => {
     var obj = {},
-        observer = locator.getObserver(obj, 'foo');
-    expect(observer instanceof UndefinedPropertyObserver).toBe(true);
+        observer = locator.getObserver(obj, 'foo'),
+        T = hasObjectObserve ? UndefinedPropertyObserver : SetterObserver;
+    expect(observer instanceof T).toBe(true);
   });
 
-  it('uses OoPropertyObserver for ad-hoc properties on Elements', () => {
+  it('uses ' + hasObjectObserve ? 'OoPropertyObserver' : 'SetterObserver' + 'for ad-hoc properties on Elements', () => {
     var obj = createElement('<h1></h1>'),
-        observer;
+        observer,
+        T = hasObjectObserve ? OoPropertyObserver : SetterObserver;
     obj.foo = 'bar';
     observer = locator.getObserver(obj, 'foo');
     expect(obj instanceof Element).toBe(true);
-    expect(observer instanceof OoPropertyObserver).toBe(true);
+    expect(observer instanceof T).toBe(true);
   });
 
   it('uses ValueAttributeObserver for element value attributes', () => {

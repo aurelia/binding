@@ -1,33 +1,6 @@
-import {
-  ObserverLocator,
-  EventManager,
-  DirtyChecker,
-  declarePropertyDependencies
-} from '../src/index';
-import {TaskQueue} from 'aurelia-task-queue';
+import {declarePropertyDependencies} from '../src/index';
 import {ComputedPropertyObserver} from '../src/computed-observation';
-
-class Person {
-  constructor() {
-    this.firstName = 'John';
-    this.lastName = 'Doe';
-  }
-  get fullName() {
-    return `${this.firstName} ${this.lastName}`;
-  }
-}
-
-class Foo {
-  constructor() {
-    this.internalBar = null;
-  }
-  get bar() {
-    return this.internalBar;
-  }
-  set bar(newValue) {
-    this.internalBar = newValue;
-  }
-}
+import {createObserverLocator, Person, Foo} from './shared';
 
 describe('declarePropertyDependencies', () => {
   it('should declare dependencies for properties with a getter and no setter', () => {
@@ -48,7 +21,7 @@ describe('ComputedObservationAdapter', () => {
   var person, observer;
 
   beforeAll(() => {
-    var locator = new ObserverLocator(new TaskQueue(), new EventManager(), new DirtyChecker(), []);
+    var locator = createObserverLocator();
     person = new Person();
     observer = locator.getObserver(person, 'fullName');
   });

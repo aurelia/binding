@@ -1,10 +1,5 @@
 import {EventManager} from '../src/event-manager';
-
-export function createElement(html) {
-  var div = document.createElement('div');
-  div.innerHTML = html;
-  return div.firstChild;
-}
+import {createElement, createEvent} from './shared';
 
 describe('EventManager', () => {
   describe('getElementHandler', () => {
@@ -46,8 +41,7 @@ describe('EventManager', () => {
           handler = em.getElementHandler(element, 'value'),
           dispose,
           callback = jasmine.createSpy('callback'),
-          inputEvent = new Event('input');
-
+          inputEvent = createEvent('input');
       expect(handler).toBeDefined();
       expect(handler.subscribe).toBeDefined();
 
