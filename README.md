@@ -70,3 +70,7 @@ To run the unit tests, first ensure that you have followed the steps above in or
   ```shell
   karma start
   ```
+  To test in Internet Explorer use this command:
+  ```shell
+  karma start --browsers IE
+  ```
