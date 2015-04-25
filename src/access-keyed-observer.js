@@ -29,8 +29,9 @@ export class AccessKeyedObserver {
   }
 
   objectOrKeyChanged(object, key) {
-    object = object || (this.objectInfo.observer ? this.objectInfo.observer.getValue() : this.objectInfo.value);
-    key = key || (this.keyInfo.observer ? this.keyInfo.observer.getValue() : this.keyInfo.value);
+    var oo, ko;
+    object = object || ((oo = this.objectInfo.observer) && oo.getValue ? oo.getValue() : this.objectInfo.value);
+    key = key || ((ko = this.keyInfo.observer) && ko.getValue ? ko.getValue() : this.keyInfo.value);
     this.updatePropertySubscription(object, key);
 
     this.notify();

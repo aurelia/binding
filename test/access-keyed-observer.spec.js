@@ -10,7 +10,7 @@ import {
   getBinding
 } from './shared';
 
-describe('access keyed', () => {
+describe('AccessKeyedObserver', () => {
   var observerLocator;
 
   beforeAll(() => {
@@ -21,29 +21,37 @@ describe('access keyed', () => {
     var obj, el, binding;
 
     beforeAll(() => {
-      obj = { person: { first: 'John', last: 'Doe' }, key: 'first' };
+      obj = { record: { person: { first: 'John', last: 'Doe' } }, key: 'first' };
       el = createElement('<input type="text" />');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, 'person[key]', el, 'value', TWO_WAY).binding;
+      binding = getBinding(observerLocator, obj, 'record.person[key]', el, 'value', TWO_WAY).binding;
     });
 
     it('binds', () => {
       binding.bind(obj);
-      expect(el.value).toBe(obj.person[obj.key]);
+      expect(el.value).toBe(obj.record.person[obj.key]);
     });
 
     it('responds to property change', done => {
-      obj.person[obj.key] = 'Jeremy';
+      obj.record.person[obj.key] = 'Jeremy';
       setTimeout(() => {
-        expect(el.value).toBe(obj.person[obj.key]);
+        expect(el.value).toBe(obj.record.person[obj.key]);
         done();
       }, checkDelay * 2);
     });
 
     it('responds to object change', done => {
-      obj.person = { first: 'Johnny', last: 'Trejo' }
+      obj.record.person = { first: 'Johnny', last: 'Trejo' };
       setTimeout(() => {
-        expect(el.value).toBe(obj.person[obj.key]);
+        expect(el.value).toBe(obj.record.person[obj.key]);
+        done();
+      }, checkDelay * 2);
+    });
+
+    it('responds to path change', done => {
+      obj.record = { person: { first: 'Donald', last: 'Draper' } };
+      setTimeout(() => {
+        expect(el.value).toBe(obj.record.person[obj.key]);
         done();
       }, checkDelay * 2);
     });
@@ -51,7 +59,7 @@ describe('access keyed', () => {
     it('responds to key change', done => {
       obj.key = 'last';
       setTimeout(() => {
-        expect(el.value).toBe(obj.person[obj.key]);
+        expect(el.value).toBe(obj.record.person[obj.key]);
         done();
       }, checkDelay * 2);
     });
@@ -60,7 +68,72 @@ describe('access keyed', () => {
       el.value = 'Jake';
       fireEvent(el, 'change');
       setTimeout(() => {
-        expect(el.value).toBe(obj.person[obj.key]);
+        expect(el.value).toBe(obj.record.person[obj.key]);
+        done();
+      }, checkDelay * 2);
+    });
+
+    it('unbinds', () => {
+      binding.unbind();
+    });
+
+    afterAll(() => {
+      document.body.removeChild(el);
+    });
+  });
+
+  describe('object property, key property 2', () => {
+    var obj, el, binding;
+
+    beforeAll(() => {
+      obj = { record: { person: { first: { value: 'John', lastUpdated: new Date() }, last: { value: 'Doe', lastUpdated: new Date() } } }, key: 'first' };
+      el = createElement('<input type="text" />');
+      document.body.appendChild(el);
+      binding = getBinding(observerLocator, obj, 'record.person[key].value', el, 'value', TWO_WAY).binding;
+    });
+
+    it('binds', () => {
+      binding.bind(obj);
+      expect(el.value).toBe(obj.record.person[obj.key].value);
+    });
+
+    it('responds to property change', done => {
+      obj.record.person[obj.key].value = 'Jeremy';
+      setTimeout(() => {
+        expect(el.value).toBe(obj.record.person[obj.key].value);
+        done();
+      }, checkDelay * 2);
+    });
+
+    it('responds to object change', done => {
+      obj.record.person = { first: { value: 'Johnny', lastUpdated: new Date() }, last:{ value: 'Trejo', lastUpdated: new Date() } };
+      setTimeout(() => {
+        expect(el.value).toBe(obj.record.person[obj.key].value);
+        done();
+      }, checkDelay * 2);
+    });
+
+    it('responds to path change', done => {
+      obj.record = { person: { first: { value: 'Vincent', lastUpdated: new Date() }, last:{ value: 'Chase', lastUpdated: new Date() } } };
+      setTimeout(() => {
+        expect(el.value).toBe(obj.record.person[obj.key].value);
+        done();
+      }, checkDelay * 2);
+    });
+
+    it('responds to key change', done => {
+      obj.key = 'last';
+      setTimeout(() => {
+        expect(el.value).toBe(obj.record.person[obj.key].value);
+        done();
+      }, checkDelay * 2);
+    });
+
+    it('responds to element change', done => {
+      el.value = 'Jake';
+      fireEvent(el, 'change');
+      setTimeout(() => {
+        expect(el.value).toBe(obj.record.person[obj.key].value);
         done();
       }, checkDelay * 2);
     });
@@ -130,7 +203,7 @@ describe('access keyed', () => {
     });
 
     it('responds to object change', done => {
-      obj.person = { first: 'Johnny', last: 'Trejo' }
+      obj.person = { first: 'Johnny', last: 'Trejo' };
       setTimeout(() => {
         expect(el.value).toBe(obj.person['first']);
         done();
