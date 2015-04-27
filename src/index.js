@@ -16,14 +16,14 @@ export {getChangeRecords} from './map-change-records';
 export {ComputedPropertyObserver, declarePropertyDependencies} from './computed-observation';
 
 //ES7 Decorators
-export function valueConverter(namerOrTarget){
-  if(namerOrTarget === undefined || typeof nameOrTarget === 'string'){
+export function valueConverter(nameOrTarget){
+  if(nameOrTarget === undefined || typeof nameOrTarget === 'string'){
     return function(target){
-      Reflect.defineMetadata(Metadata.resource, new ValueConverterResource(namerOrTarget), target);
+      Reflect.defineMetadata(Metadata.resource, new ValueConverterResource(nameOrTarget), target);
     }
   }
 
-  Reflect.defineMetadata(Metadata.resource, new ValueConverterResource(), namerOrTarget);
+  Reflect.defineMetadata(Metadata.resource, new ValueConverterResource(), nameOrTarget);
 }
 
 Decorators.configure.parameterizedDecorator('valueConverter', valueConverter);
