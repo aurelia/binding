@@ -1,7 +1,4 @@
-import {
-  ONE_WAY,
-  TWO_WAY,
-} from '../src/index';
+import {bindingMode} from '../src/index';
 import {
   createElement,
   fireEvent,
@@ -51,7 +48,7 @@ describe('SelectValueObserver', () => {
           <option value="C">C</option>
         </select>`);
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, 'selectedItem', el, 'value', TWO_WAY).binding;
+      binding = getBinding(observerLocator, obj, 'selectedItem', el, 'value', bindingMode.twoWay).binding;
     });
 
     it('binds', () => {
@@ -122,7 +119,7 @@ describe('SelectValueObserver', () => {
           <option value="C">C</option>
         </select>`);
       document.body.appendChild(el);
-      info = getBinding(observerLocator, obj, 'selectedItems', el, 'value', TWO_WAY);
+      info = getBinding(observerLocator, obj, 'selectedItems', el, 'value', bindingMode.twoWay);
       binding = info.binding;
       elementValueProperty = info.targetProperty;
     });
@@ -214,7 +211,7 @@ describe('SelectValueObserver', () => {
       document.body.appendChild(el);
       obj = { selectedItem: el.options.item(2).model };
 
-      info = getBinding(observerLocator, obj, 'selectedItem', el, 'value', TWO_WAY);
+      info = getBinding(observerLocator, obj, 'selectedItem', el, 'value', bindingMode.twoWay);
       binding = info.binding;
       elementValueProperty = info.targetProperty;
     });
@@ -293,7 +290,7 @@ describe('SelectValueObserver', () => {
       document.body.appendChild(el);
       obj = { selectedItems: [el.options.item(1).model, el.options.item(2).model] };
 
-      info = getBinding(observerLocator, obj, 'selectedItems', el, 'value', TWO_WAY);
+      info = getBinding(observerLocator, obj, 'selectedItems', el, 'value', bindingMode.twoWay);
       binding = info.binding;
       elementValueProperty = info.targetProperty;
     });
@@ -380,8 +377,8 @@ describe('SelectValueObserver', () => {
           <option value="C">Option C</option>
         </select>`);
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, 'selectedItem', el, 'value', TWO_WAY).binding;
-      binding2 = getBinding(observerLocator, obj, 'optionB', el.options.item(1), 'value', ONE_WAY).binding;
+      binding = getBinding(observerLocator, obj, 'selectedItem', el, 'value', bindingMode.twoWay).binding;
+      binding2 = getBinding(observerLocator, obj, 'optionB', el.options.item(1), 'value', bindingMode.oneWay).binding;
     });
 
     it('binds', done => {

@@ -1,7 +1,4 @@
-import {
-  ONE_WAY,
-  TWO_WAY,
-} from '../src/index';
+import {bindingMode} from '../src/index';
 import {
   createElement,
   fireEvent,
@@ -24,7 +21,7 @@ describe('CheckedObserver', () => {
       obj = { selectedItems: [] };
       el = createElement('<input type="checkbox" value="A" />');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, 'selectedItems', el, 'checked', TWO_WAY).binding;
+      binding = getBinding(observerLocator, obj, 'selectedItems', el, 'checked', bindingMode.twoWay).binding;
     });
 
     it('binds', () => {
@@ -69,7 +66,7 @@ describe('CheckedObserver', () => {
       el = createElement('<input type="checkbox" />');
       el.model = obj.itemA;
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, 'selectedItems', el, 'checked', TWO_WAY).binding;
+      binding = getBinding(observerLocator, obj, 'selectedItems', el, 'checked', bindingMode.twoWay).binding;
     });
 
     it('binds', () => {
@@ -113,7 +110,7 @@ describe('CheckedObserver', () => {
       obj = { checked: false };
       el = createElement('<input type="checkbox" />');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, 'checked', el, 'checked', TWO_WAY).binding;
+      binding = getBinding(observerLocator, obj, 'checked', el, 'checked', bindingMode.twoWay).binding;
     });
 
     it('binds', () => {
@@ -157,8 +154,8 @@ describe('CheckedObserver', () => {
       obj = { selectedItems: ['A'], value: 'A' };
       el = createElement('<input type="checkbox" />');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, 'selectedItems', el, 'checked', TWO_WAY).binding;
-      binding2 = getBinding(observerLocator, obj, 'value', el, 'value', ONE_WAY).binding;
+      binding = getBinding(observerLocator, obj, 'selectedItems', el, 'checked', bindingMode.twoWay).binding;
+      binding2 = getBinding(observerLocator, obj, 'value', el, 'value', bindingMode.oneWay).binding;
     });
 
     it('binds', done => {
@@ -214,9 +211,9 @@ describe('CheckedObserver', () => {
         </div>`);
       document.body.appendChild(el);
       radios = [
-        getBinding(observerLocator, obj, 'value', el.children.item(0), 'checked', TWO_WAY),
-        getBinding(observerLocator, obj, 'value', el.children.item(1), 'checked', TWO_WAY),
-        getBinding(observerLocator, obj, 'value', el.children.item(2), 'checked', TWO_WAY)];
+        getBinding(observerLocator, obj, 'value', el.children.item(0), 'checked', bindingMode.twoWay),
+        getBinding(observerLocator, obj, 'value', el.children.item(1), 'checked', bindingMode.twoWay),
+        getBinding(observerLocator, obj, 'value', el.children.item(2), 'checked', bindingMode.twoWay)];
     });
 
     it('binds', () => {
@@ -280,9 +277,9 @@ describe('CheckedObserver', () => {
       el.children.item(1).model = false;
       el.children.item(2).model = true;
       radios = [
-        getBinding(observerLocator, obj, 'value', el.children.item(0), 'checked', TWO_WAY),
-        getBinding(observerLocator, obj, 'value', el.children.item(1), 'checked', TWO_WAY),
-        getBinding(observerLocator, obj, 'value', el.children.item(2), 'checked', TWO_WAY)];
+        getBinding(observerLocator, obj, 'value', el.children.item(0), 'checked', bindingMode.twoWay),
+        getBinding(observerLocator, obj, 'value', el.children.item(1), 'checked', bindingMode.twoWay),
+        getBinding(observerLocator, obj, 'value', el.children.item(2), 'checked', bindingMode.twoWay)];
     });
 
     it('binds', () => {

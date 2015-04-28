@@ -1,4 +1,4 @@
-import {ONE_WAY, TWO_WAY} from './binding-modes';
+import {bindingMode} from './binding-modes';
 
 export class BindingExpression {
   constructor(observerLocator, targetProperty, sourceExpression,
@@ -45,7 +45,7 @@ class Binding {
       targetProperty.bind();
     }
 
-    if(this.mode == ONE_WAY || this.mode == TWO_WAY){
+    if(this.mode == bindingMode.oneWay || this.mode == bindingMode.twoWay){
       if(this._disposeObserver){
         if(this.source === source){
           return;
@@ -69,7 +69,7 @@ class Binding {
         targetProperty.setValue(info.value);
       }
 
-      if(this.mode == TWO_WAY){
+      if(this.mode == bindingMode.twoWay){
         this._disposeListener = targetProperty.subscribe(newValue => {
           this.sourceExpression.assign(source, newValue, this.valueConverterLookupFunction);
         });

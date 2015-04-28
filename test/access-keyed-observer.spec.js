@@ -1,7 +1,4 @@
-import {
-  ONE_WAY,
-  TWO_WAY,
-} from '../src/index';
+import {bindingMode} from '../src/index';
 import {
   createElement,
   fireEvent,
@@ -24,7 +21,7 @@ describe('AccessKeyedObserver', () => {
       obj = { record: { person: { first: 'John', last: 'Doe' } }, key: 'first' };
       el = createElement('<input type="text" />');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, 'record.person[key]', el, 'value', TWO_WAY).binding;
+      binding = getBinding(observerLocator, obj, 'record.person[key]', el, 'value', bindingMode.twoWay).binding;
     });
 
     it('binds', () => {
@@ -89,7 +86,7 @@ describe('AccessKeyedObserver', () => {
       obj = { record: { person: { first: { value: 'John', lastUpdated: new Date() }, last: { value: 'Doe', lastUpdated: new Date() } } }, key: 'first' };
       el = createElement('<input type="text" />');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, 'record.person[key].value', el, 'value', TWO_WAY).binding;
+      binding = getBinding(observerLocator, obj, 'record.person[key].value', el, 'value', bindingMode.twoWay).binding;
     });
 
     it('binds', () => {
@@ -154,7 +151,7 @@ describe('AccessKeyedObserver', () => {
       obj = { key: 'first' };
       el = createElement('<input type="text" />');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, '{ first: \'John\', last: \'Doe\' }[key]', el, 'value', TWO_WAY).binding;
+      binding = getBinding(observerLocator, obj, '{ first: \'John\', last: \'Doe\' }[key]', el, 'value', bindingMode.twoWay).binding;
     });
 
     it('binds', () => {
@@ -186,7 +183,7 @@ describe('AccessKeyedObserver', () => {
       obj = { person: { first: 'John', last: 'Doe' } };
       el = createElement('<input type="text" />');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, 'person[\'first\']', el, 'value', TWO_WAY).binding;
+      binding = getBinding(observerLocator, obj, 'person[\'first\']', el, 'value', bindingMode.twoWay).binding;
     });
 
     it('binds', () => {
@@ -235,7 +232,7 @@ describe('AccessKeyedObserver', () => {
       obj = {};
       el = createElement('<input type="text" />');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, '{ first: \'John\', last: \'Doe\' }[\'first\']', el, 'value', TWO_WAY).binding;
+      binding = getBinding(observerLocator, obj, '{ first: \'John\', last: \'Doe\' }[\'first\']', el, 'value', bindingMode.twoWay).binding;
     });
 
     it('binds', () => {
@@ -259,7 +256,7 @@ describe('AccessKeyedObserver', () => {
       obj = { array: ['a', 'b', 'c'], key: 1 };
       el = createElement('<input type="text" />');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, 'array[key]', el, 'value', TWO_WAY).binding;
+      binding = getBinding(observerLocator, obj, 'array[key]', el, 'value', bindingMode.twoWay).binding;
     });
 
     it('binds', () => {
@@ -325,7 +322,7 @@ describe('AccessKeyedObserver', () => {
       obj = { array: ['a', 'b', 'c'], key: '1' };
       el = createElement('<input type="text" />');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, 'array[key]', el, 'value', TWO_WAY).binding;
+      binding = getBinding(observerLocator, obj, 'array[key]', el, 'value', bindingMode.twoWay).binding;
     });
 
     it('binds', () => {
@@ -391,7 +388,7 @@ describe('AccessKeyedObserver', () => {
       obj = { array: ['a', 'b', 'c'], key: 1 };
       el = createElement('<input type="text" />');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, 'array[1]', el, 'value', TWO_WAY).binding;
+      binding = getBinding(observerLocator, obj, 'array[1]', el, 'value', bindingMode.twoWay).binding;
     });
 
     it('binds', () => {
@@ -440,7 +437,7 @@ describe('AccessKeyedObserver', () => {
       obj = { key: 1 };
       el = createElement('<input type="text" />');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, '[\'a\', \'b\', \'c\'][key]', el, 'value', TWO_WAY).binding;
+      binding = getBinding(observerLocator, obj, '[\'a\', \'b\', \'c\'][key]', el, 'value', bindingMode.twoWay).binding;
     });
 
     it('binds', () => {
