@@ -1,5 +1,5 @@
 export const bindingMode = {
+  oneTime: 0,
   oneWay: 1,
-  twoWay: 2,
-  oneTime: 3
+  twoWay: 2
 };
