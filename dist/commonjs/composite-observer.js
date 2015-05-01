@@ -2,11 +2,7 @@
 
 var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
+exports.__esModule = true;
 
 var CompositeObserver = (function () {
   function CompositeObserver(observers, evaluate) {
@@ -24,35 +20,30 @@ var CompositeObserver = (function () {
     }
   }
 
-  _createClass(CompositeObserver, [{
-    key: "subscribe",
-    value: function subscribe(callback) {
-      var that = this;
-      that.callback = callback;
-      return function () {
-        that.callback = null;
-      };
-    }
-  }, {
-    key: "notify",
-    value: function notify(newValue) {
-      var callback = this.callback;
+  CompositeObserver.prototype.subscribe = function subscribe(callback) {
+    var that = this;
+    that.callback = callback;
+    return function () {
+      that.callback = null;
+    };
+  };
 
-      if (callback) {
-        callback(newValue);
-      }
-    }
-  }, {
-    key: "dispose",
-    value: function dispose() {
-      var subscriptions = this.subscriptions;
+  CompositeObserver.prototype.notify = function notify(newValue) {
+    var callback = this.callback;
 
-      var i = subscriptions.length;
-      while (i--) {
-        subscriptions[i]();
-      }
+    if (callback) {
+      callback(newValue);
     }
-  }]);
+  };
+
+  CompositeObserver.prototype.dispose = function dispose() {
+    var subscriptions = this.subscriptions;
+
+    var i = subscriptions.length;
+    while (i--) {
+      subscriptions[i]();
+    }
+  };
 
   return CompositeObserver;
 })();

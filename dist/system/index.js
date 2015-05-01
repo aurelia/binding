@@ -5,11 +5,14 @@ System.register(['aurelia-metadata', './value-converter', './event-manager', './
 
   _export('computedFrom', computedFrom);
 
-  function valueConverter(name) {
-    return function (target) {
-      Metadata.on(target).add(new ValueConverterResource(name));
-      return target;
-    };
+  function valueConverter(nameOrTarget) {
+    if (nameOrTarget === undefined || typeof nameOrTarget === 'string') {
+      return function (target) {
+        Reflect.defineMetadata(Metadata.resource, new ValueConverterResource(nameOrTarget), target);
+      };
+    }
+
+    Reflect.defineMetadata(Metadata.resource, new ValueConverterResource(), nameOrTarget);
   }
 
   function computedFrom() {

@@ -1,3 +1,30 @@
+## 0.6.0 (2015-04-30)
+
+
+#### Bug Fixes
+
+* **AccessKeyedObserver:** handle PathObserver ([28c58bd3](http://github.com/aurelia/binding/commit/28c58bd38d03dadbfd60a01128088f85f3a84ee8))
+* **EventManager:** Internet Explorer contenteditable ([2fa23b39](http://github.com/aurelia/binding/commit/2fa23b394afbc9b25f6493a98a8115a869355972))
+* **SelectValueObserver:** update model value when options change ([72701392](http://github.com/aurelia/binding/commit/727013927f35ee06706259dee3739ed4b906258f), closes [#83](http://github.com/aurelia/binding/issues/83))
+* **SetterObserver:** change detection uses coercion ([71c7a299](http://github.com/aurelia/binding/commit/71c7a2993760e3ef438d3d7d48b91378fa63ddcb))
+* **bindingMode:** change the value of oneTime ([c1ee8ec7](http://github.com/aurelia/binding/commit/c1ee8ec76891dce1624181f39a9bdef5550a24f2))
+* **index:** typo in decorator parameter ([e3e9042b](http://github.com/aurelia/binding/commit/e3e9042b974d4ad0f42f00a4b19fc6e0035377e2))
+
+
+#### Features
+
+* **AccessKeyed:** fully observe access-keyed expressions ([0eb792cf](http://github.com/aurelia/binding/commit/0eb792cf05565f1eee7060021db7cb6002b7883e), closes [#75](http://github.com/aurelia/binding/issues/75), [#64](http://github.com/aurelia/binding/issues/64))
+* **CallExpression:** add $event to scope, use call args ([03bc3c62](http://github.com/aurelia/binding/commit/03bc3c6280bac4a1c06bfe1ca645fa0c85f1c913), closes [#46](http://github.com/aurelia/binding/issues/46))
+* **value-converter:** update to new metadata system ([2156dc74](http://github.com/aurelia/binding/commit/2156dc74804beec90339373aeb0f5962744b49ac))
+
+
+#### Breaking Changes
+
+* This is a breaking API change that moves the ONE_WAY, TWO_WAY, and ONE_TIME constants into a bindingMode object with oneWay, twoWay, and oneTime properties.
+
+ ([28e70532](http://github.com/aurelia/binding/commit/28e70532e1036db6c3bd2e05f6442ca301cff427))
+
+
 ## 0.5.0 (2015-04-09)
 
 

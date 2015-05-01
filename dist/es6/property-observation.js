@@ -25,7 +25,7 @@ export class SetterObserver {
   setterValue(newValue){
     var oldValue = this.currentValue;
 
-    if(oldValue != newValue){
+    if(oldValue !== newValue){
       if(!this.queued){
         this.oldValue = oldValue;
         this.queued = true;

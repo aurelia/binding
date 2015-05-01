@@ -35,8 +35,12 @@ class Call {
     }
 
     this.source = source;
-    this.targetProperty.setValue((...rest) => {
-      return this.sourceExpression.evaluate(source, this.valueConverterLookupFunction, rest);
+    this.targetProperty.setValue($event => {
+      var result, temp = source.$event;
+      source.$event = $event;
+      result = this.sourceExpression.evaluate(source, this.valueConverterLookupFunction);
+      source.$event = temp;
+      return result;
     });
   }
 

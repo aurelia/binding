@@ -98,6 +98,13 @@ export class EventManager {
       }
     });
 
+    this.registerElementConfig({
+      tagName:'content editable',
+      properties: {
+        value:['change','input','blur','keyup','paste'],
+      }
+    });
+
     this.defaultEventStrategy = new DefaultEventStrategy();
   }
 
@@ -143,7 +150,7 @@ export class EventManager {
         return lookup[tagName][propertyName];
       }
       if (propertyName === 'textContent' || propertyName === 'innerHTML'){
-        return lookup['input']['value'];
+        return lookup['content editable']['value'];
       }
     }
 

@@ -12,7 +12,7 @@ export class ModifyCollectionObserver {
     this.collection = collection;
     this.lengthPropertyName = collection instanceof Map ? 'size' : 'length';
   }
-    
+
   subscribe(callback){
     var callbacks = this.callbacks;
     callbacks.push(callback);
@@ -22,7 +22,7 @@ export class ModifyCollectionObserver {
   }
 
   addChangeRecord(changeRecord){
-    if(this.callbacks.length === 0){
+    if(this.callbacks.length === 0 && !this.lengthObserver){
       return;
     }
 
@@ -47,12 +47,8 @@ export class ModifyCollectionObserver {
     }
   }
 
-  getObserver(propertyName){
-    if(propertyName == this.lengthPropertyName){
-      return this.lengthObserver || (this.lengthObserver = new CollectionLengthObserver(this.collection, this.lengthPropertyName));
-    }else{
-      throw new Error(`You cannot observe the ${propertyName} property of an array.`);
-    }
+  getLengthObserver(){
+    return this.lengthObserver || (this.lengthObserver = new CollectionLengthObserver(this.collection));
   }
 
   call(){
@@ -89,7 +85,7 @@ export class ModifyCollectionObserver {
     }
 
     if(this.lengthObserver){
-      this.lengthObserver(this.array.length);
+      this.lengthObserver.call(this.collection[this.lengthPropertyName]);
     }
   }
 }

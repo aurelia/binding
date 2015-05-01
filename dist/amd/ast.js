@@ -1,17 +1,11 @@
-define(['exports', './path-observer', './composite-observer'], function (exports, _pathObserver, _compositeObserver) {
+define(['exports', './path-observer', './composite-observer', './access-keyed-observer'], function (exports, _pathObserver, _compositeObserver, _accessKeyedObserver) {
   'use strict';
-
-  var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
   var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
   var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
 
-  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-  Object.defineProperty(exports, '__esModule', {
-    value: true
-  });
+  exports.__esModule = true;
 
   var Expression = (function () {
     function Expression() {
@@ -21,22 +15,17 @@ define(['exports', './path-observer', './composite-observer'], function (exports
       this.isAssignable = false;
     }
 
-    _createClass(Expression, [{
-      key: 'evaluate',
-      value: function evaluate() {
-        throw new Error('Cannot evaluate ' + this);
-      }
-    }, {
-      key: 'assign',
-      value: function assign() {
-        throw new Error('Cannot assign to ' + this);
-      }
-    }, {
-      key: 'toString',
-      value: function toString() {
-        return Unparser.unparse(this);
-      }
-    }]);
+    Expression.prototype.evaluate = function evaluate() {
+      throw new Error('Cannot evaluate ' + this);
+    };
+
+    Expression.prototype.assign = function assign() {
+      throw new Error('Cannot assign to ' + this);
+    };
+
+    Expression.prototype.toString = function toString() {
+      return Unparser.unparse(this);
+    };
 
     return Expression;
   })();
@@ -47,7 +36,7 @@ define(['exports', './path-observer', './composite-observer'], function (exports
     function Chain(expressions) {
       _classCallCheck(this, Chain);
 
-      _get(Object.getPrototypeOf(Chain.prototype), 'constructor', this).call(this);
+      _Expression.call(this);
 
       this.expressions = expressions;
       this.isChain = true;
@@ -55,31 +44,27 @@ define(['exports', './path-observer', './composite-observer'], function (exports
 
     _inherits(Chain, _Expression);
 
-    _createClass(Chain, [{
-      key: 'evaluate',
-      value: function evaluate(scope, valueConverters) {
-        var result,
-            expressions = this.expressions,
-            length = expressions.length,
-            i,
-            last;
+    Chain.prototype.evaluate = function evaluate(scope, valueConverters) {
+      var result,
+          expressions = this.expressions,
+          length = expressions.length,
+          i,
+          last;
 
-        for (i = 0; i < length; ++i) {
-          last = expressions[i].evaluate(scope, valueConverters);
+      for (i = 0; i < length; ++i) {
+        last = expressions[i].evaluate(scope, valueConverters);
 
-          if (last !== null) {
-            result = last;
-          }
+        if (last !== null) {
+          result = last;
         }
+      }
 
-        return result;
-      }
-    }, {
-      key: 'accept',
-      value: function accept(visitor) {
-        visitor.visitChain(this);
-      }
-    }]);
+      return result;
+    };
+
+    Chain.prototype.accept = function accept(visitor) {
+      visitor.visitChain(this);
+    };
 
     return Chain;
   })(Expression);
@@ -90,7 +75,7 @@ define(['exports', './path-observer', './composite-observer'], function (exports
     function ValueConverter(expression, name, args, allArgs) {
       _classCallCheck(this, ValueConverter);
 
-      _get(Object.getPrototypeOf(ValueConverter.prototype), 'constructor', this).call(this);
+      _Expression2.call(this);
 
       this.expression = expression;
       this.name = name;
@@ -100,72 +85,66 @@ define(['exports', './path-observer', './composite-observer'], function (exports
 
     _inherits(ValueConverter, _Expression2);
 
-    _createClass(ValueConverter, [{
-      key: 'evaluate',
-      value: function evaluate(scope, valueConverters) {
-        var converter = valueConverters(this.name);
-        if (!converter) {
-          throw new Error('No ValueConverter named "' + this.name + '" was found!');
-        }
-
-        if ('toView' in converter) {
-          return converter.toView.apply(converter, evalList(scope, this.allArgs, valueConverters));
-        }
-
-        return this.allArgs[0].evaluate(scope, valueConverters);
+    ValueConverter.prototype.evaluate = function evaluate(scope, valueConverters) {
+      var converter = valueConverters(this.name);
+      if (!converter) {
+        throw new Error('No ValueConverter named "' + this.name + '" was found!');
       }
-    }, {
-      key: 'assign',
-      value: function assign(scope, value, valueConverters) {
-        var converter = valueConverters(this.name);
-        if (!converter) {
-          throw new Error('No ValueConverter named "' + this.name + '" was found!');
-        }
 
-        if ('fromView' in converter) {
-          value = converter.fromView.apply(converter, [value].concat(evalList(scope, this.args, valueConverters)));
-        }
-
-        return this.allArgs[0].assign(scope, value, valueConverters);
+      if ('toView' in converter) {
+        return converter.toView.apply(converter, evalList(scope, this.allArgs, valueConverters));
       }
-    }, {
-      key: 'accept',
-      value: function accept(visitor) {
-        visitor.visitValueConverter(this);
+
+      return this.allArgs[0].evaluate(scope, valueConverters);
+    };
+
+    ValueConverter.prototype.assign = function assign(scope, value, valueConverters) {
+      var converter = valueConverters(this.name);
+      if (!converter) {
+        throw new Error('No ValueConverter named "' + this.name + '" was found!');
       }
-    }, {
-      key: 'connect',
-      value: function connect(binding, scope) {
-        var _this = this;
 
-        var observer,
-            childObservers = [],
-            i,
-            ii,
-            exp,
-            expInfo;
-
-        for (i = 0, ii = this.allArgs.length; i < ii; ++i) {
-          exp = this.allArgs[i];
-          expInfo = exp.connect(binding, scope);
-
-          if (expInfo.observer) {
-            childObservers.push(expInfo.observer);
-          }
-        }
-
-        if (childObservers.length) {
-          observer = new _compositeObserver.CompositeObserver(childObservers, function () {
-            return _this.evaluate(scope, binding.valueConverterLookupFunction);
-          });
-        }
-
-        return {
-          value: this.evaluate(scope, binding.valueConverterLookupFunction),
-          observer: observer
-        };
+      if ('fromView' in converter) {
+        value = converter.fromView.apply(converter, [value].concat(evalList(scope, this.args, valueConverters)));
       }
-    }]);
+
+      return this.allArgs[0].assign(scope, value, valueConverters);
+    };
+
+    ValueConverter.prototype.accept = function accept(visitor) {
+      visitor.visitValueConverter(this);
+    };
+
+    ValueConverter.prototype.connect = function connect(binding, scope) {
+      var _this = this;
+
+      var observer,
+          childObservers = [],
+          i,
+          ii,
+          exp,
+          expInfo;
+
+      for (i = 0, ii = this.allArgs.length; i < ii; ++i) {
+        exp = this.allArgs[i];
+        expInfo = exp.connect(binding, scope);
+
+        if (expInfo.observer) {
+          childObservers.push(expInfo.observer);
+        }
+      }
+
+      if (childObservers.length) {
+        observer = new _compositeObserver.CompositeObserver(childObservers, function () {
+          return _this.evaluate(scope, binding.valueConverterLookupFunction);
+        });
+      }
+
+      return {
+        value: this.evaluate(scope, binding.valueConverterLookupFunction),
+        observer: observer
+      };
+    };
 
     return ValueConverter;
   })(Expression);
@@ -176,7 +155,7 @@ define(['exports', './path-observer', './composite-observer'], function (exports
     function Assign(target, value) {
       _classCallCheck(this, Assign);
 
-      _get(Object.getPrototypeOf(Assign.prototype), 'constructor', this).call(this);
+      _Expression3.call(this);
 
       this.target = target;
       this.value = value;
@@ -184,22 +163,17 @@ define(['exports', './path-observer', './composite-observer'], function (exports
 
     _inherits(Assign, _Expression3);
 
-    _createClass(Assign, [{
-      key: 'evaluate',
-      value: function evaluate(scope, valueConverters) {
-        return this.target.assign(scope, this.value.evaluate(scope, valueConverters));
-      }
-    }, {
-      key: 'accept',
-      value: function accept(vistor) {
-        vistor.visitAssign(this);
-      }
-    }, {
-      key: 'connect',
-      value: function connect(binding, scope) {
-        return { value: this.evaluate(scope, binding.valueConverterLookupFunction) };
-      }
-    }]);
+    Assign.prototype.evaluate = function evaluate(scope, valueConverters) {
+      return this.target.assign(scope, this.value.evaluate(scope, valueConverters));
+    };
+
+    Assign.prototype.accept = function accept(vistor) {
+      vistor.visitAssign(this);
+    };
+
+    Assign.prototype.connect = function connect(binding, scope) {
+      return { value: this.evaluate(scope, binding.valueConverterLookupFunction) };
+    };
 
     return Assign;
   })(Expression);
@@ -210,7 +184,7 @@ define(['exports', './path-observer', './composite-observer'], function (exports
     function Conditional(condition, yes, no) {
       _classCallCheck(this, Conditional);
 
-      _get(Object.getPrototypeOf(Conditional.prototype), 'constructor', this).call(this);
+      _Expression4.call(this);
 
       this.condition = condition;
       this.yes = yes;
@@ -219,51 +193,46 @@ define(['exports', './path-observer', './composite-observer'], function (exports
 
     _inherits(Conditional, _Expression4);
 
-    _createClass(Conditional, [{
-      key: 'evaluate',
-      value: function evaluate(scope, valueConverters) {
-        return !!this.condition.evaluate(scope) ? this.yes.evaluate(scope) : this.no.evaluate(scope);
+    Conditional.prototype.evaluate = function evaluate(scope, valueConverters) {
+      return !!this.condition.evaluate(scope) ? this.yes.evaluate(scope) : this.no.evaluate(scope);
+    };
+
+    Conditional.prototype.accept = function accept(visitor) {
+      visitor.visitConditional(this);
+    };
+
+    Conditional.prototype.connect = function connect(binding, scope) {
+      var _this2 = this;
+
+      var conditionInfo = this.condition.connect(binding, scope),
+          yesInfo = this.yes.connect(binding, scope),
+          noInfo = this.no.connect(binding, scope),
+          childObservers = [],
+          observer;
+
+      if (conditionInfo.observer) {
+        childObservers.push(conditionInfo.observer);
       }
-    }, {
-      key: 'accept',
-      value: function accept(visitor) {
-        visitor.visitConditional(this);
+
+      if (yesInfo.observer) {
+        childObservers.push(yesInfo.observer);
       }
-    }, {
-      key: 'connect',
-      value: function connect(binding, scope) {
-        var _this2 = this;
 
-        var conditionInfo = this.condition.connect(binding, scope),
-            yesInfo = this.yes.connect(binding, scope),
-            noInfo = this.no.connect(binding, scope),
-            childObservers = [],
-            observer;
-
-        if (conditionInfo.observer) {
-          childObservers.push(conditionInfo.observer);
-        }
-
-        if (yesInfo.observer) {
-          childObservers.push(yesInfo.observer);
-        }
-
-        if (noInfo.observer) {
-          childObservers.push(noInfo.observer);
-        }
-
-        if (childObservers.length) {
-          observer = new _compositeObserver.CompositeObserver(childObservers, function () {
-            return _this2.evaluate(scope, binding.valueConverterLookupFunction);
-          });
-        }
-
-        return {
-          value: !!conditionInfo.value ? yesInfo.value : noInfo.value,
-          observer: observer
-        };
+      if (noInfo.observer) {
+        childObservers.push(noInfo.observer);
       }
-    }]);
+
+      if (childObservers.length) {
+        observer = new _compositeObserver.CompositeObserver(childObservers, function () {
+          return _this2.evaluate(scope, binding.valueConverterLookupFunction);
+        });
+      }
+
+      return {
+        value: !!conditionInfo.value ? yesInfo.value : noInfo.value,
+        observer: observer
+      };
+    };
 
     return Conditional;
   })(Expression);
@@ -274,7 +243,7 @@ define(['exports', './path-observer', './composite-observer'], function (exports
     function AccessScope(name) {
       _classCallCheck(this, AccessScope);
 
-      _get(Object.getPrototypeOf(AccessScope.prototype), 'constructor', this).call(this);
+      _Expression5.call(this);
 
       this.name = name;
       this.isAssignable = true;
@@ -282,32 +251,26 @@ define(['exports', './path-observer', './composite-observer'], function (exports
 
     _inherits(AccessScope, _Expression5);
 
-    _createClass(AccessScope, [{
-      key: 'evaluate',
-      value: function evaluate(scope, valueConverters) {
-        return scope[this.name];
-      }
-    }, {
-      key: 'assign',
-      value: function assign(scope, value) {
-        return scope[this.name] = value;
-      }
-    }, {
-      key: 'accept',
-      value: function accept(visitor) {
-        visitor.visitAccessScope(this);
-      }
-    }, {
-      key: 'connect',
-      value: function connect(binding, scope) {
-        var observer = binding.getObserver(scope, this.name);
+    AccessScope.prototype.evaluate = function evaluate(scope, valueConverters) {
+      return scope[this.name];
+    };
 
-        return {
-          value: observer.getValue(),
-          observer: observer
-        };
-      }
-    }]);
+    AccessScope.prototype.assign = function assign(scope, value) {
+      return scope[this.name] = value;
+    };
+
+    AccessScope.prototype.accept = function accept(visitor) {
+      visitor.visitAccessScope(this);
+    };
+
+    AccessScope.prototype.connect = function connect(binding, scope) {
+      var observer = binding.getObserver(scope, this.name);
+
+      return {
+        value: observer.getValue(),
+        observer: observer
+      };
+    };
 
     return AccessScope;
   })(Expression);
@@ -318,7 +281,7 @@ define(['exports', './path-observer', './composite-observer'], function (exports
     function AccessMember(object, name) {
       _classCallCheck(this, AccessMember);
 
-      _get(Object.getPrototypeOf(AccessMember.prototype), 'constructor', this).call(this);
+      _Expression6.call(this);
 
       this.object = object;
       this.name = name;
@@ -327,57 +290,51 @@ define(['exports', './path-observer', './composite-observer'], function (exports
 
     _inherits(AccessMember, _Expression6);
 
-    _createClass(AccessMember, [{
-      key: 'evaluate',
-      value: function evaluate(scope, valueConverters) {
-        var instance = this.object.evaluate(scope, valueConverters);
-        return instance === null || instance === undefined ? instance : instance[this.name];
+    AccessMember.prototype.evaluate = function evaluate(scope, valueConverters) {
+      var instance = this.object.evaluate(scope, valueConverters);
+      return instance === null || instance === undefined ? instance : instance[this.name];
+    };
+
+    AccessMember.prototype.assign = function assign(scope, value) {
+      var instance = this.object.evaluate(scope);
+
+      if (instance === null || instance === undefined) {
+        instance = {};
+        this.object.assign(scope, instance);
       }
-    }, {
-      key: 'assign',
-      value: function assign(scope, value) {
-        var instance = this.object.evaluate(scope);
 
-        if (instance === null || instance === undefined) {
-          instance = {};
-          this.object.assign(scope, instance);
-        }
+      return instance[this.name] = value;
+    };
 
-        return instance[this.name] = value;
+    AccessMember.prototype.accept = function accept(visitor) {
+      visitor.visitAccessMember(this);
+    };
+
+    AccessMember.prototype.connect = function connect(binding, scope) {
+      var _this3 = this;
+
+      var info = this.object.connect(binding, scope),
+          objectInstance = info.value,
+          objectObserver = info.observer,
+          observer;
+
+      if (objectObserver) {
+        observer = new _pathObserver.PathObserver(objectObserver, function (value) {
+          if (value == null || value == undefined) {
+            return value;
+          }
+
+          return binding.getObserver(value, _this3.name);
+        }, objectInstance);
+      } else {
+        observer = binding.getObserver(objectInstance, this.name);
       }
-    }, {
-      key: 'accept',
-      value: function accept(visitor) {
-        visitor.visitAccessMember(this);
-      }
-    }, {
-      key: 'connect',
-      value: function connect(binding, scope) {
-        var _this3 = this;
 
-        var info = this.object.connect(binding, scope),
-            objectInstance = info.value,
-            objectObserver = info.observer,
-            observer;
-
-        if (objectObserver) {
-          observer = new _pathObserver.PathObserver(objectObserver, function (value) {
-            if (value == null || value == undefined) {
-              return value;
-            }
-
-            return binding.getObserver(value, _this3.name);
-          }, objectInstance);
-        } else {
-          observer = binding.getObserver(objectInstance, this.name);
-        }
-
-        return {
-          value: objectInstance == null ? null : objectInstance[this.name],
-          observer: observer
-        };
-      }
-    }]);
+      return {
+        value: objectInstance == null ? null : objectInstance[this.name],
+        observer: observer
+      };
+    };
 
     return AccessMember;
   })(Expression);
@@ -388,7 +345,7 @@ define(['exports', './path-observer', './composite-observer'], function (exports
     function AccessKeyed(object, key) {
       _classCallCheck(this, AccessKeyed);
 
-      _get(Object.getPrototypeOf(AccessKeyed.prototype), 'constructor', this).call(this);
+      _Expression7.call(this);
 
       this.object = object;
       this.key = key;
@@ -397,55 +354,36 @@ define(['exports', './path-observer', './composite-observer'], function (exports
 
     _inherits(AccessKeyed, _Expression7);
 
-    _createClass(AccessKeyed, [{
-      key: 'evaluate',
-      value: function evaluate(scope, valueConverters) {
-        var instance = this.object.evaluate(scope, valueConverters);
-        var lookup = this.key.evaluate(scope, valueConverters);
-        return getKeyed(instance, lookup);
-      }
-    }, {
-      key: 'assign',
-      value: function assign(scope, value) {
-        var instance = this.object.evaluate(scope);
-        var lookup = this.key.evaluate(scope);
-        return setKeyed(instance, lookup, value);
-      }
-    }, {
-      key: 'accept',
-      value: function accept(visitor) {
-        visitor.visitAccessKeyed(this);
-      }
-    }, {
-      key: 'connect',
-      value: function connect(binding, scope) {
-        var _this4 = this;
+    AccessKeyed.prototype.evaluate = function evaluate(scope, valueConverters) {
+      var instance = this.object.evaluate(scope, valueConverters);
+      var lookup = this.key.evaluate(scope, valueConverters);
+      return getKeyed(instance, lookup);
+    };
 
-        var objectInfo = this.object.connect(binding, scope),
-            keyInfo = this.key.connect(binding, scope),
-            childObservers = [],
-            observer;
+    AccessKeyed.prototype.assign = function assign(scope, value) {
+      var instance = this.object.evaluate(scope);
+      var lookup = this.key.evaluate(scope);
+      return setKeyed(instance, lookup, value);
+    };
 
-        if (objectInfo.observer) {
-          childObservers.push(objectInfo.observer);
-        }
+    AccessKeyed.prototype.accept = function accept(visitor) {
+      visitor.visitAccessKeyed(this);
+    };
 
-        if (keyInfo.observer) {
-          childObservers.push(keyInfo.observer);
-        }
+    AccessKeyed.prototype.connect = function connect(binding, scope) {
+      var _this4 = this;
 
-        if (childObservers.length) {
-          observer = new _compositeObserver.CompositeObserver(childObservers, function () {
-            return _this4.evaluate(scope, binding.valueConverterLookupFunction);
-          });
-        }
+      var objectInfo = this.object.connect(binding, scope),
+          keyInfo = this.key.connect(binding, scope),
+          observer = new _accessKeyedObserver.AccessKeyedObserver(objectInfo, keyInfo, binding.observerLocator, function () {
+        return _this4.evaluate(scope, binding.valueConverterLookupFunction);
+      });
 
-        return {
-          value: this.evaluate(scope, binding.valueConverterLookupFunction),
-          observer: observer
-        };
-      }
-    }]);
+      return {
+        value: this.evaluate(scope, binding.valueConverterLookupFunction),
+        observer: observer
+      };
+    };
 
     return AccessKeyed;
   })(Expression);
@@ -456,7 +394,7 @@ define(['exports', './path-observer', './composite-observer'], function (exports
     function CallScope(name, args) {
       _classCallCheck(this, CallScope);
 
-      _get(Object.getPrototypeOf(CallScope.prototype), 'constructor', this).call(this);
+      _Expression8.call(this);
 
       this.name = name;
       this.args = args;
@@ -464,50 +402,45 @@ define(['exports', './path-observer', './composite-observer'], function (exports
 
     _inherits(CallScope, _Expression8);
 
-    _createClass(CallScope, [{
-      key: 'evaluate',
-      value: function evaluate(scope, valueConverters, args) {
-        args = args || evalList(scope, this.args, valueConverters);
-        return ensureFunctionFromMap(scope, this.name).apply(scope, args);
-      }
-    }, {
-      key: 'accept',
-      value: function accept(visitor) {
-        visitor.visitCallScope(this);
-      }
-    }, {
-      key: 'connect',
-      value: function connect(binding, scope) {
-        var _this5 = this;
+    CallScope.prototype.evaluate = function evaluate(scope, valueConverters, args) {
+      args = args || evalList(scope, this.args, valueConverters);
+      return ensureFunctionFromMap(scope, this.name).apply(scope, args);
+    };
 
-        var observer,
-            childObservers = [],
-            i,
-            ii,
-            exp,
-            expInfo;
+    CallScope.prototype.accept = function accept(visitor) {
+      visitor.visitCallScope(this);
+    };
 
-        for (i = 0, ii = this.args.length; i < ii; ++i) {
-          exp = this.args[i];
-          expInfo = exp.connect(binding, scope);
+    CallScope.prototype.connect = function connect(binding, scope) {
+      var _this5 = this;
 
-          if (expInfo.observer) {
-            childObservers.push(expInfo.observer);
-          }
+      var observer,
+          childObservers = [],
+          i,
+          ii,
+          exp,
+          expInfo;
+
+      for (i = 0, ii = this.args.length; i < ii; ++i) {
+        exp = this.args[i];
+        expInfo = exp.connect(binding, scope);
+
+        if (expInfo.observer) {
+          childObservers.push(expInfo.observer);
         }
-
-        if (childObservers.length) {
-          observer = new _compositeObserver.CompositeObserver(childObservers, function () {
-            return _this5.evaluate(scope, binding.valueConverterLookupFunction);
-          });
-        }
-
-        return {
-          value: this.evaluate(scope, binding.valueConverterLookupFunction),
-          observer: observer
-        };
       }
-    }]);
+
+      if (childObservers.length) {
+        observer = new _compositeObserver.CompositeObserver(childObservers, function () {
+          return _this5.evaluate(scope, binding.valueConverterLookupFunction);
+        });
+      }
+
+      return {
+        value: this.evaluate(scope, binding.valueConverterLookupFunction),
+        observer: observer
+      };
+    };
 
     return CallScope;
   })(Expression);
@@ -518,7 +451,7 @@ define(['exports', './path-observer', './composite-observer'], function (exports
     function CallMember(object, name, args) {
       _classCallCheck(this, CallMember);
 
-      _get(Object.getPrototypeOf(CallMember.prototype), 'constructor', this).call(this);
+      _Expression9.call(this);
 
       this.object = object;
       this.name = name;
@@ -527,56 +460,51 @@ define(['exports', './path-observer', './composite-observer'], function (exports
 
     _inherits(CallMember, _Expression9);
 
-    _createClass(CallMember, [{
-      key: 'evaluate',
-      value: function evaluate(scope, valueConverters, args) {
-        var instance = this.object.evaluate(scope, valueConverters);
-        args = args || evalList(scope, this.args, valueConverters);
-        return ensureFunctionFromMap(instance, this.name).apply(instance, args);
+    CallMember.prototype.evaluate = function evaluate(scope, valueConverters, args) {
+      var instance = this.object.evaluate(scope, valueConverters);
+      args = args || evalList(scope, this.args, valueConverters);
+      return ensureFunctionFromMap(instance, this.name).apply(instance, args);
+    };
+
+    CallMember.prototype.accept = function accept(visitor) {
+      visitor.visitCallMember(this);
+    };
+
+    CallMember.prototype.connect = function connect(binding, scope) {
+      var _this6 = this;
+
+      var observer,
+          objectInfo = this.object.connect(binding, scope),
+          childObservers = [],
+          i,
+          ii,
+          exp,
+          expInfo;
+
+      if (objectInfo.observer) {
+        childObservers.push(objectInfo.observer);
       }
-    }, {
-      key: 'accept',
-      value: function accept(visitor) {
-        visitor.visitCallMember(this);
+
+      for (i = 0, ii = this.args.length; i < ii; ++i) {
+        exp = this.args[i];
+        expInfo = exp.connect(binding, scope);
+
+        if (expInfo.observer) {
+          childObservers.push(expInfo.observer);
+        }
       }
-    }, {
-      key: 'connect',
-      value: function connect(binding, scope) {
-        var _this6 = this;
 
-        var observer,
-            objectInfo = this.object.connect(binding, scope),
-            childObservers = [],
-            i,
-            ii,
-            exp,
-            expInfo;
-
-        if (objectInfo.observer) {
-          childObservers.push(objectInfo.observer);
-        }
-
-        for (i = 0, ii = this.args.length; i < ii; ++i) {
-          exp = this.args[i];
-          expInfo = exp.connect(binding, scope);
-
-          if (expInfo.observer) {
-            childObservers.push(expInfo.observer);
-          }
-        }
-
-        if (childObservers.length) {
-          observer = new _compositeObserver.CompositeObserver(childObservers, function () {
-            return _this6.evaluate(scope, binding.valueConverterLookupFunction);
-          });
-        }
-
-        return {
-          value: this.evaluate(scope, binding.valueConverterLookupFunction),
-          observer: observer
-        };
+      if (childObservers.length) {
+        observer = new _compositeObserver.CompositeObserver(childObservers, function () {
+          return _this6.evaluate(scope, binding.valueConverterLookupFunction);
+        });
       }
-    }]);
+
+      return {
+        value: this.evaluate(scope, binding.valueConverterLookupFunction),
+        observer: observer
+      };
+    };
 
     return CallMember;
   })(Expression);
@@ -587,7 +515,7 @@ define(['exports', './path-observer', './composite-observer'], function (exports
     function CallFunction(func, args) {
       _classCallCheck(this, CallFunction);
 
-      _get(Object.getPrototypeOf(CallFunction.prototype), 'constructor', this).call(this);
+      _Expression10.call(this);
 
       this.func = func;
       this.args = args;
@@ -595,60 +523,55 @@ define(['exports', './path-observer', './composite-observer'], function (exports
 
     _inherits(CallFunction, _Expression10);
 
-    _createClass(CallFunction, [{
-      key: 'evaluate',
-      value: function evaluate(scope, valueConverters, args) {
-        var func = this.func.evaluate(scope, valueConverters);
+    CallFunction.prototype.evaluate = function evaluate(scope, valueConverters, args) {
+      var func = this.func.evaluate(scope, valueConverters);
 
-        if (typeof func !== 'function') {
-          throw new Error('' + this.func + ' is not a function');
-        } else {
-          return func.apply(null, args || evalList(scope, this.args, valueConverters));
+      if (typeof func !== 'function') {
+        throw new Error('' + this.func + ' is not a function');
+      } else {
+        return func.apply(null, args || evalList(scope, this.args, valueConverters));
+      }
+    };
+
+    CallFunction.prototype.accept = function accept(visitor) {
+      visitor.visitCallFunction(this);
+    };
+
+    CallFunction.prototype.connect = function connect(binding, scope) {
+      var _this7 = this;
+
+      var observer,
+          funcInfo = this.func.connect(binding, scope),
+          childObservers = [],
+          i,
+          ii,
+          exp,
+          expInfo;
+
+      if (funcInfo.observer) {
+        childObservers.push(funcInfo.observer);
+      }
+
+      for (i = 0, ii = this.args.length; i < ii; ++i) {
+        exp = this.args[i];
+        expInfo = exp.connect(binding, scope);
+
+        if (expInfo.observer) {
+          childObservers.push(expInfo.observer);
         }
       }
-    }, {
-      key: 'accept',
-      value: function accept(visitor) {
-        visitor.visitCallFunction(this);
+
+      if (childObservers.length) {
+        observer = new _compositeObserver.CompositeObserver(childObservers, function () {
+          return _this7.evaluate(scope, binding.valueConverterLookupFunction);
+        });
       }
-    }, {
-      key: 'connect',
-      value: function connect(binding, scope) {
-        var _this7 = this;
 
-        var observer,
-            funcInfo = this.func.connect(binding, scope),
-            childObservers = [],
-            i,
-            ii,
-            exp,
-            expInfo;
-
-        if (funcInfo.observer) {
-          childObservers.push(funcInfo.observer);
-        }
-
-        for (i = 0, ii = this.args.length; i < ii; ++i) {
-          exp = this.args[i];
-          expInfo = exp.connect(binding, scope);
-
-          if (expInfo.observer) {
-            childObservers.push(expInfo.observer);
-          }
-        }
-
-        if (childObservers.length) {
-          observer = new _compositeObserver.CompositeObserver(childObservers, function () {
-            return _this7.evaluate(scope, binding.valueConverterLookupFunction);
-          });
-        }
-
-        return {
-          value: this.evaluate(scope, binding.valueConverterLookupFunction),
-          observer: observer
-        };
-      }
-    }]);
+      return {
+        value: this.evaluate(scope, binding.valueConverterLookupFunction),
+        observer: observer
+      };
+    };
 
     return CallFunction;
   })(Expression);
@@ -659,7 +582,7 @@ define(['exports', './path-observer', './composite-observer'], function (exports
     function Binary(operation, left, right) {
       _classCallCheck(this, Binary);
 
-      _get(Object.getPrototypeOf(Binary.prototype), 'constructor', this).call(this);
+      _Expression11.call(this);
 
       this.operation = operation;
       this.left = left;
@@ -668,112 +591,107 @@ define(['exports', './path-observer', './composite-observer'], function (exports
 
     _inherits(Binary, _Expression11);
 
-    _createClass(Binary, [{
-      key: 'evaluate',
-      value: function evaluate(scope, valueConverters) {
-        var left = this.left.evaluate(scope);
+    Binary.prototype.evaluate = function evaluate(scope, valueConverters) {
+      var left = this.left.evaluate(scope);
 
-        switch (this.operation) {
-          case '&&':
-            return !!left && !!this.right.evaluate(scope);
-          case '||':
-            return !!left || !!this.right.evaluate(scope);
-        }
+      switch (this.operation) {
+        case '&&':
+          return !!left && !!this.right.evaluate(scope);
+        case '||':
+          return !!left || !!this.right.evaluate(scope);
+      }
 
-        var right = this.right.evaluate(scope);
+      var right = this.right.evaluate(scope);
 
-        switch (this.operation) {
-          case '==':
-            return left == right;
-          case '===':
-            return left === right;
-          case '!=':
-            return left != right;
-          case '!==':
-            return left !== right;
-        }
+      switch (this.operation) {
+        case '==':
+          return left == right;
+        case '===':
+          return left === right;
+        case '!=':
+          return left != right;
+        case '!==':
+          return left !== right;
+      }
 
-        if (left === null || right === null) {
-          switch (this.operation) {
-            case '+':
-              if (left != null) {
-                return left;
-              }if (right != null) {
-                return right;
-              }return 0;
-            case '-':
-              if (left != null) {
-                return left;
-              }if (right != null) {
-                return 0 - right;
-              }return 0;
-          }
-
-          return null;
-        }
-
+      if (left === null || right === null) {
         switch (this.operation) {
           case '+':
-            return autoConvertAdd(left, right);
+            if (left != null) {
+              return left;
+            }if (right != null) {
+              return right;
+            }return 0;
           case '-':
-            return left - right;
-          case '*':
-            return left * right;
-          case '/':
-            return left / right;
-          case '%':
-            return left % right;
-          case '<':
-            return left < right;
-          case '>':
-            return left > right;
-          case '<=':
-            return left <= right;
-          case '>=':
-            return left >= right;
-          case '^':
-            return left ^ right;
-          case '&':
-            return left & right;
+            if (left != null) {
+              return left;
+            }if (right != null) {
+              return 0 - right;
+            }return 0;
         }
 
-        throw new Error('Internal error [' + this.operation + '] not handled');
+        return null;
       }
-    }, {
-      key: 'accept',
-      value: function accept(visitor) {
-        visitor.visitBinary(this);
+
+      switch (this.operation) {
+        case '+':
+          return autoConvertAdd(left, right);
+        case '-':
+          return left - right;
+        case '*':
+          return left * right;
+        case '/':
+          return left / right;
+        case '%':
+          return left % right;
+        case '<':
+          return left < right;
+        case '>':
+          return left > right;
+        case '<=':
+          return left <= right;
+        case '>=':
+          return left >= right;
+        case '^':
+          return left ^ right;
+        case '&':
+          return left & right;
       }
-    }, {
-      key: 'connect',
-      value: function connect(binding, scope) {
-        var _this8 = this;
 
-        var leftInfo = this.left.connect(binding, scope),
-            rightInfo = this.right.connect(binding, scope),
-            childObservers = [],
-            observer;
+      throw new Error('Internal error [' + this.operation + '] not handled');
+    };
 
-        if (leftInfo.observer) {
-          childObservers.push(leftInfo.observer);
-        }
+    Binary.prototype.accept = function accept(visitor) {
+      visitor.visitBinary(this);
+    };
 
-        if (rightInfo.observer) {
-          childObservers.push(rightInfo.observer);
-        }
+    Binary.prototype.connect = function connect(binding, scope) {
+      var _this8 = this;
 
-        if (childObservers.length) {
-          observer = new _compositeObserver.CompositeObserver(childObservers, function () {
-            return _this8.evaluate(scope, binding.valueConverterLookupFunction);
-          });
-        }
+      var leftInfo = this.left.connect(binding, scope),
+          rightInfo = this.right.connect(binding, scope),
+          childObservers = [],
+          observer;
 
-        return {
-          value: this.evaluate(scope, binding.valueConverterLookupFunction),
-          observer: observer
-        };
+      if (leftInfo.observer) {
+        childObservers.push(leftInfo.observer);
       }
-    }]);
+
+      if (rightInfo.observer) {
+        childObservers.push(rightInfo.observer);
+      }
+
+      if (childObservers.length) {
+        observer = new _compositeObserver.CompositeObserver(childObservers, function () {
+          return _this8.evaluate(scope, binding.valueConverterLookupFunction);
+        });
+      }
+
+      return {
+        value: this.evaluate(scope, binding.valueConverterLookupFunction),
+        observer: observer
+      };
+    };
 
     return Binary;
   })(Expression);
@@ -784,7 +702,7 @@ define(['exports', './path-observer', './composite-observer'], function (exports
     function PrefixNot(operation, expression) {
       _classCallCheck(this, PrefixNot);
 
-      _get(Object.getPrototypeOf(PrefixNot.prototype), 'constructor', this).call(this);
+      _Expression12.call(this);
 
       this.operation = operation;
       this.expression = expression;
@@ -792,36 +710,31 @@ define(['exports', './path-observer', './composite-observer'], function (exports
 
     _inherits(PrefixNot, _Expression12);
 
-    _createClass(PrefixNot, [{
-      key: 'evaluate',
-      value: function evaluate(scope, valueConverters) {
-        return !this.expression.evaluate(scope);
-      }
-    }, {
-      key: 'accept',
-      value: function accept(visitor) {
-        visitor.visitPrefix(this);
-      }
-    }, {
-      key: 'connect',
-      value: function connect(binding, scope) {
-        var _this9 = this;
+    PrefixNot.prototype.evaluate = function evaluate(scope, valueConverters) {
+      return !this.expression.evaluate(scope);
+    };
 
-        var info = this.expression.connect(binding, scope),
-            observer;
+    PrefixNot.prototype.accept = function accept(visitor) {
+      visitor.visitPrefix(this);
+    };
 
-        if (info.observer) {
-          observer = new _compositeObserver.CompositeObserver([info.observer], function () {
-            return _this9.evaluate(scope, binding.valueConverterLookupFunction);
-          });
-        }
+    PrefixNot.prototype.connect = function connect(binding, scope) {
+      var _this9 = this;
 
-        return {
-          value: !info.value,
-          observer: observer
-        };
+      var info = this.expression.connect(binding, scope),
+          observer;
+
+      if (info.observer) {
+        observer = new _compositeObserver.CompositeObserver([info.observer], function () {
+          return _this9.evaluate(scope, binding.valueConverterLookupFunction);
+        });
       }
-    }]);
+
+      return {
+        value: !info.value,
+        observer: observer
+      };
+    };
 
     return PrefixNot;
   })(Expression);
@@ -832,29 +745,24 @@ define(['exports', './path-observer', './composite-observer'], function (exports
     function LiteralPrimitive(value) {
       _classCallCheck(this, LiteralPrimitive);
 
-      _get(Object.getPrototypeOf(LiteralPrimitive.prototype), 'constructor', this).call(this);
+      _Expression13.call(this);
 
       this.value = value;
     }
 
     _inherits(LiteralPrimitive, _Expression13);
 
-    _createClass(LiteralPrimitive, [{
-      key: 'evaluate',
-      value: function evaluate(scope, valueConverters) {
-        return this.value;
-      }
-    }, {
-      key: 'accept',
-      value: function accept(visitor) {
-        visitor.visitLiteralPrimitive(this);
-      }
-    }, {
-      key: 'connect',
-      value: function connect(binding, scope) {
-        return { value: this.value };
-      }
-    }]);
+    LiteralPrimitive.prototype.evaluate = function evaluate(scope, valueConverters) {
+      return this.value;
+    };
+
+    LiteralPrimitive.prototype.accept = function accept(visitor) {
+      visitor.visitLiteralPrimitive(this);
+    };
+
+    LiteralPrimitive.prototype.connect = function connect(binding, scope) {
+      return { value: this.value };
+    };
 
     return LiteralPrimitive;
   })(Expression);
@@ -865,29 +773,24 @@ define(['exports', './path-observer', './composite-observer'], function (exports
     function LiteralString(value) {
       _classCallCheck(this, LiteralString);
 
-      _get(Object.getPrototypeOf(LiteralString.prototype), 'constructor', this).call(this);
+      _Expression14.call(this);
 
       this.value = value;
     }
 
     _inherits(LiteralString, _Expression14);
 
-    _createClass(LiteralString, [{
-      key: 'evaluate',
-      value: function evaluate(scope, valueConverters) {
-        return this.value;
-      }
-    }, {
-      key: 'accept',
-      value: function accept(visitor) {
-        visitor.visitLiteralString(this);
-      }
-    }, {
-      key: 'connect',
-      value: function connect(binding, scope) {
-        return { value: this.value };
-      }
-    }]);
+    LiteralString.prototype.evaluate = function evaluate(scope, valueConverters) {
+      return this.value;
+    };
+
+    LiteralString.prototype.accept = function accept(visitor) {
+      visitor.visitLiteralString(this);
+    };
+
+    LiteralString.prototype.connect = function connect(binding, scope) {
+      return { value: this.value };
+    };
 
     return LiteralString;
   })(Expression);
@@ -898,68 +801,63 @@ define(['exports', './path-observer', './composite-observer'], function (exports
     function LiteralArray(elements) {
       _classCallCheck(this, LiteralArray);
 
-      _get(Object.getPrototypeOf(LiteralArray.prototype), 'constructor', this).call(this);
+      _Expression15.call(this);
 
       this.elements = elements;
     }
 
     _inherits(LiteralArray, _Expression15);
 
-    _createClass(LiteralArray, [{
-      key: 'evaluate',
-      value: function evaluate(scope, valueConverters) {
-        var elements = this.elements,
-            length = elements.length,
-            result = [],
-            i;
+    LiteralArray.prototype.evaluate = function evaluate(scope, valueConverters) {
+      var elements = this.elements,
+          length = elements.length,
+          result = [],
+          i;
 
-        for (i = 0; i < length; ++i) {
-          result[i] = elements[i].evaluate(scope, valueConverters);
+      for (i = 0; i < length; ++i) {
+        result[i] = elements[i].evaluate(scope, valueConverters);
+      }
+
+      return result;
+    };
+
+    LiteralArray.prototype.accept = function accept(visitor) {
+      visitor.visitLiteralArray(this);
+    };
+
+    LiteralArray.prototype.connect = function connect(binding, scope) {
+      var _this10 = this;
+
+      var observer,
+          childObservers = [],
+          results = [],
+          i,
+          ii,
+          exp,
+          expInfo;
+
+      for (i = 0, ii = this.elements.length; i < ii; ++i) {
+        exp = this.elements[i];
+        expInfo = exp.connect(binding, scope);
+
+        if (expInfo.observer) {
+          childObservers.push(expInfo.observer);
         }
 
-        return result;
+        results[i] = expInfo.value;
       }
-    }, {
-      key: 'accept',
-      value: function accept(visitor) {
-        visitor.visitLiteralArray(this);
+
+      if (childObservers.length) {
+        observer = new _compositeObserver.CompositeObserver(childObservers, function () {
+          return _this10.evaluate(scope, binding.valueConverterLookupFunction);
+        });
       }
-    }, {
-      key: 'connect',
-      value: function connect(binding, scope) {
-        var _this10 = this;
 
-        var observer,
-            childObservers = [],
-            results = [],
-            i,
-            ii,
-            exp,
-            expInfo;
-
-        for (i = 0, ii = this.elements.length; i < ii; ++i) {
-          exp = this.elements[i];
-          expInfo = exp.connect(binding, scope);
-
-          if (expInfo.observer) {
-            childObservers.push(expInfo.observer);
-          }
-
-          results[i] = expInfo.value;
-        }
-
-        if (childObservers.length) {
-          observer = new _compositeObserver.CompositeObserver(childObservers, function () {
-            return _this10.evaluate(scope, binding.valueConverterLookupFunction);
-          });
-        }
-
-        return {
-          value: results,
-          observer: observer
-        };
-      }
-    }]);
+      return {
+        value: results,
+        observer: observer
+      };
+    };
 
     return LiteralArray;
   })(Expression);
@@ -970,7 +868,7 @@ define(['exports', './path-observer', './composite-observer'], function (exports
     function LiteralObject(keys, values) {
       _classCallCheck(this, LiteralObject);
 
-      _get(Object.getPrototypeOf(LiteralObject.prototype), 'constructor', this).call(this);
+      _Expression16.call(this);
 
       this.keys = keys;
       this.values = values;
@@ -978,62 +876,57 @@ define(['exports', './path-observer', './composite-observer'], function (exports
 
     _inherits(LiteralObject, _Expression16);
 
-    _createClass(LiteralObject, [{
-      key: 'evaluate',
-      value: function evaluate(scope, valueConverters) {
-        var instance = {},
-            keys = this.keys,
-            values = this.values,
-            length = keys.length,
-            i;
+    LiteralObject.prototype.evaluate = function evaluate(scope, valueConverters) {
+      var instance = {},
+          keys = this.keys,
+          values = this.values,
+          length = keys.length,
+          i;
 
-        for (i = 0; i < length; ++i) {
-          instance[keys[i]] = values[i].evaluate(scope, valueConverters);
+      for (i = 0; i < length; ++i) {
+        instance[keys[i]] = values[i].evaluate(scope, valueConverters);
+      }
+
+      return instance;
+    };
+
+    LiteralObject.prototype.accept = function accept(visitor) {
+      visitor.visitLiteralObject(this);
+    };
+
+    LiteralObject.prototype.connect = function connect(binding, scope) {
+      var _this11 = this;
+
+      var observer,
+          childObservers = [],
+          instance = {},
+          keys = this.keys,
+          values = this.values,
+          length = keys.length,
+          i,
+          valueInfo;
+
+      for (i = 0; i < length; ++i) {
+        valueInfo = values[i].connect(binding, scope);
+
+        if (valueInfo.observer) {
+          childObservers.push(valueInfo.observer);
         }
 
-        return instance;
+        instance[keys[i]] = valueInfo.value;
       }
-    }, {
-      key: 'accept',
-      value: function accept(visitor) {
-        visitor.visitLiteralObject(this);
+
+      if (childObservers.length) {
+        observer = new _compositeObserver.CompositeObserver(childObservers, function () {
+          return _this11.evaluate(scope, binding.valueConverterLookupFunction);
+        });
       }
-    }, {
-      key: 'connect',
-      value: function connect(binding, scope) {
-        var _this11 = this;
 
-        var observer,
-            childObservers = [],
-            instance = {},
-            keys = this.keys,
-            values = this.values,
-            length = keys.length,
-            i,
-            valueInfo;
-
-        for (i = 0; i < length; ++i) {
-          valueInfo = values[i].connect(binding, scope);
-
-          if (valueInfo.observer) {
-            childObservers.push(valueInfo.observer);
-          }
-
-          instance[keys[i]] = valueInfo.value;
-        }
-
-        if (childObservers.length) {
-          observer = new _compositeObserver.CompositeObserver(childObservers, function () {
-            return _this11.evaluate(scope, binding.valueConverterLookupFunction);
-          });
-        }
-
-        return {
-          value: instance,
-          observer: observer
-        };
-      }
-    }]);
+      return {
+        value: instance,
+        observer: observer
+      };
+    };
 
     return LiteralObject;
   })(Expression);
@@ -1047,193 +940,172 @@ define(['exports', './path-observer', './composite-observer'], function (exports
       this.buffer = buffer;
     }
 
-    _createClass(Unparser, [{
-      key: 'write',
-      value: function write(text) {
-        this.buffer.push(text);
-      }
-    }, {
-      key: 'writeArgs',
-      value: function writeArgs(args) {
-        var i, length;
+    Unparser.unparse = function unparse(expression) {
+      var buffer = [],
+          visitor = new Unparser(buffer);
 
-        this.write('(');
+      expression.accept(visitor);
 
-        for (i = 0, length = args.length; i < length; ++i) {
-          if (i !== 0) {
-            this.write(',');
-          }
+      return buffer.join('');
+    };
 
-          args[i].accept(this);
+    Unparser.prototype.write = function write(text) {
+      this.buffer.push(text);
+    };
+
+    Unparser.prototype.writeArgs = function writeArgs(args) {
+      var i, length;
+
+      this.write('(');
+
+      for (i = 0, length = args.length; i < length; ++i) {
+        if (i !== 0) {
+          this.write(',');
         }
 
-        this.write(')');
+        args[i].accept(this);
       }
-    }, {
-      key: 'visitChain',
-      value: function visitChain(chain) {
-        var expressions = chain.expressions,
-            length = expressions.length,
-            i;
 
-        for (i = 0; i < length; ++i) {
-          if (i !== 0) {
-            this.write(';');
-          }
+      this.write(')');
+    };
 
-          expressions[i].accept(this);
-        }
-      }
-    }, {
-      key: 'visitValueConverter',
-      value: function visitValueConverter(converter) {
-        var args = converter.args,
-            length = args.length,
-            i;
+    Unparser.prototype.visitChain = function visitChain(chain) {
+      var expressions = chain.expressions,
+          length = expressions.length,
+          i;
 
-        this.write('(');
-        converter.expression.accept(this);
-        this.write('|' + converter.name);
-
-        for (i = 0; i < length; ++i) {
-          this.write(' :');
-          args[i].accept(this);
+      for (i = 0; i < length; ++i) {
+        if (i !== 0) {
+          this.write(';');
         }
 
-        this.write(')');
+        expressions[i].accept(this);
       }
-    }, {
-      key: 'visitAssign',
-      value: function visitAssign(assign) {
-        assign.target.accept(this);
-        this.write('=');
-        assign.value.accept(this);
-      }
-    }, {
-      key: 'visitConditional',
-      value: function visitConditional(conditional) {
-        conditional.condition.accept(this);
-        this.write('?');
-        conditional.yes.accept(this);
-        this.write(':');
-        conditional.no.accept(this);
-      }
-    }, {
-      key: 'visitAccessScope',
-      value: function visitAccessScope(access) {
-        this.write(access.name);
-      }
-    }, {
-      key: 'visitAccessMember',
-      value: function visitAccessMember(access) {
-        access.object.accept(this);
-        this.write('.' + access.name);
-      }
-    }, {
-      key: 'visitAccessKeyed',
-      value: function visitAccessKeyed(access) {
-        access.object.accept(this);
-        this.write('[');
-        access.key.accept(this);
-        this.write(']');
-      }
-    }, {
-      key: 'visitCallScope',
-      value: function visitCallScope(call) {
-        this.write(call.name);
-        this.writeArgs(call.args);
-      }
-    }, {
-      key: 'visitCallFunction',
-      value: function visitCallFunction(call) {
-        call.func.accept(this);
-        this.writeArgs(call.args);
-      }
-    }, {
-      key: 'visitCallMember',
-      value: function visitCallMember(call) {
-        call.object.accept(this);
-        this.write('.' + call.name);
-        this.writeArgs(call.args);
-      }
-    }, {
-      key: 'visitPrefix',
-      value: function visitPrefix(prefix) {
-        this.write('(' + prefix.operation);
-        prefix.expression.accept(this);
-        this.write(')');
-      }
-    }, {
-      key: 'visitBinary',
-      value: function visitBinary(binary) {
-        this.write('(');
-        binary.left.accept(this);
-        this.write(binary.operation);
-        binary.right.accept(this);
-        this.write(')');
-      }
-    }, {
-      key: 'visitLiteralPrimitive',
-      value: function visitLiteralPrimitive(literal) {
-        this.write('' + literal.value);
-      }
-    }, {
-      key: 'visitLiteralArray',
-      value: function visitLiteralArray(literal) {
-        var elements = literal.elements,
-            length = elements.length,
-            i;
+    };
 
-        this.write('[');
+    Unparser.prototype.visitValueConverter = function visitValueConverter(converter) {
+      var args = converter.args,
+          length = args.length,
+          i;
 
-        for (i = 0; i < length; ++i) {
-          if (i !== 0) {
-            this.write(',');
-          }
+      this.write('(');
+      converter.expression.accept(this);
+      this.write('|' + converter.name);
 
-          elements[i].accept(this);
+      for (i = 0; i < length; ++i) {
+        this.write(' :');
+        args[i].accept(this);
+      }
+
+      this.write(')');
+    };
+
+    Unparser.prototype.visitAssign = function visitAssign(assign) {
+      assign.target.accept(this);
+      this.write('=');
+      assign.value.accept(this);
+    };
+
+    Unparser.prototype.visitConditional = function visitConditional(conditional) {
+      conditional.condition.accept(this);
+      this.write('?');
+      conditional.yes.accept(this);
+      this.write(':');
+      conditional.no.accept(this);
+    };
+
+    Unparser.prototype.visitAccessScope = function visitAccessScope(access) {
+      this.write(access.name);
+    };
+
+    Unparser.prototype.visitAccessMember = function visitAccessMember(access) {
+      access.object.accept(this);
+      this.write('.' + access.name);
+    };
+
+    Unparser.prototype.visitAccessKeyed = function visitAccessKeyed(access) {
+      access.object.accept(this);
+      this.write('[');
+      access.key.accept(this);
+      this.write(']');
+    };
+
+    Unparser.prototype.visitCallScope = function visitCallScope(call) {
+      this.write(call.name);
+      this.writeArgs(call.args);
+    };
+
+    Unparser.prototype.visitCallFunction = function visitCallFunction(call) {
+      call.func.accept(this);
+      this.writeArgs(call.args);
+    };
+
+    Unparser.prototype.visitCallMember = function visitCallMember(call) {
+      call.object.accept(this);
+      this.write('.' + call.name);
+      this.writeArgs(call.args);
+    };
+
+    Unparser.prototype.visitPrefix = function visitPrefix(prefix) {
+      this.write('(' + prefix.operation);
+      prefix.expression.accept(this);
+      this.write(')');
+    };
+
+    Unparser.prototype.visitBinary = function visitBinary(binary) {
+      this.write('(');
+      binary.left.accept(this);
+      this.write(binary.operation);
+      binary.right.accept(this);
+      this.write(')');
+    };
+
+    Unparser.prototype.visitLiteralPrimitive = function visitLiteralPrimitive(literal) {
+      this.write('' + literal.value);
+    };
+
+    Unparser.prototype.visitLiteralArray = function visitLiteralArray(literal) {
+      var elements = literal.elements,
+          length = elements.length,
+          i;
+
+      this.write('[');
+
+      for (i = 0; i < length; ++i) {
+        if (i !== 0) {
+          this.write(',');
         }
 
-        this.write(']');
+        elements[i].accept(this);
       }
-    }, {
-      key: 'visitLiteralObject',
-      value: function visitLiteralObject(literal) {
-        var keys = literal.keys,
-            values = literal.values,
-            length = keys.length,
-            i;
 
-        this.write('{');
+      this.write(']');
+    };
 
-        for (i = 0; i < length; ++i) {
-          if (i !== 0) {
-            this.write(',');
-          }
+    Unparser.prototype.visitLiteralObject = function visitLiteralObject(literal) {
+      var keys = literal.keys,
+          values = literal.values,
+          length = keys.length,
+          i;
 
-          this.write('\'' + keys[i] + '\':');
-          values[i].accept(this);
+      this.write('{');
+
+      for (i = 0; i < length; ++i) {
+        if (i !== 0) {
+          this.write(',');
         }
 
-        this.write('}');
+        this.write('\'' + keys[i] + '\':');
+        values[i].accept(this);
       }
-    }, {
-      key: 'visitLiteralString',
-      value: function visitLiteralString(literal) {
-        var escaped = literal.value.replace(/'/g, '\'');
-        this.write('\'' + escaped + '\'');
-      }
-    }], [{
-      key: 'unparse',
-      value: function unparse(expression) {
-        var buffer = [],
-            visitor = new Unparser(buffer);
 
-        expression.accept(visitor);
+      this.write('}');
+    };
 
-        return buffer.join('');
-      }
-    }]);
+    Unparser.prototype.visitLiteralString = function visitLiteralString(literal) {
+      var escaped = literal.value.replace(/'/g, '\'');
+      this.write('\'' + escaped + '\'');
+    };
 
     return Unparser;
   })();
