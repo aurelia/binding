@@ -1,3 +1,11 @@
+### 0.6.1 (2015-05-06)
+
+
+#### Bug Fixes
+
+* **property-observation:** better update when in OO mode ([2d8ad7d5](http://github.com/aurelia/binding/commit/2d8ad7d57a543b35be6f6cc5b4792f10e5a5ab30))
+
+
 ## 0.6.0 (2015-04-30)
 
 

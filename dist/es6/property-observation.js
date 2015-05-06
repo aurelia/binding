@@ -117,18 +117,19 @@ export class OoObjectObserver {
   handleChanges(changeRecords){
     var updates = {},
         observers = this.observers,
-        i = changeRecords.length;
+        change, observer;
 
-    while(i--) {
-      var change = changeRecords[i],
-          name = change.name;
+    for(var i = 0, ii = changeRecords.length; i < ii; ++i){
+      change = changeRecords[i];
+      updates[change.name] = change;
+    }
 
-      if(!(name in updates)){
-        var observer = observers[name];
-        updates[name] = true;
-        if(observer){
-          observer.trigger(change.object[name], change.oldValue);
-        }
+    for(var key in updates){
+      observer = observers[key],
+      change = updates[key];
+
+      if(observer){
+        observer.trigger(change.object[key], change.oldValue);
       }
     }
   }
