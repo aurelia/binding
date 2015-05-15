@@ -40,7 +40,7 @@ describe('element observation', () => {
     var el = createSvgUseElement(),
         observer = locator.getObserver(el, 'xlink:href');
     expect(observer instanceof XLinkAttributeObserver).toBe(true);
-    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "xlink:href" property is not supported.'));
+    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of a "use" element\'s "xlink:href" property is not supported.'));
     expect(observer.getValue()).toBe('#shape1');
     observer.setValue('#shape2');
     expect(observer.getValue()).toBe('#shape2');
@@ -50,7 +50,7 @@ describe('element observation', () => {
     var el = createSvgUseElement(),
         observer = locator.getObserver(el, 'foo:bar');
     expect(observer instanceof DataAttributeObserver).toBe(true);
-    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "foo:bar" property is not supported.'));
+    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of a "use" element\'s "foo:bar" property is not supported.'));
     expect(observer.getValue()).toBe('baz');
     observer.setValue('qux');
     expect(observer.getValue()).toBe('qux');
@@ -60,7 +60,7 @@ describe('element observation', () => {
     var el = createElement('<h1 data-foo="bar"></h1>'),
         observer = locator.getObserver(el, 'data-foo');
     expect(observer instanceof DataAttributeObserver).toBe(true);
-    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "data-foo" property is not supported.'));
+    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of a "H1" element\'s "data-foo" property is not supported.'));
     expect(observer.getValue()).toBe('bar');
     observer.setValue('baz');
     expect(observer.getValue()).toBe('baz');
@@ -70,7 +70,7 @@ describe('element observation', () => {
     var el = createElement('<h1 aria-hidden="true"></h1>'),
         observer = locator.getObserver(el, 'aria-hidden');
     expect(observer instanceof DataAttributeObserver).toBe(true);
-    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "aria-hidden" property is not supported.'));
+    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of a "H1" element\'s "aria-hidden" property is not supported.'));
     expect(observer.getValue()).toBe('true');
     observer.setValue('false');
     expect(observer.getValue()).toBe('false');
@@ -80,7 +80,7 @@ describe('element observation', () => {
     var el = createElement('<svg data-foo="bar"></svg>'),
         observer = locator.getObserver(el, 'data-foo');
     expect(observer instanceof DataAttributeObserver).toBe(true);
-    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "data-foo" property is not supported.'));
+    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of a "svg" element\'s "data-foo" property is not supported.'));
     expect(observer.getValue()).toBe('bar');
     observer.setValue('baz');
     expect(observer.getValue()).toBe('baz');
@@ -90,7 +90,7 @@ describe('element observation', () => {
     var el = createElement('<svg aria-hidden="true"></svg>'),
         observer = locator.getObserver(el, 'aria-hidden');
     expect(observer instanceof DataAttributeObserver).toBe(true);
-    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "aria-hidden" property is not supported.'));
+    expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of a "svg" element\'s "aria-hidden" property is not supported.'));
     expect(observer.getValue()).toBe('true');
     observer.setValue('false');
     expect(observer.getValue()).toBe('false');
@@ -147,7 +147,7 @@ describe('element observation', () => {
     for(i = 0; i < attrs.length; i++) {
       observer = locator.getObserver(el, attrs[i]);
       expect(observer instanceof StyleObserver).toBe(true);
-      expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of an Element\'s "' + attrs[i] + '" property is not supported.'));
+      expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of a "DIV" element\'s "' + attrs[i] + '" property is not supported.'));
 
       observer.setValue('width: 30px; height: 20px; background-color: red;');
       expect(observer.getValue()).toBe('width: 30px; height: 20px; background-color: red;');

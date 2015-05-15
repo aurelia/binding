@@ -22,6 +22,7 @@ import {
   hasDeclaredDependencies,
   ComputedPropertyObserver
 } from './computed-observation';
+import {isStandardSvgAttribute} from './svg';
 
 if(typeof Object.getPropertyDescriptor !== 'function'){
  Object.getPropertyDescriptor = function (subject, name) {
@@ -115,15 +116,16 @@ export class ObserverLocator {
       if (handler) {
         return new ValueAttributeObserver(obj, propertyName, handler);
       }
+      if (propertyName === 'style' || propertyName === 'css') {
+        return new StyleObserver(obj, propertyName);
+      }
       xlinkResult = /^xlink:(.+)$/.exec(propertyName);
       if (xlinkResult) {
         return new XLinkAttributeObserver(obj, propertyName, xlinkResult[1]);
       }
-      if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof SVGElement) {
+      if (/^\w+:|^data-|^aria-/.test(propertyName)
+        || obj instanceof SVGElement && isStandardSvgAttribute(obj.nodeName, propertyName)) {
         return new DataAttributeObserver(obj, propertyName);
-      }
-      if (propertyName === 'style' || propertyName === 'css') {
-        return new StyleObserver(obj, propertyName);
       }
     }
 
