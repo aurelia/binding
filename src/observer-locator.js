@@ -17,6 +17,7 @@ import {
   DataAttributeObserver,
   StyleObserver
 } from './element-observation';
+import {ClassObserver} from './class-observer';
 import {All} from 'aurelia-dependency-injection';
 import {
   hasDeclaredDependencies,
@@ -80,16 +81,19 @@ export class ObserverLocator {
   }
 
   getObserver(obj, propertyName){
-    var observersLookup = this.getObserversLookup(obj);
+    var observersLookup = this.getObserversLookup(obj), observer;
 
     if(propertyName in observersLookup){
       return observersLookup[propertyName];
     }
 
-    return observersLookup[propertyName] = this.createPropertyObserver(
-      obj,
-      propertyName
-      );
+    observer = this.createPropertyObserver(obj, propertyName);
+
+    if (!observer.doNotCache){
+      observersLookup[propertyName] = observer;
+    }
+
+    return observer;
   }
 
   getObservationAdapter(obj, propertyName, descriptor) {
@@ -106,6 +110,12 @@ export class ObserverLocator {
     var observerLookup, descriptor, handler, observationAdapter, xlinkResult;
 
     if(obj instanceof Element){
+      if (propertyName === 'class') {
+        return new ClassObserver(obj);
+      }
+      if (propertyName === 'style' || propertyName === 'css') {
+        return new StyleObserver(obj, propertyName);
+      }
       handler = this.eventManager.getElementHandler(obj, propertyName);
       if (propertyName === 'value' && obj.tagName.toLowerCase() === 'select') {
         return new SelectValueObserver(obj, handler, this);
@@ -115,9 +125,6 @@ export class ObserverLocator {
       }
       if (handler) {
         return new ValueAttributeObserver(obj, propertyName, handler);
-      }
-      if (propertyName === 'style' || propertyName === 'css') {
-        return new StyleObserver(obj, propertyName);
       }
       xlinkResult = /^xlink:(.+)$/.exec(propertyName);
       if (xlinkResult) {

@@ -3,6 +3,7 @@ import {
   DataAttributeObserver,
   StyleObserver
 } from '../src/element-observation';
+import {ClassObserver} from '../src/class-observer';
 import {
   createElement,
   createObserverLocator
@@ -85,6 +86,9 @@ describe('element observation', () => {
           continue;
         } else if (attributeName === 'style' || attributeName === 'css') {
           expect(observer instanceof StyleObserver).toBe(true);
+          continue;
+        } else if (attributeName === 'class') {
+          expect(observer instanceof ClassObserver).toBe(true);
           continue;
         } else {
           expect(observer instanceof DataAttributeObserver).toBe(true);
