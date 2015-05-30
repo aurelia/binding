@@ -64,9 +64,9 @@ class DefaultEventStrategy {
 
   subscribe(target, targetEvent, callback, delegate){
     if(delegate){
-      return this.subscribeToDirectEvent(target, targetEvent, callback);
+      return this.subscribeToDelegatedEvent(target, targetEvent, callback);
     }else{
-      return this.subscribeToDelegatedEvent(target,  targetEvent, callback);
+      return this.subscribeToDirectEvent(target, targetEvent, callback);
     }
   }
 }
