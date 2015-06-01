@@ -221,7 +221,7 @@ export class UndefinedPropertyObserver {
     // get the actual observer.
     observerLocator = this.owner.observerLocator;
     delete this.owner.observers[this.propertyName];
-    delete observerLocator.getObserversLookup(this.obj, observerLocator)[this.propertyName];
+    delete observerLocator.getOrCreateObserversLookup(this.obj, observerLocator)[this.propertyName];
     this.actual = observerLocator.getObserver(this.obj, this.propertyName);
 
     // attach any existing callbacks to the actual observer.

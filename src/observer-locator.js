@@ -37,21 +37,6 @@ if(typeof Object.getPropertyDescriptor !== 'function'){
   };
 }
 
-function createObserversLookup(obj) {
-  var value = {};
-
-  try{
-    Object.defineProperty(obj, "__observers__", {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: value
-    });
-  }catch(_){}
-
-  return value;
-}
-
 function createObserverLookup(obj, observerLocator) {
   var value = new OoObjectObserver(obj, observerLocator);
 
@@ -76,24 +61,44 @@ export class ObserverLocator {
     this.observationAdapters = observationAdapters;
   }
 
-  getObserversLookup(obj){
-    return obj.__observers__ || createObserversLookup(obj);
-  }
-
   getObserver(obj, propertyName){
-    var observersLookup = this.getObserversLookup(obj), observer;
+    var observersLookup = obj.__observers__,
+        observer;
 
-    if(propertyName in observersLookup){
+    if(observersLookup && propertyName in observersLookup){
       return observersLookup[propertyName];
     }
 
     observer = this.createPropertyObserver(obj, propertyName);
 
     if (!observer.doNotCache){
+      if(observersLookup === undefined){
+        observersLookup = this.getOrCreateObserversLookup(obj);
+      }
+
       observersLookup[propertyName] = observer;
     }
 
     return observer;
+  }
+
+  getOrCreateObserversLookup(obj){
+    return obj.__observers__ || this.createObserversLookup(obj);
+  }
+
+  createObserversLookup(obj) {
+    var value = {};
+
+    try{
+      Object.defineProperty(obj, "__observers__", {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: value
+      });
+    }catch(_){}
+
+    return value;
   }
 
   getObservationAdapter(obj, propertyName, descriptor) {
@@ -142,7 +147,12 @@ export class ObserverLocator {
       return new ComputedPropertyObserver(obj, propertyName, descriptor, this)
     }
 
-    if(descriptor && (descriptor.get || descriptor.set)){
+    let existingGetterOrSetter;
+    if(descriptor && (existingGetterOrSetter = descriptor.get || descriptor.set)){
+      if(existingGetterOrSetter.getObserver){
+        return existingGetterOrSetter.getObserver(obj);
+      }
+
       // attempt to use an adapter before resorting to dirty checking.
       observationAdapter = this.getObservationAdapter(obj, propertyName, descriptor);
       if (observationAdapter)

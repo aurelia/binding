@@ -104,6 +104,55 @@ describe('ObserverLocator', () => {
     expect(observer instanceof DirtyCheckProperty).toBe(true);
   });
 
+  it('uses custom getObserver when provided on the descriptor\'s getter', () => {
+    var obj = {},
+        foo,
+        customObserver = {},
+        observer,
+        descriptor = {
+          get: function() { return foo; },
+          set: function(newValue) { foo = newValue; },
+          enumerable: true,
+          configurable: true
+        };
+
+    descriptor.get.getObserver = function(obj){
+      customObserver.target = obj;
+      return customObserver;
+    };
+
+    Object.defineProperty(obj, 'foo', descriptor);
+
+    observer = locator.getObserver(obj, 'foo');
+
+    expect(observer).toBe(customObserver);
+    expect(observer.target).toBe(obj);
+  });
+
+  it('uses custom getObserver when provided on the descriptor\'s setter without getter', () => {
+    var obj = {},
+        foo,
+        customObserver = {},
+        observer,
+        descriptor = {
+          set: function(newValue) { foo = newValue; },
+          enumerable: true,
+          configurable: true
+        };
+
+    descriptor.set.getObserver = function(obj){
+      customObserver.target = obj;
+      return customObserver;
+    };
+
+    Object.defineProperty(obj, 'foo', descriptor);
+
+    observer = locator.getObserver(obj, 'foo');
+
+    expect(observer).toBe(customObserver);
+    expect(observer.target).toBe(obj);
+  });
+
   it('uses Adapter for for defined, complex properties on pojos that adapter canObserve', () => {
     var obj = { handleWithAdapter: true }, foo, observer, adapter, descriptor;
 
