@@ -478,8 +478,8 @@ export class Binary extends Expression {
     var left = this.left.evaluate(scope);
 
     switch (this.operation) {
-      case '&&': return !!left && !!this.right.evaluate(scope);
-      case '||': return !!left || !!this.right.evaluate(scope);
+      case '&&': return left && this.right.evaluate(scope);
+      case '||': return left || this.right.evaluate(scope);
     }
 
     var right = this.right.evaluate(scope);
