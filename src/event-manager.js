@@ -105,6 +105,14 @@ export class EventManager {
       }
     });
 
+    this.registerElementConfig({
+      tagName:'scrollable element',
+      properties: {
+        scrollTop:['scroll'],
+        scrollLeft:['scroll']
+      }
+    });
+
     this.defaultEventStrategy = new DefaultEventStrategy();
   }
 
@@ -151,6 +159,9 @@ export class EventManager {
       }
       if (propertyName === 'textContent' || propertyName === 'innerHTML'){
         return lookup['content editable']['value'];
+      }
+      if (propertyName === 'scrollTop' || propertyName === 'scrollLeft'){
+        return lookup['scrollable element'][propertyName];
       }
     }
 
