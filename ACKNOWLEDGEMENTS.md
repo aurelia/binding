@@ -4,6 +4,8 @@ Some utility functions in this library were borrowed from [https://github.com/Po
 
 Also, the expression parser is a highly altered JS port of the Angular Dart parser. Below you will find the required attribution.
 
+A modified version of [classList.js](https://github.com/eligrey/classList.js) is included.  Thanks to all the contributors of that repository.
+
 ---
 
 // Copyright (c) 2014 The Polymer Authors. All rights reserved.
