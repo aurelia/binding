@@ -100,21 +100,23 @@ class ArrayObserveObserver {
   constructor(array){
     this.array = array;
     this.callbacks = [];
-    this.observing = false;
   }
 
   subscribe(callback){
     var callbacks = this.callbacks;
 
-    callbacks.push(callback);
-
-    if(!this.observing){
-      this.observing = true;
-      Array.observe(this.array, changes => this.handleChanges(changes));
+    if(callbacks.length === 0){
+      this.handler = this.handleChanges.bind(this);
+      Array.observe(this.array, this.handler);
     }
 
-    return function(){
+    callbacks.push(callback);
+
+    return () => {
       callbacks.splice(callbacks.indexOf(callback), 1);
+      if (callbacks.length === 0) {
+        Array.unobserve(this.array, this.handler)
+      }
     };
   }
 
