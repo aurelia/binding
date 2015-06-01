@@ -36,6 +36,14 @@ describe('EventManager', () => {
       expect(em.getElementHandler(element, 'id')).toBeNull();
     });
 
+    it('handles scrollTop and scrollLeft properties', () => {
+      var element = createElement('<div></div>');
+
+      expect(em.getElementHandler(element, 'scrollTop')).not.toBeNull();
+      expect(em.getElementHandler(element, 'scrollLeft')).not.toBeNull();
+      expect(em.getElementHandler(element, 'id')).toBeNull();
+    });
+
     it('can subscribe', () => {
       var element = createElement('<input value="foo">'),
           handler = em.getElementHandler(element, 'value'),
