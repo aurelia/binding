@@ -2,7 +2,7 @@ export class NameExpression {
   constructor(name, mode){
     this.property = name;
     this.discrete = true;
-    this.mode = mode.replace(/-([a-z])/g, (m, w) => w.toUpperCase());
+    this.mode = mode;
   }
 
   createBinding(target){
