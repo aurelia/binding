@@ -1,10 +1,10 @@
 'use strict';
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
 exports.__esModule = true;
 exports.hasDeclaredDependencies = hasDeclaredDependencies;
 exports.declarePropertyDependencies = declarePropertyDependencies;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 var ComputedPropertyObserver = (function () {
   function ComputedPropertyObserver(obj, propertyName, descriptor, observerLocator) {
@@ -36,9 +36,8 @@ var ComputedPropertyObserver = (function () {
 
   ComputedPropertyObserver.prototype.evaluate = function evaluate() {
     var newValue = this.getValue();
-    if (this.oldValue === newValue) {
-      return;
-    }this.trigger(newValue, this.oldValue);
+    if (this.oldValue === newValue) return;
+    this.trigger(newValue, this.oldValue);
     this.oldValue = newValue;
   };
 

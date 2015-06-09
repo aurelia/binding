@@ -1,14 +1,14 @@
 'use strict';
 
-var _interopRequireDefault = function (obj) { return obj && obj.__esModule ? obj : { 'default': obj }; };
-
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
 exports.__esModule = true;
 
-var _core = require('core-js');
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var _core2 = _interopRequireDefault(_core);
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _coreJs = require('core-js');
+
+var _coreJs2 = _interopRequireDefault(_coreJs);
 
 var SetterObserver = (function () {
   function SetterObserver(taskQueue, obj, propertyName) {
@@ -95,80 +95,13 @@ var SetterObserver = (function () {
 
 exports.SetterObserver = SetterObserver;
 
-var OoObjectObserver = (function () {
-  function OoObjectObserver(obj, observerLocator) {
-    _classCallCheck(this, OoObjectObserver);
-
-    this.obj = obj;
-    this.observers = {};
-    this.observerLocator = observerLocator;
-  }
-
-  OoObjectObserver.prototype.subscribe = function subscribe(propertyObserver, callback) {
-    var _this = this;
-
-    var callbacks = propertyObserver.callbacks;
-    callbacks.push(callback);
-
-    if (!this.observing) {
-      this.observing = true;
-      try {
-        Object.observe(this.obj, function (changes) {
-          return _this.handleChanges(changes);
-        }, ['update', 'add']);
-      } catch (_) {}
-    }
-
-    return function () {
-      callbacks.splice(callbacks.indexOf(callback), 1);
-    };
-  };
-
-  OoObjectObserver.prototype.getObserver = function getObserver(propertyName, descriptor) {
-    var propertyObserver = this.observers[propertyName];
-    if (!propertyObserver) {
-      if (descriptor) {
-        propertyObserver = this.observers[propertyName] = new OoPropertyObserver(this, this.obj, propertyName);
-      } else {
-        propertyObserver = this.observers[propertyName] = new UndefinedPropertyObserver(this, this.obj, propertyName);
-      }
-    }
-    return propertyObserver;
-  };
-
-  OoObjectObserver.prototype.handleChanges = function handleChanges(changeRecords) {
-    var updates = {},
-        observers = this.observers,
-        change,
-        observer;
-
-    for (var i = 0, ii = changeRecords.length; i < ii; ++i) {
-      change = changeRecords[i];
-      updates[change.name] = change;
-    }
-
-    for (var key in updates) {
-      observer = observers[key], change = updates[key];
-
-      if (observer) {
-        observer.trigger(change.object[key], change.oldValue);
-      }
-    }
-  };
-
-  return OoObjectObserver;
-})();
-
-exports.OoObjectObserver = OoObjectObserver;
-
 var OoPropertyObserver = (function () {
-  function OoPropertyObserver(owner, obj, propertyName) {
+  function OoPropertyObserver(obj, propertyName, subscribe) {
     _classCallCheck(this, OoPropertyObserver);
 
-    this.owner = owner;
     this.obj = obj;
     this.propertyName = propertyName;
-    this.callbacks = [];
+    this.subscribe = subscribe;
   }
 
   OoPropertyObserver.prototype.getValue = function getValue() {
@@ -179,23 +112,105 @@ var OoPropertyObserver = (function () {
     this.obj[this.propertyName] = newValue;
   };
 
-  OoPropertyObserver.prototype.trigger = function trigger(newValue, oldValue) {
-    var callbacks = this.callbacks,
-        i = callbacks.length;
-
-    while (i--) {
-      callbacks[i](newValue, oldValue);
-    }
-  };
-
-  OoPropertyObserver.prototype.subscribe = function subscribe(callback) {
-    return this.owner.subscribe(this, callback);
-  };
-
   return OoPropertyObserver;
 })();
 
 exports.OoPropertyObserver = OoPropertyObserver;
+
+var OoObjectObserver = (function () {
+  function OoObjectObserver(obj, observerLocator) {
+    _classCallCheck(this, OoObjectObserver);
+
+    this.obj = obj;
+    this.observerLocator = observerLocator;
+    this.observers = {};
+    this.callbacks = {};
+    this.callbackCount = 0;
+  }
+
+  OoObjectObserver.prototype.subscribe = function subscribe(propertyName, callback) {
+    if (this.callbacks[propertyName]) {
+      this.callbacks[propertyName].push(callback);
+    } else {
+      this.callbacks[propertyName] = [callback];
+      this.callbacks[propertyName].oldValue = this.obj[propertyName];
+    }
+
+    if (this.callbackCount === 0) {
+      this.handler = this.handleChanges.bind(this);
+      Object.observe(this.obj, this.handler, ['update', 'add']);
+    }
+
+    this.callbackCount++;
+
+    return this.unsubscribe.bind(this, propertyName, callback);
+  };
+
+  OoObjectObserver.prototype.unsubscribe = function unsubscribe(propertyName, callback) {
+    var callbacks = this.callbacks[propertyName],
+        index = callbacks.indexOf(callback);
+    if (index === -1) {
+      return;
+    }
+
+    callbacks.splice(index, 1);
+    if (callbacks.count = 0) {
+      callbacks.oldValue = null;
+      this.callbacks[propertyName] = null;
+    }
+
+    this.callbackCount--;
+    if (this.callbackCount === 0) {
+      Object.unobserve(this.obj, this.handler);
+    }
+  };
+
+  OoObjectObserver.prototype.getObserver = function getObserver(propertyName, descriptor) {
+    var propertyObserver = this.observers[propertyName];
+    if (!propertyObserver) {
+      if (descriptor) {
+        propertyObserver = this.observers[propertyName] = new OoPropertyObserver(this.obj, propertyName, this.subscribe.bind(this, propertyName));
+      } else {
+        propertyObserver = this.observers[propertyName] = new UndefinedPropertyObserver(this, this.obj, propertyName);
+      }
+    }
+    return propertyObserver;
+  };
+
+  OoObjectObserver.prototype.handleChanges = function handleChanges(changes) {
+    var properties = {},
+        i,
+        ii,
+        change,
+        propertyName,
+        oldValue,
+        newValue,
+        callbacks;
+
+    for (i = 0, ii = changes.length; i < ii; i++) {
+      change = changes[i];
+      properties[change.name] = change;
+    }
+
+    for (name in properties) {
+      callbacks = this.callbacks[name];
+      if (!callbacks) {
+        continue;
+      }
+      change = properties[name];
+      newValue = change.object[name];
+      oldValue = change.oldValue;
+
+      for (i = 0, ii = callbacks.length; i < ii; i++) {
+        callbacks[i](newValue, oldValue);
+      }
+    }
+  };
+
+  return OoObjectObserver;
+})();
+
+exports.OoObjectObserver = OoObjectObserver;
 
 var UndefinedPropertyObserver = (function () {
   function UndefinedPropertyObserver(owner, obj, propertyName) {
@@ -205,7 +220,6 @@ var UndefinedPropertyObserver = (function () {
     this.obj = obj;
     this.propertyName = propertyName;
     this.callbackMap = new Map();
-    this.callbacks = [];
   }
 
   UndefinedPropertyObserver.prototype.getValue = function getValue() {
@@ -257,7 +271,7 @@ var UndefinedPropertyObserver = (function () {
 
     observerLocator = this.owner.observerLocator;
     delete this.owner.observers[this.propertyName];
-    delete observerLocator.getObserversLookup(this.obj, observerLocator)[this.propertyName];
+    delete observerLocator.getOrCreateObserversLookup(this.obj, observerLocator)[this.propertyName];
     this.actual = observerLocator.getObserver(this.obj, this.propertyName);
 
     for (var _iterator2 = this.callbackMap.keys(), _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
@@ -275,7 +289,7 @@ var UndefinedPropertyObserver = (function () {
   };
 
   UndefinedPropertyObserver.prototype.subscribe = function subscribe(callback) {
-    var _this2 = this;
+    var _this = this;
 
     if (!this.actual) {
       this.getObserver();
@@ -286,15 +300,15 @@ var UndefinedPropertyObserver = (function () {
     }
 
     if (!this.subscription) {
-      this.subscription = this.owner.subscribe(this);
+      this.subscription = this.owner.subscribe(this.propertyName, this.trigger.bind(this));
     }
 
     this.callbackMap.set(callback, null);
 
     return function () {
-      var actualDispose = _this2.callbackMap.get(callback);
+      var actualDispose = _this.callbackMap.get(callback);
       if (actualDispose) actualDispose();
-      _this2.callbackMap['delete'](callback);
+      _this.callbackMap['delete'](callback);
     };
   };
 

@@ -1,9 +1,9 @@
 define(['exports'], function (exports) {
   'use strict';
 
-  var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
   exports.__esModule = true;
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   var DefaultEventStrategy = (function () {
     function DefaultEventStrategy() {
@@ -73,9 +73,9 @@ define(['exports'], function (exports) {
 
     DefaultEventStrategy.prototype.subscribe = function subscribe(target, targetEvent, callback, delegate) {
       if (delegate) {
-        return this.subscribeToDirectEvent(target, targetEvent, callback);
-      } else {
         return this.subscribeToDelegatedEvent(target, targetEvent, callback);
+      } else {
+        return this.subscribeToDirectEvent(target, targetEvent, callback);
       }
     };
 
@@ -114,7 +114,16 @@ define(['exports'], function (exports) {
       this.registerElementConfig({
         tagName: 'content editable',
         properties: {
-          value: ['change', 'input', 'blur', 'keyup', 'paste'] }
+          value: ['change', 'input', 'blur', 'keyup', 'paste']
+        }
+      });
+
+      this.registerElementConfig({
+        tagName: 'scrollable element',
+        properties: {
+          scrollTop: ['scroll'],
+          scrollLeft: ['scroll']
+        }
       });
 
       this.defaultEventStrategy = new DefaultEventStrategy();
@@ -165,7 +174,10 @@ define(['exports'], function (exports) {
           return lookup[tagName][propertyName];
         }
         if (propertyName === 'textContent' || propertyName === 'innerHTML') {
-          return lookup['content editable'].value;
+          return lookup['content editable']['value'];
+        }
+        if (propertyName === 'scrollTop' || propertyName === 'scrollLeft') {
+          return lookup['scrollable element'][propertyName];
         }
       }
 

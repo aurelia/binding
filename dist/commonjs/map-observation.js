@@ -1,21 +1,21 @@
 'use strict';
 
-var _interopRequireDefault = function (obj) { return obj && obj.__esModule ? obj : { 'default': obj }; };
-
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
-var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
-
 exports.__esModule = true;
 exports.getMapObserver = getMapObserver;
 
-var _core = require('core-js');
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var _core2 = _interopRequireDefault(_core);
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-var _getChangeRecords = require('./map-change-records');
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
 
-var _ModifyCollectionObserver2 = require('./collection-observation');
+var _coreJs = require('core-js');
+
+var _coreJs2 = _interopRequireDefault(_coreJs);
+
+var _mapChangeRecords = require('./map-change-records');
+
+var _collectionObservation = require('./collection-observation');
 
 var mapProto = Map.prototype;
 
@@ -35,10 +35,10 @@ var ModifyMapObserver = (function (_ModifyCollectionObserver) {
   ModifyMapObserver.create = function create(taskQueue, map) {
     var observer = new ModifyMapObserver(taskQueue, map);
 
-    map.set = function () {
+    map['set'] = function () {
       var oldValue = map.get(arguments[0]);
       var type = oldValue ? 'update' : 'add';
-      var methodCallResult = mapProto.set.apply(map, arguments);
+      var methodCallResult = mapProto['set'].apply(map, arguments);
       observer.addChangeRecord({
         type: type,
         object: map,
@@ -60,8 +60,8 @@ var ModifyMapObserver = (function (_ModifyCollectionObserver) {
       return methodCallResult;
     };
 
-    map.clear = function () {
-      var methodCallResult = mapProto.clear.apply(map, arguments);
+    map['clear'] = function () {
+      var methodCallResult = mapProto['clear'].apply(map, arguments);
       observer.addChangeRecord({
         type: 'clear',
         object: map
@@ -73,4 +73,4 @@ var ModifyMapObserver = (function (_ModifyCollectionObserver) {
   };
 
   return ModifyMapObserver;
-})(_ModifyCollectionObserver2.ModifyCollectionObserver);
+})(_collectionObservation.ModifyCollectionObserver);

@@ -1,7 +1,13 @@
 System.register(['./environment', './array-change-records', './collection-observation'], function (_export) {
-  var hasArrayObserve, projectArraySplices, ModifyCollectionObserver, CollectionLengthObserver, _classCallCheck, _inherits, arrayProto, ModifyArrayObserver, ArrayObserveObserver;
+  'use strict';
+
+  var hasArrayObserve, projectArraySplices, ModifyCollectionObserver, CollectionLengthObserver, arrayProto, ModifyArrayObserver, ArrayObserveObserver;
 
   _export('getArrayObserver', getArrayObserver);
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
 
   function getArrayObserver(taskQueue, array) {
     if (hasArrayObserve) {
@@ -21,12 +27,6 @@ System.register(['./environment', './array-change-records', './collection-observ
       CollectionLengthObserver = _collectionObservation.CollectionLengthObserver;
     }],
     execute: function () {
-      'use strict';
-
-      _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
-      _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
-
       arrayProto = Array.prototype;
 
       ModifyArrayObserver = (function (_ModifyCollectionObserver) {
@@ -41,8 +41,8 @@ System.register(['./environment', './array-change-records', './collection-observ
         ModifyArrayObserver.create = function create(taskQueue, array) {
           var observer = new ModifyArrayObserver(taskQueue, array);
 
-          array.pop = function () {
-            var methodCallResult = arrayProto.pop.apply(array, arguments);
+          array['pop'] = function () {
+            var methodCallResult = arrayProto['pop'].apply(array, arguments);
             observer.addChangeRecord({
               type: 'delete',
               object: array,
@@ -52,8 +52,8 @@ System.register(['./environment', './array-change-records', './collection-observ
             return methodCallResult;
           };
 
-          array.push = function () {
-            var methodCallResult = arrayProto.push.apply(array, arguments);
+          array['push'] = function () {
+            var methodCallResult = arrayProto['push'].apply(array, arguments);
             observer.addChangeRecord({
               type: 'splice',
               object: array,
@@ -64,15 +64,15 @@ System.register(['./environment', './array-change-records', './collection-observ
             return methodCallResult;
           };
 
-          array.reverse = function () {
+          array['reverse'] = function () {
             var oldArray = array.slice();
-            var methodCallResult = arrayProto.reverse.apply(array, arguments);
+            var methodCallResult = arrayProto['reverse'].apply(array, arguments);
             observer.reset(oldArray);
             return methodCallResult;
           };
 
-          array.shift = function () {
-            var methodCallResult = arrayProto.shift.apply(array, arguments);
+          array['shift'] = function () {
+            var methodCallResult = arrayProto['shift'].apply(array, arguments);
             observer.addChangeRecord({
               type: 'delete',
               object: array,
@@ -82,15 +82,15 @@ System.register(['./environment', './array-change-records', './collection-observ
             return methodCallResult;
           };
 
-          array.sort = function () {
+          array['sort'] = function () {
             var oldArray = array.slice();
-            var methodCallResult = arrayProto.sort.apply(array, arguments);
+            var methodCallResult = arrayProto['sort'].apply(array, arguments);
             observer.reset(oldArray);
             return methodCallResult;
           };
 
-          array.splice = function () {
-            var methodCallResult = arrayProto.splice.apply(array, arguments);
+          array['splice'] = function () {
+            var methodCallResult = arrayProto['splice'].apply(array, arguments);
             observer.addChangeRecord({
               type: 'splice',
               object: array,
@@ -101,8 +101,8 @@ System.register(['./environment', './array-change-records', './collection-observ
             return methodCallResult;
           };
 
-          array.unshift = function () {
-            var methodCallResult = arrayProto.unshift.apply(array, arguments);
+          array['unshift'] = function () {
+            var methodCallResult = arrayProto['unshift'].apply(array, arguments);
             observer.addChangeRecord({
               type: 'splice',
               object: array,
@@ -125,7 +125,6 @@ System.register(['./environment', './array-change-records', './collection-observ
 
           this.array = array;
           this.callbacks = [];
-          this.observing = false;
         }
 
         ArrayObserveObserver.prototype.subscribe = function subscribe(callback) {
@@ -133,17 +132,18 @@ System.register(['./environment', './array-change-records', './collection-observ
 
           var callbacks = this.callbacks;
 
-          callbacks.push(callback);
-
-          if (!this.observing) {
-            this.observing = true;
-            Array.observe(this.array, function (changes) {
-              return _this.handleChanges(changes);
-            });
+          if (callbacks.length === 0) {
+            this.handler = this.handleChanges.bind(this);
+            Array.observe(this.array, this.handler);
           }
+
+          callbacks.push(callback);
 
           return function () {
             callbacks.splice(callbacks.indexOf(callback), 1);
+            if (callbacks.length === 0) {
+              Array.unobserve(_this.array, _this.handler);
+            }
           };
         };
 

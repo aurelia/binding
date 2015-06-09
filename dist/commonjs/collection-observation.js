@@ -1,12 +1,12 @@
 'use strict';
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
 exports.__esModule = true;
 
-var _calcSplices$projectArraySplices = require('./array-change-records');
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-var _getChangeRecords = require('./map-change-records');
+var _arrayChangeRecords = require('./array-change-records');
+
+var _mapChangeRecords = require('./map-change-records');
 
 var ModifyCollectionObserver = (function () {
   function ModifyCollectionObserver(taskQueue, collection) {
@@ -73,15 +73,15 @@ var ModifyCollectionObserver = (function () {
     if (i) {
       if (oldCollection) {
         if (this.collection instanceof Map) {
-          records = _getChangeRecords.getChangeRecords(oldCollection);
+          records = (0, _mapChangeRecords.getChangeRecords)(oldCollection);
         } else {
-          records = _calcSplices$projectArraySplices.calcSplices(this.collection, 0, this.collection.length, oldCollection, 0, oldCollection.length);
+          records = (0, _arrayChangeRecords.calcSplices)(this.collection, 0, this.collection.length, oldCollection, 0, oldCollection.length);
         }
       } else {
         if (this.collection instanceof Map) {
           records = changeRecords;
         } else {
-          records = _calcSplices$projectArraySplices.projectArraySplices(this.collection, changeRecords);
+          records = (0, _arrayChangeRecords.projectArraySplices)(this.collection, changeRecords);
         }
       }
 

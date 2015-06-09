@@ -1,23 +1,23 @@
 'use strict';
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
 exports.__esModule = true;
 
-var _Lexer$Token = require('./lexer');
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString = require('./ast');
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-var EOF = new _Lexer$Token.Token(-1, null);
+var _lexer = require('./lexer');
+
+var _ast = require('./ast');
+
+var EOF = new _lexer.Token(-1, null);
 
 var Parser = (function () {
   function Parser() {
     _classCallCheck(this, Parser);
 
     this.cache = {};
-    this.lexer = new _Lexer$Token.Lexer();
+    this.lexer = new _lexer.Lexer();
   }
 
   Parser.prototype.parse = function parse(input) {
@@ -60,12 +60,12 @@ var ParserImplementation = (function () {
         isChain = true;
       }
 
-      if (isChain && expr instanceof _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.ValueConverter) {
+      if (isChain && expr instanceof _ast.ValueConverter) {
         this.error('cannot have a value converter in a chain');
       }
     }
 
-    return expressions.length === 1 ? expressions[0] : new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.Chain(expressions);
+    return expressions.length === 1 ? expressions[0] : new _ast.Chain(expressions);
   };
 
   ParserImplementation.prototype.parseValueConverter = function parseValueConverter() {
@@ -81,7 +81,7 @@ var ParserImplementation = (function () {
         args.push(this.parseExpression());
       }
 
-      result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.ValueConverter(result, name, args, [result].concat(args));
+      result = new _ast.ValueConverter(result, name, args, [result].concat(args));
     }
 
     return result;
@@ -100,7 +100,7 @@ var ParserImplementation = (function () {
       }
 
       this.expect('=');
-      result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.Assign(result, this.parseConditional());
+      result = new _ast.Assign(result, this.parseConditional());
     }
 
     return result;
@@ -121,7 +121,7 @@ var ParserImplementation = (function () {
       }
 
       var no = this.parseExpression();
-      result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.Conditional(result, yes, no);
+      result = new _ast.Conditional(result, yes, no);
     }
 
     return result;
@@ -131,7 +131,7 @@ var ParserImplementation = (function () {
     var result = this.parseLogicalAnd();
 
     while (this.optional('||')) {
-      result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.Binary('||', result, this.parseLogicalAnd());
+      result = new _ast.Binary('||', result, this.parseLogicalAnd());
     }
 
     return result;
@@ -141,7 +141,7 @@ var ParserImplementation = (function () {
     var result = this.parseEquality();
 
     while (this.optional('&&')) {
-      result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.Binary('&&', result, this.parseEquality());
+      result = new _ast.Binary('&&', result, this.parseEquality());
     }
 
     return result;
@@ -152,13 +152,13 @@ var ParserImplementation = (function () {
 
     while (true) {
       if (this.optional('==')) {
-        result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.Binary('==', result, this.parseRelational());
+        result = new _ast.Binary('==', result, this.parseRelational());
       } else if (this.optional('!=')) {
-        result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.Binary('!=', result, this.parseRelational());
+        result = new _ast.Binary('!=', result, this.parseRelational());
       } else if (this.optional('===')) {
-        result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.Binary('===', result, this.parseRelational());
+        result = new _ast.Binary('===', result, this.parseRelational());
       } else if (this.optional('!==')) {
-        result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.Binary('!==', result, this.parseRelational());
+        result = new _ast.Binary('!==', result, this.parseRelational());
       } else {
         return result;
       }
@@ -170,13 +170,13 @@ var ParserImplementation = (function () {
 
     while (true) {
       if (this.optional('<')) {
-        result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.Binary('<', result, this.parseAdditive());
+        result = new _ast.Binary('<', result, this.parseAdditive());
       } else if (this.optional('>')) {
-        result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.Binary('>', result, this.parseAdditive());
+        result = new _ast.Binary('>', result, this.parseAdditive());
       } else if (this.optional('<=')) {
-        result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.Binary('<=', result, this.parseAdditive());
+        result = new _ast.Binary('<=', result, this.parseAdditive());
       } else if (this.optional('>=')) {
-        result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.Binary('>=', result, this.parseAdditive());
+        result = new _ast.Binary('>=', result, this.parseAdditive());
       } else {
         return result;
       }
@@ -188,9 +188,9 @@ var ParserImplementation = (function () {
 
     while (true) {
       if (this.optional('+')) {
-        result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.Binary('+', result, this.parseMultiplicative());
+        result = new _ast.Binary('+', result, this.parseMultiplicative());
       } else if (this.optional('-')) {
-        result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.Binary('-', result, this.parseMultiplicative());
+        result = new _ast.Binary('-', result, this.parseMultiplicative());
       } else {
         return result;
       }
@@ -202,11 +202,11 @@ var ParserImplementation = (function () {
 
     while (true) {
       if (this.optional('*')) {
-        result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.Binary('*', result, this.parsePrefix());
+        result = new _ast.Binary('*', result, this.parsePrefix());
       } else if (this.optional('%')) {
-        result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.Binary('%', result, this.parsePrefix());
+        result = new _ast.Binary('%', result, this.parsePrefix());
       } else if (this.optional('/')) {
-        result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.Binary('/', result, this.parsePrefix());
+        result = new _ast.Binary('/', result, this.parsePrefix());
       } else {
         return result;
       }
@@ -217,9 +217,9 @@ var ParserImplementation = (function () {
     if (this.optional('+')) {
       return this.parsePrefix();
     } else if (this.optional('-')) {
-      return new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.Binary('-', new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.LiteralPrimitive(0), this.parsePrefix());
+      return new _ast.Binary('-', new _ast.LiteralPrimitive(0), this.parsePrefix());
     } else if (this.optional('!')) {
-      return new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.PrefixNot('!', this.parsePrefix());
+      return new _ast.PrefixNot('!', this.parsePrefix());
     } else {
       return this.parseAccessOrCallMember();
     }
@@ -237,18 +237,18 @@ var ParserImplementation = (function () {
         if (this.optional('(')) {
           var args = this.parseExpressionList(')');
           this.expect(')');
-          result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.CallMember(result, name, args);
+          result = new _ast.CallMember(result, name, args);
         } else {
-          result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.AccessMember(result, name);
+          result = new _ast.AccessMember(result, name);
         }
       } else if (this.optional('[')) {
         var key = this.parseExpression();
         this.expect(']');
-        result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.AccessKeyed(result, key);
+        result = new _ast.AccessKeyed(result, key);
       } else if (this.optional('(')) {
         var args = this.parseExpressionList(')');
         this.expect(')');
-        result = new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.CallFunction(result, args);
+        result = new _ast.CallFunction(result, args);
       } else {
         return result;
       }
@@ -261,15 +261,15 @@ var ParserImplementation = (function () {
       this.expect(')');
       return result;
     } else if (this.optional('null') || this.optional('undefined')) {
-      return new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.LiteralPrimitive(null);
+      return new _ast.LiteralPrimitive(null);
     } else if (this.optional('true')) {
-      return new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.LiteralPrimitive(true);
+      return new _ast.LiteralPrimitive(true);
     } else if (this.optional('false')) {
-      return new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.LiteralPrimitive(false);
+      return new _ast.LiteralPrimitive(false);
     } else if (this.optional('[')) {
       var elements = this.parseExpressionList(']');
       this.expect(']');
-      return new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.LiteralArray(elements);
+      return new _ast.LiteralArray(elements);
     } else if (this.peek.text == '{') {
       return this.parseObject();
     } else if (this.peek.key != null) {
@@ -277,7 +277,7 @@ var ParserImplementation = (function () {
     } else if (this.peek.value != null) {
       var value = this.peek.value;
       this.advance();
-      return isNaN(value) ? new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.LiteralString(value) : new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.LiteralPrimitive(value);
+      return isNaN(value) ? new _ast.LiteralString(value) : new _ast.LiteralPrimitive(value);
     } else if (this.index >= this.tokens.length) {
       throw new Error('Unexpected end of expression: ' + this.input);
     } else {
@@ -291,12 +291,12 @@ var ParserImplementation = (function () {
     this.advance();
 
     if (!this.optional('(')) {
-      return new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.AccessScope(name);
+      return new _ast.AccessScope(name);
     }
 
     var args = this.parseExpressionList(')');
     this.expect(')');
-    return new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.CallScope(name, args);
+    return new _ast.CallScope(name, args);
   };
 
   ParserImplementation.prototype.parseObject = function parseObject() {
@@ -319,7 +319,7 @@ var ParserImplementation = (function () {
 
     this.expect('}');
 
-    return new _Expression$ArrayOfExpression$Chain$ValueConverter$Assign$Conditional$AccessScope$AccessMember$AccessKeyed$CallScope$CallFunction$CallMember$PrefixNot$Binary$LiteralPrimitive$LiteralArray$LiteralObject$LiteralString.LiteralObject(keys, values);
+    return new _ast.LiteralObject(keys, values);
   };
 
   ParserImplementation.prototype.parseExpressionList = function parseExpressionList(terminator) {

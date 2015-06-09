@@ -64,9 +64,9 @@ class DefaultEventStrategy {
 
   subscribe(target, targetEvent, callback, delegate){
     if(delegate){
-      return this.subscribeToDirectEvent(target, targetEvent, callback);
+      return this.subscribeToDelegatedEvent(target, targetEvent, callback);
     }else{
-      return this.subscribeToDelegatedEvent(target,  targetEvent, callback);
+      return this.subscribeToDirectEvent(target, targetEvent, callback);
     }
   }
 }
@@ -102,6 +102,14 @@ export class EventManager {
       tagName:'content editable',
       properties: {
         value:['change','input','blur','keyup','paste'],
+      }
+    });
+
+    this.registerElementConfig({
+      tagName:'scrollable element',
+      properties: {
+        scrollTop:['scroll'],
+        scrollLeft:['scroll']
       }
     });
 
@@ -151,6 +159,9 @@ export class EventManager {
       }
       if (propertyName === 'textContent' || propertyName === 'innerHTML'){
         return lookup['content editable']['value'];
+      }
+      if (propertyName === 'scrollTop' || propertyName === 'scrollLeft'){
+        return lookup['scrollable element'][propertyName];
       }
     }
 

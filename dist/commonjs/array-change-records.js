@@ -54,6 +54,7 @@ ArraySplice.prototype = {
 
     return distances;
   },
+
   spliceOperationsFromEditDistances: function spliceOperationsFromEditDistances(distances) {
     var i = distances.length - 1;
     var j = distances[0].length - 1;
@@ -100,6 +101,7 @@ ArraySplice.prototype = {
     edits.reverse();
     return edits;
   },
+
   calcSplices: function calcSplices(current, currentStart, currentEnd, old, oldStart, oldEnd) {
     var prefixCount = 0;
     var suffixCount = 0;
@@ -114,16 +116,16 @@ ArraySplice.prototype = {
     currentEnd -= suffixCount;
     oldEnd -= suffixCount;
 
-    if (currentEnd - currentStart == 0 && oldEnd - oldStart == 0) {
-      return [];
-    }if (currentStart == currentEnd) {
+    if (currentEnd - currentStart == 0 && oldEnd - oldStart == 0) return [];
+
+    if (currentStart == currentEnd) {
       var splice = newSplice(currentStart, [], 0);
       while (oldStart < oldEnd) splice.removed.push(old[oldStart++]);
 
       return [splice];
-    } else if (oldStart == oldEnd) {
-      return [newSplice(currentStart, [], currentEnd - currentStart)];
-    }var ops = this.spliceOperationsFromEditDistances(this.calcEditDistances(current, currentStart, currentEnd, old, oldStart, oldEnd));
+    } else if (oldStart == oldEnd) return [newSplice(currentStart, [], currentEnd - currentStart)];
+
+    var ops = this.spliceOperationsFromEditDistances(this.calcEditDistances(current, currentStart, currentEnd, old, oldStart, oldEnd));
 
     var splice = undefined;
     var splices = [];
@@ -171,9 +173,8 @@ ArraySplice.prototype = {
   },
 
   sharedPrefix: function sharedPrefix(current, old, searchLength) {
-    for (var i = 0; i < searchLength; ++i) if (!this.equals(current[i], old[i])) {
-      return i;
-    }return searchLength;
+    for (var i = 0; i < searchLength; ++i) if (!this.equals(current[i], old[i])) return i;
+    return searchLength;
   },
 
   sharedSuffix: function sharedSuffix(current, old, searchLength) {
@@ -201,24 +202,14 @@ function calcSplices(current, currentStart, currentEnd, old, oldStart, oldEnd) {
 }
 
 function intersect(start1, end1, start2, end2) {
-  if (end1 < start2 || end2 < start1) {
-    return -1;
-  }
-  if (end1 == start2 || end2 == start1) {
-    return 0;
-  }
+  if (end1 < start2 || end2 < start1) return -1;
+
+  if (end1 == start2 || end2 == start1) return 0;
+
   if (start1 < start2) {
-    if (end1 < end2) {
-      return end1 - start2;
-    } else {
-      return end2 - start2;
-    }
+    if (end1 < end2) return end1 - start2;else return end2 - start2;
   } else {
-    if (end2 < end1) {
-      return end2 - start1;
-    } else {
-      return end1 - start1;
-    }
+    if (end2 < end1) return end2 - start1;else return end1 - start1;
   }
 }
 

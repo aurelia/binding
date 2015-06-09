@@ -1,4 +1,6 @@
 System.register([], function (_export) {
+  'use strict';
+
   _export('getChangeRecords', getChangeRecords);
 
   function newRecord(type, object, key, oldValue) {
@@ -33,8 +35,6 @@ System.register([], function (_export) {
 
   return {
     setters: [],
-    execute: function () {
-      'use strict';
-    }
+    execute: function () {}
   };
 });

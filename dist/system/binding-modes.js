@@ -1,10 +1,10 @@
 System.register([], function (_export) {
+  "use strict";
+
   var bindingMode;
   return {
     setters: [],
     execute: function () {
-      "use strict";
-
       bindingMode = {
         oneTime: 0,
         oneWay: 1,

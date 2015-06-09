@@ -1,5 +1,9 @@
 System.register(['./array-change-records', './map-change-records'], function (_export) {
-  var calcSplices, projectArraySplices, getChangeRecords, _classCallCheck, ModifyCollectionObserver, CollectionLengthObserver;
+  'use strict';
+
+  var calcSplices, projectArraySplices, getChangeRecords, ModifyCollectionObserver, CollectionLengthObserver;
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   return {
     setters: [function (_arrayChangeRecords) {
@@ -9,10 +13,6 @@ System.register(['./array-change-records', './map-change-records'], function (_e
       getChangeRecords = _mapChangeRecords.getChangeRecords;
     }],
     execute: function () {
-      'use strict';
-
-      _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
       ModifyCollectionObserver = (function () {
         function ModifyCollectionObserver(taskQueue, collection) {
           _classCallCheck(this, ModifyCollectionObserver);

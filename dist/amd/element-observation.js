@@ -1,9 +1,9 @@
 define(['exports'], function (exports) {
   'use strict';
 
-  var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
   exports.__esModule = true;
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   var XLinkAttributeObserver = (function () {
     function XLinkAttributeObserver(element, propertyName, attributeName) {
@@ -23,7 +23,7 @@ define(['exports'], function (exports) {
     };
 
     XLinkAttributeObserver.prototype.subscribe = function subscribe(callback) {
-      throw new Error('Observation of an Element\'s "' + this.propertyName + '" property is not supported.');
+      throw new Error('Observation of a "' + this.element.nodeName + '" element\'s "' + this.propertyName + '" property is not supported.');
     };
 
     return XLinkAttributeObserver;
@@ -48,7 +48,7 @@ define(['exports'], function (exports) {
     };
 
     DataAttributeObserver.prototype.subscribe = function subscribe(callback) {
-      throw new Error('Observation of an Element\'s "' + this.propertyName + '" property is not supported.');
+      throw new Error('Observation of a "' + this.element.nodeName + '" element\'s "' + this.propertyName + '" property is not supported.');
     };
 
     return DataAttributeObserver;
@@ -76,7 +76,7 @@ define(['exports'], function (exports) {
     };
 
     StyleObserver.prototype.subscribe = function subscribe(callback) {
-      throw new Error('Observation of an Element\'s "' + this.propertyName + '" property is not supported.');
+      throw new Error('Observation of a "' + this.element.nodeName + '" element\'s "' + this.propertyName + '" property is not supported.');
     };
 
     StyleObserver.prototype.flattenCss = function flattenCss(object) {

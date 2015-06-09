@@ -1,5 +1,9 @@
 System.register(['core-js'], function (_export) {
-  var core, _classCallCheck, ValueConverterResource;
+  'use strict';
+
+  var core, ValueConverterResource;
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   function camelCase(name) {
     return name.charAt(0).toLowerCase() + name.slice(1);
@@ -10,10 +14,6 @@ System.register(['core-js'], function (_export) {
       core = _coreJs['default'];
     }],
     execute: function () {
-      'use strict';
-
-      _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
       ValueConverterResource = (function () {
         function ValueConverterResource(name) {
           _classCallCheck(this, ValueConverterResource);

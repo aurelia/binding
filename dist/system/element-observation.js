@@ -1,13 +1,13 @@
 System.register([], function (_export) {
-  var _classCallCheck, XLinkAttributeObserver, DataAttributeObserver, StyleObserver, ValueAttributeObserver, SelectValueObserver, CheckedObserver;
+  'use strict';
+
+  var XLinkAttributeObserver, DataAttributeObserver, StyleObserver, ValueAttributeObserver, SelectValueObserver, CheckedObserver;
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   return {
     setters: [],
     execute: function () {
-      'use strict';
-
-      _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
       XLinkAttributeObserver = (function () {
         function XLinkAttributeObserver(element, propertyName, attributeName) {
           _classCallCheck(this, XLinkAttributeObserver);
@@ -26,7 +26,7 @@ System.register([], function (_export) {
         };
 
         XLinkAttributeObserver.prototype.subscribe = function subscribe(callback) {
-          throw new Error('Observation of an Element\'s "' + this.propertyName + '" property is not supported.');
+          throw new Error('Observation of a "' + this.element.nodeName + '" element\'s "' + this.propertyName + '" property is not supported.');
         };
 
         return XLinkAttributeObserver;
@@ -51,7 +51,7 @@ System.register([], function (_export) {
         };
 
         DataAttributeObserver.prototype.subscribe = function subscribe(callback) {
-          throw new Error('Observation of an Element\'s "' + this.propertyName + '" property is not supported.');
+          throw new Error('Observation of a "' + this.element.nodeName + '" element\'s "' + this.propertyName + '" property is not supported.');
         };
 
         return DataAttributeObserver;
@@ -79,7 +79,7 @@ System.register([], function (_export) {
         };
 
         StyleObserver.prototype.subscribe = function subscribe(callback) {
-          throw new Error('Observation of an Element\'s "' + this.propertyName + '" property is not supported.');
+          throw new Error('Observation of a "' + this.element.nodeName + '" element\'s "' + this.propertyName + '" property is not supported.');
         };
 
         StyleObserver.prototype.flattenCss = function flattenCss(object) {

@@ -1,5 +1,7 @@
-System.register(['aurelia-metadata', './value-converter', './event-manager', './observer-locator', './array-change-records', './binding-modes', './parser', './binding-expression', './listener-expression', './name-expression', './call-expression', './dirty-checking', './map-change-records', './computed-observation'], function (_export) {
-  var Decorators, Metadata, ValueConverterResource;
+System.register(['aurelia-metadata', './value-converter', './class-list', './event-manager', './observer-locator', './array-change-records', './binding-modes', './parser', './binding-expression', './listener-expression', './name-expression', './call-expression', './dirty-checking', './map-change-records', './computed-observation'], function (_export) {
+  'use strict';
+
+  var Decorators, Metadata, ValueConverterResource, classList;
 
   _export('valueConverter', valueConverter);
 
@@ -37,6 +39,8 @@ System.register(['aurelia-metadata', './value-converter', './event-manager', './
       ValueConverterResource = _valueConverter.ValueConverterResource;
 
       _export('ValueConverterResource', _valueConverter.ValueConverterResource);
+    }, function (_classList) {
+      classList = _classList;
     }, function (_eventManager) {
       _export('EventManager', _eventManager.EventManager);
     }, function (_observerLocator) {
@@ -69,7 +73,6 @@ System.register(['aurelia-metadata', './value-converter', './event-manager', './
       _export('declarePropertyDependencies', _computedObservation.declarePropertyDependencies);
     }],
     execute: function () {
-      'use strict';
 
       Decorators.configure.parameterizedDecorator('valueConverter', valueConverter);
     }

@@ -1,28 +1,32 @@
 'use strict';
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
 exports.__esModule = true;
 
-var _TaskQueue = require('aurelia-task-queue');
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-var _hasObjectObserve = require('./environment');
+var _aureliaTaskQueue = require('aurelia-task-queue');
 
-var _getArrayObserver2 = require('./array-observation');
+var _environment = require('./environment');
 
-var _getMapObserver2 = require('./map-observation');
+var _arrayObservation = require('./array-observation');
 
-var _EventManager = require('./event-manager');
+var _mapObservation = require('./map-observation');
 
-var _DirtyChecker$DirtyCheckProperty = require('./dirty-checking');
+var _eventManager = require('./event-manager');
 
-var _SetterObserver$OoObjectObserver$OoPropertyObserver = require('./property-observation');
+var _dirtyChecking = require('./dirty-checking');
 
-var _SelectValueObserver$CheckedObserver$ValueAttributeObserver$XLinkAttributeObserver$DataAttributeObserver$StyleObserver = require('./element-observation');
+var _propertyObservation = require('./property-observation');
 
-var _All = require('aurelia-dependency-injection');
+var _elementObservation = require('./element-observation');
 
-var _hasDeclaredDependencies$ComputedPropertyObserver = require('./computed-observation');
+var _classObserver = require('./class-observer');
+
+var _aureliaDependencyInjection = require('aurelia-dependency-injection');
+
+var _computedObservation = require('./computed-observation');
+
+var _svg = require('./svg');
 
 if (typeof Object.getPropertyDescriptor !== 'function') {
   Object.getPropertyDescriptor = function (subject, name) {
@@ -36,23 +40,8 @@ if (typeof Object.getPropertyDescriptor !== 'function') {
   };
 }
 
-function createObserversLookup(obj) {
-  var value = {};
-
-  try {
-    Object.defineProperty(obj, '__observers__', {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: value
-    });
-  } catch (_) {}
-
-  return value;
-}
-
 function createObserverLookup(obj, observerLocator) {
-  var value = new _SetterObserver$OoObjectObserver$OoPropertyObserver.OoObjectObserver(obj, observerLocator);
+  var value = new _propertyObservation.OoObjectObserver(obj, observerLocator);
 
   try {
     Object.defineProperty(obj, '__observer__', {
@@ -77,30 +66,54 @@ var ObserverLocator = (function () {
   }
 
   ObserverLocator.inject = function inject() {
-    return [_TaskQueue.TaskQueue, _EventManager.EventManager, _DirtyChecker$DirtyCheckProperty.DirtyChecker, _All.All.of(ObjectObservationAdapter)];
-  };
-
-  ObserverLocator.prototype.getObserversLookup = function getObserversLookup(obj) {
-    return obj.__observers__ || createObserversLookup(obj);
+    return [_aureliaTaskQueue.TaskQueue, _eventManager.EventManager, _dirtyChecking.DirtyChecker, _aureliaDependencyInjection.All.of(ObjectObservationAdapter)];
   };
 
   ObserverLocator.prototype.getObserver = function getObserver(obj, propertyName) {
-    var observersLookup = this.getObserversLookup(obj);
+    var observersLookup = obj.__observers__,
+        observer;
 
-    if (propertyName in observersLookup) {
+    if (observersLookup && propertyName in observersLookup) {
       return observersLookup[propertyName];
     }
 
-    return observersLookup[propertyName] = this.createPropertyObserver(obj, propertyName);
+    observer = this.createPropertyObserver(obj, propertyName);
+
+    if (!observer.doNotCache) {
+      if (observersLookup === undefined) {
+        observersLookup = this.getOrCreateObserversLookup(obj);
+      }
+
+      observersLookup[propertyName] = observer;
+    }
+
+    return observer;
+  };
+
+  ObserverLocator.prototype.getOrCreateObserversLookup = function getOrCreateObserversLookup(obj) {
+    return obj.__observers__ || this.createObserversLookup(obj);
+  };
+
+  ObserverLocator.prototype.createObserversLookup = function createObserversLookup(obj) {
+    var value = {};
+
+    try {
+      Object.defineProperty(obj, '__observers__', {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: value
+      });
+    } catch (_) {}
+
+    return value;
   };
 
   ObserverLocator.prototype.getObservationAdapter = function getObservationAdapter(obj, propertyName, descriptor) {
     var i, ii, observationAdapter;
     for (i = 0, ii = this.observationAdapters.length; i < ii; i++) {
       observationAdapter = this.observationAdapters[i];
-      if (observationAdapter.handlesProperty(obj, propertyName, descriptor)) {
-        return observationAdapter;
-      }
+      if (observationAdapter.handlesProperty(obj, propertyName, descriptor)) return observationAdapter;
     }
     return null;
   };
@@ -109,42 +122,49 @@ var ObserverLocator = (function () {
     var observerLookup, descriptor, handler, observationAdapter, xlinkResult;
 
     if (obj instanceof Element) {
+      if (propertyName === 'class') {
+        return new _classObserver.ClassObserver(obj);
+      }
+      if (propertyName === 'style' || propertyName === 'css') {
+        return new _elementObservation.StyleObserver(obj, propertyName);
+      }
       handler = this.eventManager.getElementHandler(obj, propertyName);
       if (propertyName === 'value' && obj.tagName.toLowerCase() === 'select') {
-        return new _SelectValueObserver$CheckedObserver$ValueAttributeObserver$XLinkAttributeObserver$DataAttributeObserver$StyleObserver.SelectValueObserver(obj, handler, this);
+        return new _elementObservation.SelectValueObserver(obj, handler, this);
       }
       if (propertyName === 'checked' && obj.tagName.toLowerCase() === 'input') {
-        return new _SelectValueObserver$CheckedObserver$ValueAttributeObserver$XLinkAttributeObserver$DataAttributeObserver$StyleObserver.CheckedObserver(obj, handler, this);
+        return new _elementObservation.CheckedObserver(obj, handler, this);
       }
       if (handler) {
-        return new _SelectValueObserver$CheckedObserver$ValueAttributeObserver$XLinkAttributeObserver$DataAttributeObserver$StyleObserver.ValueAttributeObserver(obj, propertyName, handler);
+        return new _elementObservation.ValueAttributeObserver(obj, propertyName, handler);
       }
       xlinkResult = /^xlink:(.+)$/.exec(propertyName);
       if (xlinkResult) {
-        return new _SelectValueObserver$CheckedObserver$ValueAttributeObserver$XLinkAttributeObserver$DataAttributeObserver$StyleObserver.XLinkAttributeObserver(obj, propertyName, xlinkResult[1]);
+        return new _elementObservation.XLinkAttributeObserver(obj, propertyName, xlinkResult[1]);
       }
-      if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof SVGElement) {
-        return new _SelectValueObserver$CheckedObserver$ValueAttributeObserver$XLinkAttributeObserver$DataAttributeObserver$StyleObserver.DataAttributeObserver(obj, propertyName);
-      }
-      if (propertyName === 'style' || propertyName === 'css') {
-        return new _SelectValueObserver$CheckedObserver$ValueAttributeObserver$XLinkAttributeObserver$DataAttributeObserver$StyleObserver.StyleObserver(obj, propertyName);
+      if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof SVGElement && (0, _svg.isStandardSvgAttribute)(obj.nodeName, propertyName)) {
+        return new _elementObservation.DataAttributeObserver(obj, propertyName);
       }
     }
 
     descriptor = Object.getPropertyDescriptor(obj, propertyName);
 
-    if (_hasDeclaredDependencies$ComputedPropertyObserver.hasDeclaredDependencies(descriptor)) {
-      return new _hasDeclaredDependencies$ComputedPropertyObserver.ComputedPropertyObserver(obj, propertyName, descriptor, this);
+    if ((0, _computedObservation.hasDeclaredDependencies)(descriptor)) {
+      return new _computedObservation.ComputedPropertyObserver(obj, propertyName, descriptor, this);
     }
 
-    if (descriptor && (descriptor.get || descriptor.set)) {
+    var existingGetterOrSetter = undefined;
+    if (descriptor && (existingGetterOrSetter = descriptor.get || descriptor.set)) {
+      if (existingGetterOrSetter.getObserver) {
+        return existingGetterOrSetter.getObserver(obj);
+      }
+
       observationAdapter = this.getObservationAdapter(obj, propertyName, descriptor);
-      if (observationAdapter) {
-        return observationAdapter.getObserver(obj, propertyName, descriptor);
-      }return new _DirtyChecker$DirtyCheckProperty.DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
+      if (observationAdapter) return observationAdapter.getObserver(obj, propertyName, descriptor);
+      return new _dirtyChecking.DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     }
 
-    if (_hasObjectObserve.hasObjectObserve) {
+    if (_environment.hasObjectObserve) {
       observerLookup = obj.__observer__ || createObserverLookup(obj, this);
       return observerLookup.getObserver(propertyName, descriptor);
     }
@@ -153,54 +173,34 @@ var ObserverLocator = (function () {
       if (propertyName === 'length') {
         return this.getArrayObserver(obj).getLengthObserver();
       } else {
-        return new _DirtyChecker$DirtyCheckProperty.DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
+        return new _dirtyChecking.DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
     } else if (obj instanceof Map) {
       if (propertyName === 'size') {
         return this.getMapObserver(obj).getLengthObserver();
       } else {
-        return new _DirtyChecker$DirtyCheckProperty.DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
+        return new _dirtyChecking.DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
     }
 
-    return new _SetterObserver$OoObjectObserver$OoPropertyObserver.SetterObserver(this.taskQueue, obj, propertyName);
+    return new _propertyObservation.SetterObserver(this.taskQueue, obj, propertyName);
   };
 
-  ObserverLocator.prototype.getArrayObserver = (function (_getArrayObserver) {
-    function getArrayObserver(_x) {
-      return _getArrayObserver.apply(this, arguments);
-    }
-
-    getArrayObserver.toString = function () {
-      return _getArrayObserver.toString();
-    };
-
-    return getArrayObserver;
-  })(function (array) {
+  ObserverLocator.prototype.getArrayObserver = function getArrayObserver(array) {
     if ('__array_observer__' in array) {
       return array.__array_observer__;
     }
 
-    return array.__array_observer__ = _getArrayObserver2.getArrayObserver(this.taskQueue, array);
-  });
+    return array.__array_observer__ = (0, _arrayObservation.getArrayObserver)(this.taskQueue, array);
+  };
 
-  ObserverLocator.prototype.getMapObserver = (function (_getMapObserver) {
-    function getMapObserver(_x2) {
-      return _getMapObserver.apply(this, arguments);
-    }
-
-    getMapObserver.toString = function () {
-      return _getMapObserver.toString();
-    };
-
-    return getMapObserver;
-  })(function (map) {
+  ObserverLocator.prototype.getMapObserver = function getMapObserver(map) {
     if ('__map_observer__' in map) {
       return map.__map_observer__;
     }
 
-    return map.__map_observer__ = _getMapObserver2.getMapObserver(this.taskQueue, map);
-  });
+    return map.__map_observer__ = (0, _mapObservation.getMapObserver)(this.taskQueue, map);
+  };
 
   return ObserverLocator;
 })();

@@ -19,9 +19,9 @@ var hasObjectObserve = (function detectObjectObserve() {
   delete test.id;
 
   Object.deliverChangeRecords(callback);
-  if (records.length !== 3) {
-    return false;
-  }if (records[0].type != 'add' || records[1].type != 'update' || records[2].type != 'delete') {
+  if (records.length !== 3) return false;
+
+  if (records[0].type != 'add' || records[1].type != 'update' || records[2].type != 'delete') {
     return false;
   }
 
@@ -48,9 +48,9 @@ var hasArrayObserve = (function detectArrayObserve() {
   arr.length = 0;
 
   Object.deliverChangeRecords(callback);
-  if (records.length !== 2) {
-    return false;
-  }if (records[0].type != 'splice' || records[1].type != 'splice') {
+  if (records.length !== 2) return false;
+
+  if (records[0].type != 'splice' || records[1].type != 'splice') {
     return false;
   }
 

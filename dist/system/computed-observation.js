@@ -1,9 +1,13 @@
 System.register([], function (_export) {
-  var _classCallCheck, ComputedPropertyObserver;
+  'use strict';
+
+  var ComputedPropertyObserver;
 
   _export('hasDeclaredDependencies', hasDeclaredDependencies);
 
   _export('declarePropertyDependencies', declarePropertyDependencies);
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   function hasDeclaredDependencies(descriptor) {
     return descriptor && descriptor.get && !descriptor.set && descriptor.get.dependencies && descriptor.get.dependencies.length;
@@ -18,10 +22,6 @@ System.register([], function (_export) {
   return {
     setters: [],
     execute: function () {
-      'use strict';
-
-      _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
       ComputedPropertyObserver = (function () {
         function ComputedPropertyObserver(obj, propertyName, descriptor, observerLocator) {
           _classCallCheck(this, ComputedPropertyObserver);
@@ -52,9 +52,8 @@ System.register([], function (_export) {
 
         ComputedPropertyObserver.prototype.evaluate = function evaluate() {
           var newValue = this.getValue();
-          if (this.oldValue === newValue) {
-            return;
-          }this.trigger(newValue, this.oldValue);
+          if (this.oldValue === newValue) return;
+          this.trigger(newValue, this.oldValue);
           this.oldValue = newValue;
         };
 

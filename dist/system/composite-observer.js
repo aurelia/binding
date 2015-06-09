@@ -1,13 +1,13 @@
 System.register([], function (_export) {
-  var _classCallCheck, CompositeObserver;
+  "use strict";
+
+  var CompositeObserver;
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
   return {
     setters: [],
     execute: function () {
-      "use strict";
-
-      _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
-
       CompositeObserver = (function () {
         function CompositeObserver(observers, evaluate) {
           var _this = this;

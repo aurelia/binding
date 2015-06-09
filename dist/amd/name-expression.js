@@ -1,9 +1,9 @@
 define(['exports'], function (exports) {
   'use strict';
 
-  var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
   exports.__esModule = true;
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   var NameExpression = (function () {
     function NameExpression(name, mode) {
@@ -11,7 +11,9 @@ define(['exports'], function (exports) {
 
       this.property = name;
       this.discrete = true;
-      this.mode = (mode || 'view-model').toLowerCase();
+      this.mode = mode.replace(/-([a-z])/g, function (m, w) {
+        return w.toUpperCase();
+      });
     }
 
     NameExpression.prototype.createBinding = function createBinding(target) {
@@ -29,15 +31,16 @@ define(['exports'], function (exports) {
 
       this.property = property;
 
-      switch (mode) {
-        case 'element':
-          this.target = target;
-          break;
-        case 'view-model':
-          this.target = target.primaryBehavior ? target.primaryBehavior.executionContext : target;
-          break;
-        default:
-          throw new Error('Name expressions do not support mode: ' + mode);
+      if (mode === 'element') {
+        this.target = target;
+      } else {
+        this.target = target[mode];
+
+        if (this.target === undefined) {
+          throw new Error('Attempted to reference "' + mode + '", but it was not found on the target element.');
+        } else {
+          this.target = this.target.executionContext || this.target;
+        }
       }
     }
 

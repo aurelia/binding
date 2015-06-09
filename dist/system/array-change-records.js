@@ -1,4 +1,6 @@
 System.register([], function (_export) {
+  'use strict';
+
   var EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice;
 
   _export('calcSplices', calcSplices);
@@ -28,24 +30,14 @@ System.register([], function (_export) {
   }
 
   function intersect(start1, end1, start2, end2) {
-    if (end1 < start2 || end2 < start1) {
-      return -1;
-    }
-    if (end1 == start2 || end2 == start1) {
-      return 0;
-    }
+    if (end1 < start2 || end2 < start1) return -1;
+
+    if (end1 == start2 || end2 == start1) return 0;
+
     if (start1 < start2) {
-      if (end1 < end2) {
-        return end1 - start2;
-      } else {
-        return end2 - start2;
-      }
+      if (end1 < end2) return end1 - start2;else return end2 - start2;
     } else {
-      if (end2 < end1) {
-        return end2 - start1;
-      } else {
-        return end1 - start1;
-      }
+      if (end2 < end1) return end2 - start1;else return end1 - start1;
     }
   }
 
@@ -155,8 +147,6 @@ System.register([], function (_export) {
   return {
     setters: [],
     execute: function () {
-      'use strict';
-
       EDIT_LEAVE = 0;
       EDIT_UPDATE = 1;
       EDIT_ADD = 2;
@@ -189,6 +179,7 @@ System.register([], function (_export) {
 
           return distances;
         },
+
         spliceOperationsFromEditDistances: function spliceOperationsFromEditDistances(distances) {
           var i = distances.length - 1;
           var j = distances[0].length - 1;
@@ -235,6 +226,7 @@ System.register([], function (_export) {
           edits.reverse();
           return edits;
         },
+
         calcSplices: function calcSplices(current, currentStart, currentEnd, old, oldStart, oldEnd) {
           var prefixCount = 0;
           var suffixCount = 0;
@@ -249,16 +241,16 @@ System.register([], function (_export) {
           currentEnd -= suffixCount;
           oldEnd -= suffixCount;
 
-          if (currentEnd - currentStart == 0 && oldEnd - oldStart == 0) {
-            return [];
-          }if (currentStart == currentEnd) {
+          if (currentEnd - currentStart == 0 && oldEnd - oldStart == 0) return [];
+
+          if (currentStart == currentEnd) {
             var splice = newSplice(currentStart, [], 0);
             while (oldStart < oldEnd) splice.removed.push(old[oldStart++]);
 
             return [splice];
-          } else if (oldStart == oldEnd) {
-            return [newSplice(currentStart, [], currentEnd - currentStart)];
-          }var ops = this.spliceOperationsFromEditDistances(this.calcEditDistances(current, currentStart, currentEnd, old, oldStart, oldEnd));
+          } else if (oldStart == oldEnd) return [newSplice(currentStart, [], currentEnd - currentStart)];
+
+          var ops = this.spliceOperationsFromEditDistances(this.calcEditDistances(current, currentStart, currentEnd, old, oldStart, oldEnd));
 
           var splice = undefined;
           var splices = [];
@@ -306,9 +298,8 @@ System.register([], function (_export) {
         },
 
         sharedPrefix: function sharedPrefix(current, old, searchLength) {
-          for (var i = 0; i < searchLength; ++i) if (!this.equals(current[i], old[i])) {
-            return i;
-          }return searchLength;
+          for (var i = 0; i < searchLength; ++i) if (!this.equals(current[i], old[i])) return i;
+          return searchLength;
         },
 
         sharedSuffix: function sharedSuffix(current, old, searchLength) {

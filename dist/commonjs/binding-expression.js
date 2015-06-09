@@ -1,10 +1,10 @@
 'use strict';
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
 exports.__esModule = true;
 
-var _bindingMode = require('./binding-modes');
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _bindingModes = require('./binding-modes');
 
 var BindingExpression = (function () {
   function BindingExpression(observerLocator, targetProperty, sourceExpression, mode, valueConverterLookupFunction, attribute) {
@@ -53,7 +53,7 @@ var Binding = (function () {
       targetProperty.bind();
     }
 
-    if (this.mode == _bindingMode.bindingMode.oneWay || this.mode == _bindingMode.bindingMode.twoWay) {
+    if (this.mode == _bindingModes.bindingMode.oneWay || this.mode == _bindingModes.bindingMode.twoWay) {
       if (this._disposeObserver) {
         if (this.source === source) {
           return;
@@ -77,7 +77,7 @@ var Binding = (function () {
         targetProperty.setValue(info.value);
       }
 
-      if (this.mode == _bindingMode.bindingMode.twoWay) {
+      if (this.mode == _bindingModes.bindingMode.twoWay) {
         this._disposeListener = targetProperty.subscribe(function (newValue) {
           _this.sourceExpression.assign(source, newValue, _this.valueConverterLookupFunction);
         });

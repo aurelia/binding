@@ -17,7 +17,7 @@ export class XLinkAttributeObserver {
   }
 
   subscribe(callback) {
-    throw new Error(`Observation of an Element\'s "${this.propertyName}" property is not supported.`);
+    throw new Error(`Observation of a "${this.element.nodeName}" element\'s "${this.propertyName}" property is not supported.`);
   }
 }
 
@@ -36,7 +36,7 @@ export class DataAttributeObserver {
   }
 
   subscribe(callback) {
-    throw new Error(`Observation of an Element\'s "${this.propertyName}" property is not supported.`);
+    throw new Error(`Observation of a "${this.element.nodeName}" element\'s "${this.propertyName}" property is not supported.`);
   }
 }
 
@@ -58,7 +58,7 @@ export class StyleObserver {
   }
 
   subscribe(callback) {
-    throw new Error(`Observation of an Element\'s "${this.propertyName}" property is not supported.`);
+    throw new Error(`Observation of a "${this.element.nodeName}" element\'s "${this.propertyName}" property is not supported.`);
   }
 
   flattenCss(object) {

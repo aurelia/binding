@@ -1,11 +1,11 @@
 define(['exports', './path-observer', './composite-observer', './access-keyed-observer'], function (exports, _pathObserver, _compositeObserver, _accessKeyedObserver) {
   'use strict';
 
-  var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
-
-  var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
   exports.__esModule = true;
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   var Expression = (function () {
     function Expression() {
@@ -596,9 +596,9 @@ define(['exports', './path-observer', './composite-observer', './access-keyed-ob
 
       switch (this.operation) {
         case '&&':
-          return !!left && !!this.right.evaluate(scope);
+          return left && this.right.evaluate(scope);
         case '||':
-          return !!left || !!this.right.evaluate(scope);
+          return left || this.right.evaluate(scope);
       }
 
       var right = this.right.evaluate(scope);
@@ -617,17 +617,13 @@ define(['exports', './path-observer', './composite-observer', './access-keyed-ob
       if (left === null || right === null) {
         switch (this.operation) {
           case '+':
-            if (left != null) {
-              return left;
-            }if (right != null) {
-              return right;
-            }return 0;
+            if (left != null) return left;
+            if (right != null) return right;
+            return 0;
           case '-':
-            if (left != null) {
-              return left;
-            }if (right != null) {
-              return 0 - right;
-            }return 0;
+            if (left != null) return left;
+            if (right != null) return 0 - right;
+            return 0;
         }
 
         return null;

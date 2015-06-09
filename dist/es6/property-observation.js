@@ -79,68 +79,11 @@ export class SetterObserver {
   }
 }
 
-export class OoObjectObserver {
-  constructor(obj, observerLocator){
-    this.obj = obj;
-    this.observers = {};
-    this.observerLocator = observerLocator;
-  }
-
-  subscribe(propertyObserver, callback){
-    var callbacks = propertyObserver.callbacks;
-    callbacks.push(callback);
-
-    if(!this.observing){
-      this.observing = true;
-      try{
-        Object.observe(this.obj, changes => this.handleChanges(changes), ['update', 'add']);
-      }catch(_){}
-    }
-
-    return function(){
-      callbacks.splice(callbacks.indexOf(callback), 1);
-    };
-  }
-
-  getObserver(propertyName, descriptor){
-    var propertyObserver = this.observers[propertyName];
-    if (!propertyObserver) {
-      if (descriptor) {
-        propertyObserver = this.observers[propertyName] = new OoPropertyObserver(this, this.obj, propertyName);
-      } else {
-        propertyObserver = this.observers[propertyName] = new UndefinedPropertyObserver(this, this.obj, propertyName);
-      }
-    }
-    return propertyObserver;
-  }
-
-  handleChanges(changeRecords){
-    var updates = {},
-        observers = this.observers,
-        change, observer;
-
-    for(var i = 0, ii = changeRecords.length; i < ii; ++i){
-      change = changeRecords[i];
-      updates[change.name] = change;
-    }
-
-    for(var key in updates){
-      observer = observers[key],
-      change = updates[key];
-
-      if(observer){
-        observer.trigger(change.object[key], change.oldValue);
-      }
-    }
-  }
-}
-
 export class OoPropertyObserver {
-  constructor(owner, obj, propertyName){
-    this.owner = owner;
+  constructor(obj, propertyName, subscribe){
     this.obj = obj;
     this.propertyName = propertyName;
-    this.callbacks = [];
+    this.subscribe = subscribe;
   }
 
   getValue(){
@@ -150,18 +93,87 @@ export class OoPropertyObserver {
   setValue(newValue){
     this.obj[this.propertyName] = newValue;
   }
+}
 
-  trigger(newValue, oldValue){
-    var callbacks = this.callbacks,
-        i = callbacks.length;
+export class OoObjectObserver {
+  constructor(obj, observerLocator){
+    this.obj = obj;
+    this.observerLocator = observerLocator;
+    this.observers = {};
+    this.callbacks = {};
+    this.callbackCount = 0;
+  }
 
-    while(i--) {
-      callbacks[i](newValue, oldValue);
+  subscribe(propertyName, callback){
+    if (this.callbacks[propertyName]) {
+      this.callbacks[propertyName].push(callback);
+    } else {
+      this.callbacks[propertyName] = [callback];
+      this.callbacks[propertyName].oldValue = this.obj[propertyName];
+    }
+
+    if (this.callbackCount === 0) {
+      this.handler = this.handleChanges.bind(this);
+      Object.observe(this.obj, this.handler, ['update', 'add']);
+    }
+
+    this.callbackCount++;
+
+    return this.unsubscribe.bind(this, propertyName, callback);
+  }
+
+  unsubscribe(propertyName, callback) {
+    var callbacks = this.callbacks[propertyName],
+        index = callbacks.indexOf(callback);
+    if (index === -1) {
+      return;
+    }
+
+    callbacks.splice(index, 1);
+    if (callbacks.count = 0) {
+      callbacks.oldValue = null;
+      this.callbacks[propertyName] = null;
+    }
+
+    this.callbackCount--;
+    if (this.callbackCount === 0) {
+      Object.unobserve(this.obj, this.handler);
     }
   }
 
-  subscribe(callback){
-    return this.owner.subscribe(this, callback);
+  getObserver(propertyName, descriptor){
+    var propertyObserver = this.observers[propertyName];
+    if (!propertyObserver) {
+      if (descriptor) {
+        propertyObserver = this.observers[propertyName] = new OoPropertyObserver(this.obj, propertyName, this.subscribe.bind(this, propertyName));
+      } else {
+        propertyObserver = this.observers[propertyName] = new UndefinedPropertyObserver(this, this.obj, propertyName);
+      }
+    }
+    return propertyObserver;
+  }
+
+  handleChanges(changes) {
+    var properties = {}, i, ii, change, propertyName, oldValue, newValue, callbacks;
+
+    for(i = 0, ii = changes.length; i < ii; i++){
+      change = changes[i];
+      properties[change.name] = change;
+    }
+
+    for(name in properties){
+      callbacks = this.callbacks[name];
+      if (!callbacks) {
+        continue;
+      }
+      change = properties[name];
+      newValue = change.object[name];
+      oldValue = change.oldValue;
+
+      for (i = 0, ii = callbacks.length; i < ii; i++) {
+        callbacks[i](newValue, oldValue);
+      }
+    }
   }
 }
 
@@ -171,7 +183,6 @@ export class UndefinedPropertyObserver {
     this.obj = obj;
     this.propertyName = propertyName;
     this.callbackMap = new Map();
-    this.callbacks = []; // unused here, but required by owner OoObjectObserver.
   }
 
   getValue(){
@@ -221,7 +232,7 @@ export class UndefinedPropertyObserver {
     // get the actual observer.
     observerLocator = this.owner.observerLocator;
     delete this.owner.observers[this.propertyName];
-    delete observerLocator.getObserversLookup(this.obj, observerLocator)[this.propertyName];
+    delete observerLocator.getOrCreateObserversLookup(this.obj, observerLocator)[this.propertyName];
     this.actual = observerLocator.getObserver(this.obj, this.propertyName);
 
     // attach any existing callbacks to the actual observer.
@@ -244,7 +255,7 @@ export class UndefinedPropertyObserver {
 
     // start listening for the property to become defined.
     if (!this.subscription){
-      this.subscription = this.owner.subscribe(this);
+      this.subscription = this.owner.subscribe(this.propertyName, this.trigger.bind(this));
     }
 
     // cache the callback.

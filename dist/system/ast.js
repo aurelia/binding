@@ -1,5 +1,11 @@
 System.register(['./path-observer', './composite-observer', './access-keyed-observer'], function (_export) {
-  var PathObserver, CompositeObserver, AccessKeyedObserver, _inherits, _classCallCheck, Expression, Chain, ValueConverter, Assign, Conditional, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, PrefixNot, LiteralPrimitive, LiteralString, LiteralArray, LiteralObject, Unparser, evalListCache;
+  'use strict';
+
+  var PathObserver, CompositeObserver, AccessKeyedObserver, Expression, Chain, ValueConverter, Assign, Conditional, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, PrefixNot, LiteralPrimitive, LiteralString, LiteralArray, LiteralObject, Unparser, evalListCache;
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   function evalList(scope, list, valueConverters) {
     var length = list.length,
@@ -93,12 +99,6 @@ System.register(['./path-observer', './composite-observer', './access-keyed-obse
       AccessKeyedObserver = _accessKeyedObserver.AccessKeyedObserver;
     }],
     execute: function () {
-      'use strict';
-
-      _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
-
-      _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
       Expression = (function () {
         function Expression() {
           _classCallCheck(this, Expression);
@@ -688,9 +688,9 @@ System.register(['./path-observer', './composite-observer', './access-keyed-obse
 
           switch (this.operation) {
             case '&&':
-              return !!left && !!this.right.evaluate(scope);
+              return left && this.right.evaluate(scope);
             case '||':
-              return !!left || !!this.right.evaluate(scope);
+              return left || this.right.evaluate(scope);
           }
 
           var right = this.right.evaluate(scope);
@@ -709,17 +709,13 @@ System.register(['./path-observer', './composite-observer', './access-keyed-obse
           if (left === null || right === null) {
             switch (this.operation) {
               case '+':
-                if (left != null) {
-                  return left;
-                }if (right != null) {
-                  return right;
-                }return 0;
+                if (left != null) return left;
+                if (right != null) return right;
+                return 0;
               case '-':
-                if (left != null) {
-                  return left;
-                }if (right != null) {
-                  return 0 - right;
-                }return 0;
+                if (left != null) return left;
+                if (right != null) return 0 - right;
+                return 0;
             }
 
             return null;

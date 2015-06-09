@@ -1,22 +1,22 @@
 'use strict';
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
-var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
-
 exports.__esModule = true;
 exports.getArrayObserver = getArrayObserver;
 
-var _hasArrayObserve = require('./environment');
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-var _projectArraySplices = require('./array-change-records');
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
 
-var _ModifyCollectionObserver$CollectionLengthObserver = require('./collection-observation');
+var _environment = require('./environment');
+
+var _arrayChangeRecords = require('./array-change-records');
+
+var _collectionObservation = require('./collection-observation');
 
 var arrayProto = Array.prototype;
 
 function getArrayObserver(taskQueue, array) {
-  if (_hasArrayObserve.hasArrayObserve) {
+  if (_environment.hasArrayObserve) {
     return new ArrayObserveObserver(array);
   } else {
     return ModifyArrayObserver.create(taskQueue, array);
@@ -35,8 +35,8 @@ var ModifyArrayObserver = (function (_ModifyCollectionObserver) {
   ModifyArrayObserver.create = function create(taskQueue, array) {
     var observer = new ModifyArrayObserver(taskQueue, array);
 
-    array.pop = function () {
-      var methodCallResult = arrayProto.pop.apply(array, arguments);
+    array['pop'] = function () {
+      var methodCallResult = arrayProto['pop'].apply(array, arguments);
       observer.addChangeRecord({
         type: 'delete',
         object: array,
@@ -46,8 +46,8 @@ var ModifyArrayObserver = (function (_ModifyCollectionObserver) {
       return methodCallResult;
     };
 
-    array.push = function () {
-      var methodCallResult = arrayProto.push.apply(array, arguments);
+    array['push'] = function () {
+      var methodCallResult = arrayProto['push'].apply(array, arguments);
       observer.addChangeRecord({
         type: 'splice',
         object: array,
@@ -58,15 +58,15 @@ var ModifyArrayObserver = (function (_ModifyCollectionObserver) {
       return methodCallResult;
     };
 
-    array.reverse = function () {
+    array['reverse'] = function () {
       var oldArray = array.slice();
-      var methodCallResult = arrayProto.reverse.apply(array, arguments);
+      var methodCallResult = arrayProto['reverse'].apply(array, arguments);
       observer.reset(oldArray);
       return methodCallResult;
     };
 
-    array.shift = function () {
-      var methodCallResult = arrayProto.shift.apply(array, arguments);
+    array['shift'] = function () {
+      var methodCallResult = arrayProto['shift'].apply(array, arguments);
       observer.addChangeRecord({
         type: 'delete',
         object: array,
@@ -76,15 +76,15 @@ var ModifyArrayObserver = (function (_ModifyCollectionObserver) {
       return methodCallResult;
     };
 
-    array.sort = function () {
+    array['sort'] = function () {
       var oldArray = array.slice();
-      var methodCallResult = arrayProto.sort.apply(array, arguments);
+      var methodCallResult = arrayProto['sort'].apply(array, arguments);
       observer.reset(oldArray);
       return methodCallResult;
     };
 
-    array.splice = function () {
-      var methodCallResult = arrayProto.splice.apply(array, arguments);
+    array['splice'] = function () {
+      var methodCallResult = arrayProto['splice'].apply(array, arguments);
       observer.addChangeRecord({
         type: 'splice',
         object: array,
@@ -95,8 +95,8 @@ var ModifyArrayObserver = (function (_ModifyCollectionObserver) {
       return methodCallResult;
     };
 
-    array.unshift = function () {
-      var methodCallResult = arrayProto.unshift.apply(array, arguments);
+    array['unshift'] = function () {
+      var methodCallResult = arrayProto['unshift'].apply(array, arguments);
       observer.addChangeRecord({
         type: 'splice',
         object: array,
@@ -111,7 +111,7 @@ var ModifyArrayObserver = (function (_ModifyCollectionObserver) {
   };
 
   return ModifyArrayObserver;
-})(_ModifyCollectionObserver$CollectionLengthObserver.ModifyCollectionObserver);
+})(_collectionObservation.ModifyCollectionObserver);
 
 var ArrayObserveObserver = (function () {
   function ArrayObserveObserver(array) {
@@ -119,7 +119,6 @@ var ArrayObserveObserver = (function () {
 
     this.array = array;
     this.callbacks = [];
-    this.observing = false;
   }
 
   ArrayObserveObserver.prototype.subscribe = function subscribe(callback) {
@@ -127,22 +126,23 @@ var ArrayObserveObserver = (function () {
 
     var callbacks = this.callbacks;
 
-    callbacks.push(callback);
-
-    if (!this.observing) {
-      this.observing = true;
-      Array.observe(this.array, function (changes) {
-        return _this.handleChanges(changes);
-      });
+    if (callbacks.length === 0) {
+      this.handler = this.handleChanges.bind(this);
+      Array.observe(this.array, this.handler);
     }
+
+    callbacks.push(callback);
 
     return function () {
       callbacks.splice(callbacks.indexOf(callback), 1);
+      if (callbacks.length === 0) {
+        Array.unobserve(_this.array, _this.handler);
+      }
     };
   };
 
   ArrayObserveObserver.prototype.getLengthObserver = function getLengthObserver() {
-    return this.lengthObserver || (this.lengthObserver = new _ModifyCollectionObserver$CollectionLengthObserver.CollectionLengthObserver(this.array));
+    return this.lengthObserver || (this.lengthObserver = new _collectionObservation.CollectionLengthObserver(this.array));
   };
 
   ArrayObserveObserver.prototype.handleChanges = function handleChanges(changeRecords) {
@@ -151,7 +151,7 @@ var ArrayObserveObserver = (function () {
         splices;
 
     if (i) {
-      splices = _projectArraySplices.projectArraySplices(this.array, changeRecords);
+      splices = (0, _arrayChangeRecords.projectArraySplices)(this.array, changeRecords);
 
       while (i--) {
         callbacks[i](splices);

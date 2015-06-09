@@ -1,16 +1,16 @@
 'use strict';
 
-var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
-
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
 exports.__esModule = true;
 
-var _PathObserver = require('./path-observer');
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
 
-var _CompositeObserver = require('./composite-observer');
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-var _AccessKeyedObserver = require('./access-keyed-observer');
+var _pathObserver = require('./path-observer');
+
+var _compositeObserver = require('./composite-observer');
+
+var _accessKeyedObserver = require('./access-keyed-observer');
 
 var Expression = (function () {
   function Expression() {
@@ -140,7 +140,7 @@ var ValueConverter = (function (_Expression2) {
     }
 
     if (childObservers.length) {
-      observer = new _CompositeObserver.CompositeObserver(childObservers, function () {
+      observer = new _compositeObserver.CompositeObserver(childObservers, function () {
         return _this.evaluate(scope, binding.valueConverterLookupFunction);
       });
     }
@@ -228,7 +228,7 @@ var Conditional = (function (_Expression4) {
     }
 
     if (childObservers.length) {
-      observer = new _CompositeObserver.CompositeObserver(childObservers, function () {
+      observer = new _compositeObserver.CompositeObserver(childObservers, function () {
         return _this2.evaluate(scope, binding.valueConverterLookupFunction);
       });
     }
@@ -324,7 +324,7 @@ var AccessMember = (function (_Expression6) {
         observer;
 
     if (objectObserver) {
-      observer = new _PathObserver.PathObserver(objectObserver, function (value) {
+      observer = new _pathObserver.PathObserver(objectObserver, function (value) {
         if (value == null || value == undefined) {
           return value;
         }
@@ -380,7 +380,7 @@ var AccessKeyed = (function (_Expression7) {
 
     var objectInfo = this.object.connect(binding, scope),
         keyInfo = this.key.connect(binding, scope),
-        observer = new _AccessKeyedObserver.AccessKeyedObserver(objectInfo, keyInfo, binding.observerLocator, function () {
+        observer = new _accessKeyedObserver.AccessKeyedObserver(objectInfo, keyInfo, binding.observerLocator, function () {
       return _this4.evaluate(scope, binding.valueConverterLookupFunction);
     });
 
@@ -436,7 +436,7 @@ var CallScope = (function (_Expression8) {
     }
 
     if (childObservers.length) {
-      observer = new _CompositeObserver.CompositeObserver(childObservers, function () {
+      observer = new _compositeObserver.CompositeObserver(childObservers, function () {
         return _this5.evaluate(scope, binding.valueConverterLookupFunction);
       });
     }
@@ -500,7 +500,7 @@ var CallMember = (function (_Expression9) {
     }
 
     if (childObservers.length) {
-      observer = new _CompositeObserver.CompositeObserver(childObservers, function () {
+      observer = new _compositeObserver.CompositeObserver(childObservers, function () {
         return _this6.evaluate(scope, binding.valueConverterLookupFunction);
       });
     }
@@ -567,7 +567,7 @@ var CallFunction = (function (_Expression10) {
     }
 
     if (childObservers.length) {
-      observer = new _CompositeObserver.CompositeObserver(childObservers, function () {
+      observer = new _compositeObserver.CompositeObserver(childObservers, function () {
         return _this7.evaluate(scope, binding.valueConverterLookupFunction);
       });
     }
@@ -601,9 +601,9 @@ var Binary = (function (_Expression11) {
 
     switch (this.operation) {
       case '&&':
-        return !!left && !!this.right.evaluate(scope);
+        return left && this.right.evaluate(scope);
       case '||':
-        return !!left || !!this.right.evaluate(scope);
+        return left || this.right.evaluate(scope);
     }
 
     var right = this.right.evaluate(scope);
@@ -622,17 +622,13 @@ var Binary = (function (_Expression11) {
     if (left === null || right === null) {
       switch (this.operation) {
         case '+':
-          if (left != null) {
-            return left;
-          }if (right != null) {
-            return right;
-          }return 0;
+          if (left != null) return left;
+          if (right != null) return right;
+          return 0;
         case '-':
-          if (left != null) {
-            return left;
-          }if (right != null) {
-            return 0 - right;
-          }return 0;
+          if (left != null) return left;
+          if (right != null) return 0 - right;
+          return 0;
       }
 
       return null;
@@ -687,7 +683,7 @@ var Binary = (function (_Expression11) {
     }
 
     if (childObservers.length) {
-      observer = new _CompositeObserver.CompositeObserver(childObservers, function () {
+      observer = new _compositeObserver.CompositeObserver(childObservers, function () {
         return _this8.evaluate(scope, binding.valueConverterLookupFunction);
       });
     }
@@ -730,7 +726,7 @@ var PrefixNot = (function (_Expression12) {
         observer;
 
     if (info.observer) {
-      observer = new _CompositeObserver.CompositeObserver([info.observer], function () {
+      observer = new _compositeObserver.CompositeObserver([info.observer], function () {
         return _this9.evaluate(scope, binding.valueConverterLookupFunction);
       });
     }
@@ -853,7 +849,7 @@ var LiteralArray = (function (_Expression15) {
     }
 
     if (childObservers.length) {
-      observer = new _CompositeObserver.CompositeObserver(childObservers, function () {
+      observer = new _compositeObserver.CompositeObserver(childObservers, function () {
         return _this10.evaluate(scope, binding.valueConverterLookupFunction);
       });
     }
@@ -922,7 +918,7 @@ var LiteralObject = (function (_Expression16) {
     }
 
     if (childObservers.length) {
-      observer = new _CompositeObserver.CompositeObserver(childObservers, function () {
+      observer = new _compositeObserver.CompositeObserver(childObservers, function () {
         return _this11.evaluate(scope, binding.valueConverterLookupFunction);
       });
     }

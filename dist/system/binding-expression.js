@@ -1,15 +1,15 @@
 System.register(['./binding-modes'], function (_export) {
-  var bindingMode, _classCallCheck, BindingExpression, Binding;
+  'use strict';
+
+  var bindingMode, BindingExpression, Binding;
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   return {
     setters: [function (_bindingModes) {
       bindingMode = _bindingModes.bindingMode;
     }],
     execute: function () {
-      'use strict';
-
-      _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
       BindingExpression = (function () {
         function BindingExpression(observerLocator, targetProperty, sourceExpression, mode, valueConverterLookupFunction, attribute) {
           _classCallCheck(this, BindingExpression);

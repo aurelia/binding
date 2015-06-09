@@ -1,20 +1,9 @@
-System.register(['aurelia-task-queue', './environment', './array-observation', './map-observation', './event-manager', './dirty-checking', './property-observation', './element-observation', 'aurelia-dependency-injection', './computed-observation'], function (_export) {
-  var TaskQueue, hasObjectObserve, getArrayObserver, getMapObserver, EventManager, DirtyChecker, DirtyCheckProperty, SetterObserver, OoObjectObserver, OoPropertyObserver, SelectValueObserver, CheckedObserver, ValueAttributeObserver, XLinkAttributeObserver, DataAttributeObserver, StyleObserver, All, hasDeclaredDependencies, ComputedPropertyObserver, _classCallCheck, ObserverLocator, ObjectObservationAdapter;
+System.register(['aurelia-task-queue', './environment', './array-observation', './map-observation', './event-manager', './dirty-checking', './property-observation', './element-observation', './class-observer', 'aurelia-dependency-injection', './computed-observation', './svg'], function (_export) {
+  'use strict';
 
-  function createObserversLookup(obj) {
-    var value = {};
+  var TaskQueue, hasObjectObserve, _getArrayObserver, _getMapObserver, EventManager, DirtyChecker, DirtyCheckProperty, SetterObserver, OoObjectObserver, OoPropertyObserver, SelectValueObserver, CheckedObserver, ValueAttributeObserver, XLinkAttributeObserver, DataAttributeObserver, StyleObserver, ClassObserver, All, hasDeclaredDependencies, ComputedPropertyObserver, isStandardSvgAttribute, ObserverLocator, ObjectObservationAdapter;
 
-    try {
-      Object.defineProperty(obj, '__observers__', {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: value
-      });
-    } catch (_) {}
-
-    return value;
-  }
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   function createObserverLookup(obj, observerLocator) {
     var value = new OoObjectObserver(obj, observerLocator);
@@ -37,9 +26,9 @@ System.register(['aurelia-task-queue', './environment', './array-observation', '
     }, function (_environment) {
       hasObjectObserve = _environment.hasObjectObserve;
     }, function (_arrayObservation) {
-      getArrayObserver = _arrayObservation.getArrayObserver;
+      _getArrayObserver = _arrayObservation.getArrayObserver;
     }, function (_mapObservation) {
-      getMapObserver = _mapObservation.getMapObserver;
+      _getMapObserver = _mapObservation.getMapObserver;
     }, function (_eventManager) {
       EventManager = _eventManager.EventManager;
     }, function (_dirtyChecking) {
@@ -56,16 +45,17 @@ System.register(['aurelia-task-queue', './environment', './array-observation', '
       XLinkAttributeObserver = _elementObservation.XLinkAttributeObserver;
       DataAttributeObserver = _elementObservation.DataAttributeObserver;
       StyleObserver = _elementObservation.StyleObserver;
+    }, function (_classObserver) {
+      ClassObserver = _classObserver.ClassObserver;
     }, function (_aureliaDependencyInjection) {
       All = _aureliaDependencyInjection.All;
     }, function (_computedObservation) {
       hasDeclaredDependencies = _computedObservation.hasDeclaredDependencies;
       ComputedPropertyObserver = _computedObservation.ComputedPropertyObserver;
+    }, function (_svg) {
+      isStandardSvgAttribute = _svg.isStandardSvgAttribute;
     }],
     execute: function () {
-      'use strict';
-
-      _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
 
       if (typeof Object.getPropertyDescriptor !== 'function') {
         Object.getPropertyDescriptor = function (subject, name) {
@@ -92,27 +82,51 @@ System.register(['aurelia-task-queue', './environment', './array-observation', '
           return [TaskQueue, EventManager, DirtyChecker, All.of(ObjectObservationAdapter)];
         };
 
-        ObserverLocator.prototype.getObserversLookup = function getObserversLookup(obj) {
-          return obj.__observers__ || createObserversLookup(obj);
-        };
-
         ObserverLocator.prototype.getObserver = function getObserver(obj, propertyName) {
-          var observersLookup = this.getObserversLookup(obj);
+          var observersLookup = obj.__observers__,
+              observer;
 
-          if (propertyName in observersLookup) {
+          if (observersLookup && propertyName in observersLookup) {
             return observersLookup[propertyName];
           }
 
-          return observersLookup[propertyName] = this.createPropertyObserver(obj, propertyName);
+          observer = this.createPropertyObserver(obj, propertyName);
+
+          if (!observer.doNotCache) {
+            if (observersLookup === undefined) {
+              observersLookup = this.getOrCreateObserversLookup(obj);
+            }
+
+            observersLookup[propertyName] = observer;
+          }
+
+          return observer;
+        };
+
+        ObserverLocator.prototype.getOrCreateObserversLookup = function getOrCreateObserversLookup(obj) {
+          return obj.__observers__ || this.createObserversLookup(obj);
+        };
+
+        ObserverLocator.prototype.createObserversLookup = function createObserversLookup(obj) {
+          var value = {};
+
+          try {
+            Object.defineProperty(obj, '__observers__', {
+              enumerable: false,
+              configurable: false,
+              writable: false,
+              value: value
+            });
+          } catch (_) {}
+
+          return value;
         };
 
         ObserverLocator.prototype.getObservationAdapter = function getObservationAdapter(obj, propertyName, descriptor) {
           var i, ii, observationAdapter;
           for (i = 0, ii = this.observationAdapters.length; i < ii; i++) {
             observationAdapter = this.observationAdapters[i];
-            if (observationAdapter.handlesProperty(obj, propertyName, descriptor)) {
-              return observationAdapter;
-            }
+            if (observationAdapter.handlesProperty(obj, propertyName, descriptor)) return observationAdapter;
           }
           return null;
         };
@@ -121,6 +135,12 @@ System.register(['aurelia-task-queue', './environment', './array-observation', '
           var observerLookup, descriptor, handler, observationAdapter, xlinkResult;
 
           if (obj instanceof Element) {
+            if (propertyName === 'class') {
+              return new ClassObserver(obj);
+            }
+            if (propertyName === 'style' || propertyName === 'css') {
+              return new StyleObserver(obj, propertyName);
+            }
             handler = this.eventManager.getElementHandler(obj, propertyName);
             if (propertyName === 'value' && obj.tagName.toLowerCase() === 'select') {
               return new SelectValueObserver(obj, handler, this);
@@ -135,11 +155,8 @@ System.register(['aurelia-task-queue', './environment', './array-observation', '
             if (xlinkResult) {
               return new XLinkAttributeObserver(obj, propertyName, xlinkResult[1]);
             }
-            if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof SVGElement) {
+            if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof SVGElement && isStandardSvgAttribute(obj.nodeName, propertyName)) {
               return new DataAttributeObserver(obj, propertyName);
-            }
-            if (propertyName === 'style' || propertyName === 'css') {
-              return new StyleObserver(obj, propertyName);
             }
           }
 
@@ -149,11 +166,15 @@ System.register(['aurelia-task-queue', './environment', './array-observation', '
             return new ComputedPropertyObserver(obj, propertyName, descriptor, this);
           }
 
-          if (descriptor && (descriptor.get || descriptor.set)) {
+          var existingGetterOrSetter = undefined;
+          if (descriptor && (existingGetterOrSetter = descriptor.get || descriptor.set)) {
+            if (existingGetterOrSetter.getObserver) {
+              return existingGetterOrSetter.getObserver(obj);
+            }
+
             observationAdapter = this.getObservationAdapter(obj, propertyName, descriptor);
-            if (observationAdapter) {
-              return observationAdapter.getObserver(obj, propertyName, descriptor);
-            }return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
+            if (observationAdapter) return observationAdapter.getObserver(obj, propertyName, descriptor);
+            return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
           }
 
           if (hasObjectObserve) {
@@ -178,41 +199,21 @@ System.register(['aurelia-task-queue', './environment', './array-observation', '
           return new SetterObserver(this.taskQueue, obj, propertyName);
         };
 
-        ObserverLocator.prototype.getArrayObserver = (function (_getArrayObserver) {
-          function getArrayObserver(_x) {
-            return _getArrayObserver.apply(this, arguments);
-          }
-
-          getArrayObserver.toString = function () {
-            return _getArrayObserver.toString();
-          };
-
-          return getArrayObserver;
-        })(function (array) {
+        ObserverLocator.prototype.getArrayObserver = function getArrayObserver(array) {
           if ('__array_observer__' in array) {
             return array.__array_observer__;
           }
 
-          return array.__array_observer__ = getArrayObserver(this.taskQueue, array);
-        });
+          return array.__array_observer__ = _getArrayObserver(this.taskQueue, array);
+        };
 
-        ObserverLocator.prototype.getMapObserver = (function (_getMapObserver) {
-          function getMapObserver(_x2) {
-            return _getMapObserver.apply(this, arguments);
-          }
-
-          getMapObserver.toString = function () {
-            return _getMapObserver.toString();
-          };
-
-          return getMapObserver;
-        })(function (map) {
+        ObserverLocator.prototype.getMapObserver = function getMapObserver(map) {
           if ('__map_observer__' in map) {
             return map.__map_observer__;
           }
 
-          return map.__map_observer__ = getMapObserver(this.taskQueue, map);
-        });
+          return map.__map_observer__ = _getMapObserver(this.taskQueue, map);
+        };
 
         return ObserverLocator;
       })();

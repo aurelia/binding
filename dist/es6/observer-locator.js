@@ -17,11 +17,13 @@ import {
   DataAttributeObserver,
   StyleObserver
 } from './element-observation';
+import {ClassObserver} from './class-observer';
 import {All} from 'aurelia-dependency-injection';
 import {
   hasDeclaredDependencies,
   ComputedPropertyObserver
 } from './computed-observation';
+import {isStandardSvgAttribute} from './svg';
 
 if(typeof Object.getPropertyDescriptor !== 'function'){
  Object.getPropertyDescriptor = function (subject, name) {
@@ -33,21 +35,6 @@ if(typeof Object.getPropertyDescriptor !== 'function'){
     }
     return pd;
   };
-}
-
-function createObserversLookup(obj) {
-  var value = {};
-
-  try{
-    Object.defineProperty(obj, "__observers__", {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: value
-    });
-  }catch(_){}
-
-  return value;
 }
 
 function createObserverLookup(obj, observerLocator) {
@@ -74,21 +61,44 @@ export class ObserverLocator {
     this.observationAdapters = observationAdapters;
   }
 
-  getObserversLookup(obj){
-    return obj.__observers__ || createObserversLookup(obj);
-  }
-
   getObserver(obj, propertyName){
-    var observersLookup = this.getObserversLookup(obj);
+    var observersLookup = obj.__observers__,
+        observer;
 
-    if(propertyName in observersLookup){
+    if(observersLookup && propertyName in observersLookup){
       return observersLookup[propertyName];
     }
 
-    return observersLookup[propertyName] = this.createPropertyObserver(
-      obj,
-      propertyName
-      );
+    observer = this.createPropertyObserver(obj, propertyName);
+
+    if (!observer.doNotCache){
+      if(observersLookup === undefined){
+        observersLookup = this.getOrCreateObserversLookup(obj);
+      }
+
+      observersLookup[propertyName] = observer;
+    }
+
+    return observer;
+  }
+
+  getOrCreateObserversLookup(obj){
+    return obj.__observers__ || this.createObserversLookup(obj);
+  }
+
+  createObserversLookup(obj) {
+    var value = {};
+
+    try{
+      Object.defineProperty(obj, "__observers__", {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: value
+      });
+    }catch(_){}
+
+    return value;
   }
 
   getObservationAdapter(obj, propertyName, descriptor) {
@@ -105,6 +115,12 @@ export class ObserverLocator {
     var observerLookup, descriptor, handler, observationAdapter, xlinkResult;
 
     if(obj instanceof Element){
+      if (propertyName === 'class') {
+        return new ClassObserver(obj);
+      }
+      if (propertyName === 'style' || propertyName === 'css') {
+        return new StyleObserver(obj, propertyName);
+      }
       handler = this.eventManager.getElementHandler(obj, propertyName);
       if (propertyName === 'value' && obj.tagName.toLowerCase() === 'select') {
         return new SelectValueObserver(obj, handler, this);
@@ -119,11 +135,9 @@ export class ObserverLocator {
       if (xlinkResult) {
         return new XLinkAttributeObserver(obj, propertyName, xlinkResult[1]);
       }
-      if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof SVGElement) {
+      if (/^\w+:|^data-|^aria-/.test(propertyName)
+        || obj instanceof SVGElement && isStandardSvgAttribute(obj.nodeName, propertyName)) {
         return new DataAttributeObserver(obj, propertyName);
-      }
-      if (propertyName === 'style' || propertyName === 'css') {
-        return new StyleObserver(obj, propertyName);
       }
     }
 
@@ -133,7 +147,12 @@ export class ObserverLocator {
       return new ComputedPropertyObserver(obj, propertyName, descriptor, this)
     }
 
-    if(descriptor && (descriptor.get || descriptor.set)){
+    let existingGetterOrSetter;
+    if(descriptor && (existingGetterOrSetter = descriptor.get || descriptor.set)){
+      if(existingGetterOrSetter.getObserver){
+        return existingGetterOrSetter.getObserver(obj);
+      }
+
       // attempt to use an adapter before resorting to dirty checking.
       observationAdapter = this.getObservationAdapter(obj, propertyName, descriptor);
       if (observationAdapter)

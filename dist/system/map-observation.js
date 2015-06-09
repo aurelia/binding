@@ -1,7 +1,13 @@
 System.register(['core-js', './map-change-records', './collection-observation'], function (_export) {
-  var core, getChangeRecords, ModifyCollectionObserver, _classCallCheck, _inherits, mapProto, ModifyMapObserver;
+  'use strict';
+
+  var core, getChangeRecords, ModifyCollectionObserver, mapProto, ModifyMapObserver;
 
   _export('getMapObserver', getMapObserver);
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
 
   function getMapObserver(taskQueue, map) {
     return ModifyMapObserver.create(taskQueue, map);
@@ -16,12 +22,6 @@ System.register(['core-js', './map-change-records', './collection-observation'],
       ModifyCollectionObserver = _collectionObservation.ModifyCollectionObserver;
     }],
     execute: function () {
-      'use strict';
-
-      _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
-      _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
-
       mapProto = Map.prototype;
 
       ModifyMapObserver = (function (_ModifyCollectionObserver) {
@@ -36,10 +36,10 @@ System.register(['core-js', './map-change-records', './collection-observation'],
         ModifyMapObserver.create = function create(taskQueue, map) {
           var observer = new ModifyMapObserver(taskQueue, map);
 
-          map.set = function () {
+          map['set'] = function () {
             var oldValue = map.get(arguments[0]);
             var type = oldValue ? 'update' : 'add';
-            var methodCallResult = mapProto.set.apply(map, arguments);
+            var methodCallResult = mapProto['set'].apply(map, arguments);
             observer.addChangeRecord({
               type: type,
               object: map,
@@ -61,8 +61,8 @@ System.register(['core-js', './map-change-records', './collection-observation'],
             return methodCallResult;
           };
 
-          map.clear = function () {
-            var methodCallResult = mapProto.clear.apply(map, arguments);
+          map['clear'] = function () {
+            var methodCallResult = mapProto['clear'].apply(map, arguments);
             observer.addChangeRecord({
               type: 'clear',
               object: map

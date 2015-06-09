@@ -1,3 +1,24 @@
+## 0.7.0 (2015-06-08)
+
+
+#### Bug Fixes
+
+* **AST:** do not coerce operands of || or && to booleans ([1c4260ce](http://github.com/aurelia/binding/commit/1c4260cebc3fe6f4b3e73ee237af3295afc042d2))
+* **ArrayObserveObserver:** unobserve array when there are no subscribers ([5e847640](http://github.com/aurelia/binding/commit/5e847640a3a3ca70648288c218e509a791c5493b))
+* **EventManager:** delegate and direct event subscription reversed ([11e36493](http://github.com/aurelia/binding/commit/11e364936b4726f34bf15268a112fc62d154b920))
+* **OoObjectObserver:** unobserve object when there are no subscribers ([0ebdd3db](http://github.com/aurelia/binding/commit/0ebdd3db32ce9391beada8b84d6b6371f641a6ed))
+* **classList:** Element.classList polyfill Fixes: aurelia/framework#121 ([0a41adef](http://github.com/aurelia/binding/commit/0a41adef94a1c9f208efb469b05b8a4917b8b01a))
+
+
+#### Features
+
+* **ClassObserver:** enable multiple class bindings ([69273136](http://github.com/aurelia/binding/commit/6927313661a9b1263aa634ba6f2ef9446d597976))
+* **EventManager:** enable two-way scrollTop/scrollLeft binding Fixes: #98 ([543d845c](http://github.com/aurelia/binding/commit/543d845c533fc785b7b0de7651b50a3fa39086d2))
+* **name-expression:** make ref bindings work with api props ([0e6642eb](http://github.com/aurelia/binding/commit/0e6642eb23992e6dac20aceccd2eb789d5d82b62), closes [#87](http://github.com/aurelia/binding/issues/87))
+* **observer-locator:** enable custom observer locator through getter/setters ([f09451ce](http://github.com/aurelia/binding/commit/f09451cefb79a85f14b47c89bf6e2c1fa0ac008e))
+* **svg:** expanded svg support ([331a95da](http://github.com/aurelia/binding/commit/331a95da502dd2b28f992fdd2094fb3799c4acae), closes [#59](http://github.com/aurelia/binding/issues/59))
+
+
 ### 0.6.1 (2015-05-06)
 
 
