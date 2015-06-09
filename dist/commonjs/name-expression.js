@@ -10,9 +10,7 @@ var NameExpression = (function () {
 
     this.property = name;
     this.discrete = true;
-    this.mode = mode.replace(/-([a-z])/g, function (m, w) {
-      return w.toUpperCase();
-    });
+    this.mode = mode;
   }
 
   NameExpression.prototype.createBinding = function createBinding(target) {
@@ -30,16 +28,23 @@ var NameBinder = (function () {
 
     this.property = property;
 
-    if (mode === 'element') {
-      this.target = target;
-    } else {
-      this.target = target[mode];
+    switch (mode) {
+      case 'element':
+        this.target = target;
+        break;
+      case 'view-model':
+        this.target = target.primaryBehavior.executionContext;
+        break;
+      default:
+        this.target = target[mode];
 
-      if (this.target === undefined) {
-        throw new Error('Attempted to reference "' + mode + '", but it was not found on the target element.');
-      } else {
-        this.target = this.target.executionContext || this.target;
-      }
+        if (this.target === undefined) {
+          throw new Error('Attempted to reference "' + mode + '", but it was not found on the target element.');
+        } else {
+          this.target = this.target.executionContext || this.target;
+        }
+
+        break;
     }
   }
 

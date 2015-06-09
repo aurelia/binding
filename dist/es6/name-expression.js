@@ -2,7 +2,7 @@ export class NameExpression {
   constructor(name, mode){
     this.property = name;
     this.discrete = true;
-    this.mode = mode.replace(/-([a-z])/g, (m, w) => w.toUpperCase());
+    this.mode = mode;
   }
 
   createBinding(target){
@@ -14,16 +14,23 @@ class NameBinder {
   constructor(property, target, mode){
     this.property = property;
 
-    if(mode === 'element'){
-      this.target = target;
-    } else {
-      this.target = target[mode];
+    switch (mode) {
+      case 'element':
+        this.target = target;
+        break;
+      case 'view-model':
+        this.target = target.primaryBehavior.executionContext;
+        break;
+      default:
+        this.target = target[mode];
 
-      if(this.target === undefined){
-        throw new Error(`Attempted to reference "${mode}", but it was not found on the target element.`)
-      }else{
-        this.target = this.target.executionContext || this.target;
-      }
+        if(this.target === undefined){
+          throw new Error(`Attempted to reference "${mode}", but it was not found on the target element.`)
+        }else{
+          this.target = this.target.executionContext || this.target;
+        }
+
+        break;
     }
   }
 

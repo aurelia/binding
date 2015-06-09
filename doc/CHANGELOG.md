@@ -1,3 +1,13 @@
+### 0.7.1 (2015-06-09)
+
+
+#### Bug Fixes
+
+* **name-expression:**
+  * no longer transform the mode ([b77098ee](http://github.com/aurelia/binding/commit/b77098eeea0ce2aa1bfbb9fb5eb4ae6a48265728))
+  * enable ref binding to view-model and html behaviors ([451f09b3](http://github.com/aurelia/binding/commit/451f09b3b31fb3317282c4dc7b6146c610f298d4))
+
+
 ## 0.7.0 (2015-06-08)
 
 
