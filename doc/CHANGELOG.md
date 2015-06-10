@@ -1,3 +1,11 @@
+### 0.7.3 (2015-06-10)
+
+
+#### Bug Fixes
+
+* **ClassObserver:** handle null and undefined ([a8696e6a](http://github.com/aurelia/binding/commit/a8696e6a9236bafaf68584d1afa9a98aef423da1), closes [#109](http://github.com/aurelia/binding/issues/109))
+
+
 ### 0.7.2 (2015-06-09)
 
 
