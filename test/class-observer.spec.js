@@ -43,5 +43,13 @@ describe('ClassObserver', () => {
     expect(contains('foo') && contains('bar')).toBe(true);
     observerA.setValue('');
     expect(contains('foo') || contains('bar')).toBe(false);
+    observerA.setValue('foo');
+    expect(contains('foo')).toBe(true);
+    observerA.setValue(null);
+    expect(contains('foo')).toBe(false);
+    observerA.setValue('foo');
+    expect(contains('foo')).toBe(true);
+    observerA.setValue(undefined);
+    expect(contains('foo')).toBe(false);    
   });
 });

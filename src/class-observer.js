@@ -16,15 +16,17 @@ export class ClassObserver {
         names, name, i;
 
     // Add the classes, tracking the version at which they were added.
-    names = newValue.split(' ');
-    i = names.length;
-    while(i--) {
-      name = names[i];
-      if (name === '') {
-        continue;
+    if (newValue !== null && newValue !== undefined && newValue.length) {
+      names = newValue.split(' ');
+      i = names.length;
+      while(i--) {
+        name = names[i];
+        if (name === '') {
+          continue;
+        }
+        nameIndex[name] = version;
+        this.element.classList.add(name);
       }
-      nameIndex[name] = version;
-      this.element.classList.add(name);
     }
 
     // Update state variables.
