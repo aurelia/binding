@@ -138,7 +138,9 @@ System.register(['core-js'], function (_export) {
 
           if (this.callbackCount === 0) {
             this.handler = this.handleChanges.bind(this);
-            Object.observe(this.obj, this.handler, ['update', 'add']);
+            try {
+              Object.observe(this.obj, this.handler, ['update', 'add']);
+            } catch (_) {}
           }
 
           this.callbackCount++;
@@ -161,7 +163,9 @@ System.register(['core-js'], function (_export) {
 
           this.callbackCount--;
           if (this.callbackCount === 0) {
-            Object.unobserve(this.obj, this.handler);
+            try {
+              Object.unobserve(this.obj, this.handler);
+            } catch (_) {}
           }
         };
 

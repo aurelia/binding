@@ -1,3 +1,11 @@
+### 0.7.2 (2015-06-09)
+
+
+#### Bug Fixes
+
+* **OoObjectObserver:** regression issue with String.length observation ([df6a7e79](http://github.com/aurelia/binding/commit/df6a7e79507575f28509b25c3e654aa5cd7f4642), closes [#106](http://github.com/aurelia/binding/issues/106))
+
+
 ### 0.7.1 (2015-06-09)
 
 

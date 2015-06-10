@@ -114,7 +114,9 @@ export class OoObjectObserver {
 
     if (this.callbackCount === 0) {
       this.handler = this.handleChanges.bind(this);
-      Object.observe(this.obj, this.handler, ['update', 'add']);
+      try {
+        Object.observe(this.obj, this.handler, ['update', 'add']);
+      } catch(_) {}
     }
 
     this.callbackCount++;
@@ -137,7 +139,9 @@ export class OoObjectObserver {
 
     this.callbackCount--;
     if (this.callbackCount === 0) {
-      Object.unobserve(this.obj, this.handler);
+      try {
+        Object.unobserve(this.obj, this.handler);
+      } catch(_) {}
     }
   }
 
