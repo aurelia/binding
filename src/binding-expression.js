@@ -1,4 +1,4 @@
-import {bindingMode} from './binding-modes';
+import {bindingMode} from './binding-mode';
 
 export class BindingExpression {
   constructor(observerLocator, targetProperty, sourceExpression,
