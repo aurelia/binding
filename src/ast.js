@@ -1,6 +1,7 @@
 import {PathObserver} from './path-observer';
 import {CompositeObserver} from './composite-observer';
 import {AccessKeyedObserver} from './access-keyed-observer';
+import {ConditionalObserver} from './conditional-observer';
 
 export class Expression {
   constructor(){
@@ -158,31 +159,25 @@ export class Conditional extends Expression {
 
   connect(binding, scope){
     var conditionInfo = this.condition.connect(binding, scope),
-        yesInfo = this.yes.connect(binding, scope),
-        noInfo = this.no.connect(binding, scope),
-        childObservers = [],
+        conditionValue = !!conditionInfo.value,
+        valueInfo = this[conditionValue ? 'yes' : 'no'].connect(binding, scope),
         observer;
 
-    if(conditionInfo.observer){
-      childObservers.push(conditionInfo.observer);
-    }
-
-    if(yesInfo.observer){
-      childObservers.push(yesInfo.observer);
-    }
-
-    if(noInfo.observer){
-      childObservers.push(noInfo.observer);
-    }
-
-    if(childObservers.length){
-      observer = new CompositeObserver(childObservers, () => {
-        return this.evaluate(scope, binding.valueConverterLookupFunction);
-      });
+    if (conditionInfo.observer) {
+      observer = new ConditionalObserver(
+        binding,
+        scope,
+        conditionInfo,
+        valueInfo,
+        this.yes,
+        this.no,
+        () => this.evaluate(scope, binding.valueConverterLookupFunction));
+    } else {
+      observer = valueInfo.observer;
     }
 
     return {
-      value:(!!conditionInfo.value) ? yesInfo.value : noInfo.value,
+      value: valueInfo.value,
       observer: observer
     };
   }
