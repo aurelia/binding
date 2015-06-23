@@ -6,7 +6,7 @@ export {EventManager} from './event-manager';
 export {ObserverLocator, ObjectObservationAdapter} from './observer-locator';
 export {ValueConverterResource} from './value-converter';
 export {calcSplices} from './array-change-records';
-export * from './binding-modes';
+export {bindingMode} from './binding-mode';
 export {Parser} from './parser';
 export {BindingExpression} from './binding-expression';
 export {ListenerExpression} from './listener-expression';
