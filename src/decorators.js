@@ -5,11 +5,11 @@ import {ValueConverterResource} from './value-converter';
 export function valueConverter(nameOrTarget){
   if(nameOrTarget === undefined || typeof nameOrTarget === 'string'){
     return function(target){
-      Reflect.defineMetadata(Metadata.resource, new ValueConverterResource(nameOrTarget), target);
+      Metadata.define(Metadata.resource, new ValueConverterResource(nameOrTarget), target);
     }
   }
 
-  Reflect.defineMetadata(Metadata.resource, new ValueConverterResource(), nameOrTarget);
+  Metadata.define(Metadata.resource, new ValueConverterResource(), nameOrTarget);
 }
 
 Decorators.configure.parameterizedDecorator('valueConverter', valueConverter);
