@@ -1,4 +1,4 @@
-import {declarePropertyDependencies} from '../src/index';
+import {declarePropertyDependencies} from '../src/computed-observation';
 import {ComputedPropertyObserver} from '../src/computed-observation';
 import {createObserverLocator, Person, Foo} from './shared';
 

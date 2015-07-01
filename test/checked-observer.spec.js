@@ -1,4 +1,4 @@
-import {bindingMode} from '../src/index';
+import {bindingMode} from '../src/binding-mode';
 import {
   createElement,
   fireEvent,

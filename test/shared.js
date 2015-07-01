@@ -1,4 +1,8 @@
-import {ObserverLocator, EventManager, DirtyChecker, Parser, BindingExpression} from '../src/index';
+import {ObserverLocator} from '../src/observer-locator';
+import {DirtyChecker} from '../src/dirty-checking';
+import {EventManager} from '../src/event-manager';
+import {Parser} from '../src/parser';
+import {BindingExpression} from '../src/binding-expression';
 import {TaskQueue} from 'aurelia-task-queue';
 
 export var checkDelay = 20;
