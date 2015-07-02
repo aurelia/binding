@@ -1433,7 +1433,7 @@ define(['exports', 'core-js', 'aurelia-task-queue', 'aurelia-dependency-injectio
       var func = this.func.evaluate(scope, valueConverters);
 
       if (typeof func !== 'function') {
-        throw new Error('' + this.func + ' is not a function');
+        throw new Error(this.func + ' is not a function');
       } else {
         return func.apply(null, args || evalList(scope, this.args, valueConverters));
       }
@@ -2068,7 +2068,7 @@ define(['exports', 'core-js', 'aurelia-task-queue', 'aurelia-dependency-injectio
     if (func === null) {
       throw new Error('Undefined function ' + name);
     } else {
-      throw new Error('' + name + ' is not a function');
+      throw new Error(name + ' is not a function');
     }
   }
 
@@ -2870,7 +2870,7 @@ define(['exports', 'core-js', 'aurelia-task-queue', 'aurelia-dependency-injectio
 
     _createClass(ParserImplementation, [{
       key: 'peek',
-      get: function () {
+      get: function get() {
         return this.index < this.tokens.length ? this.tokens[this.index] : EOF;
       }
     }]);
@@ -4859,7 +4859,7 @@ define(['exports', 'core-js', 'aurelia-task-queue', 'aurelia-dependency-injectio
         try {
           objCtr.defineProperty(elemCtrProto, classListProp, classListPropDesc);
         } catch (ex) {
-          if (ex.number === -2146823252) {
+          if (ex.number === -0x7FF5EC54) {
             classListPropDesc.enumerable = false;
             objCtr.defineProperty(elemCtrProto, classListProp, classListPropDesc);
           }
@@ -4950,11 +4950,11 @@ define(['exports', 'core-js', 'aurelia-task-queue', 'aurelia-dependency-injectio
   function valueConverter(nameOrTarget) {
     if (nameOrTarget === undefined || typeof nameOrTarget === 'string') {
       return function (target) {
-        Reflect.defineMetadata(_aureliaMetadata.Metadata.resource, new ValueConverterResource(nameOrTarget), target);
+        _aureliaMetadata.Metadata.define(_aureliaMetadata.Metadata.resource, new ValueConverterResource(nameOrTarget), target);
       };
     }
 
-    Reflect.defineMetadata(_aureliaMetadata.Metadata.resource, new ValueConverterResource(), nameOrTarget);
+    _aureliaMetadata.Metadata.define(_aureliaMetadata.Metadata.resource, new ValueConverterResource(), nameOrTarget);
   }
 
   _aureliaMetadata.Decorators.configure.parameterizedDecorator('valueConverter', valueConverter);

@@ -1,3 +1,17 @@
+## 0.8.0 (2015-07-02)
+
+
+#### Bug Fixes
+
+* **decorators:** use new metadata api ([31a0b6ec](http://github.com/aurelia/binding/commit/31a0b6ec52e5dc1380c99b9f99018d5d3ed444a9))
+* **tests:** adjust after build change ([5cc090de](http://github.com/aurelia/binding/commit/5cc090de74a282cd8e0dc3c768a74e222a280181))
+
+
+#### Features
+
+* **binding-expression:** convenience API for creating binding expressions, esp. for tests ([a8e11b5c](http://github.com/aurelia/binding/commit/a8e11b5ccf9e07b6a21125a3fcd25640b2ce297c))
+
+
 ### 0.7.3 (2015-06-10)
 
 

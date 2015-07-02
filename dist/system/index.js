@@ -256,7 +256,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
     if (func === null) {
       throw new Error('Undefined function ' + name);
     } else {
-      throw new Error('' + name + ' is not a function');
+      throw new Error(name + ' is not a function');
     }
   }
 
@@ -381,11 +381,11 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
   function valueConverter(nameOrTarget) {
     if (nameOrTarget === undefined || typeof nameOrTarget === 'string') {
       return function (target) {
-        Reflect.defineMetadata(Metadata.resource, new ValueConverterResource(nameOrTarget), target);
+        Metadata.define(Metadata.resource, new ValueConverterResource(nameOrTarget), target);
       };
     }
 
-    Reflect.defineMetadata(Metadata.resource, new ValueConverterResource(), nameOrTarget);
+    Metadata.define(Metadata.resource, new ValueConverterResource(), nameOrTarget);
   }
 
   function computedFrom() {
@@ -1650,7 +1650,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           var func = this.func.evaluate(scope, valueConverters);
 
           if (typeof func !== 'function') {
-            throw new Error('' + this.func + ' is not a function');
+            throw new Error(this.func + ' is not a function');
           } else {
             return func.apply(null, args || evalList(scope, this.args, valueConverters));
           }
@@ -2948,7 +2948,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
 
         _createClass(ParserImplementation, [{
           key: 'peek',
-          get: function () {
+          get: function get() {
             return this.index < this.tokens.length ? this.tokens[this.index] : EOF;
           }
         }]);
@@ -4899,7 +4899,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
             try {
               objCtr.defineProperty(elemCtrProto, classListProp, classListPropDesc);
             } catch (ex) {
-              if (ex.number === -2146823252) {
+              if (ex.number === -0x7FF5EC54) {
                 classListPropDesc.enumerable = false;
                 objCtr.defineProperty(elemCtrProto, classListProp, classListPropDesc);
               }
