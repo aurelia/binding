@@ -8,11 +8,11 @@ export class Expression {
     this.isAssignable = false;
   }
 
-  evaluate(){
+  evaluate(scope: any, valueConverters: any, args?: any): any{
     throw new Error(`Cannot evaluate ${this}`);
   }
 
-  assign(){
+  assign(scope: any, value: any, valueConverters: any): any{
     throw new Error(`Cannot assign to ${this}`);
   }
 
