@@ -1138,11 +1138,11 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           this.isAssignable = false;
         }
 
-        Expression.prototype.evaluate = function evaluate() {
+        Expression.prototype.evaluate = function evaluate(scope, valueConverters, args) {
           throw new Error('Cannot evaluate ' + this);
         };
 
-        Expression.prototype.assign = function assign() {
+        Expression.prototype.assign = function assign(scope, value, valueConverters) {
           throw new Error('Cannot assign to ' + this);
         };
 

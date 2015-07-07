@@ -1,3 +1,11 @@
+### 0.8.1 (2015-07-07)
+
+
+#### Bug Fixes
+
+* **Expression:** update with base class parameters ([2ad8495a](http://github.com/aurelia/binding/commit/2ad8495aac13faf1fa52cc426fb2f485767c180e))
+
+
 ## 0.8.0 (2015-07-02)
 
 

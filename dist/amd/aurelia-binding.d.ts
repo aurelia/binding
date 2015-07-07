@@ -57,8 +57,8 @@ declare module 'aurelia-binding' {
   }
   export class Expression {
     constructor();
-    evaluate(): any;
-    assign(): any;
+    evaluate(scope: any, valueConverters: any, args?: any): any;
+    assign(scope: any, value: any, valueConverters: any): any;
     toString(): any;
   }
   export class Chain extends Expression {
