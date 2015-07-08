@@ -11,6 +11,7 @@ describe('EventManager', () => {
 
       expect(em.getElementHandler(element, 'value')).not.toBeNull();
       expect(em.getElementHandler(element, 'checked')).not.toBeNull();
+      expect(em.getElementHandler(element, 'files')).not.toBeNull();
       expect(em.getElementHandler(element, 'id')).toBeNull();
     });
 
