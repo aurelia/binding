@@ -1,3 +1,11 @@
+### 0.8.2 (2015-07-13)
+
+
+#### Features
+
+* **input:** Adds ability to bind to input type file ([1a52e061](http://github.com/aurelia/binding/commit/1a52e0611e31ea1b9ef89401815a236c905701e0))
+
+
 ### 0.8.1 (2015-07-07)
 
 

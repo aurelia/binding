@@ -2831,7 +2831,8 @@ export class EventManager {
       tagName:'input',
       properties: {
         value:['change','input'],
-        checked:['change','input']
+        checked:['change','input'],
+        files:['change','input']
       }
     });
 

@@ -3100,7 +3100,8 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
             tagName: 'input',
             properties: {
               value: ['change', 'input'],
-              checked: ['change', 'input']
+              checked: ['change', 'input'],
+              files: ['change', 'input']
             }
           });
 

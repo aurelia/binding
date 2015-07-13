@@ -3033,7 +3033,8 @@ var EventManager = (function () {
       tagName: 'input',
       properties: {
         value: ['change', 'input'],
-        checked: ['change', 'input']
+        checked: ['change', 'input'],
+        files: ['change', 'input']
       }
     });
 
