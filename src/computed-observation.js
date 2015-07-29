@@ -12,7 +12,7 @@ export class ComputedPropertyObserver {
   }
 
   setValue(newValue){
-    throw new Error('Computed properties cannot be assigned.');
+    this.obj[this.propertyName] = newValue;
   }
 
   trigger(newValue, oldValue){
@@ -61,13 +61,10 @@ export class ComputedPropertyObserver {
 }
 
 export function hasDeclaredDependencies(descriptor) {
-  return descriptor && descriptor.get && !descriptor.set
-    && descriptor.get.dependencies && descriptor.get.dependencies.length;
+  return descriptor && descriptor.get && descriptor.get.dependencies && descriptor.get.dependencies.length > 0;
 }
 
 export function declarePropertyDependencies(ctor, propertyName, dependencies) {
   var descriptor = Object.getOwnPropertyDescriptor(ctor.prototype, propertyName);
-  if (descriptor.set)
-    throw new Error('The property cannot have a setter function.');
   descriptor.get.dependencies = dependencies;
 }

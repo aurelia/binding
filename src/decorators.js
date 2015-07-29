@@ -16,9 +16,6 @@ Decorators.configure.parameterizedDecorator('valueConverter', valueConverter);
 
 export function computedFrom(...rest){
   return function(target, key, descriptor){
-    if (descriptor.set){
-      throw new Error(`The computed property "${key}" cannot have a setter function.`);
-    }
     descriptor.get.dependencies = rest;
     return descriptor;
   }

@@ -1,6 +1,6 @@
 import {DirtyCheckProperty} from '../src/dirty-checking';
 import {
-	Foo,
+	FooNoDep,
 	executeSharedPropertyObserverTests,
 	createObserverLocator
 } from './shared';
@@ -9,7 +9,7 @@ describe('DirtyCheckProperty', () => {
 	var obj, observerLocator, observer;
 
 	beforeAll(() => {
-		obj = new Foo();
+		obj = new FooNoDep();
 		observerLocator = createObserverLocator();
 		observer = observerLocator.getObserver(obj, 'bar');
 	});

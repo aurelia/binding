@@ -76,6 +76,18 @@ export class Foo {
   }
 }
 
+export class FooNoDep {
+  constructor() {
+    this._bar = null;
+  }
+  get bar() {
+    return this._bar;
+  }
+  set bar(newValue) {
+    this._bar = newValue;
+  }
+}
+
 export function executeSharedPropertyObserverTests(obj, observer, done) {
   var callback = jasmine.createSpy('callback'),
       oldValue, newValue,

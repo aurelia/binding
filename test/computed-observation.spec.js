@@ -3,7 +3,7 @@ import {ComputedPropertyObserver} from '../src/computed-observation';
 import {createObserverLocator, Person, Foo} from './shared';
 
 describe('declarePropertyDependencies', () => {
-  it('should declare dependencies for properties with a getter and no setter', () => {
+  it('should declare dependencies for properties with a getter', () => {
     var dependencies = ['firstName', 'lastName'],
         person = new Person();
     declarePropertyDependencies(Person, 'fullName', dependencies);
@@ -11,17 +11,21 @@ describe('declarePropertyDependencies', () => {
       .toBe(dependencies);
   });
 
-  it('should not declare dependencies for properties with a setter', () => {
-    expect(() => declarePropertyDependencies(Foo, 'bar', ['baz']))
-      .toThrow(new Error('The property cannot have a setter function.'));
+  it('should declare dependencies for properties with a setter', () => {
+    var dependencies = ['baz'],
+        foo = new Foo();
+
+    declarePropertyDependencies(Foo, 'bar', dependencies);
+    expect(Object.getOwnPropertyDescriptor(foo.constructor.prototype, 'bar').get.dependencies)
+      .toBe(dependencies);
   });
 });
 
 describe('ComputedObservationAdapter', () => {
-  var person, observer;
+  var person, observer, locator;
 
   beforeAll(() => {
-    var locator = createObserverLocator();
+    locator = createObserverLocator();
     person = new Person();
     observer = locator.getObserver(person, 'fullName');
   });
@@ -34,8 +38,13 @@ describe('ComputedObservationAdapter', () => {
     expect(observer.getValue()).toBe(person.fullName);
   });
 
-  it('cannot set the value', () => {
-    expect(() => observer.setValue('foo')).toThrow(new Error('Computed properties cannot be assigned.'));
+  it('sets the value', () => {
+    var foo = new Foo(),
+        fooObserver = locator.getObserver(foo, 'bar');
+
+    fooObserver.setValue(7);
+
+    expect(foo.bar).toBe(7);
   });
 
   it('notifies when value changes', done => {
