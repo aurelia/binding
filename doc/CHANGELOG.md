@@ -1,3 +1,12 @@
+### 0.8.3 (2015-07-29)
+
+
+#### Bug Fixes
+
+* **computed-observation:** allow setters ([9fc2a813](http://github.com/aurelia/binding/commit/9fc2a813e1a5cc0ae785d909f4b15c8978f2370d), closes [#136](http://github.com/aurelia/binding/issues/136))
+* **event-manager:** rework delegated events to take advantage of dom boundaries ([8d33813e](http://github.com/aurelia/binding/commit/8d33813eb340c2136198916a4a757a2c577f5aab))
+
+
 ### 0.8.2 (2015-07-13)
 
 
