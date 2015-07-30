@@ -2749,75 +2749,71 @@ class ModifyMapObserver extends ModifyCollectionObserver {
   }
 }
 
+function handleDelegatedEvent(event){
+  event = event || window.event;
+  var target = event.target || event.srcElement,
+      callback;
+
+  while(target && !callback) {
+    if(target.delegatedCallbacks){
+      callback = target.delegatedCallbacks[event.type];
+    }
+
+    if(!callback){
+      target = target.parentNode;
+    }
+  }
+
+  if(callback){
+    callback(event);
+  }
+}
+
+class DelegateHandlerEntry {
+  constructor(boundary, eventName){
+    this.boundary = boundary;
+    this.eventName = eventName;
+    this.count = 0;
+  }
+
+  increment(){
+    this.count++;
+
+    if(this.count === 1){
+      this.boundary.addEventListener(this.eventName, handleDelegatedEvent, false);
+    }
+  }
+
+  decrement(){
+    this.count--;
+
+    if(this.count === 0){
+      this.boundary.removeEventListener(this.eventName, handleDelegatedEvent);
+    }
+  }
+}
+
 class DefaultEventStrategy {
-  constructor(){
-    this.delegatedEvents = {};
-  }
-
-  ensureDelegatedEvent(eventName){
-    if(this.delegatedEvents[eventName]){
-      return;
-    }
-
-    this.delegatedEvents[eventName] = true;
-    document.addEventListener(eventName, this.handleDelegatedEvent.bind(this), false);
-  }
-
-  handleCallbackResult(result){
-    //todo: coroutine via result?
-  }
-
-  handleDelegatedEvent(event){
-    event = event || window.event;
-    var target = event.target || event.srcElement,
-        callback;
-
-    while(target && !callback) {
-      if(target.delegatedEvents){
-        callback = target.delegatedEvents[event.type];
-      }
-
-      if(!callback){
-        target = target.parentNode;
-      }
-    }
-
-    if(callback){
-      this.handleCallbackResult(callback(event));
-    }
-  }
-
-  createDirectEventCallback(callback){
-    return event => {
-      this.handleCallbackResult(callback(event));
-    };
-  }
-
-  subscribeToDelegatedEvent(target, targetEvent, callback){
-    var lookup = target.delegatedEvents || (target.delegatedEvents = {});
-
-    this.ensureDelegatedEvent(targetEvent);
-    lookup[targetEvent] = callback;
-
-    return function(){
-      lookup[targetEvent] = null;
-    };
-  }
-
-  subscribeToDirectEvent(target, targetEvent, callback){
-    var directEventCallback = this.createDirectEventCallback(callback);
-    target.addEventListener(targetEvent, directEventCallback, false);
-
-    return function(){
-      target.removeEventListener(targetEvent, directEventCallback);
-    };
-  }
-
   subscribe(target, targetEvent, callback, delegate){
     if(delegate){
-      return this.subscribeToDelegatedEvent(target, targetEvent, callback);
+      let boundary = target.domBoundary || document,
+          delegatedHandlers = boundary.delegatedHandlers || (boundary.delegatedHandlers = {}),
+          handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(boundary, targetEvent)),
+          delegatedCallbacks = target.delegatedCallbacks || (target.delegatedCallbacks = {});
+
+      handlerEntry.increment();
+      delegatedCallbacks[targetEvent] = callback;
+
+      return function(){
+        handlerEntry.decrement();
+        delegatedCallbacks[targetEvent] = null;
+      };
     }else{
-      return this.subscribeToDirectEvent(target, targetEvent, callback);
+      target.addEventListener(targetEvent, callback, false);
+
+      return function(){
+        target.removeEventListener(targetEvent, callback);
+      };
     }
   }
 }
@@ -3767,7 +3763,7 @@ export class ComputedPropertyObserver {
   }
 
   setValue(newValue){
-    throw new Error('Computed properties cannot be assigned.');
+    this.obj[this.propertyName] = newValue;
   }
 
   trigger(newValue, oldValue){
@@ -3816,14 +3812,11 @@ export class ComputedPropertyObserver {
 }
 
 export function hasDeclaredDependencies(descriptor) {
-  return descriptor && descriptor.get && !descriptor.set
-    && descriptor.get.dependencies && descriptor.get.dependencies.length;
+  return descriptor && descriptor.get && descriptor.get.dependencies && descriptor.get.dependencies.length > 0;
 }
 
 export function declarePropertyDependencies(ctor, propertyName, dependencies) {
   var descriptor = Object.getOwnPropertyDescriptor(ctor.prototype, propertyName);
-  if (descriptor.set)
-    throw new Error('The property cannot have a setter function.');
   descriptor.get.dependencies = dependencies;
 }
 
@@ -4686,9 +4679,6 @@ Decorators.configure.parameterizedDecorator('valueConverter', valueConverter);
 
 export function computedFrom(...rest){
   return function(target, key, descriptor){
-    if (descriptor.set){
-      throw new Error(`The computed property "${key}" cannot have a setter function.`);
-    }
     descriptor.get.dependencies = rest;
     return descriptor;
   }

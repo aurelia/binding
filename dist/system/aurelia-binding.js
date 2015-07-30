@@ -1,7 +1,7 @@
 System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection', 'aurelia-metadata'], function (_export) {
   'use strict';
 
-  var core, TaskQueue, All, Container, Decorators, Metadata, AccessKeyedObserver, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, hasObjectObserve, hasArrayObserve, ModifyCollectionObserver, CollectionLengthObserver, arrayProto, ModifyArrayObserver, ArrayObserveObserver, PathObserver, CompositeObserver, Expression, Chain, ValueConverter, Assign, Conditional, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, PrefixNot, LiteralPrimitive, LiteralString, LiteralArray, LiteralObject, Unparser, evalListCache, bindingMode, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP, EOF, Parser, ParserImplementation, mapProto, ModifyMapObserver, DefaultEventStrategy, EventManager, DirtyChecker, DirtyCheckProperty, SetterObserver, OoPropertyObserver, OoObjectObserver, UndefinedPropertyObserver, XLinkAttributeObserver, DataAttributeObserver, StyleObserver, ValueAttributeObserver, SelectValueObserver, CheckedObserver, ClassObserver, ComputedPropertyObserver, elements, presentationElements, presentationAttributes, ObserverLocator, ObjectObservationAdapter, BindingExpression, Binding, CallExpression, Call, ValueConverterResource, ListenerExpression, Listener, NameExpression, NameBinder;
+  var core, TaskQueue, All, Container, Decorators, Metadata, AccessKeyedObserver, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, hasObjectObserve, hasArrayObserve, ModifyCollectionObserver, CollectionLengthObserver, arrayProto, ModifyArrayObserver, ArrayObserveObserver, PathObserver, CompositeObserver, Expression, Chain, ValueConverter, Assign, Conditional, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, PrefixNot, LiteralPrimitive, LiteralString, LiteralArray, LiteralObject, Unparser, evalListCache, bindingMode, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP, EOF, Parser, ParserImplementation, mapProto, ModifyMapObserver, DelegateHandlerEntry, DefaultEventStrategy, EventManager, DirtyChecker, DirtyCheckProperty, SetterObserver, OoPropertyObserver, OoObjectObserver, UndefinedPropertyObserver, XLinkAttributeObserver, DataAttributeObserver, StyleObserver, ValueAttributeObserver, SelectValueObserver, CheckedObserver, ClassObserver, ComputedPropertyObserver, elements, presentationElements, presentationAttributes, ObserverLocator, ObjectObservationAdapter, BindingExpression, Binding, CallExpression, Call, ValueConverterResource, ListenerExpression, Listener, NameExpression, NameBinder;
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
@@ -339,13 +339,32 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
     return ModifyMapObserver.create(taskQueue, map);
   }
 
+  function handleDelegatedEvent(event) {
+    event = event || window.event;
+    var target = event.target || event.srcElement,
+        callback;
+
+    while (target && !callback) {
+      if (target.delegatedCallbacks) {
+        callback = target.delegatedCallbacks[event.type];
+      }
+
+      if (!callback) {
+        target = target.parentNode;
+      }
+    }
+
+    if (callback) {
+      callback(event);
+    }
+  }
+
   function hasDeclaredDependencies(descriptor) {
-    return descriptor && descriptor.get && !descriptor.set && descriptor.get.dependencies && descriptor.get.dependencies.length;
+    return descriptor && descriptor.get && descriptor.get.dependencies && descriptor.get.dependencies.length > 0;
   }
 
   function declarePropertyDependencies(ctor, propertyName, dependencies) {
     var descriptor = Object.getOwnPropertyDescriptor(ctor.prototype, propertyName);
-    if (descriptor.set) throw new Error('The property cannot have a setter function.');
     descriptor.get.dependencies = dependencies;
   }
 
@@ -394,9 +413,6 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
     }
 
     return function (target, key, descriptor) {
-      if (descriptor.set) {
-        throw new Error('The computed property "' + key + '" cannot have a setter function.');
-      }
       descriptor.get.dependencies = rest;
       return descriptor;
     };
@@ -3012,77 +3028,65 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
         return ModifyMapObserver;
       })(ModifyCollectionObserver);
 
+      DelegateHandlerEntry = (function () {
+        function DelegateHandlerEntry(boundary, eventName) {
+          _classCallCheck(this, DelegateHandlerEntry);
+
+          this.boundary = boundary;
+          this.eventName = eventName;
+          this.count = 0;
+        }
+
+        DelegateHandlerEntry.prototype.increment = function increment() {
+          this.count++;
+
+          if (this.count === 1) {
+            this.boundary.addEventListener(this.eventName, handleDelegatedEvent, false);
+          }
+        };
+
+        DelegateHandlerEntry.prototype.decrement = function decrement() {
+          this.count--;
+
+          if (this.count === 0) {
+            this.boundary.removeEventListener(this.eventName, handleDelegatedEvent);
+          }
+        };
+
+        return DelegateHandlerEntry;
+      })();
+
       DefaultEventStrategy = (function () {
         function DefaultEventStrategy() {
           _classCallCheck(this, DefaultEventStrategy);
-
-          this.delegatedEvents = {};
         }
-
-        DefaultEventStrategy.prototype.ensureDelegatedEvent = function ensureDelegatedEvent(eventName) {
-          if (this.delegatedEvents[eventName]) {
-            return;
-          }
-
-          this.delegatedEvents[eventName] = true;
-          document.addEventListener(eventName, this.handleDelegatedEvent.bind(this), false);
-        };
-
-        DefaultEventStrategy.prototype.handleCallbackResult = function handleCallbackResult(result) {};
-
-        DefaultEventStrategy.prototype.handleDelegatedEvent = function handleDelegatedEvent(event) {
-          event = event || window.event;
-          var target = event.target || event.srcElement,
-              callback;
-
-          while (target && !callback) {
-            if (target.delegatedEvents) {
-              callback = target.delegatedEvents[event.type];
-            }
-
-            if (!callback) {
-              target = target.parentNode;
-            }
-          }
-
-          if (callback) {
-            this.handleCallbackResult(callback(event));
-          }
-        };
-
-        DefaultEventStrategy.prototype.createDirectEventCallback = function createDirectEventCallback(callback) {
-          var _this18 = this;
-
-          return function (event) {
-            _this18.handleCallbackResult(callback(event));
-          };
-        };
-
-        DefaultEventStrategy.prototype.subscribeToDelegatedEvent = function subscribeToDelegatedEvent(target, targetEvent, callback) {
-          var lookup = target.delegatedEvents || (target.delegatedEvents = {});
-
-          this.ensureDelegatedEvent(targetEvent);
-          lookup[targetEvent] = callback;
-
-          return function () {
-            lookup[targetEvent] = null;
-          };
-        };
-
-        DefaultEventStrategy.prototype.subscribeToDirectEvent = function subscribeToDirectEvent(target, targetEvent, callback) {
-          var directEventCallback = this.createDirectEventCallback(callback);
-          target.addEventListener(targetEvent, directEventCallback, false);
-
-          return function () {
-            target.removeEventListener(targetEvent, directEventCallback);
-          };
-        };
 
         DefaultEventStrategy.prototype.subscribe = function subscribe(target, targetEvent, callback, delegate) {
           if (delegate) {
-            return this.subscribeToDelegatedEvent(target, targetEvent, callback);
+            var _ret = (function () {
+              var boundary = target.domBoundary || document,
+                  delegatedHandlers = boundary.delegatedHandlers || (boundary.delegatedHandlers = {}),
+                  handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(boundary, targetEvent)),
+                  delegatedCallbacks = target.delegatedCallbacks || (target.delegatedCallbacks = {});
+
+              handlerEntry.increment();
+              delegatedCallbacks[targetEvent] = callback;
+
+              return {
+                v: function () {
+                  handlerEntry.decrement();
+                  delegatedCallbacks[targetEvent] = null;
+                }
+              };
+            })();
+
+            if (typeof _ret === 'object') return _ret.v;
           } else {
-            return this.subscribeToDirectEvent(target, targetEvent, callback);
+            target.addEventListener(targetEvent, callback, false);
+
+            return function () {
+              target.removeEventListener(targetEvent, callback);
+            };
           }
         };
 
@@ -3225,10 +3229,10 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
         };
 
         DirtyChecker.prototype.scheduleDirtyCheck = function scheduleDirtyCheck() {
-          var _this19 = this;
+          var _this18 = this;
 
           setTimeout(function () {
-            return _this19.check();
+            return _this18.check();
           }, this.checkDelay);
         };
 
@@ -3611,7 +3615,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
         };
 
         UndefinedPropertyObserver.prototype.subscribe = function subscribe(callback) {
-          var _this20 = this;
+          var _this19 = this;
 
           if (!this.actual) {
             this.getObserver();
@@ -3628,9 +3632,9 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           this.callbackMap.set(callback, null);
 
           return function () {
-            var actualDispose = _this20.callbackMap.get(callback);
+            var actualDispose = _this19.callbackMap.get(callback);
             if (actualDispose) actualDispose();
-            _this20.callbackMap['delete'](callback);
+            _this19.callbackMap['delete'](callback);
           };
         };
 
@@ -3801,7 +3805,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
         };
 
         SelectValueObserver.prototype.setValue = function setValue(newValue) {
-          var _this21 = this;
+          var _this20 = this;
 
           if (newValue !== null && newValue !== undefined && this.element.multiple && !Array.isArray(newValue)) {
             throw new Error('Only null or Array instances can be bound to a multi-select.');
@@ -3825,7 +3829,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           if (this.element.options.length > 0 && !this.initialSync) {
             this.initialSync = true;
             this.observerLocator.taskQueue.queueMicroTask({ call: function call() {
-                return _this21.synchronizeOptions();
+                return _this20.synchronizeOptions();
               } });
           }
         };
@@ -3924,11 +3928,11 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
         };
 
         SelectValueObserver.prototype.bind = function bind() {
-          var _this22 = this;
+          var _this21 = this;
 
           this.domObserver = new MutationObserver(function () {
-            _this22.synchronizeOptions();
-            _this22.synchronizeValue();
+            _this21.synchronizeOptions();
+            _this21.synchronizeValue();
           });
           this.domObserver.observe(this.element, { childList: true, subtree: true });
         };
@@ -3962,7 +3966,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
         };
 
         CheckedObserver.prototype.setValue = function setValue(newValue) {
-          var _this23 = this;
+          var _this22 = this;
 
           if (this.value === newValue) {
             return;
@@ -3983,7 +3987,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           if (!this.element.hasOwnProperty('model') && !this.initialSync) {
             this.initialSync = true;
             this.observerLocator.taskQueue.queueMicroTask({ call: function call() {
-                return _this23.synchronizeElement();
+                return _this22.synchronizeElement();
               } });
           }
         };
@@ -4146,7 +4150,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
         };
 
         ComputedPropertyObserver.prototype.setValue = function setValue(newValue) {
-          throw new Error('Computed properties cannot be assigned.');
+          this.obj[this.propertyName] = newValue;
         };
 
         ComputedPropertyObserver.prototype.trigger = function trigger(newValue, oldValue) {
@@ -4166,7 +4170,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
         };
 
         ComputedPropertyObserver.prototype.subscribe = function subscribe(callback) {
-          var _this24 = this;
+          var _this23 = this;
 
           var dependencies, i, ii;
 
@@ -4179,18 +4183,18 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
             dependencies = this.descriptor.get.dependencies;
             for (i = 0, ii = dependencies.length; i < ii; i++) {
               this.subscriptions.push(this.observerLocator.getObserver(this.obj, dependencies[i]).subscribe(function () {
-                return _this24.evaluate();
+                return _this23.evaluate();
               }));
             }
           }
 
           return function () {
-            _this24.callbacks.splice(_this24.callbacks.indexOf(callback), 1);
-            if (_this24.callbacks.length > 0) return;
-            while (_this24.subscriptions.length) {
-              _this24.subscriptions.pop()();
+            _this23.callbacks.splice(_this23.callbacks.indexOf(callback), 1);
+            if (_this23.callbacks.length > 0) return;
+            while (_this23.subscriptions.length) {
+              _this23.subscriptions.pop()();
             }
-            _this24.oldValue = undefined;
+            _this23.oldValue = undefined;
           };
         };
 
@@ -4643,7 +4647,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
         };
 
         Binding.prototype.bind = function bind(source) {
-          var _this25 = this;
+          var _this24 = this;
 
           var targetProperty = this.targetProperty,
               info;
@@ -4678,7 +4682,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
 
             if (this.mode == bindingMode.twoWay) {
               this._disposeListener = targetProperty.subscribe(function (newValue) {
-                _this25.sourceExpression.assign(source, newValue, _this25.valueConverterLookupFunction);
+                _this24.sourceExpression.assign(source, newValue, _this24.valueConverterLookupFunction);
               });
             }
 
@@ -4740,7 +4744,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
         }
 
         Call.prototype.bind = function bind(source) {
-          var _this26 = this;
+          var _this25 = this;
 
           if (this.source === source) {
             return;
@@ -4755,7 +4759,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
             var result,
                 temp = source.$event;
             source.$event = $event;
-            result = _this26.sourceExpression.evaluate(source, _this26.valueConverterLookupFunction);
+            result = _this25.sourceExpression.evaluate(source, _this25.valueConverterLookupFunction);
             source.$event = temp;
             return result;
           });
@@ -5020,7 +5024,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
         }
 
         Listener.prototype.bind = function bind(source) {
-          var _this27 = this;
+          var _this26 = this;
 
           if (this._disposeListener) {
             if (this.source === source) {
@@ -5034,9 +5038,9 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           this._disposeListener = this.eventManager.addEventListener(this.target, this.targetEvent, function (event) {
             var prevEvent = source.$event;
             source.$event = event;
-            var result = _this27.sourceExpression.evaluate(source);
+            var result = _this26.sourceExpression.evaluate(source);
             source.$event = prevEvent;
-            if (result !== true && _this27.preventDefault) {
+            if (result !== true && _this26.preventDefault) {
               event.preventDefault();
             }
             return result;
