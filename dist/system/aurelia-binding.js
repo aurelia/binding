@@ -355,6 +355,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
     }
 
     if (callback) {
+      event.stopPropagation();
       callback(event);
     }
   }

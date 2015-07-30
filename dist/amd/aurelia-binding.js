@@ -2954,6 +2954,7 @@ define(['exports', 'core-js', 'aurelia-task-queue', 'aurelia-dependency-injectio
     }
 
     if (callback) {
+      event.stopPropagation();
       callback(event);
     }
   }

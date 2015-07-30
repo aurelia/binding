@@ -1,3 +1,11 @@
+### 0.8.4 (2015-07-30)
+
+
+#### Bug Fixes
+
+* **event-manager:** delegate event bug in IE ([782b83a6](http://github.com/aurelia/binding/commit/782b83a6561393c84302cf706f92568a4441577d))
+
+
 ### 0.8.3 (2015-07-29)
 
 
