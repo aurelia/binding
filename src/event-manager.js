@@ -14,6 +14,7 @@ function handleDelegatedEvent(event){
   }
 
   if(callback){
+    event.stopPropagation();
     callback(event);
   }
 }
