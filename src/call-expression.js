@@ -26,11 +26,11 @@ class Call {
   }
 
   bind(source){
-    if(this.source === source){
-      return;
-    }
-
     if(this.source){
+      if(this.source === source){
+        return;
+      }
+
       this.unbind();
     }
 
@@ -45,6 +45,9 @@ class Call {
   }
 
   unbind(){
-    this.targetProperty.setValue(null);
+    if(this.source){
+      this.targetProperty.setValue(null);
+      this.source = null;
+    }
   }
 }
