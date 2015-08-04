@@ -48,6 +48,9 @@ class NameBinder {
   }
 
   unbind(){
-    this.source[this.property] = null;
+    if(this.source){
+      this.source[this.property] = null;
+      this.source = null;
+    }
   }
 }
