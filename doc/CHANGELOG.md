@@ -1,3 +1,13 @@
+### 0.8.5 (2015-08-05)
+
+
+#### Bug Fixes
+
+* **call-expression:** incorrect unbind code ([3167f960](http://github.com/aurelia/binding/commit/3167f960f20fcf4c703d54a8c4f8470ca4471a4f), closes [#122](http://github.com/aurelia/binding/issues/122))
+* **event-manager:** address event targets with shadow dom and event delegation ([b8b49fe6](http://github.com/aurelia/binding/commit/b8b49fe6e30014efd4cf9ba42c198fa375e86958))
+* **name-expression:** null out source on unbind ([e39b6b7d](http://github.com/aurelia/binding/commit/e39b6b7daa01e27251e3896be0fd519ac6708599))
+
+
 ### 0.8.4 (2015-07-30)
 
 

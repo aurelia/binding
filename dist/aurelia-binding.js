@@ -2749,9 +2749,15 @@ class ModifyMapObserver extends ModifyCollectionObserver {
   }
 }
 
+function findOriginalEventTarget(event){
+  return event.originalTarget || (event.path && event.path[0])
+    || (event.deepPath && event.deepPath[0]) || event.target || event.srcElement;
+}
+
 function handleDelegatedEvent(event){
   event = event || window.event;
-  var target = event.target || event.srcElement,
+
+  var target = findOriginalEventTarget(event),
       callback;
 
   while(target && !callback) {
@@ -2765,14 +2771,12 @@ function handleDelegatedEvent(event){
   }
 
   if(callback){
-    event.stopPropagation();
     callback(event);
   }
 }
 
 class DelegateHandlerEntry {
-  constructor(boundary, eventName){
-    this.boundary = boundary;
+  constructor(eventName){
     this.eventName = eventName;
     this.count = 0;
   }
@@ -2781,7 +2785,7 @@ class DelegateHandlerEntry {
     this.count++;
 
     if(this.count === 1){
-      this.boundary.addEventListener(this.eventName, handleDelegatedEvent, false);
+      document.addEventListener(this.eventName, handleDelegatedEvent, false);
     }
   }
 
@@ -2789,7 +2793,7 @@ class DelegateHandlerEntry {
     this.count--;
 
     if(this.count === 0){
-      this.boundary.removeEventListener(this.eventName, handleDelegatedEvent);
+      document.removeEventListener(this.eventName, handleDelegatedEvent);
     }
   }
 }
@@ -2797,9 +2801,8 @@ class DelegateHandlerEntry {
 class DefaultEventStrategy {
   subscribe(target, targetEvent, callback, delegate){
     if(delegate){
-      let boundary = target.domBoundary || document,
-          delegatedHandlers = boundary.delegatedHandlers || (boundary.delegatedHandlers = {}),
-          handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(boundary, targetEvent)),
+      let delegatedHandlers = document.delegatedHandlers || (document.delegatedHandlers = {}),
+          handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent)),
           delegatedCallbacks = target.delegatedCallbacks || (target.delegatedCallbacks = {});
 
       handlerEntry.increment();
@@ -4369,11 +4372,11 @@ class Call {
   }
 
   bind(source){
-    if(this.source === source){
-      return;
-    }
-
     if(this.source){
+      if(this.source === source){
+        return;
+      }
+
       this.unbind();
     }
 
@@ -4388,7 +4391,10 @@ class Call {
   }
 
   unbind(){
-    this.targetProperty.setValue(null);
+    if(this.source){
+      this.targetProperty.setValue(null);
+      this.source = null;
+    }
   }
 }
 
@@ -4797,6 +4803,9 @@ class NameBinder {
   }
 
   unbind(){
-    this.source[this.property] = null;
+    if(this.source){
+      this.source[this.property] = null;
+      this.source = null;
+    }
   }
 }

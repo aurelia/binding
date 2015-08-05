@@ -239,7 +239,7 @@ declare module 'aurelia-binding' {
     static create(taskQueue: any, map: any): any;
   }
   class DelegateHandlerEntry {
-    constructor(boundary: any, eventName: any);
+    constructor(eventName: any);
     increment(): any;
     decrement(): any;
   }
