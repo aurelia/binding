@@ -1,4 +1,4 @@
-import core from 'core-js';
+import * as core from 'core-js';
 
 function camelCase(name){
   return name.charAt(0).toLowerCase() + name.slice(1);
