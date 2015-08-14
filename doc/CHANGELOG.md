@@ -1,3 +1,11 @@
+### 0.8.6 (2015-08-14)
+
+
+#### Bug Fixes
+
+* **binding:** Use correct import for core-js ([76fac6a4](http://github.com/aurelia/binding/commit/76fac6a455a70ed5c517f6979d6c225eda7c681a))
+
+
 ### 0.8.5 (2015-08-05)
 
 

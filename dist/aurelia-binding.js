@@ -1,4 +1,4 @@
-import core from 'core-js';
+import * as core from 'core-js';
 import {TaskQueue} from 'aurelia-task-queue';
 import {All,Container} from 'aurelia-dependency-injection';
 import {Decorators,Metadata} from 'aurelia-metadata';

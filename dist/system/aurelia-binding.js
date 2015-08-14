@@ -25,7 +25,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
 
   _export('computedFrom', computedFrom);
 
-  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
@@ -59,8 +59,8 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
     if (start1 < start2) {
       if (end1 < end2) return end1 - start2;else return end2 - start2;
     } else {
-      if (end2 < end1) return end2 - start1;else return end1 - start1;
-    }
+        if (end2 < end1) return end2 - start1;else return end1 - start1;
+      }
   }
 
   function mergeSplice(splices, index, removed, addedCount) {
@@ -331,7 +331,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
 
   function assert(condition, message) {
     if (!condition) {
-      throw message || 'Assertion failed';
+      throw message || "Assertion failed";
     }
   }
 
@@ -387,7 +387,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
     var value = new OoObjectObserver(obj, observerLocator);
 
     try {
-      Object.defineProperty(obj, '__observer__', {
+      Object.defineProperty(obj, "__observer__", {
         enumerable: false,
         configurable: false,
         writable: false,
@@ -425,7 +425,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
 
   return {
     setters: [function (_coreJs) {
-      core = _coreJs['default'];
+      core = _coreJs;
     }, function (_aureliaTaskQueue) {
       TaskQueue = _aureliaTaskQueue.TaskQueue;
     }, function (_aureliaDependencyInjection) {
@@ -897,13 +897,13 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
       arrayProto = Array.prototype;
 
       ModifyArrayObserver = (function (_ModifyCollectionObserver) {
+        _inherits(ModifyArrayObserver, _ModifyCollectionObserver);
+
         function ModifyArrayObserver(taskQueue, array) {
           _classCallCheck(this, ModifyArrayObserver);
 
           _ModifyCollectionObserver.call(this, taskQueue, array);
         }
-
-        _inherits(ModifyArrayObserver, _ModifyCollectionObserver);
 
         ModifyArrayObserver.create = function create(taskQueue, array) {
           var observer = new ModifyArrayObserver(taskQueue, array);
@@ -1177,6 +1177,8 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
       _export('Expression', Expression);
 
       Chain = (function (_Expression) {
+        _inherits(Chain, _Expression);
+
         function Chain(expressions) {
           _classCallCheck(this, Chain);
 
@@ -1185,8 +1187,6 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           this.expressions = expressions;
           this.isChain = true;
         }
-
-        _inherits(Chain, _Expression);
 
         Chain.prototype.evaluate = function evaluate(scope, valueConverters) {
           var result,
@@ -1216,6 +1216,8 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
       _export('Chain', Chain);
 
       ValueConverter = (function (_Expression2) {
+        _inherits(ValueConverter, _Expression2);
+
         function ValueConverter(expression, name, args, allArgs) {
           _classCallCheck(this, ValueConverter);
 
@@ -1226,8 +1228,6 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           this.args = args;
           this.allArgs = allArgs;
         }
-
-        _inherits(ValueConverter, _Expression2);
 
         ValueConverter.prototype.evaluate = function evaluate(scope, valueConverters) {
           var converter = valueConverters(this.name);
@@ -1296,6 +1296,8 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
       _export('ValueConverter', ValueConverter);
 
       Assign = (function (_Expression3) {
+        _inherits(Assign, _Expression3);
+
         function Assign(target, value) {
           _classCallCheck(this, Assign);
 
@@ -1304,8 +1306,6 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           this.target = target;
           this.value = value;
         }
-
-        _inherits(Assign, _Expression3);
 
         Assign.prototype.evaluate = function evaluate(scope, valueConverters) {
           return this.target.assign(scope, this.value.evaluate(scope, valueConverters));
@@ -1325,6 +1325,8 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
       _export('Assign', Assign);
 
       Conditional = (function (_Expression4) {
+        _inherits(Conditional, _Expression4);
+
         function Conditional(condition, yes, no) {
           _classCallCheck(this, Conditional);
 
@@ -1334,8 +1336,6 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           this.yes = yes;
           this.no = no;
         }
-
-        _inherits(Conditional, _Expression4);
 
         Conditional.prototype.evaluate = function evaluate(scope, valueConverters) {
           return !!this.condition.evaluate(scope) ? this.yes.evaluate(scope) : this.no.evaluate(scope);
@@ -1384,6 +1384,8 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
       _export('Conditional', Conditional);
 
       AccessScope = (function (_Expression5) {
+        _inherits(AccessScope, _Expression5);
+
         function AccessScope(name) {
           _classCallCheck(this, AccessScope);
 
@@ -1392,8 +1394,6 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           this.name = name;
           this.isAssignable = true;
         }
-
-        _inherits(AccessScope, _Expression5);
 
         AccessScope.prototype.evaluate = function evaluate(scope, valueConverters) {
           return scope[this.name];
@@ -1422,6 +1422,8 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
       _export('AccessScope', AccessScope);
 
       AccessMember = (function (_Expression6) {
+        _inherits(AccessMember, _Expression6);
+
         function AccessMember(object, name) {
           _classCallCheck(this, AccessMember);
 
@@ -1431,8 +1433,6 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           this.name = name;
           this.isAssignable = true;
         }
-
-        _inherits(AccessMember, _Expression6);
 
         AccessMember.prototype.evaluate = function evaluate(scope, valueConverters) {
           var instance = this.object.evaluate(scope, valueConverters);
@@ -1486,6 +1486,8 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
       _export('AccessMember', AccessMember);
 
       AccessKeyed = (function (_Expression7) {
+        _inherits(AccessKeyed, _Expression7);
+
         function AccessKeyed(object, key) {
           _classCallCheck(this, AccessKeyed);
 
@@ -1495,8 +1497,6 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           this.key = key;
           this.isAssignable = true;
         }
-
-        _inherits(AccessKeyed, _Expression7);
 
         AccessKeyed.prototype.evaluate = function evaluate(scope, valueConverters) {
           var instance = this.object.evaluate(scope, valueConverters);
@@ -1535,6 +1535,8 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
       _export('AccessKeyed', AccessKeyed);
 
       CallScope = (function (_Expression8) {
+        _inherits(CallScope, _Expression8);
+
         function CallScope(name, args) {
           _classCallCheck(this, CallScope);
 
@@ -1543,8 +1545,6 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           this.name = name;
           this.args = args;
         }
-
-        _inherits(CallScope, _Expression8);
 
         CallScope.prototype.evaluate = function evaluate(scope, valueConverters, args) {
           args = args || evalList(scope, this.args, valueConverters);
@@ -1592,6 +1592,8 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
       _export('CallScope', CallScope);
 
       CallMember = (function (_Expression9) {
+        _inherits(CallMember, _Expression9);
+
         function CallMember(object, name, args) {
           _classCallCheck(this, CallMember);
 
@@ -1601,8 +1603,6 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           this.name = name;
           this.args = args;
         }
-
-        _inherits(CallMember, _Expression9);
 
         CallMember.prototype.evaluate = function evaluate(scope, valueConverters, args) {
           var instance = this.object.evaluate(scope, valueConverters);
@@ -1656,6 +1656,8 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
       _export('CallMember', CallMember);
 
       CallFunction = (function (_Expression10) {
+        _inherits(CallFunction, _Expression10);
+
         function CallFunction(func, args) {
           _classCallCheck(this, CallFunction);
 
@@ -1664,8 +1666,6 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           this.func = func;
           this.args = args;
         }
-
-        _inherits(CallFunction, _Expression10);
 
         CallFunction.prototype.evaluate = function evaluate(scope, valueConverters, args) {
           var func = this.func.evaluate(scope, valueConverters);
@@ -1723,6 +1723,8 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
       _export('CallFunction', CallFunction);
 
       Binary = (function (_Expression11) {
+        _inherits(Binary, _Expression11);
+
         function Binary(operation, left, right) {
           _classCallCheck(this, Binary);
 
@@ -1732,8 +1734,6 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           this.left = left;
           this.right = right;
         }
-
-        _inherits(Binary, _Expression11);
 
         Binary.prototype.evaluate = function evaluate(scope, valueConverters) {
           var left = this.left.evaluate(scope);
@@ -1839,6 +1839,8 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
       _export('Binary', Binary);
 
       PrefixNot = (function (_Expression12) {
+        _inherits(PrefixNot, _Expression12);
+
         function PrefixNot(operation, expression) {
           _classCallCheck(this, PrefixNot);
 
@@ -1847,8 +1849,6 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           this.operation = operation;
           this.expression = expression;
         }
-
-        _inherits(PrefixNot, _Expression12);
 
         PrefixNot.prototype.evaluate = function evaluate(scope, valueConverters) {
           return !this.expression.evaluate(scope);
@@ -1882,6 +1882,8 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
       _export('PrefixNot', PrefixNot);
 
       LiteralPrimitive = (function (_Expression13) {
+        _inherits(LiteralPrimitive, _Expression13);
+
         function LiteralPrimitive(value) {
           _classCallCheck(this, LiteralPrimitive);
 
@@ -1889,8 +1891,6 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
 
           this.value = value;
         }
-
-        _inherits(LiteralPrimitive, _Expression13);
 
         LiteralPrimitive.prototype.evaluate = function evaluate(scope, valueConverters) {
           return this.value;
@@ -1910,6 +1910,8 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
       _export('LiteralPrimitive', LiteralPrimitive);
 
       LiteralString = (function (_Expression14) {
+        _inherits(LiteralString, _Expression14);
+
         function LiteralString(value) {
           _classCallCheck(this, LiteralString);
 
@@ -1917,8 +1919,6 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
 
           this.value = value;
         }
-
-        _inherits(LiteralString, _Expression14);
 
         LiteralString.prototype.evaluate = function evaluate(scope, valueConverters) {
           return this.value;
@@ -1938,6 +1938,8 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
       _export('LiteralString', LiteralString);
 
       LiteralArray = (function (_Expression15) {
+        _inherits(LiteralArray, _Expression15);
+
         function LiteralArray(elements) {
           _classCallCheck(this, LiteralArray);
 
@@ -1945,8 +1947,6 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
 
           this.elements = elements;
         }
-
-        _inherits(LiteralArray, _Expression15);
 
         LiteralArray.prototype.evaluate = function evaluate(scope, valueConverters) {
           var elements = this.elements,
@@ -2005,6 +2005,8 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
       _export('LiteralArray', LiteralArray);
 
       LiteralObject = (function (_Expression16) {
+        _inherits(LiteralObject, _Expression16);
+
         function LiteralObject(keys, values) {
           _classCallCheck(this, LiteralObject);
 
@@ -2013,8 +2015,6 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           this.keys = keys;
           this.values = values;
         }
-
-        _inherits(LiteralObject, _Expression16);
 
         LiteralObject.prototype.evaluate = function evaluate(scope, valueConverters) {
           var instance = {},
@@ -2243,7 +2243,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
         };
 
         Unparser.prototype.visitLiteralString = function visitLiteralString(literal) {
-          var escaped = literal.value.replace(/'/g, '\'');
+          var escaped = literal.value.replace(/'/g, "\'");
           this.write('\'' + escaped + '\'');
         };
 
@@ -2458,22 +2458,22 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
 
           while (true) {
             if (isDigit(this.peek)) {} else if (this.peek === $PERIOD) {
-              simple = false;
-            } else if (isExponentStart(this.peek)) {
-              this.advance();
-
-              if (isExponentSign(this.peek)) {
+                simple = false;
+              } else if (isExponentStart(this.peek)) {
                 this.advance();
-              }
 
-              if (!isDigit(this.peek)) {
-                this.error('Invalid exponent', -1);
-              }
+                if (isExponentSign(this.peek)) {
+                  this.advance();
+                }
 
-              simple = false;
-            } else {
-              break;
-            }
+                if (!isDigit(this.peek)) {
+                  this.error('Invalid exponent', -1);
+                }
+
+                simple = false;
+              } else {
+                break;
+              }
 
             this.advance();
           }
@@ -2554,7 +2554,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
         };
 
         Scanner.prototype.error = function error(message) {
-          var offset = arguments[1] === undefined ? 0 : arguments[1];
+          var offset = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
 
           var position = this.index + offset;
           throw new Error('Lexer Error: ' + message + ' at column ' + position + ' in expression [' + this.input + ']');
@@ -2823,12 +2823,12 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           if (this.optional('+')) {
             return this.parsePrefix();
           } else if (this.optional('-')) {
-            return new Binary('-', new LiteralPrimitive(0), this.parsePrefix());
-          } else if (this.optional('!')) {
-            return new PrefixNot('!', this.parsePrefix());
-          } else {
-            return this.parseAccessOrCallMember();
-          }
+              return new Binary('-', new LiteralPrimitive(0), this.parsePrefix());
+            } else if (this.optional('!')) {
+              return new PrefixNot('!', this.parsePrefix());
+            } else {
+              return this.parseAccessOrCallMember();
+            }
         };
 
         ParserImplementation.prototype.parseAccessOrCallMember = function parseAccessOrCallMember() {
@@ -2982,13 +2982,13 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
       mapProto = Map.prototype;
 
       ModifyMapObserver = (function (_ModifyCollectionObserver2) {
+        _inherits(ModifyMapObserver, _ModifyCollectionObserver2);
+
         function ModifyMapObserver(taskQueue, map) {
           _classCallCheck(this, ModifyMapObserver);
 
           _ModifyCollectionObserver2.call(this, taskQueue, map);
         }
-
-        _inherits(ModifyMapObserver, _ModifyCollectionObserver2);
 
         ModifyMapObserver.create = function create(taskQueue, map) {
           var observer = new ModifyMapObserver(taskQueue, map);
@@ -4434,6 +4434,10 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
         };
       }
       ObserverLocator = (function () {
+        ObserverLocator.inject = function inject() {
+          return [TaskQueue, EventManager, DirtyChecker, All.of(ObjectObservationAdapter)];
+        };
+
         function ObserverLocator(taskQueue, eventManager, dirtyChecker, observationAdapters) {
           _classCallCheck(this, ObserverLocator);
 
@@ -4442,10 +4446,6 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           this.dirtyChecker = dirtyChecker;
           this.observationAdapters = observationAdapters;
         }
-
-        ObserverLocator.inject = function inject() {
-          return [TaskQueue, EventManager, DirtyChecker, All.of(ObjectObservationAdapter)];
-        };
 
         ObserverLocator.prototype.getObserver = function getObserver(obj, propertyName) {
           var observersLookup = obj.__observers__,
@@ -4476,7 +4476,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
           var value = {};
 
           try {
-            Object.defineProperty(obj, '__observers__', {
+            Object.defineProperty(obj, "__observers__", {
               enumerable: false,
               configurable: false,
               writable: false,
@@ -4621,7 +4621,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
         };
 
         BindingExpression.create = function create(targetProperty, sourceExpression) {
-          var mode = arguments[2] === undefined ? bindingMode.oneWay : arguments[2];
+          var mode = arguments.length <= 2 || arguments[2] === undefined ? bindingMode.oneWay : arguments[2];
 
           var parser = Container.instance.get(Parser),
               observerLocator = Container.instance.get(ObserverLocator);
@@ -4778,20 +4778,20 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
         return Call;
       })();
 
-      if (!('classList' in document.createElement('_')) || document.createElementNS && !('classList' in document.createElementNS('http://www.w3.org/2000/svg', 'g'))) {
+      if (!("classList" in document.createElement("_")) || document.createElementNS && !("classList" in document.createElementNS("http://www.w3.org/2000/svg", "g"))) {
 
         (function (view) {
 
-          'use strict';
+          "use strict";
 
           if (!('Element' in view)) return;
 
-          var classListProp = 'classList',
-              protoProp = 'prototype',
+          var classListProp = "classList",
+              protoProp = "prototype",
               elemCtrProto = view.Element[protoProp],
               objCtr = Object,
               strTrim = String[protoProp].trim || function () {
-            return this.replace(/^\s+|\s+$/g, '');
+            return this.replace(/^\s+|\s+$/g, "");
           },
               arrIndexOf = Array[protoProp].indexOf || function (item) {
             var i = 0,
@@ -4809,16 +4809,16 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
             this.message = message;
           },
               checkTokenAndGetIndex = function checkTokenAndGetIndex(classList, token) {
-            if (token === '') {
-              throw new DOMEx('SYNTAX_ERR', 'An invalid or illegal string was specified');
+            if (token === "") {
+              throw new DOMEx("SYNTAX_ERR", "An invalid or illegal string was specified");
             }
             if (/\s/.test(token)) {
-              throw new DOMEx('INVALID_CHARACTER_ERR', 'String contains an invalid character');
+              throw new DOMEx("INVALID_CHARACTER_ERR", "String contains an invalid character");
             }
             return arrIndexOf.call(classList, token);
           },
               ClassList = function ClassList(elem) {
-            var trimmedClasses = strTrim.call(elem.getAttribute('class') || ''),
+            var trimmedClasses = strTrim.call(elem.getAttribute("class") || ""),
                 classes = trimmedClasses ? trimmedClasses.split(/\s+/) : [],
                 i = 0,
                 len = classes.length;
@@ -4826,7 +4826,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
               this.push(classes[i]);
             }
             this._updateClassName = function () {
-              elem.setAttribute('class', this.toString());
+              elem.setAttribute("class", this.toString());
             };
           },
               classListProto = ClassList[protoProp] = [],
@@ -4839,7 +4839,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
             return this[i] || null;
           };
           classListProto.contains = function (token) {
-            token += '';
+            token += "";
             return checkTokenAndGetIndex(this, token) !== -1;
           };
           classListProto.add = function () {
@@ -4849,7 +4849,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
                 token,
                 updated = false;
             do {
-              token = tokens[i] + '';
+              token = tokens[i] + "";
               if (checkTokenAndGetIndex(this, token) === -1) {
                 this.push(token);
                 updated = true;
@@ -4868,7 +4868,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
                 updated = false,
                 index;
             do {
-              token = tokens[i] + '';
+              token = tokens[i] + "";
               index = checkTokenAndGetIndex(this, token);
               while (index !== -1) {
                 this.splice(index, 1);
@@ -4882,10 +4882,10 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
             }
           };
           classListProto.toggle = function (token, force) {
-            token += '';
+            token += "";
 
             var result = this.contains(token),
-                method = result ? force !== true && 'remove' : force !== false && 'add';
+                method = result ? force !== true && "remove" : force !== false && "add";
 
             if (method) {
               this[method](token);
@@ -4898,7 +4898,7 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
             }
           };
           classListProto.toString = function () {
-            return this.join(' ');
+            return this.join(" ");
           };
 
           if (objCtr.defineProperty) {
@@ -4922,13 +4922,13 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
       } else {
 
         (function () {
-          'use strict';
+          "use strict";
 
-          var testElement = document.createElement('_');
+          var testElement = document.createElement("_");
 
-          testElement.classList.add('c1', 'c2');
+          testElement.classList.add("c1", "c2");
 
-          if (!testElement.classList.contains('c2')) {
+          if (!testElement.classList.contains("c2")) {
             var createMethod = function createMethod(method) {
               var original = DOMTokenList.prototype[method];
 
@@ -4946,9 +4946,9 @@ System.register(['core-js', 'aurelia-task-queue', 'aurelia-dependency-injection'
             createMethod('remove');
           }
 
-          testElement.classList.toggle('c3', false);
+          testElement.classList.toggle("c3", false);
 
-          if (testElement.classList.contains('c3')) {
+          if (testElement.classList.contains("c3")) {
             var _toggle = DOMTokenList.prototype.toggle;
 
             DOMTokenList.prototype.toggle = function (token, force) {

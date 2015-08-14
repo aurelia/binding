@@ -15,15 +15,15 @@ exports.isStandardSvgAttribute = isStandardSvgAttribute;
 exports.valueConverter = valueConverter;
 exports.computedFrom = computedFrom;
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 var _coreJs = require('core-js');
 
-var _coreJs2 = _interopRequireDefault(_coreJs);
+var core = _interopRequireWildcard(_coreJs);
 
 var _aureliaTaskQueue = require('aurelia-task-queue');
 
@@ -324,8 +324,8 @@ function intersect(start1, end1, start2, end2) {
   if (start1 < start2) {
     if (end1 < end2) return end1 - start2;else return end2 - start2;
   } else {
-    if (end2 < end1) return end2 - start1;else return end1 - start1;
-  }
+      if (end2 < end1) return end2 - start1;else return end1 - start1;
+    }
 }
 
 function mergeSplice(splices, index, removed, addedCount) {
@@ -666,13 +666,13 @@ function _getArrayObserver(taskQueue, array) {
 }
 
 var ModifyArrayObserver = (function (_ModifyCollectionObserver) {
+  _inherits(ModifyArrayObserver, _ModifyCollectionObserver);
+
   function ModifyArrayObserver(taskQueue, array) {
     _classCallCheck(this, ModifyArrayObserver);
 
     _ModifyCollectionObserver.call(this, taskQueue, array);
   }
-
-  _inherits(ModifyArrayObserver, _ModifyCollectionObserver);
 
   ModifyArrayObserver.create = function create(taskQueue, array) {
     var observer = new ModifyArrayObserver(taskQueue, array);
@@ -946,6 +946,8 @@ var Expression = (function () {
 exports.Expression = Expression;
 
 var Chain = (function (_Expression) {
+  _inherits(Chain, _Expression);
+
   function Chain(expressions) {
     _classCallCheck(this, Chain);
 
@@ -954,8 +956,6 @@ var Chain = (function (_Expression) {
     this.expressions = expressions;
     this.isChain = true;
   }
-
-  _inherits(Chain, _Expression);
 
   Chain.prototype.evaluate = function evaluate(scope, valueConverters) {
     var result,
@@ -985,6 +985,8 @@ var Chain = (function (_Expression) {
 exports.Chain = Chain;
 
 var ValueConverter = (function (_Expression2) {
+  _inherits(ValueConverter, _Expression2);
+
   function ValueConverter(expression, name, args, allArgs) {
     _classCallCheck(this, ValueConverter);
 
@@ -995,8 +997,6 @@ var ValueConverter = (function (_Expression2) {
     this.args = args;
     this.allArgs = allArgs;
   }
-
-  _inherits(ValueConverter, _Expression2);
 
   ValueConverter.prototype.evaluate = function evaluate(scope, valueConverters) {
     var converter = valueConverters(this.name);
@@ -1065,6 +1065,8 @@ var ValueConverter = (function (_Expression2) {
 exports.ValueConverter = ValueConverter;
 
 var Assign = (function (_Expression3) {
+  _inherits(Assign, _Expression3);
+
   function Assign(target, value) {
     _classCallCheck(this, Assign);
 
@@ -1073,8 +1075,6 @@ var Assign = (function (_Expression3) {
     this.target = target;
     this.value = value;
   }
-
-  _inherits(Assign, _Expression3);
 
   Assign.prototype.evaluate = function evaluate(scope, valueConverters) {
     return this.target.assign(scope, this.value.evaluate(scope, valueConverters));
@@ -1094,6 +1094,8 @@ var Assign = (function (_Expression3) {
 exports.Assign = Assign;
 
 var Conditional = (function (_Expression4) {
+  _inherits(Conditional, _Expression4);
+
   function Conditional(condition, yes, no) {
     _classCallCheck(this, Conditional);
 
@@ -1103,8 +1105,6 @@ var Conditional = (function (_Expression4) {
     this.yes = yes;
     this.no = no;
   }
-
-  _inherits(Conditional, _Expression4);
 
   Conditional.prototype.evaluate = function evaluate(scope, valueConverters) {
     return !!this.condition.evaluate(scope) ? this.yes.evaluate(scope) : this.no.evaluate(scope);
@@ -1153,6 +1153,8 @@ var Conditional = (function (_Expression4) {
 exports.Conditional = Conditional;
 
 var AccessScope = (function (_Expression5) {
+  _inherits(AccessScope, _Expression5);
+
   function AccessScope(name) {
     _classCallCheck(this, AccessScope);
 
@@ -1161,8 +1163,6 @@ var AccessScope = (function (_Expression5) {
     this.name = name;
     this.isAssignable = true;
   }
-
-  _inherits(AccessScope, _Expression5);
 
   AccessScope.prototype.evaluate = function evaluate(scope, valueConverters) {
     return scope[this.name];
@@ -1191,6 +1191,8 @@ var AccessScope = (function (_Expression5) {
 exports.AccessScope = AccessScope;
 
 var AccessMember = (function (_Expression6) {
+  _inherits(AccessMember, _Expression6);
+
   function AccessMember(object, name) {
     _classCallCheck(this, AccessMember);
 
@@ -1200,8 +1202,6 @@ var AccessMember = (function (_Expression6) {
     this.name = name;
     this.isAssignable = true;
   }
-
-  _inherits(AccessMember, _Expression6);
 
   AccessMember.prototype.evaluate = function evaluate(scope, valueConverters) {
     var instance = this.object.evaluate(scope, valueConverters);
@@ -1255,6 +1255,8 @@ var AccessMember = (function (_Expression6) {
 exports.AccessMember = AccessMember;
 
 var AccessKeyed = (function (_Expression7) {
+  _inherits(AccessKeyed, _Expression7);
+
   function AccessKeyed(object, key) {
     _classCallCheck(this, AccessKeyed);
 
@@ -1264,8 +1266,6 @@ var AccessKeyed = (function (_Expression7) {
     this.key = key;
     this.isAssignable = true;
   }
-
-  _inherits(AccessKeyed, _Expression7);
 
   AccessKeyed.prototype.evaluate = function evaluate(scope, valueConverters) {
     var instance = this.object.evaluate(scope, valueConverters);
@@ -1304,6 +1304,8 @@ var AccessKeyed = (function (_Expression7) {
 exports.AccessKeyed = AccessKeyed;
 
 var CallScope = (function (_Expression8) {
+  _inherits(CallScope, _Expression8);
+
   function CallScope(name, args) {
     _classCallCheck(this, CallScope);
 
@@ -1312,8 +1314,6 @@ var CallScope = (function (_Expression8) {
     this.name = name;
     this.args = args;
   }
-
-  _inherits(CallScope, _Expression8);
 
   CallScope.prototype.evaluate = function evaluate(scope, valueConverters, args) {
     args = args || evalList(scope, this.args, valueConverters);
@@ -1361,6 +1361,8 @@ var CallScope = (function (_Expression8) {
 exports.CallScope = CallScope;
 
 var CallMember = (function (_Expression9) {
+  _inherits(CallMember, _Expression9);
+
   function CallMember(object, name, args) {
     _classCallCheck(this, CallMember);
 
@@ -1370,8 +1372,6 @@ var CallMember = (function (_Expression9) {
     this.name = name;
     this.args = args;
   }
-
-  _inherits(CallMember, _Expression9);
 
   CallMember.prototype.evaluate = function evaluate(scope, valueConverters, args) {
     var instance = this.object.evaluate(scope, valueConverters);
@@ -1425,6 +1425,8 @@ var CallMember = (function (_Expression9) {
 exports.CallMember = CallMember;
 
 var CallFunction = (function (_Expression10) {
+  _inherits(CallFunction, _Expression10);
+
   function CallFunction(func, args) {
     _classCallCheck(this, CallFunction);
 
@@ -1433,8 +1435,6 @@ var CallFunction = (function (_Expression10) {
     this.func = func;
     this.args = args;
   }
-
-  _inherits(CallFunction, _Expression10);
 
   CallFunction.prototype.evaluate = function evaluate(scope, valueConverters, args) {
     var func = this.func.evaluate(scope, valueConverters);
@@ -1492,6 +1492,8 @@ var CallFunction = (function (_Expression10) {
 exports.CallFunction = CallFunction;
 
 var Binary = (function (_Expression11) {
+  _inherits(Binary, _Expression11);
+
   function Binary(operation, left, right) {
     _classCallCheck(this, Binary);
 
@@ -1501,8 +1503,6 @@ var Binary = (function (_Expression11) {
     this.left = left;
     this.right = right;
   }
-
-  _inherits(Binary, _Expression11);
 
   Binary.prototype.evaluate = function evaluate(scope, valueConverters) {
     var left = this.left.evaluate(scope);
@@ -1608,6 +1608,8 @@ var Binary = (function (_Expression11) {
 exports.Binary = Binary;
 
 var PrefixNot = (function (_Expression12) {
+  _inherits(PrefixNot, _Expression12);
+
   function PrefixNot(operation, expression) {
     _classCallCheck(this, PrefixNot);
 
@@ -1616,8 +1618,6 @@ var PrefixNot = (function (_Expression12) {
     this.operation = operation;
     this.expression = expression;
   }
-
-  _inherits(PrefixNot, _Expression12);
 
   PrefixNot.prototype.evaluate = function evaluate(scope, valueConverters) {
     return !this.expression.evaluate(scope);
@@ -1651,6 +1651,8 @@ var PrefixNot = (function (_Expression12) {
 exports.PrefixNot = PrefixNot;
 
 var LiteralPrimitive = (function (_Expression13) {
+  _inherits(LiteralPrimitive, _Expression13);
+
   function LiteralPrimitive(value) {
     _classCallCheck(this, LiteralPrimitive);
 
@@ -1658,8 +1660,6 @@ var LiteralPrimitive = (function (_Expression13) {
 
     this.value = value;
   }
-
-  _inherits(LiteralPrimitive, _Expression13);
 
   LiteralPrimitive.prototype.evaluate = function evaluate(scope, valueConverters) {
     return this.value;
@@ -1679,6 +1679,8 @@ var LiteralPrimitive = (function (_Expression13) {
 exports.LiteralPrimitive = LiteralPrimitive;
 
 var LiteralString = (function (_Expression14) {
+  _inherits(LiteralString, _Expression14);
+
   function LiteralString(value) {
     _classCallCheck(this, LiteralString);
 
@@ -1686,8 +1688,6 @@ var LiteralString = (function (_Expression14) {
 
     this.value = value;
   }
-
-  _inherits(LiteralString, _Expression14);
 
   LiteralString.prototype.evaluate = function evaluate(scope, valueConverters) {
     return this.value;
@@ -1707,6 +1707,8 @@ var LiteralString = (function (_Expression14) {
 exports.LiteralString = LiteralString;
 
 var LiteralArray = (function (_Expression15) {
+  _inherits(LiteralArray, _Expression15);
+
   function LiteralArray(elements) {
     _classCallCheck(this, LiteralArray);
 
@@ -1714,8 +1716,6 @@ var LiteralArray = (function (_Expression15) {
 
     this.elements = elements;
   }
-
-  _inherits(LiteralArray, _Expression15);
 
   LiteralArray.prototype.evaluate = function evaluate(scope, valueConverters) {
     var elements = this.elements,
@@ -1774,6 +1774,8 @@ var LiteralArray = (function (_Expression15) {
 exports.LiteralArray = LiteralArray;
 
 var LiteralObject = (function (_Expression16) {
+  _inherits(LiteralObject, _Expression16);
+
   function LiteralObject(keys, values) {
     _classCallCheck(this, LiteralObject);
 
@@ -1782,8 +1784,6 @@ var LiteralObject = (function (_Expression16) {
     this.keys = keys;
     this.values = values;
   }
-
-  _inherits(LiteralObject, _Expression16);
 
   LiteralObject.prototype.evaluate = function evaluate(scope, valueConverters) {
     var instance = {},
@@ -2012,7 +2012,7 @@ var Unparser = (function () {
   };
 
   Unparser.prototype.visitLiteralString = function visitLiteralString(literal) {
-    var escaped = literal.value.replace(/'/g, '\'');
+    var escaped = literal.value.replace(/'/g, "\'");
     this.write('\'' + escaped + '\'');
   };
 
@@ -2312,22 +2312,22 @@ var Scanner = (function () {
 
     while (true) {
       if (isDigit(this.peek)) {} else if (this.peek === $PERIOD) {
-        simple = false;
-      } else if (isExponentStart(this.peek)) {
-        this.advance();
-
-        if (isExponentSign(this.peek)) {
+          simple = false;
+        } else if (isExponentStart(this.peek)) {
           this.advance();
-        }
 
-        if (!isDigit(this.peek)) {
-          this.error('Invalid exponent', -1);
-        }
+          if (isExponentSign(this.peek)) {
+            this.advance();
+          }
 
-        simple = false;
-      } else {
-        break;
-      }
+          if (!isDigit(this.peek)) {
+            this.error('Invalid exponent', -1);
+          }
+
+          simple = false;
+        } else {
+          break;
+        }
 
       this.advance();
     }
@@ -2408,7 +2408,7 @@ var Scanner = (function () {
   };
 
   Scanner.prototype.error = function error(message) {
-    var offset = arguments[1] === undefined ? 0 : arguments[1];
+    var offset = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
 
     var position = this.index + offset;
     throw new Error('Lexer Error: ' + message + ' at column ' + position + ' in expression [' + this.input + ']');
@@ -2520,7 +2520,7 @@ function unescape(code) {
 
 function assert(condition, message) {
   if (!condition) {
-    throw message || 'Assertion failed';
+    throw message || "Assertion failed";
   }
 }
 
@@ -2731,12 +2731,12 @@ var ParserImplementation = (function () {
     if (this.optional('+')) {
       return this.parsePrefix();
     } else if (this.optional('-')) {
-      return new Binary('-', new LiteralPrimitive(0), this.parsePrefix());
-    } else if (this.optional('!')) {
-      return new PrefixNot('!', this.parsePrefix());
-    } else {
-      return this.parseAccessOrCallMember();
-    }
+        return new Binary('-', new LiteralPrimitive(0), this.parsePrefix());
+      } else if (this.optional('!')) {
+        return new PrefixNot('!', this.parsePrefix());
+      } else {
+        return this.parseAccessOrCallMember();
+      }
   };
 
   ParserImplementation.prototype.parseAccessOrCallMember = function parseAccessOrCallMember() {
@@ -2894,13 +2894,13 @@ function _getMapObserver(taskQueue, map) {
 }
 
 var ModifyMapObserver = (function (_ModifyCollectionObserver2) {
+  _inherits(ModifyMapObserver, _ModifyCollectionObserver2);
+
   function ModifyMapObserver(taskQueue, map) {
     _classCallCheck(this, ModifyMapObserver);
 
     _ModifyCollectionObserver2.call(this, taskQueue, map);
   }
-
-  _inherits(ModifyMapObserver, _ModifyCollectionObserver2);
 
   ModifyMapObserver.create = function create(taskQueue, map) {
     var observer = new ModifyMapObserver(taskQueue, map);
@@ -4392,7 +4392,7 @@ function createObserverLookup(obj, observerLocator) {
   var value = new OoObjectObserver(obj, observerLocator);
 
   try {
-    Object.defineProperty(obj, '__observer__', {
+    Object.defineProperty(obj, "__observer__", {
       enumerable: false,
       configurable: false,
       writable: false,
@@ -4404,6 +4404,10 @@ function createObserverLookup(obj, observerLocator) {
 }
 
 var ObserverLocator = (function () {
+  ObserverLocator.inject = function inject() {
+    return [_aureliaTaskQueue.TaskQueue, EventManager, DirtyChecker, _aureliaDependencyInjection.All.of(ObjectObservationAdapter)];
+  };
+
   function ObserverLocator(taskQueue, eventManager, dirtyChecker, observationAdapters) {
     _classCallCheck(this, ObserverLocator);
 
@@ -4412,10 +4416,6 @@ var ObserverLocator = (function () {
     this.dirtyChecker = dirtyChecker;
     this.observationAdapters = observationAdapters;
   }
-
-  ObserverLocator.inject = function inject() {
-    return [_aureliaTaskQueue.TaskQueue, EventManager, DirtyChecker, _aureliaDependencyInjection.All.of(ObjectObservationAdapter)];
-  };
 
   ObserverLocator.prototype.getObserver = function getObserver(obj, propertyName) {
     var observersLookup = obj.__observers__,
@@ -4446,7 +4446,7 @@ var ObserverLocator = (function () {
     var value = {};
 
     try {
-      Object.defineProperty(obj, '__observers__', {
+      Object.defineProperty(obj, "__observers__", {
         enumerable: false,
         configurable: false,
         writable: false,
@@ -4591,7 +4591,7 @@ var BindingExpression = (function () {
   };
 
   BindingExpression.create = function create(targetProperty, sourceExpression) {
-    var mode = arguments[2] === undefined ? bindingMode.oneWay : arguments[2];
+    var mode = arguments.length <= 2 || arguments[2] === undefined ? bindingMode.oneWay : arguments[2];
 
     var parser = _aureliaDependencyInjection.Container.instance.get(Parser),
         observerLocator = _aureliaDependencyInjection.Container.instance.get(ObserverLocator);
@@ -4748,20 +4748,20 @@ var Call = (function () {
   return Call;
 })();
 
-if (!('classList' in document.createElement('_')) || document.createElementNS && !('classList' in document.createElementNS('http://www.w3.org/2000/svg', 'g'))) {
+if (!("classList" in document.createElement("_")) || document.createElementNS && !("classList" in document.createElementNS("http://www.w3.org/2000/svg", "g"))) {
 
   (function (view) {
 
-    'use strict';
+    "use strict";
 
     if (!('Element' in view)) return;
 
-    var classListProp = 'classList',
-        protoProp = 'prototype',
+    var classListProp = "classList",
+        protoProp = "prototype",
         elemCtrProto = view.Element[protoProp],
         objCtr = Object,
         strTrim = String[protoProp].trim || function () {
-      return this.replace(/^\s+|\s+$/g, '');
+      return this.replace(/^\s+|\s+$/g, "");
     },
         arrIndexOf = Array[protoProp].indexOf || function (item) {
       var i = 0,
@@ -4779,16 +4779,16 @@ if (!('classList' in document.createElement('_')) || document.createElementNS &&
       this.message = message;
     },
         checkTokenAndGetIndex = function checkTokenAndGetIndex(classList, token) {
-      if (token === '') {
-        throw new DOMEx('SYNTAX_ERR', 'An invalid or illegal string was specified');
+      if (token === "") {
+        throw new DOMEx("SYNTAX_ERR", "An invalid or illegal string was specified");
       }
       if (/\s/.test(token)) {
-        throw new DOMEx('INVALID_CHARACTER_ERR', 'String contains an invalid character');
+        throw new DOMEx("INVALID_CHARACTER_ERR", "String contains an invalid character");
       }
       return arrIndexOf.call(classList, token);
     },
         ClassList = function ClassList(elem) {
-      var trimmedClasses = strTrim.call(elem.getAttribute('class') || ''),
+      var trimmedClasses = strTrim.call(elem.getAttribute("class") || ""),
           classes = trimmedClasses ? trimmedClasses.split(/\s+/) : [],
           i = 0,
           len = classes.length;
@@ -4796,7 +4796,7 @@ if (!('classList' in document.createElement('_')) || document.createElementNS &&
         this.push(classes[i]);
       }
       this._updateClassName = function () {
-        elem.setAttribute('class', this.toString());
+        elem.setAttribute("class", this.toString());
       };
     },
         classListProto = ClassList[protoProp] = [],
@@ -4809,7 +4809,7 @@ if (!('classList' in document.createElement('_')) || document.createElementNS &&
       return this[i] || null;
     };
     classListProto.contains = function (token) {
-      token += '';
+      token += "";
       return checkTokenAndGetIndex(this, token) !== -1;
     };
     classListProto.add = function () {
@@ -4819,7 +4819,7 @@ if (!('classList' in document.createElement('_')) || document.createElementNS &&
           token,
           updated = false;
       do {
-        token = tokens[i] + '';
+        token = tokens[i] + "";
         if (checkTokenAndGetIndex(this, token) === -1) {
           this.push(token);
           updated = true;
@@ -4838,7 +4838,7 @@ if (!('classList' in document.createElement('_')) || document.createElementNS &&
           updated = false,
           index;
       do {
-        token = tokens[i] + '';
+        token = tokens[i] + "";
         index = checkTokenAndGetIndex(this, token);
         while (index !== -1) {
           this.splice(index, 1);
@@ -4852,10 +4852,10 @@ if (!('classList' in document.createElement('_')) || document.createElementNS &&
       }
     };
     classListProto.toggle = function (token, force) {
-      token += '';
+      token += "";
 
       var result = this.contains(token),
-          method = result ? force !== true && 'remove' : force !== false && 'add';
+          method = result ? force !== true && "remove" : force !== false && "add";
 
       if (method) {
         this[method](token);
@@ -4868,7 +4868,7 @@ if (!('classList' in document.createElement('_')) || document.createElementNS &&
       }
     };
     classListProto.toString = function () {
-      return this.join(' ');
+      return this.join(" ");
     };
 
     if (objCtr.defineProperty) {
@@ -4892,13 +4892,13 @@ if (!('classList' in document.createElement('_')) || document.createElementNS &&
 } else {
 
   (function () {
-    'use strict';
+    "use strict";
 
-    var testElement = document.createElement('_');
+    var testElement = document.createElement("_");
 
-    testElement.classList.add('c1', 'c2');
+    testElement.classList.add("c1", "c2");
 
-    if (!testElement.classList.contains('c2')) {
+    if (!testElement.classList.contains("c2")) {
       var createMethod = function createMethod(method) {
         var original = DOMTokenList.prototype[method];
 
@@ -4916,9 +4916,9 @@ if (!('classList' in document.createElement('_')) || document.createElementNS &&
       createMethod('remove');
     }
 
-    testElement.classList.toggle('c3', false);
+    testElement.classList.toggle("c3", false);
 
-    if (testElement.classList.contains('c3')) {
+    if (testElement.classList.contains("c3")) {
       var _toggle = DOMTokenList.prototype.toggle;
 
       DOMTokenList.prototype.toggle = function (token, force) {
