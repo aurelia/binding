@@ -132,7 +132,7 @@ export class OoObjectObserver {
     }
 
     callbacks.splice(index, 1);
-    if (callbacks.count = 0) {
+    if (callbacks.length === 0) {
       callbacks.oldValue = null;
       this.callbacks[propertyName] = null;
     }
