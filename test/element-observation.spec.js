@@ -99,20 +99,26 @@ describe('element observation', () => {
   it('value attributes', (done) => {
     var cases = [
         { tag: '<input type="text" value="foo" />', attr: 'value', old: 'foo', new: 'bar' },
+        { tag: '<input type="text" value="foo" />', attr: 'value', old: 'foo', new: undefined, expected: '' },
+        { tag: '<input type="text" value="foo" />', attr: 'value', old: 'foo', new: null, expected: '' },
+
         { tag: '<textarea>foo</textarea>', attr: 'value', old: 'foo', new: 'bar' },
+        { tag: '<textarea>foo</textarea>', attr: 'value', old: 'foo', new: undefined, expected: '' },
+        { tag: '<textarea>foo</textarea>', attr: 'value', old: 'foo', new: null, expected: '' },
       ],
       remaining = cases.length;
     cases.forEach(test => {
       var el = createElement(test.tag),
           observer = locator.getObserver(el, test.attr),
           callback = jasmine.createSpy('callback'),
-          dispose = observer.subscribe(callback);
+          dispose = observer.subscribe(callback),
+          expected = test.hasOwnProperty('expected') ? test.expected : test.new;
       expect(observer instanceof ValueAttributeObserver).toBe(true);
       expect(observer.getValue()).toBe(test.old);
       observer.setValue(test.new);
-      expect(observer.getValue()).toBe(test.new);
+      expect(observer.getValue()).toBe(expected);
       setTimeout(() => {
-        expect(callback).toHaveBeenCalledWith(test.new, test.old);
+        expect(callback).toHaveBeenCalledWith(expected, test.old);
         dispose();
         remaining--;
         if (remaining === 0) {

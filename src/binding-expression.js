@@ -80,9 +80,7 @@ class Binding {
         });
       }
 
-      if(info.value !== undefined){
-        targetProperty.setValue(info.value);
-      }
+      targetProperty.setValue(info.value);
 
       if(this.mode == bindingMode.twoWay){
         this._disposeListener = targetProperty.subscribe(newValue => {
@@ -91,12 +89,9 @@ class Binding {
       }
 
       this.source = source;
-    }else{
+    } else {
       var value = this.sourceExpression.evaluate(source, this.valueConverterLookupFunction);
-
-      if(value !== undefined){
-        targetProperty.setValue(value);
-      }
+      targetProperty.setValue(value);
     }
   }
 

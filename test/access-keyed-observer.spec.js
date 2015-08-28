@@ -456,7 +456,7 @@ describe('AccessKeyedObserver', () => {
     it('responds to out of bounds key change', done => {
       obj.key = 99;
       setTimeout(() => {
-        expect(el.value).toBe('undefined');
+        expect(el.value).toBe('');
         obj.key = 1;
         done();
         }, checkDelay * 2);
