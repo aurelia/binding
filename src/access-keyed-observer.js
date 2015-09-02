@@ -17,7 +17,6 @@ export class AccessKeyedObserver {
   }
 
   updatePropertySubscription(object, key) {
-    var callback;
     if (this.disposeProperty) {
       this.disposeProperty();
       this.disposeProperty = null;
@@ -29,11 +28,11 @@ export class AccessKeyedObserver {
   }
 
   objectOrKeyChanged(object, key) {
-    var oo, ko;
+    let oo;
+    let ko;
     object = object || ((oo = this.objectInfo.observer) && oo.getValue ? oo.getValue() : this.objectInfo.value);
     key = key || ((ko = this.keyInfo.observer) && ko.getValue ? ko.getValue() : this.keyInfo.value);
     this.updatePropertySubscription(object, key);
-
     this.notify();
   }
 
