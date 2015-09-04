@@ -1,3 +1,21 @@
+## 0.9.0 (2015-09-04)
+
+
+#### Bug Fixes
+
+* **BindingExpression:** remove needless check for undefined ([afcc1ef3](http://github.com/aurelia/binding/commit/afcc1ef3b728e0304a9de207cebf19ff3c03a01b))
+* **OoObjectObserver:** unsubscribe leak ([9818841c](http://github.com/aurelia/binding/commit/9818841cfc67bf597f0739226d58f1ccdd403dd2))
+* **ValueAttributeObserver:** set undefined/null to empty string ([e18b1f60](http://github.com/aurelia/binding/commit/e18b1f60caefe324ca81aa060a339e9b23e5c888), closes [#152](http://github.com/aurelia/binding/issues/152))
+* **build:** update linting, testing and tools ([dbb5d08b](http://github.com/aurelia/binding/commit/dbb5d08b81556a907f0d1f03081977fa9041db8d))
+
+
+#### Features
+
+* **docs:**
+  * generate api.json from .d.ts file ([6aa3caaa](http://github.com/aurelia/binding/commit/6aa3caaaba78142971e2c4bfbaee5c7d5d56db15))
+  * generate api.json from .d.ts file ([e612055f](http://github.com/aurelia/binding/commit/e612055f7e5a98f4670be1838f993d512c4dea2f))
+
+
 ### 0.8.6 (2015-08-14)
 
 

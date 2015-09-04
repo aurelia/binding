@@ -49,7 +49,6 @@ define(['exports', 'core-js', 'aurelia-task-queue', 'aurelia-dependency-injectio
     AccessKeyedObserver.prototype.updatePropertySubscription = function updatePropertySubscription(object, key) {
       var _this2 = this;
 
-      var callback;
       if (this.disposeProperty) {
         this.disposeProperty();
         this.disposeProperty = null;
@@ -62,11 +61,11 @@ define(['exports', 'core-js', 'aurelia-task-queue', 'aurelia-dependency-injectio
     };
 
     AccessKeyedObserver.prototype.objectOrKeyChanged = function objectOrKeyChanged(object, key) {
-      var oo, ko;
+      var oo = undefined;
+      var ko = undefined;
       object = object || ((oo = this.objectInfo.observer) && oo.getValue ? oo.getValue() : this.objectInfo.value);
       key = key || ((ko = this.keyInfo.observer) && ko.getValue ? ko.getValue() : this.keyInfo.value);
       this.updatePropertySubscription(object, key);
-
       this.notify();
     };
 
@@ -3407,7 +3406,7 @@ define(['exports', 'core-js', 'aurelia-task-queue', 'aurelia-dependency-injectio
       }
 
       callbacks.splice(index, 1);
-      if (callbacks.count = 0) {
+      if (callbacks.length === 0) {
         callbacks.oldValue = null;
         this.callbacks[propertyName] = null;
       }
@@ -3676,7 +3675,8 @@ define(['exports', 'core-js', 'aurelia-task-queue', 'aurelia-dependency-injectio
     };
 
     ValueAttributeObserver.prototype.setValue = function setValue(newValue) {
-      this.element[this.propertyName] = newValue;
+      this.element[this.propertyName] = newValue === undefined || newValue === null ? '' : newValue;
+
       this.call();
     };
 
@@ -4638,9 +4638,7 @@ define(['exports', 'core-js', 'aurelia-task-queue', 'aurelia-dependency-injectio
           });
         }
 
-        if (info.value !== undefined) {
-          targetProperty.setValue(info.value);
-        }
+        targetProperty.setValue(info.value);
 
         if (this.mode == bindingMode.twoWay) {
           this._disposeListener = targetProperty.subscribe(function (newValue) {
@@ -4651,10 +4649,7 @@ define(['exports', 'core-js', 'aurelia-task-queue', 'aurelia-dependency-injectio
         this.source = source;
       } else {
         var value = this.sourceExpression.evaluate(source, this.valueConverterLookupFunction);
-
-        if (value !== undefined) {
-          targetProperty.setValue(value);
-        }
+        targetProperty.setValue(value);
       }
     };
 

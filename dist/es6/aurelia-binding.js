@@ -22,7 +22,6 @@ export class AccessKeyedObserver {
   }
 
   updatePropertySubscription(object, key) {
-    var callback;
     if (this.disposeProperty) {
       this.disposeProperty();
       this.disposeProperty = null;
@@ -34,11 +33,11 @@ export class AccessKeyedObserver {
   }
 
   objectOrKeyChanged(object, key) {
-    var oo, ko;
+    let oo;
+    let ko;
     object = object || ((oo = this.objectInfo.observer) && oo.getValue ? oo.getValue() : this.objectInfo.value);
     key = key || ((ko = this.keyInfo.observer) && ko.getValue ? ko.getValue() : this.keyInfo.value);
     this.updatePropertySubscription(object, key);
-
     this.notify();
   }
 
@@ -3169,7 +3168,7 @@ export class OoObjectObserver {
     }
 
     callbacks.splice(index, 1);
-    if (callbacks.count = 0) {
+    if (callbacks.length === 0) {
       callbacks.oldValue = null;
       this.callbacks[propertyName] = null;
     }
@@ -3399,7 +3398,9 @@ export class ValueAttributeObserver {
   }
 
   setValue(newValue) {
-    this.element[this.propertyName] = newValue;
+    this.element[this.propertyName] =
+      (newValue === undefined || newValue === null) ? '' : newValue;
+
     this.call();
   }
 
@@ -4308,9 +4309,7 @@ class Binding {
         });
       }
 
-      if(info.value !== undefined){
-        targetProperty.setValue(info.value);
-      }
+      targetProperty.setValue(info.value);
 
       if(this.mode == bindingMode.twoWay){
         this._disposeListener = targetProperty.subscribe(newValue => {
@@ -4319,12 +4318,9 @@ class Binding {
       }
 
       this.source = source;
-    }else{
+    } else {
       var value = this.sourceExpression.evaluate(source, this.valueConverterLookupFunction);
-
-      if(value !== undefined){
-        targetProperty.setValue(value);
-      }
+      targetProperty.setValue(value);
     }
   }
 
