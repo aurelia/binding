@@ -5082,7 +5082,7 @@ var NameBinder = (function () {
         this.target = target;
         break;
       case 'view-model':
-        this.target = target.primaryBehavior.executionContext;
+        this.target = target.primaryBehavior.bindingContext;
         break;
       default:
         this.target = target[mode];
@@ -5090,7 +5090,7 @@ var NameBinder = (function () {
         if (this.target === undefined) {
           throw new Error('Attempted to reference "' + mode + '", but it was not found on the target element.');
         } else {
-          this.target = this.target.executionContext || this.target;
+          this.target = this.target.bindingContext || this.target;
         }
 
         break;

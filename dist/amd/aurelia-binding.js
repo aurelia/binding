@@ -5071,7 +5071,7 @@ define(['exports', 'core-js', 'aurelia-task-queue', 'aurelia-dependency-injectio
           this.target = target;
           break;
         case 'view-model':
-          this.target = target.primaryBehavior.executionContext;
+          this.target = target.primaryBehavior.bindingContext;
           break;
         default:
           this.target = target[mode];
@@ -5079,7 +5079,7 @@ define(['exports', 'core-js', 'aurelia-task-queue', 'aurelia-dependency-injectio
           if (this.target === undefined) {
             throw new Error('Attempted to reference "' + mode + '", but it was not found on the target element.');
           } else {
-            this.target = this.target.executionContext || this.target;
+            this.target = this.target.bindingContext || this.target;
           }
 
           break;

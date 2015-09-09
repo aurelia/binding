@@ -4750,13 +4750,13 @@ class Listener {
 }
 
 export class NameExpression {
-  constructor(name, mode){
+  constructor(name, mode) {
     this.property = name;
     this.discrete = true;
     this.mode = mode;
   }
 
-  createBinding(target){
+  createBinding(target) {
     return new NameBinder(this.property, target, this.mode);
   }
 }
@@ -4770,24 +4770,24 @@ class NameBinder {
         this.target = target;
         break;
       case 'view-model':
-        this.target = target.primaryBehavior.executionContext;
+        this.target = target.primaryBehavior.bindingContext;
         break;
       default:
         this.target = target[mode];
 
-        if(this.target === undefined){
+        if (this.target === undefined) {
           throw new Error(`Attempted to reference "${mode}", but it was not found on the target element.`)
-        }else{
-          this.target = this.target.executionContext || this.target;
+        } else {
+          this.target = this.target.bindingContext || this.target;
         }
 
         break;
     }
   }
 
-  bind(source){
-    if(this.source){
-      if(this.source === source){
+  bind(source) {
+    if (this.source) {
+      if (this.source === source) {
         return;
       }
 
@@ -4798,8 +4798,8 @@ class NameBinder {
     source[this.property] = this.target;
   }
 
-  unbind(){
-    if(this.source){
+  unbind() {
+    if (this.source) {
       this.source[this.property] = null;
       this.source = null;
     }

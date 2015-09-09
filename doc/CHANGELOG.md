@@ -1,3 +1,11 @@
+### 0.9.1 (2015-09-08)
+
+
+#### Bug Fixes
+
+* **name-expression:** incorrect reference to bindingContext ([cf6b928b](http://github.com/aurelia/binding/commit/cf6b928baead02852baa7acba1f23891c5fccfee))
+
+
 ## 0.9.0 (2015-09-04)
 
 
