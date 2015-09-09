@@ -1,28 +1,29 @@
 import * as core from 'core-js';
+import {subscriberCollection} from './subscriber-collection';
 
+@subscriberCollection()
 export class SetterObserver {
   constructor(taskQueue, obj, propertyName){
     this.taskQueue = taskQueue;
     this.obj = obj;
     this.propertyName = propertyName;
-    this.callbacks = [];
     this.queued = false;
     this.observing = false;
   }
 
-  getValue(){
+  getValue() {
     return this.obj[this.propertyName];
   }
 
-  setValue(newValue){
+  setValue(newValue) {
     this.obj[this.propertyName] = newValue;
   }
 
-  getterValue(){
+  getterValue() {
     return this.currentValue;
   }
 
-  setterValue(newValue){
+  setterValue(newValue) {
     var oldValue = this.currentValue;
 
     if(oldValue !== newValue){
@@ -36,33 +37,27 @@ export class SetterObserver {
     }
   }
 
-  call(){
-    var callbacks = this.callbacks,
-        i = callbacks.length,
-        oldValue = this.oldValue,
+  call() {
+    var oldValue = this.oldValue,
         newValue = this.currentValue;
 
     this.queued = false;
 
-    while(i--) {
-      callbacks[i](newValue, oldValue);
-    }
+    this.callSubscribers(newValue, oldValue);
   }
 
-  subscribe(callback){
-    var callbacks = this.callbacks;
-    callbacks.push(callback);
-
+  subscribe(callback) {
     if(!this.observing){
       this.convertProperty();
     }
-
-    return function(){
-      callbacks.splice(callbacks.indexOf(callback), 1);
-    };
+    this.addSubscriber(callback);
   }
 
-  convertProperty(){
+  unsubscribe(callback) {
+    this.removeSubscriber(callback);
+  }
+
+  convertProperty() {
     this.observing = true;
     this.currentValue = this.obj[this.propertyName];
     this.setValue = this.setterValue;
@@ -79,19 +74,31 @@ export class SetterObserver {
   }
 }
 
+@subscriberCollection()
 export class OoPropertyObserver {
-  constructor(obj, propertyName, subscribe){
+  constructor(obj, propertyName) {
     this.obj = obj;
     this.propertyName = propertyName;
-    this.subscribe = subscribe;
   }
 
-  getValue(){
+  getValue() {
     return this.obj[this.propertyName];
   }
 
-  setValue(newValue){
+  setValue(newValue) {
     this.obj[this.propertyName] = newValue;
+  }
+
+  subscribe(callback) {
+    if (this.addSubscriber(callback)) {
+      this.obj.__observer__.subscriberAdded();
+    }
+  }
+
+  unsubscribe(callback) {
+    if (this.removeSubscriber(callback)) {
+      this.obj.__observer__.subscriberRemoved();
+    }
   }
 }
 
@@ -100,45 +107,24 @@ export class OoObjectObserver {
     this.obj = obj;
     this.observerLocator = observerLocator;
     this.observers = {};
-    this.callbacks = {};
-    this.callbackCount = 0;
+    this.subscribers = 0;
   }
 
-  subscribe(propertyName, callback){
-    if (this.callbacks[propertyName]) {
-      this.callbacks[propertyName].push(callback);
-    } else {
-      this.callbacks[propertyName] = [callback];
-      this.callbacks[propertyName].oldValue = this.obj[propertyName];
-    }
-
-    if (this.callbackCount === 0) {
+  subscriberAdded(){
+    if (this.subscribers === 0) {
       this.handler = this.handleChanges.bind(this);
       try {
         Object.observe(this.obj, this.handler, ['update', 'add']);
       } catch(_) {}
     }
 
-    this.callbackCount++;
-
-    return this.unsubscribe.bind(this, propertyName, callback);
+    this.subscribers++;
   }
 
-  unsubscribe(propertyName, callback) {
-    var callbacks = this.callbacks[propertyName],
-        index = callbacks.indexOf(callback);
-    if (index === -1) {
-      return;
-    }
+  subscriberRemoved(propertyName, callback) {
+    this.subscribers--;
 
-    callbacks.splice(index, 1);
-    if (callbacks.length === 0) {
-      callbacks.oldValue = null;
-      this.callbacks[propertyName] = null;
-    }
-
-    this.callbackCount--;
-    if (this.callbackCount === 0) {
+    if (this.subscribers === 0) {
       try {
         Object.unobserve(this.obj, this.handler);
       } catch(_) {}
@@ -148,129 +134,27 @@ export class OoObjectObserver {
   getObserver(propertyName, descriptor){
     var propertyObserver = this.observers[propertyName];
     if (!propertyObserver) {
-      if (descriptor) {
-        propertyObserver = this.observers[propertyName] = new OoPropertyObserver(this.obj, propertyName, this.subscribe.bind(this, propertyName));
-      } else {
-        propertyObserver = this.observers[propertyName] = new UndefinedPropertyObserver(this, this.obj, propertyName);
-      }
+      propertyObserver = this.observers[propertyName] = new OoPropertyObserver(this.obj, propertyName);
     }
     return propertyObserver;
   }
 
   handleChanges(changes) {
-    var properties = {}, i, ii, change, propertyName, oldValue, newValue, callbacks;
-
-    for(i = 0, ii = changes.length; i < ii; i++){
-      change = changes[i];
+    let properties = {};
+    // todo: handle property additions
+    for (let i = 0, ii = changes.length; i < ii; i++) {
+      let change = changes[i];
       properties[change.name] = change;
     }
 
-    for(name in properties){
-      callbacks = this.callbacks[name];
-      if (!callbacks) {
+    for (let name in properties) {
+      let observer = this.observers[name];
+      if (!observer) {
         continue;
       }
-      change = properties[name];
-      newValue = change.object[name];
-      oldValue = change.oldValue;
+      let change = properties[name];
 
-      for (i = 0, ii = callbacks.length; i < ii; i++) {
-        callbacks[i](newValue, oldValue);
-      }
+      observer.callSubscribers(change.object[name], change.oldValue);
     }
-  }
-}
-
-export class UndefinedPropertyObserver {
-  constructor(owner, obj, propertyName){
-    this.owner = owner;
-    this.obj = obj;
-    this.propertyName = propertyName;
-    this.callbackMap = new Map();
-  }
-
-  getValue(){
-    // delegate this to the actual observer if possible.
-    if (this.actual){
-      return this.actual.getValue();
-    }
-    return this.obj[this.propertyName];
-  }
-
-  setValue(newValue){
-    // delegate this to the actual observer if possible.
-    if (this.actual){
-      this.actual.setValue(newValue);
-      return;
-    }
-    // define the property and trigger the callbacks.
-    this.obj[this.propertyName] = newValue;
-    this.trigger(newValue, undefined);
-  }
-
-  trigger(newValue, oldValue){
-    var callback;
-
-    // we only care about this event one time:  when the property becomes defined.
-    if (this.subscription){
-      this.subscription();
-    }
-
-    // get the actual observer.
-    this.getObserver();
-
-    // invoke the callbacks.
-    for(callback of this.callbackMap.keys()) {
-      callback(newValue, oldValue);
-    }
-  }
-
-  getObserver() {
-    var callback, observerLocator;
-
-    // has the property has been defined?
-    if (!Object.getOwnPropertyDescriptor(this.obj, this.propertyName)) {
-      return;
-    }
-
-    // get the actual observer.
-    observerLocator = this.owner.observerLocator;
-    delete this.owner.observers[this.propertyName];
-    delete observerLocator.getOrCreateObserversLookup(this.obj, observerLocator)[this.propertyName];
-    this.actual = observerLocator.getObserver(this.obj, this.propertyName);
-
-    // attach any existing callbacks to the actual observer.
-    for(callback of this.callbackMap.keys()) {
-      this.callbackMap.set(callback, this.actual.subscribe(callback));
-    }
-  }
-
-  subscribe(callback){
-    // attempt to get the actual observer in case the property has become
-    // defined since the ObserverLocator returned [this].
-    if (!this.actual) {
-      this.getObserver();
-    }
-
-    // if we have the actual observer, use it.
-    if (this.actual){
-      return this.actual.subscribe(callback);
-    }
-
-    // start listening for the property to become defined.
-    if (!this.subscription){
-      this.subscription = this.owner.subscribe(this.propertyName, this.trigger.bind(this));
-    }
-
-    // cache the callback.
-    this.callbackMap.set(callback, null);
-
-    // return the method to dispose the subscription.
-    return () => {
-      var actualDispose = this.callbackMap.get(callback);
-      if (actualDispose)
-        actualDispose();
-      this.callbackMap.delete(callback);
-    };
   }
 }

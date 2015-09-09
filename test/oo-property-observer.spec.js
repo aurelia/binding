@@ -27,11 +27,11 @@ describe('OoPropertyObserver', () => {
   });
 
 	it('tracks and untracks', () => {
-	  var dispose;
-		expect(obj.__observer__.callbackCount).toBe(0);
-		dispose = observer.subscribe(() => {});
-		expect(obj.__observer__.callbackCount).toBe(1);
-		dispose();
-		expect(obj.__observer__.callbackCount).toBe(0);
+	  expect(obj.__observer__.subscribers).toBe(0);
+		let callback = () => {};
+		observer.subscribe(callback);
+		expect(obj.__observer__.subscribers).toBe(1);
+		observer.unsubscribe(callback);
+		expect(obj.__observer__.subscribers).toBe(0);
 	});
 });

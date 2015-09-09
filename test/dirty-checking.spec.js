@@ -26,9 +26,10 @@ describe('DirtyCheckProperty', () => {
 	  var dirtyChecker = observerLocator.dirtyChecker,
 				dispose;
 		expect(dirtyChecker.tracked.length).toBe(0);
-		dispose = observer.subscribe(() => {});
+		let callback = () => {};
+		observer.subscribe(callback);
 		expect(dirtyChecker.tracked.length).toBe(1);
-		dispose();
+		observer.unsubscribe(callback);
 		expect(dirtyChecker.tracked.length).toBe(0);
 	});
 });

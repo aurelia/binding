@@ -48,65 +48,66 @@ class Binding {
     this.valueConverterLookupFunction = valueConverterLookupFunction;
   }
 
-  getObserver(obj, propertyName){
+  getObserver(obj, propertyName) {
     return this.observerLocator.getObserver(obj, propertyName);
   }
 
-  bind(source){
-    var targetProperty = this.targetProperty,
-        info;
+  bind(source) {
+    if (this.isBound) {
+      if (this.source === source) {
+        return;
+      }
+      this.unbind();
+    }
+    this.isBound = true;
 
+    let targetProperty = this.targetProperty;
     if ('bind' in targetProperty){
       targetProperty.bind();
     }
 
-    if(this.mode == bindingMode.oneWay || this.mode == bindingMode.twoWay){
-      if(this._disposeObserver){
-        if(this.source === source){
-          return;
-        }
+    if (this.mode === bindingMode.oneWay || this.mode === bindingMode.twoWay) {
+      let sourceInfo = this.sourceExpression.connect(this, source);
+      this.sourceProperty = sourceInfo.observer;
 
-        this.unbind();
-      }
-
-      info = this.sourceExpression.connect(this, source);
-
-      if(info.observer){
-        this._disposeObserver = info.observer.subscribe(newValue =>{
-          var existing = targetProperty.getValue();
-          if(newValue !== existing){
+      if (this.sourceProperty) {
+        this.sourceChanged = newValue => {
+          let existing = targetProperty.getValue();
+          if (newValue !== existing) {
             targetProperty.setValue(newValue);
           }
-        });
+        };
+        this.sourceProperty.subscribe(this.sourceChanged);
       }
 
-      targetProperty.setValue(info.value);
+      targetProperty.setValue(sourceInfo.value);
 
-      if(this.mode == bindingMode.twoWay){
-        this._disposeListener = targetProperty.subscribe(newValue => {
+      if (this.mode === bindingMode.twoWay) {
+        this.targetChanged = newValue => {
           this.sourceExpression.assign(source, newValue, this.valueConverterLookupFunction);
-        });
+        };
+        targetProperty.subscribe(this.targetChanged);
       }
 
       this.source = source;
     } else {
-      var value = this.sourceExpression.evaluate(source, this.valueConverterLookupFunction);
+      let value = this.sourceExpression.evaluate(source, this.valueConverterLookupFunction);
       targetProperty.setValue(value);
     }
   }
 
-  unbind(){
+  unbind() {
+    this.isBound = false;
     if ('unbind' in this.targetProperty){
       this.targetProperty.unbind();
     }
-    if(this._disposeObserver){
-      this._disposeObserver();
-      this._disposeObserver = null;
+    if(this.targetChanged){
+      this.targetProperty.unsubscribe(this.targetChanged);
+      this.targetChanged = null;
     }
-
-    if(this._disposeListener){
-      this._disposeListener();
-      this._disposeListener = null;
+    if(this.sourceChanged){
+      this.sourceProperty.unsubscribe(this.sourceChanged);
+      this.sourceChanged = null;
     }
   }
 }

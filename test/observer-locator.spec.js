@@ -30,12 +30,12 @@ describe('ObserverLocator', () => {
     expect(observer instanceof T).toBe(true);
   });
 
-  it('uses ' + hasObjectObserve ? 'UndefinedPropertyObserver' : 'SetterObserver' + ' for undefined properties on pojos', () => {
-    var obj = {},
-        observer = locator.getObserver(obj, 'foo'),
-        T = hasObjectObserve ? UndefinedPropertyObserver : SetterObserver;
-    expect(observer instanceof T).toBe(true);
-  });
+  // it('uses ' + hasObjectObserve ? 'UndefinedPropertyObserver' : 'SetterObserver' + ' for undefined properties on pojos', () => {
+  //   var obj = {},
+  //       observer = locator.getObserver(obj, 'foo'),
+  //       T = hasObjectObserve ? UndefinedPropertyObserver : SetterObserver;
+  //   expect(observer instanceof T).toBe(true);
+  // });
 
   it('uses ' + hasObjectObserve ? 'OoPropertyObserver' : 'SetterObserver' + 'for ad-hoc properties on Elements', () => {
     var obj = createElement('<h1></h1>'),

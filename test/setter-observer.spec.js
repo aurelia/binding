@@ -16,19 +16,4 @@ describe('SetterObserver', () => {
   it('implements the property observer api', done => {
     executeSharedPropertyObserverTests(obj, observer, done);
   });
-
-  it('stops observing if there are no callbacks', () => {
-    var dispose = observer.subscribe(() => {});
-    expect(observer.observing).toBe(true);
-    expect(observer.callbacks.length).toBe(1);
-    dispose();
-    expect(observer.callbacks.length).toBe(0);
-  });
-
-  it('keeps observing if there are callbacks', () => {
-    var dispose = observer.subscribe(() => {});
-    observer.subscribe(() => {});
-    dispose();
-    expect(observer.callbacks.length).toBe(1);
-  });
 });

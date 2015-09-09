@@ -1,6 +1,7 @@
 import {hasArrayObserve} from './environment';
 import {projectArraySplices} from './array-change-records';
 import {ModifyCollectionObserver, CollectionLengthObserver} from './collection-observation';
+import {subscriberCollection} from './subscriber-collection';
 
 var arrayProto = Array.prototype;
 
@@ -96,48 +97,37 @@ class ModifyArrayObserver extends ModifyCollectionObserver {
   }
 }
 
+@subscriberCollection()
 class ArrayObserveObserver {
   constructor(array){
     this.array = array;
-    this.callbacks = [];
   }
 
-  subscribe(callback){
-    var callbacks = this.callbacks;
-
-    if(callbacks.length === 0){
+  subscribe(callback) {
+    if (!this.hasSubscribers()) {
       this.handler = this.handleChanges.bind(this);
       Array.observe(this.array, this.handler);
     }
+    this.addSubscriber(callback)
+  }
 
-    callbacks.push(callback);
-
-    return () => {
-      callbacks.splice(callbacks.indexOf(callback), 1);
-      if (callbacks.length === 0) {
-        Array.unobserve(this.array, this.handler)
-      }
-    };
+  unsubscribe(callback) {
+    if (this.removeSubscriber(callback) && !this.hasSubscribers()) {
+      Array.unobserve(this.array, this.handler);
+    }
   }
 
   getLengthObserver(){
     return this.lengthObserver || (this.lengthObserver = new CollectionLengthObserver(this.array));
   }
 
-  handleChanges(changeRecords){
-    var callbacks = this.callbacks,
-        i = callbacks.length,
-        splices;
-
-    if(i){
-      splices = projectArraySplices(this.array, changeRecords);
-
-      while(i--) {
-        callbacks[i](splices);
-      }
+  handleChanges(changeRecords) {
+    if (this.hasSubscribers()) {
+      let splices = projectArraySplices(this.array, changeRecords);
+      this.callSubscribers(splices);
     }
 
-    if(this.lengthObserver){
+    if (this.lengthObserver){
       this.lengthObserver.call(this.array.length);
     }
   }

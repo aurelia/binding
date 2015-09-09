@@ -26,5 +26,6 @@ export class AdapterPropertyObserver {
     this.getValue = () => observer.getValue();
     this.setValue = newValue => observer.setValue(newValue);
     this.subscribe = callback => observer.subscribe(callback);
+    this.unsubscribe = callback => observer.unsubscribe(callback);
   }
 }

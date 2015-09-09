@@ -49,11 +49,10 @@ describe('ComputedObservationAdapter', () => {
 
   it('notifies when value changes', done => {
     var callback = callback = jasmine.createSpy('callback'),
-        dispose,
         oldValue = observer.getValue();
 
     expect(observer.oldValue).toBeUndefined();
-    dispose = observer.subscribe(callback);
+    observer.subscribe(callback);
     expect(observer.oldValue).toBe(observer.getValue());
 
     person.lastName = 'Dough';
@@ -63,7 +62,7 @@ describe('ComputedObservationAdapter', () => {
       person.firstName = 'Jon';
       setTimeout(() => {
         expect(callback).toHaveBeenCalledWith(person.fullName, oldValue);
-        dispose();
+        observer.unsubscribe(callback);
         expect(observer.oldValue).toBeUndefined();
         done();
       }, 0);

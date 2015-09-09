@@ -111,15 +111,15 @@ describe('element observation', () => {
       var el = createElement(test.tag),
           observer = locator.getObserver(el, test.attr),
           callback = jasmine.createSpy('callback'),
-          dispose = observer.subscribe(callback),
           expected = test.hasOwnProperty('expected') ? test.expected : test.new;
+      observer.subscribe(callback);
       expect(observer instanceof ValueAttributeObserver).toBe(true);
       expect(observer.getValue()).toBe(test.old);
       observer.setValue(test.new);
       expect(observer.getValue()).toBe(expected);
       setTimeout(() => {
         expect(callback).toHaveBeenCalledWith(expected, test.old);
-        dispose();
+        observer.unsubscribe(callback);
         remaining--;
         if (remaining === 0) {
           done();

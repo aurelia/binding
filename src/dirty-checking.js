@@ -1,3 +1,5 @@
+import {subscriberCollection} from './subscriber-collection';
+
 export class DirtyChecker {
   constructor(){
     this.tracked = [];
@@ -41,70 +43,46 @@ export class DirtyChecker {
   }
 }
 
+@subscriberCollection()
 export class DirtyCheckProperty {
-  constructor(dirtyChecker, obj, propertyName){
+  constructor(dirtyChecker, obj, propertyName) {
     this.dirtyChecker = dirtyChecker;
     this.obj = obj;
     this.propertyName = propertyName;
-    this.callbacks = [];
-    this.isSVG = obj instanceof SVGElement;
   }
 
-  getValue(){
+  getValue() {
     return this.obj[this.propertyName];
   }
 
-  setValue(newValue){
-    if(this.isSVG){
-      this.obj.setAttributeNS(null, this.propertyName, newValue);
-    }else{
-      this.obj[this.propertyName] = newValue;
-    }
+  setValue(newValue) {
+    this.obj[this.propertyName] = newValue;
   }
 
-  call(){
-    var callbacks = this.callbacks,
-        i = callbacks.length,
-        oldValue = this.oldValue,
-        newValue = this.getValue();
+  call() {
+    let oldValue = this.oldValue;
+    let newValue = this.getValue();
 
-    while(i--) {
-      callbacks[i](newValue, oldValue);
-    }
+    this.callSubscribers(newValue, oldValue);
 
     this.oldValue = newValue;
   }
 
-  isDirty(){
-    return this.oldValue !== this.getValue();
+  isDirty() {
+    return this.oldValue !== this.obj[this.propertyName];
   }
 
-  beginTracking(){
-    this.tracking = true;
-    this.oldValue = this.newValue = this.getValue();
-    this.dirtyChecker.addProperty(this);
-  }
-
-  endTracking(){
-    this.tracking = false;
-    this.dirtyChecker.removeProperty(this);
-  }
-
-  subscribe(callback){
-    var callbacks = this.callbacks,
-        that = this;
-
-    callbacks.push(callback);
-
-    if(!this.tracking){
-      this.beginTracking();
+  subscribe(callback) {
+    if (!this.hasSubscribers()) {
+      this.oldValue = this.getValue();
+      this.dirtyChecker.addProperty(this);
     }
+    this.addSubscriber(callback);
+  }
 
-    return function(){
-      callbacks.splice(callbacks.indexOf(callback), 1);
-      if(callbacks.length === 0){
-        that.endTracking();
-      }
-    };
+  unsubscribe(callback) {
+    if (this.removeSubscriber(callback) && !this.hasSubscribers()) {
+      this.dirtyChecker.removeProperty(this);
+    }
   }
 }

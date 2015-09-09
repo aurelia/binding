@@ -1,128 +1,118 @@
 import {calcSplices, projectArraySplices} from './array-change-records';
 import {getChangeRecords} from './map-change-records';
+import {subscriberCollection} from './subscriber-collection';
 
+@subscriberCollection()
 export class ModifyCollectionObserver {
-
-  constructor(taskQueue, collection){
+  constructor(taskQueue, collection) {
     this.taskQueue = taskQueue;
     this.queued = false;
-    this.callbacks = [];
-    this.changeRecords = [];
+    this.changeRecords = null;
     this.oldCollection = null;
     this.collection = collection;
     this.lengthPropertyName = collection instanceof Map ? 'size' : 'length';
   }
 
-  subscribe(callback){
-    var callbacks = this.callbacks;
-    callbacks.push(callback);
-    return function(){
-      callbacks.splice(callbacks.indexOf(callback), 1);
-    };
+  subscribe(callback) {
+    this.addSubscriber(callback);
+  }
+
+  unsubscribe(callback) {
+    this.removeSubscriber(callback);
   }
 
   addChangeRecord(changeRecord){
-    if(this.callbacks.length === 0 && !this.lengthObserver){
+    if (!this.hasSubscribers() && !this.lengthObserver) {
       return;
     }
 
-    this.changeRecords.push(changeRecord);
+    if (this.changeRecords === null) {
+      this.changeRecords = [changeRecord];
+    } else {
+      this.changeRecords.push(changeRecord);
+    }
 
-    if(!this.queued){
+    if (!this.queued) {
       this.queued = true;
       this.taskQueue.queueMicroTask(this);
     }
   }
 
-  reset(oldCollection){
-    if(!this.callbacks.length){
-      return;
-    }
-
+  reset(oldCollection) {
     this.oldCollection = oldCollection;
 
-    if(!this.queued){
+    if (this.hasSubscribers() && !this.queued) {
       this.queued = true;
       this.taskQueue.queueMicroTask(this);
     }
   }
 
-  getLengthObserver(){
+  getLengthObserver() {
     return this.lengthObserver || (this.lengthObserver = new CollectionLengthObserver(this.collection));
   }
 
-  call(){
-    var callbacks = this.callbacks,
-      i = callbacks.length,
-      changeRecords = this.changeRecords,
-      oldCollection = this.oldCollection,
-      records;
+  call() {
+    let changeRecords = this.changeRecords;
+    let oldCollection = this.oldCollection;
+    let records;
 
     this.queued = false;
     this.changeRecords = [];
     this.oldCollection = null;
 
-    if(i){
-      if(oldCollection){
+    if (this.hasSubscribers()) {
+      if (oldCollection){
         // TODO (martingust) we might want to refactor this to a common, independent of collection type, way of getting the records
-        if(this.collection instanceof Map){
+        if (this.collection instanceof Map) {
           records = getChangeRecords(oldCollection);
-        }else {
+        } else {
           //we might need to combine this with existing change records....
           records = calcSplices(this.collection, 0, this.collection.length, oldCollection, 0, oldCollection.length);
         }
-      }else{
-        if(this.collection instanceof Map){
+      } else {
+        if (this.collection instanceof Map) {
           records = changeRecords;
-        }else {
+        } else {
           records = projectArraySplices(this.collection, changeRecords);
         }
       }
 
-      while(i--) {
-        callbacks[i](records);
-      }
+      this.callSubscribers(records);
     }
 
-    if(this.lengthObserver){
+    if (this.lengthObserver) {
       this.lengthObserver.call(this.collection[this.lengthPropertyName]);
     }
   }
 }
 
+@subscriberCollection()
 export class CollectionLengthObserver {
-  constructor(collection){
+  constructor(collection) {
     this.collection = collection;
-    this.callbacks = [];
     this.lengthPropertyName = collection instanceof Map ? 'size' : 'length';
     this.currentValue = collection[this.lengthPropertyName];
   }
 
-  getValue(){
+  getValue() {
     return this.collection[this.lengthPropertyName];
   }
 
-  setValue(newValue){
+  setValue(newValue) {
     this.collection[this.lengthPropertyName] = newValue;
   }
 
-  subscribe(callback){
-    var callbacks = this.callbacks;
-    callbacks.push(callback);
-    return function(){
-      callbacks.splice(callbacks.indexOf(callback), 1);
-    };
+  subscribe(callback) {
+    this.addSubscriber(callback);
+  }
+
+  unsubscribe(callback) {
+    this.removeSubscriber(callback);
   }
 
   call(newValue){
-    var callbacks = this.callbacks,
-      i = callbacks.length,
-      oldValue = this.currentValue;
-
-    while(i--) {
-      callbacks[i](newValue, oldValue);
-    }
-
+    let oldValue = this.currentValue;
+    this.callSubscribers(newValue, oldValue);
     this.currentValue = newValue;
   }
 }

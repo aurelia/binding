@@ -88,12 +88,110 @@ export class FooNoDep {
   }
 }
 
+function countSubscribers(observer) {
+  let count = 0;
+  if (observer._subscriber0) { count++; }
+  if (observer._subscriber1) { count++; }
+  if (observer._subscriber2) { count++; }
+  if (observer._subscribersRest) { count += observer._subscribersRest.length; }
+  return count;
+}
+
 export function executeSharedPropertyObserverTests(obj, observer, done) {
-  var callback = jasmine.createSpy('callback'),
-      oldValue, newValue,
-      dispose = observer.subscribe(callback),
-      values = ['alkjdfs', 0, false, {}, [], null, undefined, 'foo'],
-      next;
+  let callback0 = jasmine.createSpy('callback0');
+  let callback1 = jasmine.createSpy('callback1');
+  let callback2 = jasmine.createSpy('callback2');
+  let callback3 = jasmine.createSpy('callback3');
+  let callback4 = jasmine.createSpy('callback4');
+  let callback5 = jasmine.createSpy('callback5');
+  let oldValue;
+  let newValue;
+  let values = ['alkjdfs', 0, false, {}, [], null, undefined, 'foo'];
+  let next;
+  spyOn(observer, 'addSubscriber').and.callThrough();
+  spyOn(observer, 'removeSubscriber').and.callThrough();
+  // hasSubscribers, hasSubscriber
+  expect(observer.hasSubscribers()).toBe(false);
+  expect(observer.hasSubscriber(callback0)).toBe(false);
+  observer.subscribe(callback0);
+  expect(observer.addSubscriber).toHaveBeenCalledWith(callback0);
+  expect(countSubscribers(observer)).toBe(1);
+  expect(observer.hasSubscribers()).toBe(true);
+  expect(observer.hasSubscriber(callback0)).toBe(true);
+  // doesn't allow multiple subscribe
+  observer.subscribe(callback0);
+  expect(observer.addSubscriber).toHaveBeenCalledWith(callback0);
+  expect(countSubscribers(observer)).toBe(1);
+  // doesn't allow multiple unsubscribe
+  observer.unsubscribe(callback0);
+  expect(observer.removeSubscriber).toHaveBeenCalledWith(callback0);
+  expect(countSubscribers(observer)).toBe(0);
+  observer.unsubscribe(callback0);
+  expect(observer.removeSubscriber).toHaveBeenCalledWith(callback0);
+  expect(countSubscribers(observer)).toBe(0);
+
+  // overflows into "rest" array
+  observer.subscribe(callback0);
+  expect(observer._subscriber0).toBe(callback0);
+  expect(countSubscribers(observer)).toBe(1);
+  expect(observer.hasSubscribers()).toBe(true);
+  expect(observer.hasSubscriber(callback0)).toBe(true);
+
+  observer.subscribe(callback1);
+  expect(observer._subscriber1).toBe(callback1);
+  expect(countSubscribers(observer)).toBe(2);
+  expect(observer.hasSubscribers()).toBe(true);
+  expect(observer.hasSubscriber(callback1)).toBe(true);
+
+  observer.subscribe(callback2);
+  expect(observer._subscriber2).toBe(callback2);
+  expect(countSubscribers(observer)).toBe(3);
+  expect(observer.hasSubscribers()).toBe(true);
+  expect(observer.hasSubscriber(callback2)).toBe(true);
+
+  observer.subscribe(callback3);
+  expect(observer._subscribersRest[0]).toBe(callback3);
+  expect(countSubscribers(observer)).toBe(4);
+  expect(observer.hasSubscribers()).toBe(true);
+  expect(observer.hasSubscriber(callback3)).toBe(true);
+
+  observer.subscribe(callback4);
+  expect(observer._subscribersRest[1]).toBe(callback4);
+  expect(countSubscribers(observer)).toBe(5);
+  expect(observer.hasSubscribers()).toBe(true);
+  expect(observer.hasSubscriber(callback4)).toBe(true);
+
+  observer.subscribe(callback5);
+  expect(observer._subscribersRest[2]).toBe(callback5);
+  expect(countSubscribers(observer)).toBe(6);
+  expect(observer.hasSubscribers()).toBe(true);
+  expect(observer.hasSubscriber(callback5)).toBe(true);
+
+  // reuses empty slots
+  observer.unsubscribe(callback2);
+  expect(observer._subscriber2).toBe(null);
+  expect(countSubscribers(observer)).toBe(5);
+  expect(observer.hasSubscribers()).toBe(true);
+  expect(observer.hasSubscriber(callback2)).toBe(false);
+
+  observer.subscribe(callback2);
+  expect(observer._subscriber2).toBe(callback2);
+  expect(countSubscribers(observer)).toBe(6);
+  expect(observer.hasSubscribers()).toBe(true);
+  expect(observer.hasSubscriber(callback2)).toBe(true);
+
+  // handles unsubscribe during callback0
+  let unsubscribeDuringCallbackTested = false;
+  observer.unsubscribe(callback0);
+  callback0 = (newValue, oldValue) => {
+    observer.unsubscribe(callback1);
+    observer.unsubscribe(callback2);
+    observer.unsubscribe(callback3);
+    observer.unsubscribe(callback4);
+    observer.unsubscribe(callback5);
+  }
+  callback0 = jasmine.createSpy('callback0', callback0).and.callThrough();
+  observer.subscribe(callback0);
 
   next = () => {
     if (values.length) {
@@ -101,15 +199,27 @@ export function executeSharedPropertyObserverTests(obj, observer, done) {
       newValue = values.splice(0, 1)[0];
       observer.setValue(newValue);
       setTimeout(() => {
-        expect(callback).toHaveBeenCalledWith(newValue, oldValue);
+        expect(callback0).toHaveBeenCalledWith(newValue, oldValue);
+        if (!unsubscribeDuringCallbackTested) {
+          unsubscribeDuringCallbackTested = true;
+          expect(callback1).toHaveBeenCalledWith(newValue, oldValue);
+          expect(callback2).toHaveBeenCalledWith(newValue, oldValue);
+          expect(callback3).toHaveBeenCalledWith(newValue, oldValue);
+          expect(callback4).toHaveBeenCalledWith(newValue, oldValue);
+          expect(callback5).toHaveBeenCalledWith(newValue, oldValue);
+        }
         next();
       }, checkDelay * 2);
     } else {
-      dispose();
-      callback.calls.reset();
+      observer.unsubscribe(callback0);
+      callback0.calls.reset();
       observer.setValue('bar');
       setTimeout(() => {
-        expect(callback.calls.count()).toEqual(0);
+        expect(callback0.calls.count()).toEqual(0);
+        expect(observer._subscriber0).toBe(null);
+        expect(observer._subscriber1).toBe(null);
+        expect(observer._subscriber2).toBe(null);
+        expect(observer._subscribersRest.length).toBe(0);
         done();
       }, checkDelay * 2);
     }
