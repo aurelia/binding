@@ -18,7 +18,7 @@ class ModifyMapObserver extends ModifyCollectionObserver {
 
     map['set'] = function () {
       var oldValue = map.get(arguments[0]);
-      var type = oldValue ? 'update' : 'add';
+      var type = typeof oldValue !== 'undefined' ? 'update' : 'add';
       var methodCallResult = mapProto['set'].apply(map, arguments);
       observer.addChangeRecord({
         type: type,
