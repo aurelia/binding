@@ -49,7 +49,7 @@ export class ClassObserver {
     }
   }
 
-  subscribe(callback) {
+  subscribe() {
     throw new Error(`Observation of a "${this.element.nodeName}" element\'s "class" property is not supported.`);
   }
 }

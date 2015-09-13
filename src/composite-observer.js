@@ -1,11 +1,11 @@
-let conditionAlways = primary => true;
+const conditionAlways = primary => true;
+const childChangedContext = 'childChanged';
 
 export class CompositeObserver {
   constructor(expression, scope, binding) {
     this.expression = expression;
     this.scope = scope;
     this.binding = binding;
-    this.boundChildChanged = this.childChanged.bind(this);
     this.value = this.expression.evaluate(this.scope, this.binding.valueConverterLookupFunction);
   }
 
@@ -13,13 +13,15 @@ export class CompositeObserver {
     return this.value;
   }
 
-  subscribe(callback) {
-    this.callback = callback;
+  subscribe(context, callable) {
+    this.context = context;
+    this.callable = callable;
     this.connect(true);
   }
 
-  unsubscribe(callback) {
-    this.callback = null;
+  unsubscribe(context, callable) {
+    this.context = null;
+    this.callable = null;
     this.connect(false);
   }
 
@@ -53,12 +55,16 @@ export class CompositeObserver {
     return !!this.children;
   }
 
-  childChanged(child) {
+  call(context) {
     // notify
     let oldValue = this.value;
     let newValue = this.expression.evaluate(this.scope, this.binding.valueConverterLookupFunction);
     this.value = newValue;
-    this.callback(newValue, oldValue);
+    if (this.context) {
+      this.callable.call(this.context, newValue, oldValue);
+    } else {
+      this.context(newValue, oldValue);
+    }
     // synchronize observers
     this.connect(true);
   }
@@ -80,7 +86,7 @@ export class CompositeObserver {
           child.info = child.expression.connect(this.binding, this.scope);
         }
         if (!child.subscribed && child.info.observer) {
-          child.info.observer.subscribe(this.boundChildChanged);
+          child.info.observer.subscribe(childChangedContext, this);
           child.subscribed = true;
         }
         continue;
@@ -90,7 +96,7 @@ export class CompositeObserver {
       if (!child.subscribed) {
         continue;
       }
-      child.info.observer.unsubscribe(this.boundChildChanged);
+      child.info.observer.unsubscribe(childChangedContext, this);
     }
   }
 }

@@ -46,15 +46,15 @@ export class SetterObserver {
     this.callSubscribers(newValue, oldValue);
   }
 
-  subscribe(callback) {
+  subscribe(context, callable) {
     if(!this.observing){
       this.convertProperty();
     }
-    this.addSubscriber(callback);
+    this.addSubscriber(context, callable);
   }
 
-  unsubscribe(callback) {
-    this.removeSubscriber(callback);
+  unsubscribe(context, callable) {
+    this.removeSubscriber(context, callable);
   }
 
   convertProperty() {
@@ -89,14 +89,14 @@ export class OoPropertyObserver {
     this.obj[this.propertyName] = newValue;
   }
 
-  subscribe(callback) {
-    if (this.addSubscriber(callback)) {
+  subscribe(context, callable) {
+    if (this.addSubscriber(context, callable)) {
       this.obj.__observer__.subscriberAdded();
     }
   }
 
-  unsubscribe(callback) {
-    if (this.removeSubscriber(callback)) {
+  unsubscribe(context, callable) {
+    if (this.removeSubscriber(context, callable)) {
       this.obj.__observer__.subscriberRemoved();
     }
   }

@@ -13,12 +13,12 @@ export class ModifyCollectionObserver {
     this.lengthPropertyName = collection instanceof Map ? 'size' : 'length';
   }
 
-  subscribe(callback) {
-    this.addSubscriber(callback);
+  subscribe(context, callable) {
+    this.addSubscriber(context, callable);
   }
 
-  unsubscribe(callback) {
-    this.removeSubscriber(callback);
+  unsubscribe(context, callable) {
+    this.removeSubscriber(context, callable);
   }
 
   addChangeRecord(changeRecord){
@@ -102,12 +102,12 @@ export class CollectionLengthObserver {
     this.collection[this.lengthPropertyName] = newValue;
   }
 
-  subscribe(callback) {
-    this.addSubscriber(callback);
+  subscribe(context, callable) {
+    this.addSubscriber(context, callable);
   }
 
-  unsubscribe(callback) {
-    this.removeSubscriber(callback);
+  unsubscribe(context, callable) {
+    this.removeSubscriber(context, callable);
   }
 
   call(newValue){

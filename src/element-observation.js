@@ -18,7 +18,7 @@ export class XLinkAttributeObserver {
     return this.element.setAttributeNS('http://www.w3.org/1999/xlink', this.attributeName, newValue);
   }
 
-  subscribe(callback) {
+  subscribe() {
     throw new Error(`Observation of a "${this.element.nodeName}" element\'s "${this.propertyName}" property is not supported.`);
   }
 }
@@ -37,7 +37,7 @@ export class DataAttributeObserver {
     return this.element.setAttribute(this.propertyName, newValue);
   }
 
-  subscribe(callback) {
+  subscribe() {
     throw new Error(`Observation of a "${this.element.nodeName}" element\'s "${this.propertyName}" property is not supported.`);
   }
 }
@@ -59,7 +59,7 @@ export class StyleObserver {
     this.element.style.cssText = newValue;
   }
 
-  subscribe(callback) {
+  subscribe() {
     throw new Error(`Observation of a "${this.element.nodeName}" element\'s "${this.propertyName}" property is not supported.`);
   }
 
@@ -90,10 +90,10 @@ export class ValueAttributeObserver {
     this.element[this.propertyName] =
       (newValue === undefined || newValue === null) ? '' : newValue;
 
-    this.call();
+    this.notify();
   }
 
-  call() {
+  notify() {
     let oldValue = this.oldValue;
     let newValue = this.getValue();
 
@@ -102,22 +102,24 @@ export class ValueAttributeObserver {
     this.oldValue = newValue;
   }
 
-  subscribe(callback) {
+  subscribe(context, callable) {
     if (!this.hasSubscribers()) {
       this.oldValue = this.getValue();
-      this.disposeHandler = this.handler.subscribe(this.element, this.call.bind(this));
+      this.disposeHandler = this.handler.subscribe(this.element, this.notify.bind(this));
     }
 
-    this.addSubscriber(callback);
+    this.addSubscriber(context, callable);
   }
 
-  unsubscribe(callback) {
-    if (this.removeSubscriber(callback) && !this.hasSubscribers()) {
+  unsubscribe(context, callable) {
+    if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
       this.disposeHandler();
       this.disposeHandler = null;
     }
   }
 }
+
+const selectArrayContext = 'SelectValueObserver:array'
 
 @subscriberCollection()
 export class SelectValueObserver {
@@ -140,14 +142,13 @@ export class SelectValueObserver {
     }
     // unsubscribe from old array.
     if (this.arrayObserver) {
-      this.arrayObserver.unsubscribe(this.arrayCallback);
+      this.arrayObserver.unsubscribe(selectArrayContext, this);
       this.arrayObserver = null;
     }
     // subscribe to new array.
     if (Array.isArray(newValue)) {
       this.arrayObserver = this.observerLocator.getArrayObserver(newValue);
-      this.arrayCallback = this.synchronizeOptions.bind(this);
-      this.arrayObserver.subscribe(this.arrayCallback);
+      this.arrayObserver.subscribe(selectArrayContext, this);
     }
     // assign and sync element.
     this.value = newValue;
@@ -155,8 +156,13 @@ export class SelectValueObserver {
     // queue up an initial sync after the bindings have been evaluated.
     if (this.element.options.length > 0 && !this.initialSync) {
       this.initialSync = true;
-      this.observerLocator.taskQueue.queueMicroTask({ call: () => this.synchronizeOptions() });
+      this.observerLocator.taskQueue.queueMicroTask(this);
     }
+  }
+
+  call(context, splices) {
+    // called by task queue and array observer.
+    this.synchronizeOptions();
   }
 
   synchronizeOptions() {
@@ -207,25 +213,25 @@ export class SelectValueObserver {
 
     this.oldValue = this.value;
     this.value = value;
-    this.call();
+    this.notify();
   }
 
-  call() {
+  notify() {
     let oldValue = this.oldValue;
     let newValue = this.value;
 
     this.callSubscribers(newValue, oldValue);
   }
 
-  subscribe(callback) {
+  subscribe(context, callable) {
     if (!this.hasSubscribers()) {
       this.disposeHandler = this.handler.subscribe(this.element, this.synchronizeValue.bind(this, false));
     }
-    this.addSubscriber(callback);
+    this.addSubscriber(context, callable);
   }
 
-  unsubscribe(callback) {
-    if (this.removeSubscriber(callback) && !this.hasSubscribers()) {
+  unsubscribe(context, callable) {
+    if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
       this.disposeHandler();
       this.disposeHandler = null;
     }
@@ -244,11 +250,13 @@ export class SelectValueObserver {
     this.domObserver = null;
 
     if (this.arrayObserver) {
-      this.arrayObserver.unsubscribe(this.arrayCallback);
+      this.arrayObserver.unsubscribe(selectArrayContext, this);
       this.arrayObserver = null;
     }
   }
 }
+
+const checkedArrayContext = 'CheckedObserver:array';
 
 @subscriberCollection()
 export class CheckedObserver {
@@ -268,14 +276,13 @@ export class CheckedObserver {
     }
     // unsubscribe from old array.
     if (this.arrayObserver) {
-      this.arrayObserver.unsubscribe(this.arrayCallback);
+      this.arrayObserver.unsubscribe(checkedArrayContext, this);
       this.arrayObserver = null;
     }
     // subscribe to new array.
     if (this.element.type === 'checkbox' && Array.isArray(newValue)) {
       this.arrayObserver = this.observerLocator.getArrayObserver(newValue);
-      this.arrayCallback = this.synchronizeElement.bind(this);
-      this.arrayObserver.subscribe(this.arrayCallback);
+      this.arrayObserver.subscribe(checkedArrayContext, this);
     }
     // assign and sync element.
     this.value = newValue;
@@ -283,8 +290,13 @@ export class CheckedObserver {
     // queue up an initial sync after the bindings have been evaluated.
     if (!this.element.hasOwnProperty('model') && !this.initialSync) {
       this.initialSync = true;
-      this.observerLocator.taskQueue.queueMicroTask({ call: () => this.synchronizeElement() });
+      this.observerLocator.taskQueue.queueMicroTask(this);
     }
+  }
+
+  call(context, splices) {
+    // called by task queue and array observer.
+    this.synchronizeElement();
   }
 
   synchronizeElement() {
@@ -327,25 +339,25 @@ export class CheckedObserver {
 
     this.oldValue = this.value;
     this.value = value;
-    this.call();
+    this.notify();
   }
 
-  call(){
+  notify() {
     let oldValue = this.oldValue;
     let newValue = this.value;
 
     this.callSubscribers(newValue, oldValue);
   }
 
-  subscribe(callback) {
+  subscribe(context, callable) {
     if(!this.hasSubscribers()) {
       this.disposeHandler = this.handler.subscribe(this.element, this.synchronizeValue.bind(this, false));
     }
-    this.addSubscriber(callback);
+    this.addSubscriber(context, callable);
   }
 
-  unsubscribe(callback) {
-    if(this.removeSubscriber(callback) && !this.hasSubscribers()){
+  unsubscribe(context, callable) {
+    if(this.removeSubscriber(context, callable) && !this.hasSubscribers()){
       this.disposeHandler();
       this.disposeHandler = null;
     }
@@ -353,7 +365,7 @@ export class CheckedObserver {
 
   unbind() {
     if (this.arrayObserver) {
-      this.arrayObserver.unsubscribe(this.arrayCallback);
+      this.arrayObserver.unsubscribe(checkedArrayContext, this);
       this.arrayObserver = null;
     }
   }

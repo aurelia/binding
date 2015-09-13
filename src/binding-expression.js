@@ -39,6 +39,9 @@ export class BindingExpression {
   }
 }
 
+const sourceContext = 'Binding:source';
+const targetContext = 'Binding:target';
+
 class Binding {
   constructor(observerLocator, sourceExpression, target, targetProperty, mode, valueConverterLookupFunction){
     this.observerLocator = observerLocator;
@@ -52,6 +55,21 @@ class Binding {
     return this.observerLocator.getObserver(obj, propertyName);
   }
 
+  call(context, newValue, oldValue) {
+    if (context === sourceContext) {
+      let current = this.targetProperty.getValue();
+      if (newValue !== current) {
+        this.targetProperty.setValue(newValue);
+      }
+      return;
+    }
+    if (context === targetContext) {
+      this.sourceExpression.assign(this.source, newValue, this.valueConverterLookupFunction);
+      return;
+    }
+    throw new Error(`Unexpected call context ${context}`);
+  }
+
   bind(source) {
     if (this.isBound) {
       if (this.source === source) {
@@ -60,6 +78,7 @@ class Binding {
       this.unbind();
     }
     this.isBound = true;
+    this.source = source;
 
     let targetProperty = this.targetProperty;
     if ('bind' in targetProperty){
@@ -69,24 +88,14 @@ class Binding {
     if (this.mode === bindingMode.oneWay || this.mode === bindingMode.twoWay) {
       let sourceInfo = this.sourceExpression.connect(this, source);
       this.sourceProperty = sourceInfo.observer;
-
       if (this.sourceProperty) {
-        this.sourceChanged = newValue => {
-          let existing = targetProperty.getValue();
-          if (newValue !== existing) {
-            targetProperty.setValue(newValue);
-          }
-        };
-        this.sourceProperty.subscribe(this.sourceChanged);
+        this.sourceProperty.subscribe(sourceContext, this);
       }
 
       targetProperty.setValue(sourceInfo.value);
 
       if (this.mode === bindingMode.twoWay) {
-        this.targetChanged = newValue => {
-          this.sourceExpression.assign(source, newValue, this.valueConverterLookupFunction);
-        };
-        targetProperty.subscribe(this.targetChanged);
+        targetProperty.subscribe(targetContext, this);
       }
 
       this.source = source;
@@ -98,16 +107,15 @@ class Binding {
 
   unbind() {
     this.isBound = false;
-    if ('unbind' in this.targetProperty){
+    this.source = null;
+    if ('unbind' in this.targetProperty) {
       this.targetProperty.unbind();
     }
-    if(this.targetChanged){
-      this.targetProperty.unsubscribe(this.targetChanged);
-      this.targetChanged = null;
+    if (this.mode === bindingMode.twoWay) {
+      this.targetProperty.unsubscribe(targetContext, this);
     }
-    if(this.sourceChanged){
-      this.sourceProperty.unsubscribe(this.sourceChanged);
-      this.sourceChanged = null;
+    if (this.sourceProperty) {
+      this.sourceProperty.unsubscribe(sourceContext, this);
     }
   }
 }

@@ -72,16 +72,16 @@ export class DirtyCheckProperty {
     return this.oldValue !== this.obj[this.propertyName];
   }
 
-  subscribe(callback) {
+  subscribe(context, callable) {
     if (!this.hasSubscribers()) {
       this.oldValue = this.getValue();
       this.dirtyChecker.addProperty(this);
     }
-    this.addSubscriber(callback);
+    this.addSubscriber(context, callable);
   }
 
-  unsubscribe(callback) {
-    if (this.removeSubscriber(callback) && !this.hasSubscribers()) {
+  unsubscribe(context, callable) {
+    if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
       this.dirtyChecker.removeProperty(this);
     }
   }

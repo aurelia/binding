@@ -1,3 +1,7 @@
+const objectChangedContext = 'objectChanged';
+const keyChangedContext = 'keyChanged';
+const memberChangedContext = 'memberChanged';
+
 export class AccessKeyedObserver {
   constructor(expression, scope, binding) {
     this.expression = expression;
@@ -15,12 +19,12 @@ export class AccessKeyedObserver {
     this.expression.assign(this.scope, newValue);
   }
 
-  subscribe(callback) {
-    this.callback = callback;
+  subscribe(context, callable) {
+    this.context = context;
+    this.callable = callable;
     this.objectInfo = this.expression.object.connect(this.binding, this.scope);
     if (this.objectInfo.observer) {
-      this.boundObjectChanged = this.objectChanged.bind(this);
-      this.objectInfo.observer.subscribe(this.boundObjectChanged);
+      this.objectInfo.observer.subscribe(objectChangedContext, this);
     }
     let key;
     if (this.expression.key) {
@@ -28,24 +32,23 @@ export class AccessKeyedObserver {
       this.keyInfo = this.expression.key.connect(this.binding, this.scope);
       key = this.keyInfo.value;
       if (this.keyInfo.observer) {
-        this.boundKeyChanged = this.keyChanged.bind(this);
-        this.keyInfo.observer.subscribe(this.boundKeyChanged);
+        this.keyInfo.observer.subscribe(keyChangedContext, this);
       }
     } else {
       // AccessMember
       key = this.expression.name;
     }
-    this.boundMemberChanged = this.memberChanged.bind(this);
     this.subscribeMember(this.objectInfo.value, key);
   }
 
-  unsubscribe(callback) {
-    this.callback = null;
+  unsubscribe(context, callable) {
+    this.context = null;
+    this.callable = null;
     if (this.objectInfo.observer) {
-      this.objectInfo.observer.unsubscribe(this.boundObjectChanged);
+      this.objectInfo.observer.unsubscribe(objectChangedContext, this);
     }
     if (this.keyInfo && this.keyInfo.observer) {
-      this.keyInfo.observer.unsubscribe(this.boundKeyChanged);
+      this.keyInfo.observer.unsubscribe(keyChangedContext, this);
     }
     this.unsubscribeMember();
   }
@@ -54,13 +57,13 @@ export class AccessKeyedObserver {
     this.unsubscribeMember();
     if (object instanceof Object && key !== null && key !== undefined) {
       this.memberObserver = this.binding.getObserver(object, key);
-      this.memberObserver.subscribe(this.boundMemberChanged);
+      this.memberObserver.subscribe(memberChangedContext, this);
     }
   }
 
   unsubscribeMember() {
     if (this.memberObserver) {
-      this.memberObserver.unsubscribe(this.boundMemberChanged);
+      this.memberObserver.unsubscribe(memberChangedContext, this);
       this.memberObserver = null;
     }
   }
@@ -79,10 +82,18 @@ export class AccessKeyedObserver {
   }
 
   memberChanged(newValue, oldValue) {
-    if (newValue === oldValue || !this.callback) {
+    if (newValue === oldValue || !this.context) {
       return;
     }
     this.value = newValue;
-    this.callback(newValue, oldValue);
+    if (this.callable) {
+      this.callable.call(this.context, newValue, oldValue);
+    } else {
+      this.context(newValue, oldValue);
+    }
+  }
+
+  call(context, newValue, oldValue) {
+    this[context](newValue, oldValue);
   }
 }

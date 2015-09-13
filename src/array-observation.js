@@ -103,16 +103,16 @@ class ArrayObserveObserver {
     this.array = array;
   }
 
-  subscribe(callback) {
+  subscribe(context, callable) {
     if (!this.hasSubscribers()) {
       this.handler = this.handleChanges.bind(this);
       Array.observe(this.array, this.handler);
     }
-    this.addSubscriber(callback)
+    this.addSubscriber(context, callable)
   }
 
-  unsubscribe(callback) {
-    if (this.removeSubscriber(callback) && !this.hasSubscribers()) {
+  unsubscribe(context, callable) {
+    if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
       Array.unobserve(this.array, this.handler);
     }
   }

@@ -1,5 +1,7 @@
 import {subscriberCollection} from './subscriber-collection';
 
+const computedContext = 'ComputedPropertyObserver';
+
 @subscriberCollection()
 export class ComputedPropertyObserver {
   constructor(obj, propertyName, descriptor, observerLocator) {
@@ -7,7 +9,6 @@ export class ComputedPropertyObserver {
     this.propertyName = propertyName;
     this.descriptor = descriptor;
     this.observerLocator = observerLocator;
-    this.dependencyChanged = this.evaluate.bind(this);
   }
 
   getValue(){
@@ -18,15 +19,16 @@ export class ComputedPropertyObserver {
     this.obj[this.propertyName] = newValue;
   }
 
-  evaluate() {
-    var newValue = this.getValue();
+  call(context) {
+    let newValue = this.getValue();
     if (this.oldValue === newValue)
       return;
     this.callSubscribers(newValue, this.oldValue);
     this.oldValue = newValue;
+    return;
   }
 
-  subscribe(callback) {
+  subscribe(context, callable) {
     if (!this.hasSubscribers()) {
       this.oldValue = this.getValue();
 
@@ -36,20 +38,20 @@ export class ComputedPropertyObserver {
         let observer = this.observerLocator.getObserver(this.obj, dependencies[i]);
         // todo:  consider throwing when a dependency's observer is an instance of DirtyCheckProperty.
         this.observers.push(observer);
-        observer.subscribe(this.dependencyChanged);
+        observer.subscribe(computedContext, this);
       }
     }
 
-    this.addSubscriber(callback);
+    this.addSubscriber(context, callable);
   }
 
-  unsubscribe(callback) {
-    if (this.removeSubscriber(callback) && !this.hasSubscribers()) {
+  unsubscribe(context, callable) {
+    if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
       this.oldValue = undefined;
 
       let i = this.observers.length;
       while(i--) {
-        this.observers[i].unsubscribe(this.dependencyChanged);
+        this.observers[i].unsubscribe(computedContext, this);
       }
       this.observers = null;
     }
