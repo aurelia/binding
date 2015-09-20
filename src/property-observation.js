@@ -102,6 +102,22 @@ export class OoPropertyObserver {
   }
 }
 
+let version = Number.MIN_SAFE_INTEGER;
+function ooHandler(changes) {
+  version++;
+  for (let i = 0, ii = changes.length; i < ii; i++) {
+    let change = changes[i];
+    let name = change.name;
+    let objectObserver = change.object.__observer__;
+    let observer;
+    if (!objectObserver || !(observer = objectObserver.observers[name]) || observer.__version === version) {
+      continue;
+    }
+    observer.__version = version;
+    observer.callSubscribers(change.object[name], change.oldValue);
+  }
+}
+
 export class OoObjectObserver {
   constructor(obj, observerLocator){
     this.obj = obj;
@@ -112,9 +128,8 @@ export class OoObjectObserver {
 
   subscriberAdded(){
     if (this.subscribers === 0) {
-      this.handler = this.handleChanges.bind(this);
       try {
-        Object.observe(this.obj, this.handler, ['update', 'add']);
+        Object.observe(this.obj, ooHandler, ['update', 'add']);
       } catch(_) {}
     }
 
@@ -126,7 +141,7 @@ export class OoObjectObserver {
 
     if (this.subscribers === 0) {
       try {
-        Object.unobserve(this.obj, this.handler);
+        Object.unobserve(this.obj, ooHandler);
       } catch(_) {}
     }
   }
@@ -137,24 +152,5 @@ export class OoObjectObserver {
       propertyObserver = this.observers[propertyName] = new OoPropertyObserver(this.obj, propertyName);
     }
     return propertyObserver;
-  }
-
-  handleChanges(changes) {
-    let properties = {};
-    // todo: handle property additions
-    for (let i = 0, ii = changes.length; i < ii; i++) {
-      let change = changes[i];
-      properties[change.name] = change;
-    }
-
-    for (let name in properties) {
-      let observer = this.observers[name];
-      if (!observer) {
-        continue;
-      }
-      let change = properties[name];
-
-      observer.callSubscribers(change.object[name], change.oldValue);
-    }
   }
 }
