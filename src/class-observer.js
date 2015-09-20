@@ -13,13 +13,12 @@ export class ClassObserver {
   setValue(newValue) {
     var nameIndex = this.nameIndex || {},
         version = this.version,
-        names, name, i;
+        names, name;
 
     // Add the classes, tracking the version at which they were added.
     if (newValue !== null && newValue !== undefined && newValue.length) {
       names = newValue.split(' ');
-      i = names.length;
-      while(i--) {
+      for(let i = 0, length = names.length; i < length; i++) {
         name = names[i];
         if (name === '') {
           continue;
