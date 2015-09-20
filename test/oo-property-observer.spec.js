@@ -26,6 +26,20 @@ describe('OoPropertyObserver', () => {
     executeSharedPropertyObserverTests(obj, observer, done);
   });
 
+	it('flattens changes', done => {
+		let callback = jasmine.createSpy('callback');
+		observer.subscribe(callback);
+		let oldValue = obj.foo;
+		obj.foo = 1;
+		obj.foo = 2;
+		obj.foo = 3;
+		setTimeout(() => {
+			expect(callback).toHaveBeenCalledWith(3, oldValue);
+			observer.unsubscribe(callback);
+			done();
+		});
+	});
+
 	it('tracks and untracks', () => {
 	  expect(obj.__observer__.subscribers).toBe(0);
 		let callback = () => {};
