@@ -1,4 +1,4 @@
-import {TestObservationAdapter, AdapterPropertyObserver} from './adapter';
+import {TestObservationAdapter} from './adapter';
 import {DirtyCheckProperty} from '../src/dirty-checking';
 import {
   OoPropertyObserver,
@@ -156,8 +156,7 @@ describe('ObserverLocator', () => {
   it('uses Adapter for for defined, complex properties on pojos that adapter canObserve', () => {
     var obj = { handleWithAdapter: true }, foo, observer, adapter, descriptor;
 
-    adapter = locator.observationAdapters[0];
-    spyOn(adapter, 'handlesProperty').and.callThrough();
+    adapter = locator.adapters[0];
     spyOn(adapter, 'getObserver').and.callThrough();
 
     Object.defineProperty(obj, 'foo', {
@@ -170,8 +169,7 @@ describe('ObserverLocator', () => {
     descriptor = Object.getOwnPropertyDescriptor(obj, 'foo');
 
     observer = locator.getObserver(obj, 'foo');
-    expect(observer instanceof AdapterPropertyObserver).toBe(true);
-    expect(adapter.handlesProperty).toHaveBeenCalledWith(obj, 'foo', descriptor);
+    expect(observer.___from_adapter).toBe(true);
     expect(adapter.getObserver).toHaveBeenCalledWith(obj, 'foo', descriptor);
   });
 });

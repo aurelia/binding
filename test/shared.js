@@ -25,7 +25,8 @@ export function fireEvent(element, name) {
 }
 
 export function createObserverLocator(adapters = []) {
-  var locator = new ObserverLocator(new TaskQueue(), new EventManager(), new DirtyChecker(), adapters);
+  let locator = new ObserverLocator(new TaskQueue(), new EventManager(), new DirtyChecker());
+  adapters.forEach(a => locator.addAdapter(a));
   locator.dirtyChecker.checkDelay = checkDelay;
   return locator;
 }

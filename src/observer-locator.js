@@ -18,7 +18,6 @@ import {
   StyleObserver
 } from './element-observation';
 import {ClassObserver} from './class-observer';
-import {All} from 'aurelia-dependency-injection';
 import {
   hasDeclaredDependencies,
   ComputedPropertyObserver
@@ -53,12 +52,12 @@ function createObserverLookup(obj, observerLocator) {
 }
 
 export class ObserverLocator {
-  static inject(){ return [TaskQueue, EventManager, DirtyChecker, All.of(ObjectObservationAdapter)]; }
+  static inject(){ return [TaskQueue, EventManager, DirtyChecker]; }
   constructor(taskQueue, eventManager, dirtyChecker, observationAdapters){
     this.taskQueue = taskQueue;
     this.eventManager = eventManager;
     this.dirtyChecker = dirtyChecker;
-    this.observationAdapters = observationAdapters;
+    this.adapters = [];
   }
 
   getObserver(obj, propertyName){
@@ -101,18 +100,23 @@ export class ObserverLocator {
     return value;
   }
 
-  getObservationAdapter(obj, propertyName, descriptor) {
-    var i, ii, observationAdapter;
-    for(i = 0, ii = this.observationAdapters.length; i < ii; i++){
-      observationAdapter = this.observationAdapters[i];
-      if (observationAdapter.handlesProperty(obj, propertyName, descriptor))
-        return observationAdapter;
+  addAdapter(adapter: ObjectObservationAdapter) {
+    this.adapters.push(adapter);
+  }
+
+  getAdapterObserver(obj, propertyName, descriptor) {
+    for (let i = 0, ii = this.adapters.length; i < ii; i++) {
+      let adapter = this.adapters[i];
+      let observer = adapter.getObserver(obj, propertyName, descriptor);
+      if (observer) {
+        return observer;
+      }
     }
     return null;
   }
 
   createPropertyObserver(obj, propertyName){
-    var observerLookup, descriptor, handler, observationAdapter, xlinkResult;
+    var observerLookup, descriptor, handler, xlinkResult;
 
     if(obj instanceof Element){
       if (propertyName === 'class') {
@@ -154,9 +158,10 @@ export class ObserverLocator {
       }
 
       // attempt to use an adapter before resorting to dirty checking.
-      observationAdapter = this.getObservationAdapter(obj, propertyName, descriptor);
-      if (observationAdapter)
-        return observationAdapter.getObserver(obj, propertyName, descriptor);
+      let adapterObserver = this.getAdapterObserver(obj, propertyName, descriptor);
+      if (adapterObserver) {
+        return adapterObserver;
+      }
       return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     }
 
@@ -200,11 +205,7 @@ export class ObserverLocator {
 }
 
 export class ObjectObservationAdapter {
-  handlesProperty(object, propertyName, descriptor) {
-    throw new Error('BindingAdapters must implement handlesProperty(object, propertyName).');
-  }
-
   getObserver(object, propertyName, descriptor) {
-    throw new Error('BindingAdapters must implement createObserver(object, propertyName).');
+    throw new Error('BindingAdapters must implement getObserver(object, propertyName).');
   }
 }
