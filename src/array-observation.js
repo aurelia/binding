@@ -121,6 +121,10 @@ class ArrayObserveObserver {
     return this.lengthObserver || (this.lengthObserver = new CollectionLengthObserver(this.array));
   }
 
+  getValue() {
+    return this.array.slice(0);
+  }
+
   handleChanges(changeRecords) {
     if (this.hasSubscribers()) {
       let splices = projectArraySplices(this.array, changeRecords);

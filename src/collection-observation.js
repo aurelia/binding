@@ -51,6 +51,10 @@ export class ModifyCollectionObserver {
     return this.lengthObserver || (this.lengthObserver = new CollectionLengthObserver(this.collection));
   }
 
+  getValue() {
+    return this.collection.slice(0);
+  }
+
   call() {
     let changeRecords = this.changeRecords;
     let oldCollection = this.oldCollection;
