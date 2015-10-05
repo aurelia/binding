@@ -6,11 +6,13 @@ import {
   createObserverLocator,
   getBinding
 } from './shared';
+import {initialize} from 'aurelia-pal-browser';
 
 describe('SelectValueObserver', () => {
   var observerLocator;
 
   beforeAll(() => {
+    initialize();
     observerLocator = createObserverLocator();
   });
 

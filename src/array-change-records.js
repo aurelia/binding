@@ -14,10 +14,10 @@ function newSplice(index, removed, addedCount) {
   };
 }
 
-var EDIT_LEAVE = 0;
-var EDIT_UPDATE = 1;
-var EDIT_ADD = 2;
-var EDIT_DELETE = 3;
+const EDIT_LEAVE = 0;
+const EDIT_UPDATE = 1;
+const EDIT_ADD = 2;
+const EDIT_DELETE = 3;
 
 function ArraySplice() {}
 

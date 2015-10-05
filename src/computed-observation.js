@@ -63,6 +63,6 @@ export function hasDeclaredDependencies(descriptor) {
 }
 
 export function declarePropertyDependencies(ctor, propertyName, dependencies) {
-  var descriptor = Object.getOwnPropertyDescriptor(ctor.prototype, propertyName);
+  let descriptor = Object.getOwnPropertyDescriptor(ctor.prototype, propertyName);
   descriptor.get.dependencies = dependencies;
 }

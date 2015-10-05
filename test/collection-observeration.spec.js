@@ -1,8 +1,10 @@
 import {createObserverLocator, checkDelay} from './shared';
+import {initialize} from 'aurelia-pal-browser';
 
 describe('collection length', () => {
   var locator;
   beforeAll(() => {
+    initialize();
     locator = createObserverLocator();
   });
 

@@ -1,4 +1,6 @@
-export var elements = {
+import {DOM} from 'aurelia-pal';
+
+export const elements = {
   a: ['class','externalResourcesRequired','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','style','systemLanguage','target','transform','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space'],
   altGlyph: ['class','dx','dy','externalResourcesRequired','format','glyphRef','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','rotate','style','systemLanguage','x','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space','y'],
   altGlyphDef: ['id','xml:base','xml:lang','xml:space'],
@@ -81,7 +83,7 @@ export var elements = {
   vkern: ['g1','g2','id','k','u1','u2','xml:base','xml:lang','xml:space'],
 };
 
-export var presentationElements = {
+export const presentationElements = {
   'a': true,
   'altGlyph': true,
   'animate': true,
@@ -135,7 +137,7 @@ export var presentationElements = {
   'use': true,
 };
 
-export var presentationAttributes = {
+export const presentationAttributes = {
   'alignment-baseline': true,
   'baseline-shift': true,
   'clip-path': true,
@@ -197,26 +199,30 @@ export var presentationAttributes = {
   'writing-mode': true,
 };
 
-export function isStandardSvgAttribute(nodeName, attributeName) {
-  return presentationElements[nodeName] && presentationAttributes[attributeName]
-    || elements[nodeName] && elements[nodeName].indexOf(attributeName) !== -1;
-}
-
 // SVG elements/attributes are case-sensitive.  Not all browsers use the same casing for all attributes.
 function createElement(html) {
-  var div = document.createElement('div');
+  let div = DOM.createElement('div');
   div.innerHTML = html;
   return div.firstChild;
 }
 
-if (createElement('<svg><altGlyph /></svg>').firstElementChild.nodeName === 'altglyph') {
-  // handle chrome casing inconsistencies.
-  elements.altglyph = elements.altGlyph;
-  delete elements.altGlyph;
-  elements.altglyphdef = elements.altGlyphDef;
-  delete elements.altGlyphDef;
-  elements.altglyphitem = elements.altGlyphItem;
-  delete elements.altGlyphItem;
-  elements.glyphref = elements.glyphRef;
-  delete elements.glyphRef;
+export class SVGAnalyzer {
+  constructor() {
+    if (createElement('<svg><altGlyph /></svg>').firstElementChild.nodeName === 'altglyph' && elements.altGlyph) {
+      // handle chrome casing inconsistencies.
+      elements.altglyph = elements.altGlyph;
+      delete elements.altGlyph;
+      elements.altglyphdef = elements.altGlyphDef;
+      delete elements.altGlyphDef;
+      elements.altglyphitem = elements.altGlyphItem;
+      delete elements.altGlyphItem;
+      elements.glyphref = elements.glyphRef;
+      delete elements.glyphRef;
+    }
+  }
+
+  isStandardSvgAttribute(nodeName, attributeName) {
+    return presentationElements[nodeName] && presentationAttributes[attributeName]
+      || elements[nodeName] && elements[nodeName].indexOf(attributeName) !== -1;
+  }
 }

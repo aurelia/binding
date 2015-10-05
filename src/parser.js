@@ -4,10 +4,10 @@ import {Expression, ArrayOfExpression, Chain, ValueConverter, Assign,
         CallScope, CallFunction, CallMember, PrefixNot,
         Binary, LiteralPrimitive, LiteralArray, LiteralObject, LiteralString} from './ast';
 
-var EOF = new Token(-1, null);
+let EOF = new Token(-1, null);
 
 export class Parser {
-  constructor(){
+  constructor() {
     this.cache = {};
     this.lexer = new Lexer();
   }
@@ -32,8 +32,8 @@ export class ParserImplementation {
   }
 
   parseChain() {
-    var isChain = false,
-        expressions = [];
+    let isChain = false;
+    let expressions = [];
 
     while (this.optional(';')) {
       isChain = true;
@@ -44,7 +44,7 @@ export class ParserImplementation {
         this.error(`Unconsumed token ${this.peek.text}`);
       }
 
-      var expr = this.parseValueConverter();
+      let expr = this.parseValueConverter();
       expressions.push(expr);
 
       while (this.optional(';')) {
@@ -60,11 +60,11 @@ export class ParserImplementation {
   }
 
   parseValueConverter() {
-    var result = this.parseExpression();
+    let result = this.parseExpression();
 
     while (this.optional('|')) {
-      var name = this.peek.text, // TODO(kasperl): Restrict to identifier?
-          args = [];
+      let name = this.peek.text; // TODO(kasperl): Restrict to identifier?
+      let args = [];
 
       this.advance();
 
@@ -80,13 +80,13 @@ export class ParserImplementation {
   }
 
   parseExpression() {
-    var start = this.peek.index,
-        result = this.parseConditional();
+    let start = this.peek.index;
+    let result = this.parseConditional();
 
     while (this.peek.text === '=') {
       if (!result.isAssignable) {
-        var end = (this.index < this.tokens.length) ? this.peek.index : this.input.length;
-        var expression = this.input.substring(start, end);
+        let end = (this.index < this.tokens.length) ? this.peek.index : this.input.length;
+        let expression = this.input.substring(start, end);
 
         this.error(`Expression ${expression} is not assignable`);
       }
@@ -99,20 +99,20 @@ export class ParserImplementation {
   }
 
   parseConditional() {
-    var start = this.peek.index,
-        result = this.parseLogicalOr();
+    let start = this.peek.index;
+    let result = this.parseLogicalOr();
 
     if (this.optional('?')) {
-      var yes = this.parseExpression();
+      let yes = this.parseExpression();
 
       if (!this.optional(':')) {
-        var end = (this.index < this.tokens.length) ? this.peek.index : this.input.length;
-        var expression = this.input.substring(start, end);
+        let end = (this.index < this.tokens.length) ? this.peek.index : this.input.length;
+        let expression = this.input.substring(start, end);
 
         this.error(`Conditional expression ${expression} requires all 3 expressions`);
       }
 
-      var no = this.parseExpression();
+      let no = this.parseExpression();
       result = new Conditional(result, yes, no);
     }
 
@@ -120,7 +120,7 @@ export class ParserImplementation {
   }
 
   parseLogicalOr() {
-    var result = this.parseLogicalAnd();
+    let result = this.parseLogicalAnd();
 
     while (this.optional('||')) {
       result = new Binary('||', result, this.parseLogicalAnd());
@@ -130,7 +130,7 @@ export class ParserImplementation {
   }
 
   parseLogicalAnd() {
-    var result = this.parseEquality();
+    let result = this.parseEquality();
 
     while (this.optional('&&')) {
       result = new Binary('&&', result, this.parseEquality());
@@ -140,7 +140,7 @@ export class ParserImplementation {
   }
 
   parseEquality() {
-    var result = this.parseRelational();
+    let result = this.parseRelational();
 
     while (true) {
       if (this.optional('==')) {
@@ -158,7 +158,7 @@ export class ParserImplementation {
   }
 
   parseRelational() {
-    var result = this.parseAdditive();
+    let result = this.parseAdditive();
 
     while (true) {
       if (this.optional('<')) {
@@ -176,7 +176,7 @@ export class ParserImplementation {
   }
 
   parseAdditive() {
-    var result = this.parseMultiplicative();
+    let result = this.parseMultiplicative();
 
     while (true) {
       if (this.optional('+')) {
@@ -190,7 +190,7 @@ export class ParserImplementation {
   }
 
   parseMultiplicative() {
-    var result = this.parsePrefix();
+    let result = this.parsePrefix();
 
     while (true) {
       if (this.optional('*')) {
@@ -218,27 +218,27 @@ export class ParserImplementation {
   }
 
   parseAccessOrCallMember() {
-    var result = this.parsePrimary();
+    let result = this.parsePrimary();
 
     while (true) {
       if (this.optional('.')) {
-        var name = this.peek.text; // TODO(kasperl): Check that this is an identifier. Are keywords okay?
+        let name = this.peek.text; // TODO(kasperl): Check that this is an identifier. Are keywords okay?
 
         this.advance();
 
         if (this.optional('(')) {
-          var args = this.parseExpressionList(')');
+          let args = this.parseExpressionList(')');
           this.expect(')');
           result = new CallMember(result, name, args);
         } else {
           result = new AccessMember(result, name);
         }
       } else if (this.optional('[')) {
-        var key = this.parseExpression();
+        let key = this.parseExpression();
         this.expect(']');
         result = new AccessKeyed(result, key);
       } else if (this.optional('(')) {
-        var args = this.parseExpressionList(')');
+        let args = this.parseExpressionList(')');
         this.expect(')');
         result = new CallFunction(result, args);
       } else {
@@ -249,7 +249,7 @@ export class ParserImplementation {
 
   parsePrimary() {
     if (this.optional('(')) {
-      var result = this.parseExpression();
+      let result = this.parseExpression();
       this.expect(')');
       return result;
     } else if (this.optional('null') || this.optional('undefined')) {
@@ -259,7 +259,7 @@ export class ParserImplementation {
     } else if (this.optional('false')) {
       return new LiteralPrimitive(false);
     } else if (this.optional('[')) {
-      var elements = this.parseExpressionList(']');
+      let elements = this.parseExpressionList(']');
       this.expect(']');
       return new LiteralArray(elements);
     } else if (this.peek.text == '{') {
@@ -267,7 +267,7 @@ export class ParserImplementation {
     } else if (this.peek.key != null) {
       return this.parseAccessOrCallScope();
     } else if (this.peek.value != null) {
-      var value = this.peek.value;
+      let value = this.peek.value;
       this.advance();
       return isNaN(value) ? new LiteralString(value) : new LiteralPrimitive(value);
     } else if (this.index >= this.tokens.length) {
@@ -278,7 +278,7 @@ export class ParserImplementation {
   }
 
   parseAccessOrCallScope()  {
-    var name = this.peek.key;
+    let name = this.peek.key;
 
     this.advance();
 
@@ -286,14 +286,14 @@ export class ParserImplementation {
       return new AccessScope(name);
     }
 
-    var args = this.parseExpressionList(')');
+    let args = this.parseExpressionList(')');
     this.expect(')');
     return new CallScope(name, args);
   }
 
   parseObject() {
-    var keys = [],
-        values = [];
+    let keys = [];
+    let values = [];
 
     this.expect('{');
 
@@ -301,7 +301,7 @@ export class ParserImplementation {
       do {
         // TODO(kasperl): Stricter checking. Only allow identifiers
         // and strings as keys. Maybe also keywords?
-        var value = this.peek.value;
+        let value = this.peek.value;
         keys.push(typeof value === 'string' ? value : this.peek.text);
 
         this.advance();
@@ -317,7 +317,7 @@ export class ParserImplementation {
   }
 
   parseExpressionList(terminator) {
-    var result = [];
+    let result = [];
 
     if (this.peek.text != terminator) {
       do {
@@ -350,7 +350,7 @@ export class ParserImplementation {
   }
 
   error(message) {
-    var location = (this.index < this.tokens.length)
+    let location = (this.index < this.tokens.length)
         ? `at column ${this.tokens[this.index].index + 1} in`
         : `at the end of the expression`;
 

@@ -3,12 +3,15 @@ import {
 	executeSharedPropertyObserverTests,
 	createObserverLocator
 } from './shared';
-import {hasObjectObserve} from '../src/environment';
+import {FEATURE} from 'aurelia-pal';
+import {initialize} from 'aurelia-pal-browser';
+
+initialize();
 
 describe('OoPropertyObserver', () => {
 	var obj, observerLocator, observer;
 
-  if (!hasObjectObserve) {
+  if (!FEATURE.objectObserve) {
     return;
   }
 

@@ -14,33 +14,35 @@ import {
   CheckedObserver
 } from '../src/element-observation';
 import {createElement, createObserverLocator} from './shared';
-import {hasObjectObserve, hasArrayObserve} from '../src/environment';
+import {FEATURE} from 'aurelia-pal';
+import {initialize} from 'aurelia-pal-browser';
 
 describe('ObserverLocator', () => {
   var locator;
 
   beforeAll(() => {
+    initialize();
     locator = createObserverLocator([new TestObservationAdapter(() => locator)]);
   });
 
-  it('uses ' + hasObjectObserve ? 'OoPropertyObserver' : 'SetterObserver' + ' for defined, primitive properties on pojos', () => {
+  it('uses ' + FEATURE.objectObserve ? 'OoPropertyObserver' : 'SetterObserver' + ' for defined, primitive properties on pojos', () => {
     var obj = { foo: 'bar' },
         observer = locator.getObserver(obj, 'foo'),
-        T = hasObjectObserve ? OoPropertyObserver : SetterObserver;
+        T = FEATURE.objectObserve ? OoPropertyObserver : SetterObserver;
     expect(observer instanceof T).toBe(true);
   });
 
-  // it('uses ' + hasObjectObserve ? 'UndefinedPropertyObserver' : 'SetterObserver' + ' for undefined properties on pojos', () => {
+  // it('uses ' + FEATURE.objectObserve ? 'UndefinedPropertyObserver' : 'SetterObserver' + ' for undefined properties on pojos', () => {
   //   var obj = {},
   //       observer = locator.getObserver(obj, 'foo'),
-  //       T = hasObjectObserve ? UndefinedPropertyObserver : SetterObserver;
+  //       T = FEATURE.objectObserve ? UndefinedPropertyObserver : SetterObserver;
   //   expect(observer instanceof T).toBe(true);
   // });
 
-  it('uses ' + hasObjectObserve ? 'OoPropertyObserver' : 'SetterObserver' + 'for ad-hoc properties on Elements', () => {
+  it('uses ' + FEATURE.objectObserve ? 'OoPropertyObserver' : 'SetterObserver' + 'for ad-hoc properties on Elements', () => {
     var obj = createElement('<h1></h1>'),
         observer,
-        T = hasObjectObserve ? OoPropertyObserver : SetterObserver;
+        T = FEATURE.objectObserve ? OoPropertyObserver : SetterObserver;
     obj.foo = 'bar';
     observer = locator.getObserver(obj, 'foo');
     expect(obj instanceof Element).toBe(true);

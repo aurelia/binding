@@ -8,8 +8,8 @@ function newRecord(type, object, key, oldValue){
 }
 
 export function getChangeRecords(map){
-  var entries = [];
-  for(var key of map.keys()){
+  let entries = [];
+  for (let key of map.keys()) {
     entries.push(newRecord('added', map, key));
   }
   return entries;

@@ -1,12 +1,12 @@
 export class CallExpression {
-  constructor(observerLocator, targetProperty, sourceExpression, valueConverterLookupFunction){
+  constructor(observerLocator, targetProperty, sourceExpression, valueConverterLookupFunction) {
     this.observerLocator = observerLocator;
     this.targetProperty = targetProperty;
     this.sourceExpression = sourceExpression;
     this.valueConverterLookupFunction = valueConverterLookupFunction;
   }
 
-  createBinding(target){
+  createBinding(target) {
     return new Call(
       this.observerLocator,
       this.sourceExpression,
@@ -18,16 +18,16 @@ export class CallExpression {
 }
 
 class Call {
-  constructor(observerLocator, sourceExpression, target, targetProperty, valueConverterLookupFunction){
+  constructor(observerLocator, sourceExpression, target, targetProperty, valueConverterLookupFunction) {
     this.sourceExpression = sourceExpression
     this.target = target;
     this.targetProperty = observerLocator.getObserver(target, targetProperty);
     this.valueConverterLookupFunction = valueConverterLookupFunction;
   }
 
-  bind(source){
-    if(this.source){
-      if(this.source === source){
+  bind(source) {
+    if (this.source) {
+      if (this.source === source) {
         return;
       }
 
@@ -36,7 +36,8 @@ class Call {
 
     this.source = source;
     this.targetProperty.setValue($event => {
-      var result, temp = source.$event;
+      let result;
+      let temp = source.$event;
       source.$event = $event;
       result = this.sourceExpression.evaluate(source, this.valueConverterLookupFunction);
       source.$event = temp;
@@ -44,8 +45,8 @@ class Call {
     });
   }
 
-  unbind(){
-    if(this.source){
+  unbind() {
+    if (this.source) {
       this.targetProperty.setValue(null);
       this.source = null;
     }

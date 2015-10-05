@@ -7,11 +7,13 @@ import {
 } from './shared';
 import {Parser} from '../src/parser';
 import {CallExpression} from '../src/call-expression';
+import {initialize} from 'aurelia-pal-browser';
 
 describe('CallExpression', () => {
   var expression, viewModel, behavior = {}, binding;
 
   beforeAll(() => {
+    initialize();
     viewModel = {
       arg1: 1,
       arg2: { hello: 'world' },

@@ -10,10 +10,11 @@ import {
 } from './shared';
 import {
   elements,
-  isStandardSvgAttribute,
+  SVGAnalyzer,
   presentationElements,
   presentationAttributes
 } from '../src/svg';
+import {initialize} from 'aurelia-pal-browser';
 
 // Many svg attributes are picky about what they are assigned.
 var attributeValues = {
@@ -56,6 +57,13 @@ var attributeValues = {
 };
 
 describe('element observation', () => {
+  let analyzer;
+
+  beforeAll(() => {
+    initialize();
+    analyzer = new SVGAnalyzer();
+  });
+
   it('handles native svg properties', () => {
     var elementNames = Object.getOwnPropertyNames(elements), elementName, element,
         attributeNames, attributeName, i = elementNames.length, j,
@@ -72,7 +80,7 @@ describe('element observation', () => {
       element = createElement('<svg><' + elementName + '/></svg>').firstElementChild;
       while(j--) {
         attributeName = attributeNames[j];
-        expect(isStandardSvgAttribute(element.nodeName, attributeName)).toBe(true);
+        expect(analyzer.isStandardSvgAttribute(element.nodeName, attributeName)).toBe(true);
 
         // not binding to 'onmouseenter' etc.  todo: consider removing these from attribute list.
         if (/^on/.test(attributeName)) {

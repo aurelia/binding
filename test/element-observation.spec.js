@@ -12,7 +12,8 @@ import {
   createObserverLocator,
   executeSharedPropertyObserverTests
 } from './shared';
-import {hasObjectObserve} from '../src/environment';
+import {FEATURE} from 'aurelia-pal';
+import {initialize} from 'aurelia-pal-browser';
 
 function createSvgUseElement() {
   var html = [
@@ -33,6 +34,7 @@ function createSvgUseElement() {
 describe('element observation', () => {
   var locator;
   beforeAll(() => {
+    initialize();
     locator = createObserverLocator();
   });
 
@@ -189,8 +191,8 @@ describe('element observation', () => {
       observer = locator.getObserver(obj, 'foo');
     });
 
-    it('should be an ' + (hasObjectObserve ? 'OoPropertyObserver' : 'SetterObserver'), () => {
-      var T = hasObjectObserve ? OoPropertyObserver : SetterObserver;
+    it('should be an ' + (FEATURE.objectObserve ? 'OoPropertyObserver' : 'SetterObserver'), () => {
+      var T = FEATURE.objectObserve ? OoPropertyObserver : SetterObserver;
       expect(observer instanceof T).toBe(true);
     });
 

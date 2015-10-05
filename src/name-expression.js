@@ -11,7 +11,7 @@ export class NameExpression {
 }
 
 class NameBinder {
-  constructor(property, target, mode){
+  constructor(property, target, mode) {
     this.property = property;
 
     switch (mode) {

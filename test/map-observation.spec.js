@@ -1,9 +1,11 @@
 import {TaskQueue} from 'aurelia-task-queue';
 import {getMapObserver} from '../src/map-observation';
+import {initialize} from 'aurelia-pal-browser';
 
 describe('ModifyMapObserver', () => {
   let taskQueue;
   beforeAll(() => {
+    initialize();
     taskQueue = new TaskQueue();
   });
 

@@ -3,6 +3,7 @@ import {DirtyChecker} from '../src/dirty-checking';
 import {EventManager} from '../src/event-manager';
 import {Parser} from '../src/parser';
 import {BindingExpression} from '../src/binding-expression';
+import {SVGAnalyzer} from '../src/svg';
 import {TaskQueue} from 'aurelia-task-queue';
 
 export var checkDelay = 20;
@@ -25,7 +26,7 @@ export function fireEvent(element, name) {
 }
 
 export function createObserverLocator(adapters = []) {
-  let locator = new ObserverLocator(new TaskQueue(), new EventManager(), new DirtyChecker());
+  let locator = new ObserverLocator(new TaskQueue(), new EventManager(), new DirtyChecker(), new SVGAnalyzer());
   adapters.forEach(a => locator.addAdapter(a));
   locator.dirtyChecker.checkDelay = checkDelay;
   return locator;

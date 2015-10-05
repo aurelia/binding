@@ -6,11 +6,13 @@ import {
   createObserverLocator,
   getBinding
 } from './shared';
+import {initialize} from 'aurelia-pal-browser';
 
 describe('CompositeObserver', () => {
   let observerLocator;
 
   beforeAll(() => {
+    initialize();
     observerLocator = createObserverLocator();
   });
 

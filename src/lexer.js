@@ -14,8 +14,8 @@ export class Token {
     return this;
   }
 
-  withValue(value) { 
-    this.value = value; 
+  withValue(value) {
+    this.value = value;
     return this;
   }
 
@@ -26,9 +26,9 @@ export class Token {
 
 export class Lexer {
   lex(text) {
-    var scanner = new Scanner(text);
-    var tokens = [];
-    var token = scanner.scanToken();
+    let scanner = new Scanner(text);
+    let tokens = [];
+    let token = scanner.scanToken();
 
     while (token) {
       tokens.push(token);
@@ -69,7 +69,7 @@ export class Scanner {
       return this.scanNumber(this.index);
     }
 
-    var start = this.index;
+    let start = this.index;
 
     switch (this.peek) {
       case $PERIOD:
@@ -113,7 +113,7 @@ export class Scanner {
         return this.scanToken();
     }
 
-    var character = String.fromCharCode(this.peek);
+    let character = String.fromCharCode(this.peek);
     this.error(`Unexpected character [${character}]`);
     return null;
   }
@@ -135,8 +135,8 @@ export class Scanner {
     assert(this.peek === one.charCodeAt(0));
     this.advance();
 
-    var text = one;
-    
+    let text = one;
+
     if (this.peek === code) {
       this.advance();
       text += two;
@@ -154,7 +154,7 @@ export class Scanner {
 
   scanIdentifier() {
     assert(isIdentifierStart(this.peek));
-    var start = this.index;
+    let start = this.index;
 
     this.advance();
 
@@ -162,8 +162,8 @@ export class Scanner {
       this.advance();
     }
 
-    var text = this.input.substring(start, this.index);
-    var result = new Token(start, text);
+    let text = this.input.substring(start, this.index);
+    let result = new Token(start, text);
 
     // TODO(kasperl): Deal with null, undefined, true, and false in
     // a cleaner and faster way.
@@ -178,7 +178,7 @@ export class Scanner {
 
   scanNumber(start) {
     assert(isDigit(this.peek));
-    var simple = (this.index === start);
+    let simple = (this.index === start);
     this.advance();  // Skip initial digit.
 
     while (true) {
@@ -196,7 +196,7 @@ export class Scanner {
         if (!isDigit(this.peek)){
           this.error('Invalid exponent', -1);
         }
-        
+
         simple = false;
       } else {
         break;
@@ -205,21 +205,21 @@ export class Scanner {
       this.advance();
     }
 
-    var text = this.input.substring(start, this.index);
-    var value = simple ? parseInt(text) : parseFloat(text);
+    let text = this.input.substring(start, this.index);
+    let value = simple ? parseInt(text) : parseFloat(text);
     return new Token(start, text).withValue(value);
   }
 
   scanString() {
     assert(this.peek === $SQ || this.peek === $DQ);
-    
-    var start = this.index;
-    var quote = this.peek;
+
+    let start = this.index;
+    let quote = this.peek;
 
     this.advance();  // Skip initial quote.
 
-    var buffer;
-    var marker = this.index;
+    let buffer;
+    let marker = this.index;
 
     while (this.peek !== quote) {
       if (this.peek === $BACKSLASH) {
@@ -230,20 +230,20 @@ export class Scanner {
         buffer.push(this.input.substring(marker, this.index));
         this.advance();
 
-        var unescaped;
+        let unescaped;
 
         if (this.peek === $u) {
           // TODO(kasperl): Check bounds? Make sure we have test
           // coverage for this.
-          var hex = this.input.substring(this.index + 1, this.index + 5);
+          let hex = this.input.substring(this.index + 1, this.index + 5);
 
           if(!/[A-Z0-9]{4}/.test(hex)){
             this.error(`Invalid unicode escape [\\u${hex}]`);
           }
 
           unescaped = parseInt(hex, 16);
-          
-          for (var i = 0; i < 5; ++i) {
+
+          for (let i = 0; i < 5; ++i) {
             this.advance();
           }
         } else {
@@ -260,12 +260,12 @@ export class Scanner {
       }
     }
 
-    var last = this.input.substring(marker, this.index);
+    let last = this.input.substring(marker, this.index);
     this.advance();  // Skip terminating quote.
-    var text = this.input.substring(start, this.index);
+    let text = this.input.substring(start, this.index);
 
     // Compute the unescaped string value.
-    var unescaped = last;
+    let unescaped = last;
 
     if (buffer != null) {
       buffer.push(last);
@@ -276,22 +276,22 @@ export class Scanner {
   }
 
   advance() {
-    if (++this.index >= this.length){
+    if (++this.index >= this.length) {
       this.peek = $EOF;
-    }else {
+    } else {
       this.peek = this.input.charCodeAt(this.index);
     }
   }
 
-  error(message, offset=0) {
+  error(message, offset = 0) {
     // TODO(kasperl): Try to get rid of the offset. It is only used to match
     // the error expectations in the lexer tests for numbers with exponents.
-    var position = this.index + offset;
+    let position = this.index + offset;
     throw new Error(`Lexer Error: ${message} at column ${position} in expression [${this.input}]`);
   }
 }
 
-var OPERATORS = [
+const OPERATORS = [
   'undefined',
   'null',
   'true',
@@ -319,61 +319,61 @@ var OPERATORS = [
   '?',
 ];
 
-var $EOF       = 0;
-var $TAB       = 9;
-var $LF        = 10;
-var $VTAB      = 11;
-var $FF        = 12;
-var $CR        = 13;
-var $SPACE     = 32;
-var $BANG      = 33;
-var $DQ        = 34;
-var $$         = 36;
-var $PERCENT   = 37;
-var $AMPERSAND = 38;
-var $SQ        = 39;
-var $LPAREN    = 40;
-var $RPAREN    = 41;
-var $STAR      = 42;
-var $PLUS      = 43;
-var $COMMA     = 44;
-var $MINUS     = 45;
-var $PERIOD    = 46;
-var $SLASH     = 47;
-var $COLON     = 58;
-var $SEMICOLON = 59;
-var $LT        = 60;
-var $EQ        = 61;
-var $GT        = 62;
-var $QUESTION  = 63;
+const $EOF = 0;
+const $TAB = 9;
+const $LF = 10;
+const $VTAB = 11;
+const $FF = 12;
+const $CR = 13;
+const $SPACE = 32;
+const $BANG = 33;
+const $DQ = 34;
+const $$ = 36;
+const $PERCENT = 37;
+const $AMPERSAND = 38;
+const $SQ = 39;
+const $LPAREN = 40;
+const $RPAREN = 41;
+const $STAR = 42;
+const $PLUS = 43;
+const $COMMA = 44;
+const $MINUS = 45;
+const $PERIOD = 46;
+const $SLASH = 47;
+const $COLON = 58;
+const $SEMICOLON = 59;
+const $LT = 60;
+const $EQ = 61;
+const $GT = 62;
+const $QUESTION = 63;
 
-var $0 = 48;
-var $9 = 57;
+const $0 = 48;
+const $9 = 57;
 
-var $A = 65;
-var $E = 69;
-var $Z = 90;
+const $A = 65;
+const $E = 69;
+const $Z = 90;
 
-var $LBRACKET  = 91;
-var $BACKSLASH = 92;
-var $RBRACKET  = 93;
-var $CARET     = 94;
-var $_         = 95;
+const $LBRACKET = 91;
+const $BACKSLASH = 92;
+const $RBRACKET = 93;
+const $CARET = 94;
+const $_ = 95;
 
-var $a = 97;
-var $e = 101;
-var $f = 102;
-var $n = 110;
-var $r = 114;
-var $t = 116;
-var $u = 117;
-var $v = 118;
-var $z = 122;
+const $a = 97;
+const $e = 101;
+const $f = 102;
+const $n = 110;
+const $r = 114;
+const $t = 116;
+const $u = 117;
+const $v = 118;
+const $z = 122;
 
-var $LBRACE = 123;
-var $BAR    = 124;
-var $RBRACE = 125;
-var $NBSP   = 160;
+const $LBRACE = 123;
+const $BAR = 124;
+const $RBRACE = 125;
+const $NBSP = 160;
 
 function isWhitespace(code) {
   return (code >= $TAB && code <= $SPACE) || (code === $NBSP);

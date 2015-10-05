@@ -1,5 +1,5 @@
+import {FEATURE, DOM} from 'aurelia-pal';
 import {TaskQueue} from 'aurelia-task-queue';
-import {hasObjectObserve} from './environment';
 import {getArrayObserver} from './array-observation';
 import {getMapObserver} from './map-observation';
 import {EventManager} from './event-manager';
@@ -22,22 +22,10 @@ import {
   hasDeclaredDependencies,
   ComputedPropertyObserver
 } from './computed-observation';
-import {isStandardSvgAttribute} from './svg';
-
-if(typeof Object.getPropertyDescriptor !== 'function'){
- Object.getPropertyDescriptor = function (subject, name) {
-    var pd = Object.getOwnPropertyDescriptor(subject, name);
-    var proto = Object.getPrototypeOf(subject);
-    while (typeof pd === 'undefined' && proto !== null) {
-      pd = Object.getOwnPropertyDescriptor(proto, name);
-      proto = Object.getPrototypeOf(proto);
-    }
-    return pd;
-  };
-}
+import {SVGAnalyzer} from './svg';
 
 function createObserverLookup(obj, observerLocator) {
-  var value = new OoObjectObserver(obj, observerLocator);
+  let value = new OoObjectObserver(obj, observerLocator);
 
   try{
     Object.defineProperty(obj, "__observer__", {
@@ -52,26 +40,28 @@ function createObserverLookup(obj, observerLocator) {
 }
 
 export class ObserverLocator {
-  static inject(){ return [TaskQueue, EventManager, DirtyChecker]; }
-  constructor(taskQueue, eventManager, dirtyChecker, observationAdapters){
+  static inject = [TaskQueue, EventManager, DirtyChecker, SVGAnalyzer];
+
+  constructor(taskQueue, eventManager, dirtyChecker, svgAnalyzer) {
     this.taskQueue = taskQueue;
     this.eventManager = eventManager;
     this.dirtyChecker = dirtyChecker;
+    this.svgAnalyzer = svgAnalyzer;
     this.adapters = [];
   }
 
-  getObserver(obj, propertyName){
-    var observersLookup = obj.__observers__,
-        observer;
+  getObserver(obj, propertyName) {
+    let observersLookup = obj.__observers__;
+    let observer;
 
-    if(observersLookup && propertyName in observersLookup){
+    if (observersLookup && propertyName in observersLookup) {
       return observersLookup[propertyName];
     }
 
     observer = this.createPropertyObserver(obj, propertyName);
 
-    if (!observer.doNotCache){
-      if(observersLookup === undefined){
+    if (!observer.doNotCache) {
+      if (observersLookup === undefined){
         observersLookup = this.getOrCreateObserversLookup(obj);
       }
 
@@ -81,12 +71,12 @@ export class ObserverLocator {
     return observer;
   }
 
-  getOrCreateObserversLookup(obj){
+  getOrCreateObserversLookup(obj) {
     return obj.__observers__ || this.createObserversLookup(obj);
   }
 
   createObserversLookup(obj) {
-    var value = {};
+    let value = {};
 
     try{
       Object.defineProperty(obj, "__observers__", {
@@ -115,10 +105,13 @@ export class ObserverLocator {
     return null;
   }
 
-  createPropertyObserver(obj, propertyName){
-    var observerLookup, descriptor, handler, xlinkResult;
+  createPropertyObserver(obj, propertyName) {
+    let observerLookup;
+    let descriptor;
+    let handler;
+    let xlinkResult;
 
-    if(obj instanceof Element){
+    if (obj instanceof DOM.Element) {
       if (propertyName === 'class') {
         return new ClassObserver(obj);
       }
@@ -140,7 +133,7 @@ export class ObserverLocator {
         return new XLinkAttributeObserver(obj, propertyName, xlinkResult[1]);
       }
       if (/^\w+:|^data-|^aria-/.test(propertyName)
-        || obj instanceof SVGElement && isStandardSvgAttribute(obj.nodeName, propertyName)) {
+        || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
         return new DataAttributeObserver(obj, propertyName);
       }
     }
@@ -152,8 +145,8 @@ export class ObserverLocator {
     }
 
     let existingGetterOrSetter;
-    if(descriptor && (existingGetterOrSetter = descriptor.get || descriptor.set)){
-      if(existingGetterOrSetter.getObserver){
+    if (descriptor && (existingGetterOrSetter = descriptor.get || descriptor.set)) {
+      if (existingGetterOrSetter.getObserver) {
         return existingGetterOrSetter.getObserver(obj);
       }
 
@@ -165,18 +158,18 @@ export class ObserverLocator {
       return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     }
 
-    if(hasObjectObserve){
+    if (FEATURE.objectObserve) {
       observerLookup = obj.__observer__ || createObserverLookup(obj, this);
       return observerLookup.getObserver(propertyName, descriptor);
     }
 
-    if(obj instanceof Array){
+    if (obj instanceof Array) {
       if (propertyName === 'length') {
         return this.getArrayObserver(obj).getLengthObserver();
       } else {
         return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
-    }else if(obj instanceof Map){
+    } else if (obj instanceof Map) {
       if (propertyName === 'size') {
         return this.getMapObserver(obj).getLengthObserver();
       } else {
@@ -188,7 +181,7 @@ export class ObserverLocator {
   }
 
   getArrayObserver(array){
-    if('__array_observer__' in array){
+    if ('__array_observer__' in array) {
       return array.__array_observer__;
     }
 
@@ -196,7 +189,7 @@ export class ObserverLocator {
   }
 
   getMapObserver(map){
-    if('__map_observer__' in map){
+    if ('__map_observer__' in map) {
       return map.__map_observer__;
     }
 

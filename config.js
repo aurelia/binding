@@ -16,6 +16,8 @@ System.config({
   map: {
     "aurelia-dependency-injection": "github:aurelia/dependency-injection@0.10.0",
     "aurelia-metadata": "github:aurelia/metadata@0.8.0",
+    "aurelia-pal": "github:aurelia/pal@0.1.9",
+    "aurelia-pal-browser": "github:aurelia/pal-browser@0.1.12",
     "aurelia-task-queue": "github:aurelia/task-queue@0.7.0",
     "babel": "npm:babel-core@5.2.2",
     "babel-runtime": "npm:babel-runtime@5.2.2",
@@ -27,6 +29,9 @@ System.config({
     },
     "github:aurelia/metadata@0.8.0": {
       "core-js": "npm:core-js@0.9.18"
+    },
+    "github:aurelia/pal-browser@0.1.12": {
+      "aurelia-pal": "github:aurelia/pal@0.1.9"
     },
     "github:jspm/nodelibs-process@0.1.1": {
       "process": "npm:process@0.10.1"

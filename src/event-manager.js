@@ -1,70 +1,72 @@
-function findOriginalEventTarget(event){
+import {DOM} from 'aurelia-pal';
+
+function findOriginalEventTarget(event) {
   return event.originalTarget || (event.path && event.path[0])
     || (event.deepPath && event.deepPath[0]) || event.target || event.srcElement;
 }
 
-function handleDelegatedEvent(event){
-  event = event || window.event;
+function handleDelegatedEvent(event) {
+  let target = findOriginalEventTarget(event);
+  let callback;
 
-  var target = findOriginalEventTarget(event),
-      callback;
-
-  while(target && !callback) {
-    if(target.delegatedCallbacks){
+  while (target && !callback) {
+    if (target.delegatedCallbacks) {
       callback = target.delegatedCallbacks[event.type];
     }
 
-    if(!callback){
+    if (!callback) {
       target = target.parentNode;
     }
   }
 
-  if(callback){
+  if (callback) {
     callback(event);
   }
 }
 
 class DelegateHandlerEntry {
-  constructor(eventName){
+  constructor(eventName) {
     this.eventName = eventName;
     this.count = 0;
   }
 
-  increment(){
+  increment() {
     this.count++;
 
-    if(this.count === 1){
-      document.addEventListener(this.eventName, handleDelegatedEvent, false);
+    if (this.count === 1) {
+      DOM.addEventListener(this.eventName, handleDelegatedEvent, false);
     }
   }
 
-  decrement(){
+  decrement() {
     this.count--;
 
-    if(this.count === 0){
-      document.removeEventListener(this.eventName, handleDelegatedEvent);
+    if (this.count === 0) {
+      DOM.removeEventListener(this.eventName, handleDelegatedEvent);
     }
   }
 }
 
 class DefaultEventStrategy {
-  subscribe(target, targetEvent, callback, delegate){
-    if(delegate){
-      let delegatedHandlers = document.delegatedHandlers || (document.delegatedHandlers = {}),
-          handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent)),
-          delegatedCallbacks = target.delegatedCallbacks || (target.delegatedCallbacks = {});
+  delegatedHandlers = [];
+
+  subscribe(target, targetEvent, callback, delegate) {
+    if (delegate) {
+      let delegatedHandlers = this.delegatedHandlers;
+      let handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent));
+      let delegatedCallbacks = target.delegatedCallbacks || (target.delegatedCallbacks = {});
 
       handlerEntry.increment();
       delegatedCallbacks[targetEvent] = callback;
 
-      return function(){
+      return function() {
         handlerEntry.decrement();
         delegatedCallbacks[targetEvent] = null;
       };
-    }else{
+    } else {
       target.addEventListener(targetEvent, callback, false);
 
-      return function(){
+      return function() {
         target.removeEventListener(targetEvent, callback);
       };
     }
@@ -72,7 +74,7 @@ class DefaultEventStrategy {
 }
 
 export class EventManager {
-  constructor(){
+  constructor() {
     this.elementHandlerLookup = {};
     this.eventStrategyLookup = {};
 
@@ -117,11 +119,15 @@ export class EventManager {
     this.defaultEventStrategy = new DefaultEventStrategy();
   }
 
-  registerElementConfig(config){
-    var tagName = config.tagName.toLowerCase(), properties = config.properties, propertyName;
+  registerElementConfig(config) {
+    let tagName = config.tagName.toLowerCase();
+    let properties = config.properties;
+    let propertyName;
+
     this.elementHandlerLookup[tagName] = {};
-    for(propertyName in properties){
-      if (properties.hasOwnProperty(propertyName)){
+
+    for (propertyName in properties) {
+      if (properties.hasOwnProperty(propertyName)) {
         this.registerElementPropertyConfig(tagName, propertyName, properties[propertyName]);
       }
     }
@@ -134,7 +140,7 @@ export class EventManager {
           target.addEventListener(changeEvent, callback, false);
         });
 
-        return function(){
+        return function() {
           events.forEach(changeEvent => {
             target.removeEventListener(changeEvent, callback);
           });
@@ -143,25 +149,30 @@ export class EventManager {
     }
   }
 
-  registerElementHandler(tagName, handler){
+  registerElementHandler(tagName, handler) {
     this.elementHandlerLookup[tagName.toLowerCase()] = handler;
   }
 
-  registerEventStrategy(eventName, strategy){
+  registerEventStrategy(eventName, strategy) {
     this.eventStrategyLookup[eventName] = strategy;
   }
 
-  getElementHandler(target, propertyName){
-    var tagName, lookup = this.elementHandlerLookup;
-    if(target.tagName){
+  getElementHandler(target, propertyName) {
+    let tagName;
+    let lookup = this.elementHandlerLookup;
+
+    if(target.tagName) {
       tagName = target.tagName.toLowerCase();
-      if(lookup[tagName] && lookup[tagName][propertyName]){
+
+      if(lookup[tagName] && lookup[tagName][propertyName]) {
         return lookup[tagName][propertyName];
       }
-      if (propertyName === 'textContent' || propertyName === 'innerHTML'){
+
+      if (propertyName === 'textContent' || propertyName === 'innerHTML') {
         return lookup['content editable']['value'];
       }
-      if (propertyName === 'scrollTop' || propertyName === 'scrollLeft'){
+
+      if (propertyName === 'scrollTop' || propertyName === 'scrollLeft') {
         return lookup['scrollable element'][propertyName];
       }
     }
@@ -169,7 +180,7 @@ export class EventManager {
     return null;
   }
 
-  addEventListener(target, targetEvent, callback, delegate){
+  addEventListener(target, targetEvent, callback, delegate) {
     return (this.eventStrategyLookup[targetEvent] || this.defaultEventStrategy)
       .subscribe(target, targetEvent, callback, delegate);
   }

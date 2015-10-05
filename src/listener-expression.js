@@ -1,5 +1,5 @@
 export class ListenerExpression {
-  constructor(eventManager, targetEvent, sourceExpression, delegate, preventDefault){
+  constructor(eventManager, targetEvent, sourceExpression, delegate, preventDefault) {
     this.eventManager = eventManager;
     this.targetEvent = targetEvent;
     this.sourceExpression = sourceExpression;
@@ -8,7 +8,7 @@ export class ListenerExpression {
     this.preventDefault = preventDefault;
   }
 
-  createBinding(target){
+  createBinding(target) {
     return new Listener(
       this.eventManager,
       this.targetEvent,
@@ -21,7 +21,7 @@ export class ListenerExpression {
 }
 
 class Listener {
-  constructor(eventManager, targetEvent, delegate, sourceExpression, target, preventDefault){
+  constructor(eventManager, targetEvent, delegate, sourceExpression, target, preventDefault) {
     this.eventManager = eventManager;
     this.targetEvent = targetEvent;
     this.delegate = delegate;
@@ -30,9 +30,9 @@ class Listener {
     this.preventDefault = preventDefault;
   }
 
-  bind(source){
-    if(this._disposeListener){
-      if(this.source === source){
+  bind(source) {
+    if (this._disposeListener) {
+      if (this.source === source) {
         return;
       }
 
@@ -40,20 +40,20 @@ class Listener {
     }
 
     this.source = source;
-    this._disposeListener = this.eventManager.addEventListener(this.target, this.targetEvent, event =>{
-      var prevEvent = source.$event;
+    this._disposeListener = this.eventManager.addEventListener(this.target, this.targetEvent, event => {
+      let prevEvent = source.$event;
       source.$event = event;
-      var result = this.sourceExpression.evaluate(source);
+      let result = this.sourceExpression.evaluate(source);
       source.$event = prevEvent;
-      if(result !== true && this.preventDefault){
+      if (result !== true && this.preventDefault) {
         event.preventDefault();
       }
       return result;
     }, this.delegate);
   }
 
-  unbind(){
-    if(this._disposeListener){
+  unbind() {
+    if (this._disposeListener) {
       this._disposeListener();
       this._disposeListener = null;
     }

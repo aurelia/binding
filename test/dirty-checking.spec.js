@@ -4,11 +4,13 @@ import {
 	executeSharedPropertyObserverTests,
 	createObserverLocator
 } from './shared';
+import {initialize} from 'aurelia-pal-browser';
 
 describe('DirtyCheckProperty', () => {
 	var obj, observerLocator, observer;
 
 	beforeAll(() => {
+		initialize();
 		obj = new FooNoDep();
 		observerLocator = createObserverLocator();
 		observer = observerLocator.getObserver(obj, 'bar');

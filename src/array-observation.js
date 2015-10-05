@@ -1,12 +1,12 @@
-import {hasArrayObserve} from './environment';
 import {projectArraySplices} from './array-change-records';
 import {ModifyCollectionObserver, CollectionLengthObserver} from './collection-observation';
 import {subscriberCollection} from './subscriber-collection';
+import {FEATURE} from 'aurelia-pal';
 
 var arrayProto = Array.prototype;
 
 export function getArrayObserver(taskQueue, array){
-  if(hasArrayObserve){
+  if(FEATURE.arrayObserve){
     return new ArrayObserveObserver(array);
   }else{
     return ModifyArrayObserver.create(taskQueue, array);

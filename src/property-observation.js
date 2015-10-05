@@ -1,4 +1,4 @@
-import * as core from 'core-js';
+import 'core-js';
 import {subscriberCollection} from './subscriber-collection';
 
 @subscriberCollection()
@@ -24,7 +24,7 @@ export class SetterObserver {
   }
 
   setterValue(newValue) {
-    var oldValue = this.currentValue;
+    let oldValue = this.currentValue;
 
     if(oldValue !== newValue){
       if(!this.queued){
@@ -38,8 +38,8 @@ export class SetterObserver {
   }
 
   call() {
-    var oldValue = this.oldValue,
-        newValue = this.currentValue;
+    let oldValue = this.oldValue;
+    let newValue = this.currentValue;
 
     this.queued = false;
 
@@ -47,7 +47,7 @@ export class SetterObserver {
   }
 
   subscribe(context, callable) {
-    if(!this.observing){
+    if(!this.observing) {
       this.convertProperty();
     }
     this.addSubscriber(context, callable);
@@ -126,7 +126,7 @@ export class OoObjectObserver {
     this.subscribers = 0;
   }
 
-  subscriberAdded(){
+  subscriberAdded() {
     if (this.subscribers === 0) {
       try {
         Object.observe(this.obj, ooHandler, ['update', 'add']);
@@ -146,8 +146,8 @@ export class OoObjectObserver {
     }
   }
 
-  getObserver(propertyName, descriptor){
-    var propertyObserver = this.observers[propertyName];
+  getObserver(propertyName, descriptor) {
+    let propertyObserver = this.observers[propertyName];
     if (!propertyObserver) {
       propertyObserver = this.observers[propertyName] = new OoPropertyObserver(this.obj, propertyName);
     }

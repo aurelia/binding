@@ -1,6 +1,9 @@
 import {ValueConverterResource} from '../src/value-converter';
+import {initialize} from 'aurelia-pal-browser';
 
 describe('ValueConverter', () => {
+  beforeAll(() => initialize());
+
   it('uses ends with ValueConverter convention', () => {
     expect(ValueConverterResource.convention('FooValueConverter')).toBeDefined();
     expect(ValueConverterResource.convention('FooValueConverter') instanceof ValueConverterResource).toBe(true);

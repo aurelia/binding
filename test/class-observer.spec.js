@@ -3,11 +3,13 @@ import {
   createElement
 } from './shared';
 import {ClassObserver} from '../src/class-observer';
+import {initialize} from 'aurelia-pal-browser';
 
 describe('ClassObserver', () => {
   var element, observerA, observerB;
 
   beforeAll(() => {
+    initialize();
     var locator = createObserverLocator();
     element = createElement('<div class="foo bar"></div>');
     observerA = locator.getObserver(element, 'class');
@@ -50,6 +52,6 @@ describe('ClassObserver', () => {
     observerA.setValue('foo');
     expect(contains('foo')).toBe(true);
     observerA.setValue(undefined);
-    expect(contains('foo')).toBe(false);    
+    expect(contains('foo')).toBe(false);
   });
 });

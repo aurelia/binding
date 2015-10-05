@@ -3,11 +3,13 @@ import {SetterObserver} from '../src/property-observation';
 import {
 	executeSharedPropertyObserverTests
 } from './shared';
+import {initialize} from 'aurelia-pal-browser';
 
 describe('SetterObserver', () => {
   var obj, observer;
 
   beforeAll(() => {
+		initialize();
     var taskQueue = new TaskQueue();
     obj = { foo: 'bar' };
     observer = new SetterObserver(taskQueue, obj, 'foo');

@@ -1,4 +1,5 @@
 import {subscriberCollection} from './subscriber-collection';
+import {DOM} from 'aurelia-pal';
 
 export class XLinkAttributeObserver {
   // xlink namespaced attributes require getAttributeNS/setAttributeNS
@@ -238,7 +239,7 @@ export class SelectValueObserver {
   }
 
   bind() {
-    this.domObserver = new MutationObserver(() => {
+    this.domObserver = DOM.createMutationObserver(() => {
       this.synchronizeOptions();
       this.synchronizeValue();
     });
