@@ -1,7 +1,4 @@
 import {bindingMode} from './binding-mode';
-import {Parser} from './parser';
-import {ObserverLocator} from './observer-locator';
-import {Container} from 'aurelia-dependency-injection';
 
 export class BindingExpression {
   constructor(observerLocator, targetProperty, sourceExpression,
@@ -24,18 +21,6 @@ export class BindingExpression {
       this.mode,
       this.valueConverterLookupFunction
       );
-  }
-
-  static create(targetProperty, sourceExpression, mode=bindingMode.oneWay) {
-    let parser = Container.instance.get(Parser);
-    let observerLocator = Container.instance.get(ObserverLocator);
-
-    return new BindingExpression(
-      observerLocator,
-      targetProperty,
-      parser.parse(sourceExpression),
-      mode
-    );
   }
 }
 

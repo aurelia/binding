@@ -25,7 +25,6 @@
       "lib": "dist/amd"
     },
     "dependencies": {
-      "aurelia-dependency-injection": "github:aurelia/dependency-injection@^0.10.0",
       "aurelia-metadata": "github:aurelia/metadata@^0.8.0",
       "aurelia-pal": "github:aurelia/pal@^0.1.9",
       "aurelia-task-queue": "github:aurelia/task-queue@^0.7.0",
@@ -33,8 +32,8 @@
     },
     "devDependencies": {
       "aurelia-pal-browser": "github:aurelia/pal-browser@^0.1.12",
-      "babel": "npm:babel-core@^5.1.13",
-      "babel-runtime": "npm:babel-runtime@^5.1.13",
+      "babel": "npm:babel-core@^5.8.24",
+      "babel-runtime": "npm:babel-runtime@^5.8.24",
       "core-js": "npm:core-js@^0.9.5"
     }
   },
