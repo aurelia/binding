@@ -252,8 +252,10 @@ export class ParserImplementation {
       let result = this.parseExpression();
       this.expect(')');
       return result;
-    } else if (this.optional('null') || this.optional('undefined')) {
+    } else if (this.optional('null')) {
       return new LiteralPrimitive(null);
+    } else if (this.optional('undefined')) {
+      return new LiteralPrimitive(undefined);
     } else if (this.optional('true')) {
       return new LiteralPrimitive(true);
     } else if (this.optional('false')) {
