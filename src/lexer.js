@@ -223,7 +223,7 @@ export class Scanner {
 
     while (this.peek !== quote) {
       if (this.peek === $BACKSLASH) {
-        if (buffer === null) {
+        if (!buffer) {
           buffer = [];
         }
 
@@ -247,7 +247,7 @@ export class Scanner {
             this.advance();
           }
         } else {
-          unescaped = decodeURIComponent(this.peek);
+          unescaped = unescape(this.peek);
           this.advance();
         }
 

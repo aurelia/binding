@@ -269,7 +269,7 @@ export class ParserImplementation {
     } else if (this.peek.value != null) {
       let value = this.peek.value;
       this.advance();
-      return isNaN(value) ? new LiteralString(value) : new LiteralPrimitive(value);
+      return value instanceof String || typeof value === 'string' ? new LiteralString(value) : new LiteralPrimitive(value);
     } else if (this.index >= this.tokens.length) {
       throw new Error(`Unexpected end of expression: ${this.input}`);
     } else {
