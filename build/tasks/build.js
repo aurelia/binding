@@ -40,7 +40,8 @@ gulp.task('build-index', function(){
     'value-converter.js',
     'decorators.js',
     'listener-expression.js',
-    'name-expression.js'
+    'name-expression.js',
+    'binding-system.js'
     ].map(function(file){
       return paths.root + file;
   });
