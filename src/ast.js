@@ -1,6 +1,3 @@
-import {CompositeObserver} from './composite-observer';
-import {AccessKeyedObserver} from './access-keyed-observer';
-
 export class Expression {
   constructor(){
     this.isChain = false;
@@ -91,22 +88,11 @@ export class ValueConverter extends Expression {
   }
 
   connect(binding, scope) {
-    let i = this.allArgs.length;
-    if (i === 0) {
-      return {
-        value: this.evaluate(scope, binding.valueConverterLookupFunction)
-      };
-    }
-
-    let observer = new CompositeObserver(this, scope, binding);
+    let expressions = this.allArgs;
+    let i = expressions.length;
     while (i--) {
-      observer.addChild(this.allArgs[i]);
+      expressions[i].connect(binding, scope);
     }
-
-    return {
-      value: observer.getValue(),
-      observer: observer.isObservable ? observer : undefined
-    };
   }
 }
 
@@ -126,8 +112,7 @@ export class Assign extends Expression {
     vistor.visitAssign(this);
   }
 
-  connect(binding, scope){
-    return { value: this.evaluate(scope, binding.valueConverterLookupFunction) };
+  connect(binding, scope) {
   }
 }
 
@@ -148,15 +133,13 @@ export class Conditional extends Expression {
     visitor.visitConditional(this);
   }
 
-  connect(binding, scope){
-    let observer = new CompositeObserver(this, scope, binding);
-    observer.addPrimary(this.condition);
-    observer.addChild(this.yes, conditionValue => !!conditionValue);
-    observer.addChild(this.no, conditionValue => !conditionValue);
-    return {
-      value: observer.getValue(),
-      observer: observer.isObservable ? observer : undefined
-    };
+  connect(binding, scope) {
+    this.condition.connect(binding, scope);
+    if (this.condition.evaluate(scope)) {
+      this.yes.connect(binding, scope);
+    } else {
+      this.no.connect(binding, scope);
+    }
   }
 }
 
@@ -180,13 +163,8 @@ export class AccessScope extends Expression {
     visitor.visitAccessScope(this);
   }
 
-  connect(binding, scope){
-    var observer = binding.getObserver(scope, this.name);
-
-    return {
-      value: observer.getValue(),
-      observer: observer
-    }
+  connect(binding, scope) {
+    binding.observeProperty(scope, this.name);
   }
 }
 
@@ -201,9 +179,7 @@ export class AccessMember extends Expression {
 
   evaluate(scope, valueConverters){
     var instance = this.object.evaluate(scope, valueConverters);
-    return instance === null || instance === undefined
-      ? instance
-      : instance[this.name];
+    return instance === null || instance === undefined ? instance : instance[this.name];
   }
 
   assign(scope, value){
@@ -222,10 +198,10 @@ export class AccessMember extends Expression {
   }
 
   connect(binding, scope) {
-    let observer = new AccessKeyedObserver(this, scope, binding);
-    return {
-      value: observer.getValue(),
-      observer: observer
+    this.object.connect(binding, scope);
+    let obj = this.object.evaluate(scope);
+    if (obj) {
+      binding.observeProperty(obj, this.name);
     }
   }
 }
@@ -255,12 +231,16 @@ export class AccessKeyed extends Expression {
     visitor.visitAccessKeyed(this);
   }
 
-  connect(binding, scope){
-    let observer = new AccessKeyedObserver(this, scope, binding);
-    return {
-      value: observer.getValue(),
-      observer: observer
-    };
+  connect(binding, scope) {
+    this.object.connect(binding, scope);
+    let obj = this.object.evaluate(scope);
+    if (obj instanceof Object) {
+      this.key.connect(binding, scope);
+      let key = this.key.evaluate(scope);
+      if (key !== null && key !== undefined) {
+        binding.observeProperty(obj, key);
+      }
+    }
   }
 }
 
@@ -274,7 +254,12 @@ export class CallScope extends Expression {
 
   evaluate(scope, valueConverters, args){
     args = args || evalList(scope, this.args, valueConverters);
-    return ensureFunctionFromMap(scope, this.name).apply(scope, args);
+    let func = getFunction(scope, this.name);
+    if (func) {
+      return func.apply(scope, args);
+    } else {
+      return func;
+    }
   }
 
   accept(visitor){
@@ -282,16 +267,12 @@ export class CallScope extends Expression {
   }
 
   connect(binding, scope) {
-    let observer = new CompositeObserver(this, scope, binding);
-    //observer.addPrimary(new AccessScope(this.name));
-    let length = this.args.length;
-    for (let i = 0; i < length; i++) {
-      observer.addChild(this.args[i]/*, obj => obj !== null && obj !== undefined*/);
+    let args = this.args;
+    let i = args.length;
+    while (i--) {
+      args[i].connect(binding, scope);
     }
-    return {
-      value: observer.getValue(),
-      observer: observer.isObservable ? observer : undefined
-    };
+    // todo: consider adding `binding.observeProperty(scope, this.name);`
   }
 }
 
@@ -307,24 +288,28 @@ export class CallMember extends Expression {
   evaluate(scope, valueConverters, args){
     var instance = this.object.evaluate(scope, valueConverters);
     args = args || evalList(scope, this.args, valueConverters);
-    return ensureFunctionFromMap(instance, this.name).apply(instance, args);
+    let func = getFunction(instance, this.name);
+    if (func) {
+      return func.apply(instance, args);
+    } else {
+      return func;
+    }
   }
 
   accept(visitor){
     visitor.visitCallMember(this);
   }
 
-  connect(binding, scope){
-    let observer = new CompositeObserver(this, scope, binding);
-    observer.addPrimary(this.object); //observer.addPrimary(new AccessMember(this.object, this.name));
-    let length = this.args.length;
-    for (let i = 0; i < length; i++) {
-      observer.addChild(this.args[i], obj => obj !== null && obj !== undefined);
+  connect(binding, scope) {
+    this.object.connect(binding, scope);
+    let obj = this.object.evaluate(scope);
+    if (getFunction(obj, this.name)) {
+      let args = this.args;
+      let i = args.length;
+      while (i--) {
+        args[i].connect(binding, scope);
+      }
     }
-    return {
-      value: observer.getValue(),
-      observer: observer.isObservable ? observer : undefined
-    };
   }
 }
 
@@ -339,10 +324,12 @@ export class CallFunction extends Expression {
   evaluate(scope, valueConverters, args){
     var func = this.func.evaluate(scope, valueConverters);
 
-    if (typeof func !== 'function') {
-      throw new Error(`${this.func} is not a function`);
-    } else {
+    if (typeof func === 'function') {
       return func.apply(null, args || evalList(scope, this.args, valueConverters));
+    } else if (func === null || func === undefined) {
+      return func;
+    } else {
+      throw new Error(`${this.func} is not a function`);
     }
   }
 
@@ -351,16 +338,15 @@ export class CallFunction extends Expression {
   }
 
   connect(binding, scope) {
-    let observer = new CompositeObserver(this, scope, binding);
-    observer.addPrimary(this.func);
-    let length = this.args.length;
-    for (let i = 0; i < length; i++) {
-      observer.addChild(this.args[i], f => typeof f === 'function');
+    this.func.connect(binding, scope);
+    let func = this.func.evaluate(scope);
+    if (typeof func === 'function') {
+      let args = this.args;
+      let i = args.length;
+      while (i--) {
+        args[i].connect(binding, scope);
+      }
     }
-    return {
-      value: observer.getValue(),
-      observer: observer.isObservable ? observer : undefined
-    };
   }
 }
 
@@ -428,17 +414,12 @@ export class Binary extends Expression {
   }
 
   connect(binding, scope) {
-    let observer = new CompositeObserver(this, scope, binding);
-    observer.addPrimary(this.left);
-    if (this.operation === '&&') {
-      observer.addChild(this.right, left => !!left);
-    } else if (this.operation === '||') {
-      observer.addChild(this.right, left => !left);
+    this.left.connect(binding, scope);
+    let left = this.left.evaluate(scope);
+    if (this.operation === '&&' && !left || this.operation === '||' && left) {
+      return;
     }
-    return {
-      value: observer.getValue(),
-      observer: observer.isObservable ? observer : undefined
-    };
+    this.right.connect(binding, scope);
   }
 }
 
@@ -459,12 +440,7 @@ export class PrefixNot extends Expression {
   }
 
   connect(binding, scope) {
-    let observer = new CompositeObserver(this, scope, binding);
-    observer.addPrimary(this.expression);
-    return {
-      value: observer.getValue(),
-      observer: observer.isObservable ? observer : undefined
-    };
+    this.expression.connect(binding, scope);
   }
 }
 
@@ -483,8 +459,7 @@ export class LiteralPrimitive extends Expression {
     visitor.visitLiteralPrimitive(this);
   }
 
-  connect(binding, scope){
-    return { value:this.value }
+  connect(binding, scope) {
   }
 }
 
@@ -503,8 +478,7 @@ export class LiteralString extends Expression {
     visitor.visitLiteralString(this);
   }
 
-  connect(binding, scope){
-    return { value:this.value }
+  connect(binding, scope) {
   }
 }
 
@@ -533,15 +507,10 @@ export class LiteralArray extends Expression {
   }
 
   connect(binding, scope) {
-    var observer = new CompositeObserver(this, scope, binding);
     let length = this.elements.length;
     for (let i = 0; i < length; i++) {
-      observer.addChild(this.elements[i]);
+      this.elements[i].connect(binding, scope);
     }
-    return {
-      value: observer.getValue(),
-      observer: observer.isObservable ? observer : undefined
-    };
   }
 }
 
@@ -572,15 +541,10 @@ export class LiteralObject extends Expression {
   }
 
   connect(binding, scope){
-    var observer = new CompositeObserver(this, scope, binding);
     let length = this.keys.length;
-      for (let i = 0; i < length; i++) {
-      observer.addChild(this.values[i]);
+    for (let i = 0; i < length; i++) {
+      this.values[i].connect(binding, scope);
     }
-    return {
-      value: observer.getValue(),
-      observer: observer.isObservable ? observer : undefined
-    };
   }
 }
 
@@ -803,15 +767,15 @@ function autoConvertAdd(a, b) {
   return 0;
 }
 
-function ensureFunctionFromMap(obj, name){
+function getFunction(obj, name) {
   var func = obj[name];
 
   if (typeof func === 'function') {
     return func;
   }
 
-  if (func === null) {
-    throw new Error(`Undefined function ${name}`);
+  if (func === null || func === undefined) {
+    return func;
   } else {
     throw new Error(`${name} is not a function`);
   }

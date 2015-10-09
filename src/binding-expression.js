@@ -1,4 +1,5 @@
 import {bindingMode} from './binding-mode';
+import {connectable, sourceContext} from './connectable-binding';
 
 export class BindingExpression {
   constructor(observerLocator, targetProperty, sourceExpression,
@@ -24,9 +25,9 @@ export class BindingExpression {
   }
 }
 
-const sourceContext = 'Binding:source';
 const targetContext = 'Binding:target';
 
+@connectable()
 class Binding {
   constructor(observerLocator, sourceExpression, target, targetProperty, mode, valueConverterLookupFunction) {
     this.observerLocator = observerLocator;
@@ -36,16 +37,16 @@ class Binding {
     this.valueConverterLookupFunction = valueConverterLookupFunction;
   }
 
-  getObserver(obj, propertyName) {
-    return this.observerLocator.getObserver(obj, propertyName);
-  }
-
   call(context, newValue, oldValue) {
     if (context === sourceContext) {
-      let current = this.targetProperty.getValue();
-      if (newValue !== current) {
+      oldValue = this.targetProperty.getValue();
+      newValue = this.sourceExpression.evaluate(this.source, this.valueConverterLookupFunction);
+      if (newValue !== oldValue) {
         this.targetProperty.setValue(newValue);
       }
+      this._version++;
+      this.sourceExpression.connect(this, this.source);
+      this.unobserve(false);
       return;
     }
     if (context === targetContext) {
@@ -70,24 +71,17 @@ class Binding {
       targetProperty.bind();
     }
 
-    if (this.mode === bindingMode.oneWay || this.mode === bindingMode.twoWay) {
-      let sourceInfo = this.sourceExpression.connect(this, source);
-      this.sourceProperty = sourceInfo.observer;
-      if (this.sourceProperty) {
-        this.sourceProperty.subscribe(sourceContext, this);
-      }
+    let mode = this.mode;
+    if (mode === bindingMode.oneWay || mode === bindingMode.twoWay) {
+      this.sourceExpression.connect(this, source);
 
-      targetProperty.setValue(sourceInfo.value);
-
-      if (this.mode === bindingMode.twoWay) {
+      if (mode === bindingMode.twoWay) {
         targetProperty.subscribe(targetContext, this);
       }
-
-      this.source = source;
-    } else {
-      let value = this.sourceExpression.evaluate(source, this.valueConverterLookupFunction);
-      targetProperty.setValue(value);
     }
+
+    let value = this.sourceExpression.evaluate(source, this.valueConverterLookupFunction);
+    targetProperty.setValue(value);
   }
 
   unbind() {
@@ -99,8 +93,6 @@ class Binding {
     if (this.mode === bindingMode.twoWay) {
       this.targetProperty.unsubscribe(targetContext, this);
     }
-    if (this.sourceProperty) {
-      this.sourceProperty.unsubscribe(sourceContext, this);
-    }
+    this.unobserve(true);
   }
 }

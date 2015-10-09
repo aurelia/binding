@@ -285,9 +285,9 @@ describe('CompositeObserver', () => {
         expect(aObserver.hasSubscribers()).toBe(true);
         expect(bObserver.hasSubscribers()).toBe(true);
         expect(testObserver.hasSubscribers()).toBe(true);
-        expect(yesObserver.hasSubscribers()).toBe(false);
+        expect(yesObserver.hasSubscribers()).toBe(true);
         expect(noObserver.hasSubscribers()).toBe(true);
-        expect(xObserver.hasSubscribers()).toBe(false);
+        expect(xObserver.hasSubscribers()).toBe(true);
         expect(yObserver.hasSubscribers()).toBe(false);
         expect(zObserver.hasSubscribers()).toBe(false);
         expect(el.textContent).toBe('hello world');

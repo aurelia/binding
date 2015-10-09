@@ -15,13 +15,12 @@ var jsName = paths.packageName + '.js';
 gulp.task('build-index', function(){
   var importsToAdd = [];
   var files = [
+    'connectable-binding.js',
     'subscriber-collection.js',
-    'access-keyed-observer.js',
     'array-change-records.js',
     'map-change-records.js',
     'collection-observation.js',
     'array-observation.js',
-    'composite-observer.js',
     'ast.js',
     'binding-mode.js',
     'lexer.js',
