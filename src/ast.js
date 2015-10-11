@@ -5,11 +5,11 @@ export class Expression {
   }
 
   evaluate(scope: any, valueConverters: any, args?: any): any{
-    throw new Error(`Cannot evaluate ${this}`);
+    throw new Error(`Binding expression "${this}" cannot be evaluated.`);
   }
 
   assign(scope: any, value: any, valueConverters: any): any{
-    throw new Error(`Cannot assign to ${this}`);
+    throw new Error(`Binding expression "${this}" cannot be assigned to.`);
   }
 
   toString(){
@@ -768,7 +768,11 @@ function autoConvertAdd(a, b) {
 }
 
 function getFunction(obj, name) {
-  var func = obj[name];
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  let func = obj[name];
 
   if (typeof func === 'function') {
     return func;
