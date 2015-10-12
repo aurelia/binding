@@ -5,9 +5,9 @@ import {EventManager} from '../src/event-manager';
 import {ObserverLocator} from '../src/observer-locator';
 import {Parser} from '../src/parser';
 import {BindingExpression} from '../src/binding-expression';
-import {BindingSystem, __uninitializeBindingSystem, __initialized} from '../src/binding-system';
+import {bindingSystem, __uninitializeBindingSystem, __initialized} from '../src/binding-system';
 
-describe('BindingSystem', () => {
+describe('bindingSystem', () => {
   let mockContainer;
 
   beforeAll(() => {
@@ -38,14 +38,14 @@ describe('BindingSystem', () => {
   it('initializes automatically', () => {
     __uninitializeBindingSystem();
     expect(__initialized).toBe(false);
-    BindingSystem.observePropertyChanges({ foo: 'bar' }, 'foo', () => {});
+    bindingSystem.observePropertyChanges({ foo: 'bar' }, 'foo', () => {});
     expect(__initialized).toBe(true);
   });
 
   it('initializes without container', () => {
     __uninitializeBindingSystem();
     expect(__initialized).toBe(false);
-    BindingSystem.initialize();
+    bindingSystem.initialize();
     expect(__initialized).toBe(true);
   });
 
@@ -53,7 +53,7 @@ describe('BindingSystem', () => {
     __uninitializeBindingSystem();
     expect(__initialized).toBe(false);
     spyOn(mockContainer, 'get').and.callThrough();
-    BindingSystem.initialize(mockContainer);
+    bindingSystem.initialize(mockContainer);
     expect(mockContainer.get).toHaveBeenCalled();
     expect(__initialized).toBe(true);
   });
@@ -61,11 +61,11 @@ describe('BindingSystem', () => {
   it('observes and unobserves property changes', done => {
     let obj = { foo: 'bar' };
     let callback = jasmine.createSpy('callback');
-    BindingSystem.observePropertyChanges(obj, 'foo', callback);
+    bindingSystem.observePropertyChanges(obj, 'foo', callback);
     obj.foo = 'baz';
     setTimeout(() => {
       expect(callback).toHaveBeenCalledWith('baz', 'bar');
-      BindingSystem.unobservePropertyChanges(obj, 'foo', callback);
+      bindingSystem.unobservePropertyChanges(obj, 'foo', callback);
       callback.calls.reset();
       obj.foo = 'test';
       setTimeout(() => {
@@ -78,11 +78,11 @@ describe('BindingSystem', () => {
   it('observes and unobserves array changes', done => {
     let obj = [];
     let callback = jasmine.createSpy('callback');
-    BindingSystem.observeCollectionChanges(obj, callback);
+    bindingSystem.observeCollectionChanges(obj, callback);
     obj.push('foo');
     setTimeout(() => {
       expect(callback).toHaveBeenCalled();
-      BindingSystem.unobserveCollectionChanges(obj, callback);
+      bindingSystem.unobserveCollectionChanges(obj, callback);
       callback.calls.reset();
       obj.push('bar');
       setTimeout(() => {
@@ -95,11 +95,11 @@ describe('BindingSystem', () => {
   it('observes and unobserves map changes', done => {
     let obj = new Map();
     let callback = jasmine.createSpy('callback');
-    BindingSystem.observeCollectionChanges(obj, callback);
+    bindingSystem.observeCollectionChanges(obj, callback);
     obj.set('foo', 'bar');
     setTimeout(() => {
       expect(callback).toHaveBeenCalled();
-      BindingSystem.unobserveCollectionChanges(obj, callback);
+      bindingSystem.unobserveCollectionChanges(obj, callback);
       callback.calls.reset();
       obj.set('foo', 'baz');
       setTimeout(() => {
@@ -114,7 +114,7 @@ describe('BindingSystem', () => {
     let targetProperty = 'value';
     let source = { foo: 'bar' };
     let sourceExpression = 'foo';
-    let bindingExpression = BindingSystem.createBindingExpression(targetProperty, sourceExpression);
+    let bindingExpression = bindingSystem.createBindingExpression(targetProperty, sourceExpression);
     expect(bindingExpression instanceof BindingExpression).toBe(true);
     let binding = bindingExpression.createBinding(target);
     binding.bind(source);
