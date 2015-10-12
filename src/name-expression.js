@@ -1,37 +1,51 @@
+function getAU(element) {
+  let au = element.au;
+
+  if (au === undefined) {
+    throw new Error('No Aurelia APIs are defined for the referenced element.');
+  }
+
+  return au;
+}
+
 export class NameExpression {
-  constructor(name, mode) {
-    this.property = name;
+  constructor(property, apiName) {
+    this.property = property;
+    this.apiName = apiName;
     this.discrete = true;
-    this.mode = mode;
   }
 
   createBinding(target) {
-    return new NameBinder(this.property, target, this.mode);
+    return new NameBinder(this.property, NameExpression.locateAPI(target, this.apiName));
+  }
+
+  static locateAPI(element: Element, apiName: string): Object {
+    switch (apiName) {
+      case 'element':
+        return element;
+      case 'controller':
+        return getAU(element).controller;
+      case 'model':
+      case 'view-model':
+        return getAU(element).controller.model;
+      case 'view':
+        return getAU(element).controller.view;
+      default:
+        let target = getAU(element)[apiName];
+
+        if (target === undefined) {
+          throw new Error(`Attempted to reference "${apiName}", but it was not found amongst the target's API.`)
+        }
+
+        return target.model;
+    }
   }
 }
 
 class NameBinder {
-  constructor(property, target, mode) {
+  constructor(property, target) {
     this.property = property;
-
-    switch (mode) {
-      case 'element':
-        this.target = target;
-        break;
-      case 'view-model':
-        this.target = target.primaryBehavior.bindingContext;
-        break;
-      default:
-        this.target = target[mode];
-
-        if (this.target === undefined) {
-          throw new Error(`Attempted to reference "${mode}", but it was not found on the target element.`)
-        } else {
-          this.target = this.target.bindingContext || this.target;
-        }
-
-        break;
-    }
+    this.target = target;
   }
 
   bind(source) {
