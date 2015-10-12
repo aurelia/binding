@@ -39,7 +39,7 @@ function assertInitialized() {
   }
 }
 
-export const BindingSystem = {
+export const bindingSystem = {
   initialize: initialize,
 
   createBindingExpression(targetProperty, sourceExpression, mode = bindingMode.oneWay) {
