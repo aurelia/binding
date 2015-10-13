@@ -40,7 +40,7 @@ gulp.task('build-index', function(){
     'decorators.js',
     'listener-expression.js',
     'name-expression.js',
-    'binding-system.js'
+    'binding-engine.js'
     ].map(function(file){
       return paths.root + file;
   });
