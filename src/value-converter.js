@@ -15,7 +15,7 @@ export class ValueConverterResource {
     }
   }
 
-  analyze(container, target) {
+  initialize(container, target) {
     this.instance = container.get(target);
   }
 
@@ -23,7 +23,5 @@ export class ValueConverterResource {
     registry.registerValueConverter(name || this.name, this.instance);
   }
 
-  load(container, target) {
-    return Promise.resolve(this);
-  }
+  load(container, target) {}
 }
