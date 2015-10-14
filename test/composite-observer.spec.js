@@ -1,4 +1,5 @@
 import {bindingMode} from '../src/binding-mode';
+import {sourceContext} from '../src/connectable-binding';
 import {
   createElement,
   fireEvent,
@@ -49,6 +50,13 @@ describe('CompositeObserver', () => {
         expect(conditionObserver.hasSubscribers()).toBe(false);
         expect(yesObserver.hasSubscribers()).toBe(false);
         expect(noObserver.hasSubscribers()).toBe(false);
+        let threw = false;
+        try {
+          binding.call(sourceContext);
+        } catch(e) {
+          threw = true;
+        }
+        expect(threw).toBe(false);
         document.body.removeChild(el);
         done();
       }, checkDelay * 2);
