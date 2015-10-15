@@ -7,7 +7,8 @@ import {DirtyChecker, DirtyCheckProperty} from './dirty-checking';
 import {
   SetterObserver,
   OoObjectObserver,
-  OoPropertyObserver
+  OoPropertyObserver,
+  PrimitiveObserver
 } from './property-observation';
 import {
   SelectValueObserver,
@@ -110,6 +111,10 @@ export class ObserverLocator {
     let descriptor;
     let handler;
     let xlinkResult;
+
+    if (!(obj instanceof Object)) {
+      return new PrimitiveObserver(obj, propertyName);
+    }
 
     if (obj instanceof DOM.Element) {
       if (propertyName === 'class') {
