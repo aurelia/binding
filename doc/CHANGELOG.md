@@ -1,3 +1,11 @@
+### 0.10.1 (2015-10-15)
+
+
+#### Bug Fixes
+
+* **Binding:** handle late call ([dfa8a407](http://github.com/aurelia/binding/commit/dfa8a4076a49e91411f9691d118a3c1cf4cd577e))
+
+
 ## 0.10.0 (2015-10-13)
 
 

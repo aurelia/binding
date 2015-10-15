@@ -3895,6 +3895,9 @@ class Binding {
   }
 
   call(context, newValue, oldValue) {
+    if (!this.isBound) {
+      return;
+    }
     if (context === sourceContext) {
       oldValue = this.targetProperty.getValue();
       newValue = this.sourceExpression.evaluate(this.source, this.valueConverterLookupFunction);
