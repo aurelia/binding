@@ -2964,6 +2964,32 @@ var DirtyCheckProperty = (function () {
 
 exports.DirtyCheckProperty = DirtyCheckProperty;
 
+var PrimitiveObserver = (function () {
+  function PrimitiveObserver(primitive, propertyName) {
+    _classCallCheck(this, PrimitiveObserver);
+
+    this.primitive = primitive;
+    this.propertyName = propertyName;
+  }
+
+  PrimitiveObserver.prototype.getValue = function getValue() {
+    return this.primitive[this.propertyName];
+  };
+
+  PrimitiveObserver.prototype.setValue = function setValue() {
+    var type = typeof this.primitive;
+    throw new Error('The ' + this.propertyName + ' property of a ' + type + ' (' + this.primitive + ') cannot be assigned.');
+  };
+
+  PrimitiveObserver.prototype.subscribe = function subscribe() {};
+
+  PrimitiveObserver.prototype.unsubscribe = function unsubscribe() {};
+
+  return PrimitiveObserver;
+})();
+
+exports.PrimitiveObserver = PrimitiveObserver;
+
 var SetterObserver = (function () {
   function SetterObserver(taskQueue, obj, propertyName) {
     _classCallCheck(this, _SetterObserver);
@@ -4008,6 +4034,10 @@ var ObserverLocator = (function () {
     var descriptor = undefined;
     var handler = undefined;
     var xlinkResult = undefined;
+
+    if (!(obj instanceof Object)) {
+      return new PrimitiveObserver(obj, propertyName);
+    }
 
     if (obj instanceof _aureliaPal.DOM.Element) {
       if (propertyName === 'class') {

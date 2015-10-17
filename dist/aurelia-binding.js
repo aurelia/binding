@@ -2805,6 +2805,28 @@ export class DirtyCheckProperty {
   }
 }
 
+export class PrimitiveObserver {
+  constructor(primitive, propertyName) {
+    this.primitive = primitive;
+    this.propertyName = propertyName;
+  }
+
+  getValue() {
+    return this.primitive[this.propertyName];
+  }
+
+  setValue() {
+    let type = typeof this.primitive;
+    throw new Error(`The ${this.propertyName} property of a ${type} (${this.primitive}) cannot be assigned.`);
+  }
+
+  subscribe() {
+  }
+
+  unsubscribe() {
+  }
+}
+
 @subscriberCollection()
 export class SetterObserver {
   constructor(taskQueue, obj, propertyName){
@@ -3765,6 +3787,10 @@ export class ObserverLocator {
     let descriptor;
     let handler;
     let xlinkResult;
+
+    if (!(obj instanceof Object)) {
+      return new PrimitiveObserver(obj, propertyName);
+    }
 
     if (obj instanceof DOM.Element) {
       if (propertyName === 'class') {

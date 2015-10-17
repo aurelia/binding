@@ -1,7 +1,7 @@
 System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], function (_export) {
   'use strict';
 
-  var FEATURE, DOM, TaskQueue, decorators, metadata, sourceContext, slotNames, versionSlotNames, i, tempContextsRest, tempCallablesRest, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, arrayProto, ModifyArrayObserver, ArrayObserveObserver, Expression, Chain, ValueConverter, Assign, Conditional, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, PrefixNot, LiteralPrimitive, LiteralString, LiteralArray, LiteralObject, Unparser, evalListCache, bindingMode, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP, EOF, Parser, ParserImplementation, mapProto, ModifyMapObserver, DelegateHandlerEntry, DefaultEventStrategy, EventManager, DirtyChecker, DirtyCheckProperty, SetterObserver, OoPropertyObserver, version, OoObjectObserver, XLinkAttributeObserver, DataAttributeObserver, StyleObserver, ValueAttributeObserver, selectArrayContext, SelectValueObserver, checkedArrayContext, CheckedObserver, ClassObserver, computedContext, ComputedPropertyObserver, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, targetContext, Binding, CallExpression, Call, ValueConverterResource, ListenerExpression, Listener, NameExpression, NameBinder, valueConverterLookupFunction, taskQueue, eventManager, dirtyChecker, observerLocator, parser, __initialized, bindingEngine, ExpressionObserver;
+  var FEATURE, DOM, TaskQueue, decorators, metadata, sourceContext, slotNames, versionSlotNames, i, tempContextsRest, tempCallablesRest, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, arrayProto, ModifyArrayObserver, ArrayObserveObserver, Expression, Chain, ValueConverter, Assign, Conditional, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, PrefixNot, LiteralPrimitive, LiteralString, LiteralArray, LiteralObject, Unparser, evalListCache, bindingMode, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP, EOF, Parser, ParserImplementation, mapProto, ModifyMapObserver, DelegateHandlerEntry, DefaultEventStrategy, EventManager, DirtyChecker, DirtyCheckProperty, PrimitiveObserver, SetterObserver, OoPropertyObserver, version, OoObjectObserver, XLinkAttributeObserver, DataAttributeObserver, StyleObserver, ValueAttributeObserver, selectArrayContext, SelectValueObserver, checkedArrayContext, CheckedObserver, ClassObserver, computedContext, ComputedPropertyObserver, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, targetContext, Binding, CallExpression, Call, ValueConverterResource, ListenerExpression, Listener, NameExpression, NameBinder, valueConverterLookupFunction, taskQueue, eventManager, dirtyChecker, observerLocator, parser, __initialized, bindingEngine, ExpressionObserver;
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
@@ -3078,6 +3078,32 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
       _export('DirtyCheckProperty', DirtyCheckProperty);
 
+      PrimitiveObserver = (function () {
+        function PrimitiveObserver(primitive, propertyName) {
+          _classCallCheck(this, PrimitiveObserver);
+
+          this.primitive = primitive;
+          this.propertyName = propertyName;
+        }
+
+        PrimitiveObserver.prototype.getValue = function getValue() {
+          return this.primitive[this.propertyName];
+        };
+
+        PrimitiveObserver.prototype.setValue = function setValue() {
+          var type = typeof this.primitive;
+          throw new Error('The ' + this.propertyName + ' property of a ' + type + ' (' + this.primitive + ') cannot be assigned.');
+        };
+
+        PrimitiveObserver.prototype.subscribe = function subscribe() {};
+
+        PrimitiveObserver.prototype.unsubscribe = function unsubscribe() {};
+
+        return PrimitiveObserver;
+      })();
+
+      _export('PrimitiveObserver', PrimitiveObserver);
+
       SetterObserver = (function () {
         function SetterObserver(taskQueue, obj, propertyName) {
           _classCallCheck(this, _SetterObserver);
@@ -4080,6 +4106,10 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
           var descriptor = undefined;
           var handler = undefined;
           var xlinkResult = undefined;
+
+          if (!(obj instanceof Object)) {
+            return new PrimitiveObserver(obj, propertyName);
+          }
 
           if (obj instanceof DOM.Element) {
             if (propertyName === 'class') {

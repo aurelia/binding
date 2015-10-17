@@ -266,6 +266,13 @@ declare module 'aurelia-binding' {
     subscribe(context: any, callable: any): any;
     unsubscribe(context: any, callable: any): any;
   }
+  export class PrimitiveObserver {
+    constructor(primitive: any, propertyName: any);
+    getValue(): any;
+    setValue(): any;
+    subscribe(): any;
+    unsubscribe(): any;
+  }
   export class SetterObserver {
     constructor(taskQueue: any, obj: any, propertyName: any);
     getValue(): any;
