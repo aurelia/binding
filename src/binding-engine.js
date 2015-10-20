@@ -1,7 +1,4 @@
-import {TaskQueue} from 'aurelia-task-queue';
 import {bindingMode} from './binding-mode';
-import {DirtyChecker} from './dirty-checking';
-import {EventManager} from './event-manager';
 import {ObserverLocator, ObjectObservationAdapter} from './observer-locator';
 import {Parser} from './parser';
 import {BindingExpression} from './binding-expression';
@@ -23,69 +20,43 @@ interface CollectionObserver {
 
 const valueConverterLookupFunction = () => null;
 
-let taskQueue;
-let eventManager;
-let dirtyChecker;
-let observerLocator;
-let parser;
+export class BindingEngine {
+  static inject = [ObserverLocator, Parser];
 
-export let __initialized = false;
-
-function initialize(container = null): void {
-  container = container || { get: () => null };
-  taskQueue = container.get(TaskQueue) || new TaskQueue();
-  eventManager = container.get(EventManager) || new EventManager();
-  dirtyChecker = container.get(DirtyChecker) || new DirtyChecker();
-  observerLocator = container.get(ObserverLocator) || new ObserverLocator(taskQueue, eventManager, dirtyChecker);
-  parser = container.get(Parser) || new Parser();
-  __initialized = true;
-}
-
-export function __uninitializeBindingEngine() {
-  taskQueue = null;
-  eventManager = null;
-  dirtyChecker = null;
-  observerLocator = null
-  parser = null;
-  __initialized = false;
-}
-
-function assertInitialized() {
-  if (!__initialized) {
-    initialize();
+  constructor(observerLocator, parser) {
+    this.observerLocator = observerLocator;
+    this.parser = parser;
   }
-}
-
-export const bindingEngine = {
-  initialize: initialize,
 
   createBindingExpression(targetProperty: string, sourceExpression: string, mode = bindingMode.oneWay): BindingExpression {
-    assertInitialized();
-    return new BindingExpression(observerLocator, targetProperty, parser.parse(sourceExpression), mode, valueConverterLookupFunction);
-  },
+    return new BindingExpression(
+      this.observerLocator,
+      targetProperty,
+      this.parser.parse(sourceExpression),
+      mode,
+      valueConverterLookupFunction);
+  }
 
   propertyObserver(obj: Object, propertyName: string): PropertyObserver {
     return {
       subscribe: callback => {
-        assertInitialized();
-        let observer = observerLocator.getObserver(obj, propertyName);
+        let observer = this.observerLocator.getObserver(obj, propertyName);
         observer.subscribe(callback);
         return {
           dispose: () => observer.unsubscribe(callback)
         };
       }
     };
-  },
+  }
 
   collectionObserver(collection: Array|Map): CollectionObserver {
     return {
       subscribe: callback => {
-        assertInitialized();
         let observer;
         if (collection instanceof Array) {
-          observer = observerLocator.getArrayObserver(collection);
+          observer = this.observerLocator.getArrayObserver(collection);
         } else if (collection instanceof Map) {
-          observer = observerLocator.getMapObserver(collection);
+          observer = this.observerLocator.getMapObserver(collection);
         } else {
           throw new Error('collection must be an instance of Array or Map.');
         }
@@ -95,28 +66,25 @@ export const bindingEngine = {
         };
       }
     };
-  },
+  }
 
   expressionObserver(scope: any, expression: string): PropertyObserver {
-    assertInitialized();
-    return new ExpressionObserver(scope, parser.parse(expression));
-  },
+    return new ExpressionObserver(scope, this.parser.parse(expression), this.observerLocator);
+  }
 
   parseExpression(expression: string): Expression {
-    assertInitialized();
-    return parser.parse(expression);
-  },
+    return this.parser.parse(expression);
+  }
 
   registerAdapter(adapter: ObjectObservationAdapter): void {
-    assertInitialized();
-    observerLocator.addAdapter(adapter);
+    this.observerLocator.addAdapter(adapter);
   }
 }
 
 @connectable()
 @subscriberCollection()
 class ExpressionObserver {
-  constructor(scope, expression) {
+  constructor(scope, expression, observerLocator) {
     this.scope = scope;
     this.expression = expression;
     this.observerLocator = observerLocator;

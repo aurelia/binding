@@ -5,58 +5,19 @@ import {EventManager} from '../src/event-manager';
 import {ObserverLocator} from '../src/observer-locator';
 import {Parser} from '../src/parser';
 import {BindingExpression} from '../src/binding-expression';
-import {bindingEngine, __uninitializeBindingEngine, __initialized} from '../src/binding-engine';
+import {BindingEngine} from '../src/binding-engine';
 import {Expression} from '../src/ast';
 
 describe('bindingEngine', () => {
-  let mockContainer;
+  let bindingEngine, observerLocator;
 
   beforeAll(() => {
     let taskQueue = new TaskQueue();
     let eventManager = new EventManager();
     let dirtyChecker = new DirtyChecker();
-    let observerLocator = new ObserverLocator(taskQueue, eventManager, dirtyChecker);
+    observerLocator = new ObserverLocator(taskQueue, eventManager, dirtyChecker);
     let parser = new Parser();
-
-    mockContainer = {
-      get: key => {
-        switch(key) {
-          case TaskQueue:
-            return taskQueue;
-          case EventManager:
-            return eventManager;
-          case DirtyChecker:
-            return dirtyChecker;
-          case ObserverLocator:
-            return observerLocator;
-          case Parser:
-            return parser;
-        }
-      }
-    }
-  });
-
-  it('initializes automatically', () => {
-    __uninitializeBindingEngine();
-    expect(__initialized).toBe(false);
-    bindingEngine.propertyObserver({ foo: 'bar' }).subscribe(() => null);
-    expect(__initialized).toBe(true);
-  });
-
-  it('initializes without container', () => {
-    __uninitializeBindingEngine();
-    expect(__initialized).toBe(false);
-    bindingEngine.initialize();
-    expect(__initialized).toBe(true);
-  });
-
-  it('initializes with container', () => {
-    __uninitializeBindingEngine();
-    expect(__initialized).toBe(false);
-    spyOn(mockContainer, 'get').and.callThrough();
-    bindingEngine.initialize(mockContainer);
-    expect(mockContainer.get).toHaveBeenCalled();
-    expect(__initialized).toBe(true);
+    bindingEngine = new BindingEngine(observerLocator, parser);
   });
 
   it('gets BindingExpressions', () => {
@@ -150,6 +111,6 @@ describe('bindingEngine', () => {
   it('registers adapters', () => {
     let mockAdapter = { getObserver: () => null };
     bindingEngine.registerAdapter(mockAdapter);
-    expect(mockContainer.get(ObserverLocator).adapters[0]).toBe(mockAdapter);
+    expect(observerLocator.adapters[0]).toBe(mockAdapter);
   });
 });
