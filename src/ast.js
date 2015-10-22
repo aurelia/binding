@@ -4,11 +4,11 @@ export class Expression {
     this.isAssignable = false;
   }
 
-  evaluate(scope: any, valueConverters: any, args?: any): any{
+  evaluate(scope: any, lookupFunctions: any, args?: any): any{
     throw new Error(`Binding expression "${this}" cannot be evaluated.`);
   }
 
-  assign(scope: any, value: any, valueConverters: any): any{
+  assign(scope: any, value: any, lookupFunctions: any): any{
     throw new Error(`Binding expression "${this}" cannot be assigned to.`);
   }
 
@@ -25,14 +25,14 @@ export class Chain extends Expression {
     this.isChain = true;
   }
 
-  evaluate(scope, valueConverters) {
+  evaluate(scope, lookupFunctions) {
     var result,
         expressions = this.expressions,
         length = expressions.length,
         i, last;
 
     for (i = 0; i < length; ++i) {
-      last = expressions[i].evaluate(scope, valueConverters);
+      last = expressions[i].evaluate(scope, lookupFunctions);
 
       if (last !== null) {
         result = last;
@@ -47,6 +47,57 @@ export class Chain extends Expression {
   }
 }
 
+export class BindingBehavior extends Expression {
+  constructor(expression, name, args) {
+    super();
+
+    this.expression = expression;
+    this.name = name;
+    this.args = args;
+  }
+
+  evaluate(scope, lookupFunctions) {
+    return this.expression.evaluate(scope, lookupFunctions);
+  }
+
+  assign(scope, value, lookupFunctions) {
+    return this.expression.assign(scope, value, lookupFunctions);
+  }
+
+  accept(visitor) {
+    visitor.visitBindingBehavior(this);
+  }
+
+  connect(binding, scope) {
+    this.expression.connect(binding, scope);
+  }
+
+  bind(binding, scope, lookupFunctions) {
+    if (this.expression.expression && this.expression.bind) {
+      this.expression.bind(binding, scope, lookupFunctions);
+    }
+    let behavior = lookupFunctions.bindingBehaviors(this.name);
+    if (!behavior) {
+      throw new Error(`No BindingBehavior named "${this.name}" was found!`);
+    }
+    let behaviorKey = `behavior-${this.name}`;
+    if (binding[behaviorKey]) {
+      throw new Error(`A binding behavior named "${this.name}" has already been applied to "${this.expression}"`);
+    }
+    binding[behaviorKey] = behavior;
+    behavior.bind.apply(behavior, [binding, scope].concat(evalList(scope, this.args, binding.lookupFunctions)));
+  }
+
+  unbind(binding, scope) {
+    let behaviorKey = `behavior-${this.name}`;
+    binding[behaviorKey].unbind(binding, scope);
+    binding[behaviorKey] = null;
+    if (this.expression.expression && this.expression.unbind) {
+      this.expression.unbind(binding, scope);
+    }
+  }
+}
+
 export class ValueConverter extends Expression {
   constructor(expression, name, args, allArgs){
     super();
@@ -57,30 +108,30 @@ export class ValueConverter extends Expression {
     this.allArgs = allArgs;
   }
 
-  evaluate(scope, valueConverters){
-    var converter = valueConverters(this.name);
+  evaluate(scope, lookupFunctions) {
+    var converter = lookupFunctions.valueConverters(this.name);
     if(!converter){
       throw new Error(`No ValueConverter named "${this.name}" was found!`);
     }
 
     if('toView' in converter){
-      return converter.toView.apply(converter, evalList(scope, this.allArgs, valueConverters));
+      return converter.toView.apply(converter, evalList(scope, this.allArgs, lookupFunctions));
     }
 
-    return this.allArgs[0].evaluate(scope, valueConverters);
+    return this.allArgs[0].evaluate(scope, lookupFunctions);
   }
 
-  assign(scope, value, valueConverters){
-    var converter = valueConverters(this.name);
+  assign(scope, value, lookupFunctions){
+    var converter = lookupFunctions.valueConverters(this.name);
     if(!converter){
       throw new Error(`No ValueConverter named "${this.name}" was found!`);
     }
 
     if('fromView' in converter){
-      value = converter.fromView.apply(converter, [value].concat(evalList(scope, this.args, valueConverters)));
+      value = converter.fromView.apply(converter, [value].concat(evalList(scope, this.args, lookupFunctions)));
     }
 
-    return this.allArgs[0].assign(scope, value, valueConverters);
+    return this.allArgs[0].assign(scope, value, lookupFunctions);
   }
 
   accept(visitor){
@@ -104,8 +155,8 @@ export class Assign extends Expression {
     this.value = value;
   }
 
-  evaluate(scope, valueConverters){
-    return this.target.assign(scope, this.value.evaluate(scope, valueConverters));
+  evaluate(scope, lookupFunctions){
+    return this.target.assign(scope, this.value.evaluate(scope, lookupFunctions));
   }
 
   accept(vistor){
@@ -125,7 +176,7 @@ export class Conditional extends Expression {
     this.no = no;
   }
 
-  evaluate(scope, valueConverters){
+  evaluate(scope, lookupFunctions){
     return (!!this.condition.evaluate(scope)) ? this.yes.evaluate(scope) : this.no.evaluate(scope);
   }
 
@@ -151,7 +202,7 @@ export class AccessScope extends Expression {
     this.isAssignable = true;
   }
 
-  evaluate(scope, valueConverters){
+  evaluate(scope, lookupFunctions){
     return scope[this.name];
   }
 
@@ -177,8 +228,8 @@ export class AccessMember extends Expression {
     this.isAssignable = true;
   }
 
-  evaluate(scope, valueConverters){
-    var instance = this.object.evaluate(scope, valueConverters);
+  evaluate(scope, lookupFunctions){
+    var instance = this.object.evaluate(scope, lookupFunctions);
     return instance === null || instance === undefined ? instance : instance[this.name];
   }
 
@@ -215,9 +266,9 @@ export class AccessKeyed extends Expression {
     this.isAssignable = true;
   }
 
-  evaluate(scope, valueConverters){
-    var instance = this.object.evaluate(scope, valueConverters);
-    var lookup = this.key.evaluate(scope, valueConverters);
+  evaluate(scope, lookupFunctions){
+    var instance = this.object.evaluate(scope, lookupFunctions);
+    var lookup = this.key.evaluate(scope, lookupFunctions);
     return getKeyed(instance, lookup);
   }
 
@@ -252,8 +303,8 @@ export class CallScope extends Expression {
     this.args = args;
   }
 
-  evaluate(scope, valueConverters, args){
-    args = args || evalList(scope, this.args, valueConverters);
+  evaluate(scope, lookupFunctions, args){
+    args = args || evalList(scope, this.args, lookupFunctions);
     let func = getFunction(scope, this.name);
     if (func) {
       return func.apply(scope, args);
@@ -285,9 +336,9 @@ export class CallMember extends Expression {
     this.args = args;
   }
 
-  evaluate(scope, valueConverters, args){
-    var instance = this.object.evaluate(scope, valueConverters);
-    args = args || evalList(scope, this.args, valueConverters);
+  evaluate(scope, lookupFunctions, args){
+    var instance = this.object.evaluate(scope, lookupFunctions);
+    args = args || evalList(scope, this.args, lookupFunctions);
     let func = getFunction(instance, this.name);
     if (func) {
       return func.apply(instance, args);
@@ -321,11 +372,11 @@ export class CallFunction extends Expression {
     this.args = args;
   }
 
-  evaluate(scope, valueConverters, args){
-    var func = this.func.evaluate(scope, valueConverters);
+  evaluate(scope, lookupFunctions, args){
+    var func = this.func.evaluate(scope, lookupFunctions);
 
     if (typeof func === 'function') {
-      return func.apply(null, args || evalList(scope, this.args, valueConverters));
+      return func.apply(null, args || evalList(scope, this.args, lookupFunctions));
     } else if (func === null || func === undefined) {
       return func;
     } else {
@@ -359,7 +410,7 @@ export class Binary extends Expression {
     this.right = right;
   }
 
-  evaluate(scope, valueConverters){
+  evaluate(scope, lookupFunctions){
     var left = this.left.evaluate(scope);
 
     switch (this.operation) {
@@ -403,7 +454,6 @@ export class Binary extends Expression {
       case '<=' : return left <= right;
       case '>=' : return left >= right;
       case '^'  : return left ^ right;
-      case '&'  : return left & right;
     }
 
     throw new Error(`Internal error [${this.operation}] not handled`);
@@ -431,7 +481,7 @@ export class PrefixNot extends Expression {
     this.expression = expression;
   }
 
-  evaluate(scope, valueConverters){
+  evaluate(scope, lookupFunctions){
     return !this.expression.evaluate(scope);
   }
 
@@ -451,7 +501,7 @@ export class LiteralPrimitive extends Expression {
     this.value = value;
   }
 
-  evaluate(scope, valueConverters){
+  evaluate(scope, lookupFunctions){
     return this.value;
   }
 
@@ -470,7 +520,7 @@ export class LiteralString extends Expression {
     this.value = value;
   }
 
-  evaluate(scope, valueConverters){
+  evaluate(scope, lookupFunctions){
     return this.value;
   }
 
@@ -489,14 +539,14 @@ export class LiteralArray extends Expression {
     this.elements = elements;
   }
 
-  evaluate(scope, valueConverters){
+  evaluate(scope, lookupFunctions){
     var elements = this.elements,
         length = elements.length,
         result = [],
         i;
 
     for(i = 0; i < length; ++i){
-      result[i] = elements[i].evaluate(scope, valueConverters);
+      result[i] = elements[i].evaluate(scope, lookupFunctions);
     }
 
     return result;
@@ -522,7 +572,7 @@ export class LiteralObject extends Expression {
     this.values = values;
   }
 
-  evaluate(scope, valueConverters){
+  evaluate(scope, lookupFunctions){
     var instance = {},
         keys = this.keys,
         values = this.values,
@@ -530,7 +580,7 @@ export class LiteralObject extends Expression {
         i;
 
     for(i = 0; i < length; ++i){
-      instance[keys[i]] = values[i].evaluate(scope, valueConverters);
+      instance[keys[i]] = values[i].evaluate(scope, lookupFunctions);
     }
 
     return instance;
@@ -594,6 +644,23 @@ export class Unparser {
 
       expressions[i].accept(this);
     }
+  }
+
+  visitBindingBehavior(behavior) {
+    var args = behavior.args,
+        length = args.length,
+        i;
+
+    this.write('(');
+    behavior.expression.accept(this);
+    this.write(`&${behavior.name}`);
+
+    for (i = 0; i < length; ++i) {
+      this.write(' :');
+      args[i].accept(this);
+    }
+
+    this.write(')');
   }
 
   visitValueConverter(converter) {
@@ -724,7 +791,7 @@ export class Unparser {
 var evalListCache = [[],[0],[0,0],[0,0,0],[0,0,0,0],[0,0,0,0,0]];
 
 /// Evaluate the [list] in context of the [scope].
-function evalList(scope, list, valueConverters) {
+function evalList(scope, list, lookupFunctions) {
   var length = list.length,
       cacheLength, i;
 
@@ -735,7 +802,7 @@ function evalList(scope, list, valueConverters) {
   var result = evalListCache[length];
 
   for (i = 0; i < length; ++i) {
-    result[i] = list[i].evaluate(scope, valueConverters);
+    result[i] = list[i].evaluate(scope, lookupFunctions);
   }
 
   return result;

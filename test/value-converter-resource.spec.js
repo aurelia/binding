@@ -1,7 +1,7 @@
-import {ValueConverterResource} from '../src/value-converter';
+import {ValueConverterResource} from '../src/value-converter-resource';
 import {initialize} from 'aurelia-pal-browser';
 
-describe('ValueConverter', () => {
+describe('ValueConverterResource', () => {
   beforeAll(() => initialize());
 
   it('uses ends with ValueConverter convention', () => {

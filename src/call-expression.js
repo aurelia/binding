@@ -1,9 +1,9 @@
 export class CallExpression {
-  constructor(observerLocator, targetProperty, sourceExpression, valueConverterLookupFunction) {
+  constructor(observerLocator, targetProperty, sourceExpression, lookupFunctions) {
     this.observerLocator = observerLocator;
     this.targetProperty = targetProperty;
     this.sourceExpression = sourceExpression;
-    this.valueConverterLookupFunction = valueConverterLookupFunction;
+    this.lookupFunctions = lookupFunctions;
   }
 
   createBinding(target) {
@@ -12,43 +12,55 @@ export class CallExpression {
       this.sourceExpression,
       target,
       this.targetProperty,
-      this.valueConverterLookupFunction
+      this.lookupFunctions
       );
   }
 }
 
-class Call {
-  constructor(observerLocator, sourceExpression, target, targetProperty, valueConverterLookupFunction) {
+export class Call {
+  constructor(observerLocator, sourceExpression, target, targetProperty, lookupFunctions) {
     this.sourceExpression = sourceExpression
     this.target = target;
     this.targetProperty = observerLocator.getObserver(target, targetProperty);
-    this.valueConverterLookupFunction = valueConverterLookupFunction;
+    this.lookupFunctions = lookupFunctions;
+  }
+
+  callSource($event) {
+    let source = this.source;
+    let result;
+    let temp = source.$event;
+    source.$event = $event;
+    result = this.sourceExpression.evaluate(source, this.lookupFunctions);
+    source.$event = temp;
+    return result;
   }
 
   bind(source) {
-    if (this.source) {
+    if (this.isBound) {
       if (this.source === source) {
         return;
       }
-
       this.unbind();
     }
-
+    this.isBound = true;
     this.source = source;
-    this.targetProperty.setValue($event => {
-      let result;
-      let temp = source.$event;
-      source.$event = $event;
-      result = this.sourceExpression.evaluate(source, this.valueConverterLookupFunction);
-      source.$event = temp;
-      return result;
-    });
+
+    let sourceExpression = this.sourceExpression;
+    if (sourceExpression.bind) {
+      sourceExpression.bind(this, source, this.lookupFunctions);
+    }
+    this.targetProperty.setValue($event => this.callSource($event));
   }
 
   unbind() {
-    if (this.source) {
-      this.targetProperty.setValue(null);
-      this.source = null;
+    if (!this.isBound) {
+      return;
     }
+    this.isBound = false;
+    if (this.sourceExpression.unbind) {
+      this.sourceExpression.unbind(this, this.source);
+    }
+    this.source = null;
+    this.targetProperty.setValue(null);
   }
 }

@@ -26,7 +26,7 @@ describe('CallExpression', () => {
       createObserverLocator(),
       'foo', // attrName
       new Parser().parse('doSomething($event, arg1, arg2)'),
-      name => null // valueConverterLookupFunction
+      { bindingBehaviors: name => null, valueConverters: name => null } // lookupFunctions
     );
   });
 

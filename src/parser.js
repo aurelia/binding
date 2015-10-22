@@ -1,7 +1,7 @@
 import {Lexer,Token} from './lexer';
 import {Expression, ArrayOfExpression, Chain, ValueConverter, Assign,
         Conditional, AccessScope, AccessMember, AccessKeyed,
-        CallScope, CallFunction, CallMember, PrefixNot,
+        CallScope, CallFunction, CallMember, PrefixNot, BindingBehavior,
         Binary, LiteralPrimitive, LiteralArray, LiteralObject, LiteralString} from './ast';
 
 let EOF = new Token(-1, null);
@@ -44,19 +44,38 @@ export class ParserImplementation {
         this.error(`Unconsumed token ${this.peek.text}`);
       }
 
-      let expr = this.parseValueConverter();
+      let expr = this.parseBindingBehavior();
       expressions.push(expr);
 
       while (this.optional(';')) {
         isChain = true;
       }
 
-      if (isChain && expr instanceof ValueConverter) {
-        this.error('cannot have a value converter in a chain');
+      if (isChain && (expr instanceof BindingBehavior || expr instanceof ValueConverter)) {
+        this.error('Cannot have a binding behavior or value converter in a chain');
       }
     }
 
     return (expressions.length === 1) ? expressions[0] : new Chain(expressions);
+  }
+
+  parseBindingBehavior() {
+    let result = this.parseValueConverter();
+
+    while (this.optional('&')) {
+      let name = this.peek.text;
+      let args = [];
+
+      this.advance();
+
+      while (this.optional(':')) {
+        args.push(this.parseExpression());
+      }
+
+      result = new BindingBehavior(result, name, args);
+    }
+
+    return result;
   }
 
   parseValueConverter() {

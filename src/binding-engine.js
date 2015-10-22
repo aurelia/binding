@@ -18,7 +18,15 @@ interface CollectionObserver {
   subscribe(callback: (changeRecords: any) => void): Disposable;
 }
 
-const valueConverterLookupFunction = () => null;
+interface LookupFunctions {
+  bindingBehaviors(name: string): any;
+  valueConverters(name: string): any;
+}
+
+const lookupFunctions = {
+  bindingBehaviors: name => null,
+  valueConverters: name => null
+};
 
 export class BindingEngine {
   static inject = [ObserverLocator, Parser];
@@ -28,13 +36,13 @@ export class BindingEngine {
     this.parser = parser;
   }
 
-  createBindingExpression(targetProperty: string, sourceExpression: string, mode = bindingMode.oneWay): BindingExpression {
+  createBindingExpression(targetProperty: string, sourceExpression: string, mode = bindingMode.oneWay, lookupFunctions?: LookupFunctions = lookupFunctions): BindingExpression {
     return new BindingExpression(
       this.observerLocator,
       targetProperty,
       this.parser.parse(sourceExpression),
       mode,
-      valueConverterLookupFunction);
+      lookupFunctions);
   }
 
   propertyObserver(obj: Object, propertyName: string): PropertyObserver {
@@ -92,7 +100,7 @@ class ExpressionObserver {
 
   subscribe(callback) {
     if (!this.hasSubscribers()) {
-      this.oldValue = this.expression.evaluate(this.scope, valueConverterLookupFunction);
+      this.oldValue = this.expression.evaluate(this.scope, lookupFunctions);
       this.expression.connect(this, this.scope);
     }
     this.addSubscriber(callback);
@@ -106,7 +114,7 @@ class ExpressionObserver {
   }
 
   call() {
-    let newValue = this.expression.evaluate(this.scope, valueConverterLookupFunction);
+    let newValue = this.expression.evaluate(this.scope, lookupFunctions);
     let oldValue = this.oldValue;
     if (newValue !== oldValue) {
       this.oldValue = newValue;

@@ -1,7 +1,10 @@
 import {Parser} from '../src/parser';
 import {
   LiteralString,
-  LiteralPrimitive
+  LiteralPrimitive,
+  ValueConverter,
+  BindingBehavior,
+  AccessScope
 } from '../src/ast';
 
 describe('Parser', () => {
@@ -38,5 +41,48 @@ describe('Parser', () => {
       expect(expression instanceof test.type).toBe(true);
       expect(expression.value).toEqual(test.value);
     }
+  });
+
+  it('parses binding behaviors', () => {
+    let expression = parser.parse('foo & bar');
+    expect(expression instanceof BindingBehavior).toBe(true);
+    expect(expression.name).toBe('bar');
+    expect(expression.expression instanceof AccessScope).toBe(true);
+
+    expression = parser.parse('foo & bar:x:y:z & baz:a:b:c');
+    expect(expression instanceof BindingBehavior).toBe(true);
+    expect(expression.name).toBe('baz');
+    expect(expression.args).toEqual([new AccessScope('a'), new AccessScope('b'), new AccessScope('c')])
+    expect(expression.expression instanceof BindingBehavior).toBe(true);
+    expect(expression.expression.name).toBe('bar');
+    expect(expression.expression.args).toEqual([new AccessScope('x'), new AccessScope('y'), new AccessScope('z')])
+    expect(expression.expression.expression instanceof AccessScope).toBe(true);
+  });
+
+  it('parses value converters', () => {
+    let expression = parser.parse('foo | bar');
+    expect(expression instanceof ValueConverter).toBe(true);
+    expect(expression.name).toBe('bar');
+    expect(expression.expression instanceof AccessScope).toBe(true);
+
+    expression = parser.parse('foo | bar:x:y:z | baz:a:b:c');
+    expect(expression instanceof ValueConverter).toBe(true);
+    expect(expression.name).toBe('baz');
+    expect(expression.args).toEqual([new AccessScope('a'), new AccessScope('b'), new AccessScope('c')])
+    expect(expression.expression instanceof ValueConverter).toBe(true);
+    expect(expression.expression.name).toBe('bar');
+    expect(expression.expression.args).toEqual([new AccessScope('x'), new AccessScope('y'), new AccessScope('z')])
+    expect(expression.expression.expression instanceof AccessScope).toBe(true);
+  });
+
+  it('parses value converters and binding behaviors', () => {
+    let expression = parser.parse('foo | bar:x:y:z & baz:a:b:c');
+    expect(expression instanceof BindingBehavior).toBe(true);
+    expect(expression.name).toBe('baz');
+    expect(expression.args).toEqual([new AccessScope('a'), new AccessScope('b'), new AccessScope('c')])
+    expect(expression.expression instanceof ValueConverter).toBe(true);
+    expect(expression.expression.name).toBe('bar');
+    expect(expression.expression.args).toEqual([new AccessScope('x'), new AccessScope('y'), new AccessScope('z')])
+    expect(expression.expression.expression instanceof AccessScope).toBe(true);
   });
 });

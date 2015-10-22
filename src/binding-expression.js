@@ -3,12 +3,12 @@ import {connectable, sourceContext} from './connectable-binding';
 
 export class BindingExpression {
   constructor(observerLocator, targetProperty, sourceExpression,
-    mode, valueConverterLookupFunction, attribute){
+    mode, lookupFunctions, attribute){
     this.observerLocator = observerLocator;
     this.targetProperty = targetProperty;
     this.sourceExpression = sourceExpression;
     this.mode = mode;
-    this.valueConverterLookupFunction = valueConverterLookupFunction;
+    this.lookupFunctions = lookupFunctions;
     this.attribute = attribute;
     this.discrete = false;
   }
@@ -20,7 +20,7 @@ export class BindingExpression {
       target,
       this.targetProperty,
       this.mode,
-      this.valueConverterLookupFunction
+      this.lookupFunctions
       );
   }
 }
@@ -28,13 +28,21 @@ export class BindingExpression {
 const targetContext = 'Binding:target';
 
 @connectable()
-class Binding {
-  constructor(observerLocator, sourceExpression, target, targetProperty, mode, valueConverterLookupFunction) {
+export class Binding {
+  constructor(observerLocator, sourceExpression, target, targetProperty, mode, lookupFunctions) {
     this.observerLocator = observerLocator;
     this.sourceExpression = sourceExpression;
     this.targetProperty = observerLocator.getObserver(target, targetProperty);
     this.mode = mode;
-    this.valueConverterLookupFunction = valueConverterLookupFunction;
+    this.lookupFunctions = lookupFunctions;
+  }
+
+  updateTarget(value) {
+    this.targetProperty.setValue(value);
+  }
+
+  updateSource(value) {
+    this.sourceExpression.assign(this.source, value, this.lookupFunctions);
   }
 
   call(context, newValue, oldValue) {
@@ -43,9 +51,9 @@ class Binding {
     }
     if (context === sourceContext) {
       oldValue = this.targetProperty.getValue();
-      newValue = this.sourceExpression.evaluate(this.source, this.valueConverterLookupFunction);
+      newValue = this.sourceExpression.evaluate(this.source, this.lookupFunctions);
       if (newValue !== oldValue) {
-        this.targetProperty.setValue(newValue);
+        this.updateTarget(newValue);
       }
       this._version++;
       this.sourceExpression.connect(this, this.source);
@@ -53,7 +61,7 @@ class Binding {
       return;
     }
     if (context === targetContext) {
-      this.sourceExpression.assign(this.source, newValue, this.valueConverterLookupFunction);
+      this.updateSource(newValue);
       return;
     }
     throw new Error(`Unexpected call context ${context}`);
@@ -69,26 +77,37 @@ class Binding {
     this.isBound = true;
     this.source = source;
 
+    let sourceExpression = this.sourceExpression;
+    if (sourceExpression.bind) {
+      sourceExpression.bind(this, source, this.lookupFunctions);
+    }
+
     let targetProperty = this.targetProperty;
     if ('bind' in targetProperty){
       targetProperty.bind();
-    }
+    }    
+
+    let value = sourceExpression.evaluate(source, this.lookupFunctions);
+    this.updateTarget(value);
 
     let mode = this.mode;
     if (mode === bindingMode.oneWay || mode === bindingMode.twoWay) {
-      this.sourceExpression.connect(this, source);
+      sourceExpression.connect(this, source);
 
       if (mode === bindingMode.twoWay) {
         targetProperty.subscribe(targetContext, this);
       }
     }
-
-    let value = this.sourceExpression.evaluate(source, this.valueConverterLookupFunction);
-    targetProperty.setValue(value);
   }
 
   unbind() {
+    if (!this.isBound) {
+      return;
+    }
     this.isBound = false;
+    if (this.sourceExpression.unbind) {
+      this.sourceExpression.unbind(this, this.source);
+    }
     this.source = null;
     if ('unbind' in this.targetProperty) {
       this.targetProperty.unbind();
