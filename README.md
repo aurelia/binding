@@ -9,7 +9,7 @@ This library is part of the [Aurelia](http://www.aurelia.io/) platform and imple
 
 ## Dependencies
 
-* [aurelia-dependency-injection](https://github.com/aurelia-dependency-injection)
+* [aurelia-dependency-injection](https://github.com/aurelia/dependency-injection)
 * [aurelia-metadata](https://github.com/aurelia/metadata)
 * [aurelia-task-queue](https://github.com/aurelia/task-queue)
 
