@@ -1,6 +1,6 @@
 import {Lexer,Token} from './lexer';
 import {Expression, ArrayOfExpression, Chain, ValueConverter, Assign,
-        Conditional, AccessScope, AccessMember, AccessKeyed,
+        Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed,
         CallScope, CallFunction, CallMember, PrefixNot, BindingBehavior,
         Binary, LiteralPrimitive, LiteralArray, LiteralObject, LiteralString} from './ast';
 
@@ -248,9 +248,17 @@ export class ParserImplementation {
         if (this.optional('(')) {
           let args = this.parseExpressionList(')');
           this.expect(')');
-          result = new CallMember(result, name, args);
+          if (result instanceof AccessThis) {
+            result = new CallScope(name, args);
+          } else {
+            result = new CallMember(result, name, args);
+          }
         } else {
-          result = new AccessMember(result, name);
+          if (result instanceof AccessThis) {
+            result = new AccessScope(name);
+          } else {
+            result = new AccessMember(result, name);
+          }
         }
       } else if (this.optional('[')) {
         let key = this.parseExpression();
@@ -304,7 +312,11 @@ export class ParserImplementation {
     this.advance();
 
     if (!this.optional('(')) {
-      return new AccessScope(name);
+      if (name === '$this') {
+        return new AccessThis();
+      } else {
+        return new AccessScope(name);
+      }
     }
 
     let args = this.parseExpressionList(')');
