@@ -211,23 +211,32 @@ export class AccessThis extends Expression {
   }
 }
 
+function accessScope(scope) {
+  let name = this.name;
+  while (scope) {
+    if (name in scope) {
+      return scope[name];
+    }
+    scope = scope.$parent;
+  }
+  return undefined;
+}
+
 export class AccessScope extends Expression {
-  constructor(name){
+  evaluate = accessScope;
+
+  constructor(name) {
     super();
 
     this.name = name;
     this.isAssignable = true;
   }
 
-  evaluate(scope, lookupFunctions) {
-    return scope[this.name];
-  }
-
-  assign(scope, value){
+  assign(scope, value) {
     return scope[this.name] = value;
   }
 
-  accept(visitor){
+  accept(visitor) {
     visitor.visitAccessScope(this);
   }
 
@@ -313,24 +322,28 @@ export class AccessKeyed extends Expression {
 }
 
 export class CallScope extends Expression {
-  constructor(name, args){
+  getFunc = accessScope;
+
+  constructor(name, args) {
     super();
 
     this.name = name;
     this.args = args;
   }
 
-  evaluate(scope, lookupFunctions, args){
-    args = args || evalList(scope, this.args, lookupFunctions);
-    let func = getFunction(scope, this.name);
-    if (func) {
+  evaluate(scope, lookupFunctions) {
+    let args = evalList(scope, this.args, lookupFunctions);
+    let func = this.getFunc(scope);
+    if (typeof func === 'function') {
       return func.apply(scope, args);
-    } else {
+    } else if (func === null || func === undefined) {
       return func;
+    } else {
+      throw new Error(`${this.name} is not a function`);
     }
   }
 
-  accept(visitor){
+  accept(visitor) {
     visitor.visitCallScope(this);
   }
 
@@ -345,7 +358,7 @@ export class CallScope extends Expression {
 }
 
 export class CallMember extends Expression {
-  constructor(object, name, args){
+  constructor(object, name, args) {
     super();
 
     this.object = object;
@@ -353,9 +366,9 @@ export class CallMember extends Expression {
     this.args = args;
   }
 
-  evaluate(scope, lookupFunctions, args){
+  evaluate(scope, lookupFunctions) {
     var instance = this.object.evaluate(scope, lookupFunctions);
-    args = args || evalList(scope, this.args, lookupFunctions);
+    let args = evalList(scope, this.args, lookupFunctions);
     let func = getFunction(instance, this.name);
     if (func) {
       return func.apply(instance, args);
@@ -364,7 +377,7 @@ export class CallMember extends Expression {
     }
   }
 
-  accept(visitor){
+  accept(visitor) {
     visitor.visitCallMember(this);
   }
 
@@ -389,11 +402,11 @@ export class CallFunction extends Expression {
     this.args = args;
   }
 
-  evaluate(scope, lookupFunctions, args){
+  evaluate(scope, lookupFunctions) {
     var func = this.func.evaluate(scope, lookupFunctions);
 
     if (typeof func === 'function') {
-      return func.apply(null, args || evalList(scope, this.args, lookupFunctions));
+      return func.apply(null, evalList(scope, this.args, lookupFunctions));
     } else if (func === null || func === undefined) {
       return func;
     } else {
@@ -401,7 +414,7 @@ export class CallFunction extends Expression {
     }
   }
 
-  accept(visitor){
+  accept(visitor) {
     visitor.visitCallFunction(this);
   }
 
