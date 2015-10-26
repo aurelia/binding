@@ -1,8 +1,5 @@
 import 'core-js';
-
-function camelCase(name) {
-  return name.charAt(0).toLowerCase() + name.slice(1);
-}
+import {camelCase} from './camel-case';
 
 export class ValueConverterResource {
   constructor(name){

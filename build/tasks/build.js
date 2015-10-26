@@ -15,6 +15,7 @@ var jsName = paths.packageName + '.js';
 gulp.task('build-index', function(){
   var importsToAdd = [];
   var files = [
+    'camel-case.js',
     'connectable-binding.js',
     'subscriber-collection.js',
     'array-change-records.js',
