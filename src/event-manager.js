@@ -1,8 +1,8 @@
 import {DOM} from 'aurelia-pal';
 
+//Note: path and deepPath are designed to handle v0 and v1 shadow dom specs respectively
 function findOriginalEventTarget(event) {
-  return event.originalTarget || (event.path && event.path[0])
-    || (event.deepPath && event.deepPath[0]) || event.target || event.srcElement;
+  return (event.path && event.path[0]) || (event.deepPath && event.deepPath[0]) || event.target;
 }
 
 function handleDelegatedEvent(event) {
