@@ -45,39 +45,72 @@ export class BindingEngine {
       lookupFunctions);
   }
 
-  propertyObserver(obj: Object, propertyName: string): PropertyObserver {
-    return {
-      subscribe: callback => {
-        let observer = this.observerLocator.getObserver(obj, propertyName);
-        observer.subscribe(callback);
-        return {
-          dispose: () => observer.unsubscribe(callback)
-        };
-      }
-    };
-  }
-
-  collectionObserver(collection: Array|Map): CollectionObserver {
-    return {
-      subscribe: callback => {
-        let observer;
-        if (collection instanceof Array) {
-          observer = this.observerLocator.getArrayObserver(collection);
-        } else if (collection instanceof Map) {
-          observer = this.observerLocator.getMapObserver(collection);
-        } else {
-          throw new Error('collection must be an instance of Array or Map.');
-        }
-        observer.subscribe(callback);
-        return {
-          dispose: () => observer.unsubscribe(callback)
-        };
-      }
-    };
-  }
-
-  expressionObserver(scope: any, expression: string): PropertyObserver {
+  observer(scope: Object, expression: string): PropertyObserver {
+    // Fast path if the expression is just a property on scope.
+    // The Regex is not perfect but shortcuts all usual cases, notably it lacks unicode letters.
+    if (/^[$A-Za-z_][$A-Za-z0-9_]*$/.test(expression)) {
+      return {
+        subscribe: callback => {
+          let observer = this.observerLocator.getObserver(scope, expression);
+          observer.subscribe(callback);
+          return {
+            dispose: () => observer.unsubscribe(callback)
+          };
+        },
+        evaluate: () => scope[expression]
+      };
+    }
+    // Slow path: observe any expression
     return new ExpressionObserver(scope, this.parser.parse(expression), this.observerLocator);
+  }
+
+  collectionObserver(scope: Array|Map|Object, expression?: string): CollectionObserver {
+    // If called with just scope, we assume it is a collection that we want to directly observe
+    if (expression === undefined) {
+      // Fail fast when called with invalid arguments
+      if (!(scope instanceof Array || scope instanceof Map)) {
+        throw new Error('collection must be an instance of Array or Map.');
+      }
+      return {
+        subscribe: callback => {
+          let observer = scope instanceof Array ?
+            this.observerLocator.getArrayObserver(scope) :            
+            this.observerLocator.getMapObserver(scope);     // scope instanceof Map
+          observer.subscribe(callback);
+          return {
+            dispose: () => observer.unsubscribe(callback)
+          };
+        }
+      };
+    }
+    
+    // Otherwise we observe expression on scope, which should evaluate to a collection
+    let expressionObserver = this.observer(scope, expression);        
+    return {
+      subscribe: callback => {        
+        let collectionSubscription = null;
+        let collectionChanged = (newValue, oldValue, mute?: boolean) => {
+          if (collectionSubscription)
+            collectionSubscription.dispose();
+          collectionSubscription = newValue ? 
+            this.collectionObserver(newValue).subscribe(callback) :
+            null;
+          if (!mute)
+            callback([{type: "reset", object: newValue, oldValue: oldValue}]);
+        };        
+        let expressionSubscription = expressionObserver.subscribe(collectionChanged);        
+        let collection = expressionObserver.evaluate();        
+        collectionChanged(collection, true);
+        
+        return {
+          dispose: () => {
+            expressionSubscription.dispose();
+            if (collectionSubscription)
+              collectionSubscription.dispose();
+          }
+        };
+      }
+    };    
   }
 
   parseExpression(expression: string): Expression {
@@ -123,5 +156,9 @@ class ExpressionObserver {
     this._version++;
     this.expression.connect(this, this.scope);
     this.unobserve(false);
+  }
+  
+  evaluate() {
+    return this.expression.evaluate(this.scope, lookupFunctions);
   }
 }
