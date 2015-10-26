@@ -39,7 +39,6 @@ gulp.task('build-index', function(){
     'call-expression.js',
     'value-converter-resource.js',
     'binding-behavior-resource.js',
-    'decorators.js',
     'listener-expression.js',
     'name-expression.js',
     'binding-engine.js'

@@ -66,3 +66,10 @@ export function declarePropertyDependencies(ctor, propertyName, dependencies) {
   let descriptor = Object.getOwnPropertyDescriptor(ctor.prototype, propertyName);
   descriptor.get.dependencies = dependencies;
 }
+
+export function computedFrom(...rest){
+  return function(target, key, descriptor){
+    descriptor.get.dependencies = rest;
+    return descriptor;
+  }
+}

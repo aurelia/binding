@@ -1,5 +1,6 @@
 import 'core-js';
 import {camelCase} from './camel-case';
+import {metadata} from 'aurelia-metadata';
 
 export class BindingBehaviorResource {
   constructor(name) {
@@ -21,4 +22,14 @@ export class BindingBehaviorResource {
   }
 
   load(container, target) {}
+}
+
+export function bindingBehavior(nameOrTarget){
+  if(nameOrTarget === undefined || typeof nameOrTarget === 'string'){
+    return function(target){
+      metadata.define(metadata.resource, new BindingBehaviorResource(nameOrTarget), target);
+    }
+  }
+
+  metadata.define(metadata.resource, new BindingBehaviorResource(), nameOrTarget);
 }
