@@ -194,6 +194,23 @@ export class Conditional extends Expression {
   }
 }
 
+export class AccessThis extends Expression {
+  constructor() {
+    super();
+  }
+
+  evaluate(scope, lookupFunctions) {
+    return scope;
+  }
+
+  accept(visitor) {
+    visitor.visitAccessThis(this);
+  }
+
+  connect(binding, scope) {
+  }
+}
+
 export class AccessScope extends Expression {
   constructor(name){
     super();
@@ -202,7 +219,7 @@ export class AccessScope extends Expression {
     this.isAssignable = true;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     return scope[this.name];
   }
 
@@ -692,6 +709,10 @@ export class Unparser {
     conditional.yes.accept(this);
     this.write(':');
     conditional.no.accept(this);
+  }
+
+  visitAccessThis(access) {
+    this.write('$this');
   }
 
   visitAccessScope(access) {
