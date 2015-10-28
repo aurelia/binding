@@ -7,6 +7,7 @@ import {
   getBinding
 } from './shared';
 import {initialize} from 'aurelia-pal-browser';
+import {createScopeForTest} from '../src/scope';
 
 describe('SelectValueObserver', () => {
   var observerLocator;
@@ -56,7 +57,7 @@ describe('SelectValueObserver', () => {
     it('binds', () => {
       var targetProperty = binding.targetProperty;
       spyOn(targetProperty, 'bind').and.callThrough();
-      binding.bind(obj);
+      binding.bind(createScopeForTest(obj));
       expect(targetProperty.bind).toHaveBeenCalled();
       expect(el.value).toBe(obj.selectedItem);
     });
@@ -129,7 +130,7 @@ describe('SelectValueObserver', () => {
     it('binds', () => {
       var targetProperty = binding.targetProperty;
       spyOn(targetProperty, 'bind').and.callThrough();
-      binding.bind(obj);
+      binding.bind(createScopeForTest(obj));
       expect(targetProperty.bind).toHaveBeenCalled();
       expect(elementValueProperty.getValue()).toBe(obj.selectedItems);
       expect(getElementValue(el)).toEqual(obj.selectedItems.slice(0));
@@ -221,7 +222,7 @@ describe('SelectValueObserver', () => {
     it('binds', () => {
       var targetProperty = binding.targetProperty;
       spyOn(targetProperty, 'bind').and.callThrough();
-      binding.bind(obj);
+      binding.bind(createScopeForTest(obj));
       expect(targetProperty.bind).toHaveBeenCalled();
       expect(elementValueProperty.getValue()).toBe(obj.selectedItem);
       expect(getElementValue(el)).toEqual(obj.selectedItem);
@@ -300,7 +301,7 @@ describe('SelectValueObserver', () => {
     it('binds', () => {
       var targetProperty = binding.targetProperty;
       spyOn(targetProperty, 'bind').and.callThrough();
-      binding.bind(obj);
+      binding.bind(createScopeForTest(obj));
       expect(targetProperty.bind).toHaveBeenCalled();
       expect(elementValueProperty.getValue()).toBe(obj.selectedItems);
       expect(getElementValue(el)).toEqual(obj.selectedItems.slice(0));
@@ -386,10 +387,10 @@ describe('SelectValueObserver', () => {
     it('binds', done => {
       var targetProperty = binding.targetProperty;
       // select-value bind.
-      binding.bind(obj);
+      binding.bind(createScopeForTest(obj));
       expect(el.options.item(1).selected).toBe(false);
       // now bind the option value.
-      binding2.bind(obj);
+      binding2.bind(createScopeForTest(obj));
       setTimeout(() => {
         expect(el.options.item(1).selected).toBe(true);
         done();

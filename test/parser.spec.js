@@ -94,8 +94,6 @@ describe('Parser', () => {
     let expression = parser.parse('foo');
     expect(expression instanceof AccessScope).toBe(true);
     expect(expression.name).toBe('foo');
-    let scope = { foo: 'hello world' };
-    expect(expression.evaluate(scope)).toEqual(scope.foo);
   });
 
   it('parses AccessMember', () => {
@@ -104,8 +102,6 @@ describe('Parser', () => {
     expect(expression.name).toBe('bar');
     expect(expression.object instanceof AccessScope).toBe(true);
     expect(expression.object.name).toBe('foo');
-    let scope = { foo: { bar: 'hello world' } };
-    expect(expression.evaluate(scope)).toEqual(scope.foo.bar);
   });
 
   it('parses CallScope', () => {
@@ -113,8 +109,6 @@ describe('Parser', () => {
     expect(expression instanceof CallScope).toBe(true);
     expect(expression.name).toBe('foo');
     expect(expression.args).toEqual([new AccessScope('x')]);
-    let scope = { foo: (x) => x, x: 'hello world' };
-    expect(expression.evaluate(scope)).toEqual(scope.foo(scope.x));
   });
 
   it('parses CallMember', () => {
@@ -124,23 +118,17 @@ describe('Parser', () => {
     expect(expression.args).toEqual([new AccessScope('x')]);
     expect(expression.object instanceof AccessScope).toBe(true);
     expect(expression.object.name).toBe('foo');
-    let scope = { foo: { bar: (x) => x }, x: 'hello world' };
-    expect(expression.evaluate(scope)).toEqual(scope.foo.bar(scope.x));
   });
 
   it('parses $this', () => {
     let expression = parser.parse('$this');
     expect(expression instanceof AccessThis).toBe(true);
-    let scope = {};
-    expect(expression.evaluate(scope)).toBe(scope);
   });
 
   it('translates $this.member to AccessScope', () => {
     let expression = parser.parse('$this.foo');
     expect(expression instanceof AccessScope).toBe(true);
     expect(expression.name).toBe('foo');
-    let scope = { foo: 'hello world' };
-    expect(expression.evaluate(scope)).toEqual(scope.foo);
   });
 
   it('translates $this.member() to CallScope', () => {
@@ -148,7 +136,5 @@ describe('Parser', () => {
     expect(expression instanceof CallScope).toBe(true);
     expect(expression.name).toBe('foo');
     expect(expression.args).toEqual([new AccessScope('x')]);
-    let scope = { foo: (x) => x, x: 'hello world' };
-    expect(expression.evaluate(scope)).toEqual(scope.foo(scope.x));
   });
 });

@@ -1,0 +1,144 @@
+import {AccessScope} from '../../src/ast';
+import {createOverrideContext, createScopeForTest} from '../../src/scope';
+
+describe('AccessScope', () => {
+  let foo, $parent, binding;
+
+  beforeAll(() => {
+    foo = new AccessScope('foo');
+    $parent = new AccessScope('$parent');
+    binding = { observeProperty: jasmine.createSpy('observeProperty') };
+  });
+
+  it('evaluates undefined bindingContext', () => {
+    let scope = { overrideContext: createOverrideContext(undefined) };
+    expect(foo.evaluate(scope, null)).toBe(undefined);
+  });
+
+  it('assigns undefined bindingContext', () => {
+    let scope = { overrideContext: createOverrideContext(undefined) };
+    foo.assign(scope, 'baz');
+    expect(scope.overrideContext.foo).toBe('baz');
+  });
+
+  it('connects undefined bindingContext', () => {
+    let scope = { overrideContext: createOverrideContext(undefined) };
+    binding.observeProperty.calls.reset();
+    foo.connect(binding, scope);
+    expect(binding.observeProperty).toHaveBeenCalledWith(scope.overrideContext, 'foo');
+  });
+
+  it('evaluates null bindingContext', () => {
+    let scope = { overrideContext: createOverrideContext(null), bindingContext: null };
+    expect(foo.evaluate(scope, null)).toBe(undefined);
+  });
+
+  it('assigns null bindingContext', () => {
+    let scope = { overrideContext: createOverrideContext(null), bindingContext: null };
+    foo.assign(scope, 'baz');
+    expect(scope.overrideContext.foo).toBe('baz');
+  });
+
+  it('connects null bindingContext', () => {
+    let scope = { overrideContext: createOverrideContext(null), bindingContext: null };
+    binding.observeProperty.calls.reset();
+    foo.connect(binding, scope);
+    expect(binding.observeProperty).toHaveBeenCalledWith(scope.overrideContext, 'foo');
+  });
+
+  it('evaluates defined property on bindingContext', () => {
+    let scope = createScopeForTest({ foo: 'bar' });
+    expect(foo.evaluate(scope, null)).toBe('bar');
+  });
+
+  it('evaluates defined property on overrideContext', () => {
+    let scope = createScopeForTest({ abc: 'xyz' });
+    scope.overrideContext.foo = 'bar';
+    expect(foo.evaluate(scope, null)).toBe('bar');
+  });
+
+  it('assigns defined property on bindingContext', () => {
+    let scope = createScopeForTest({ foo: 'bar' });
+    foo.assign(scope, 'baz');
+    expect(scope.bindingContext.foo).toBe('baz');
+  });
+
+  it('assigns undefined property to bindingContext', () => {
+    let scope = createScopeForTest({ abc: 'xyz' });
+    foo.assign(scope, 'baz');
+    expect(scope.bindingContext.foo).toBe('baz');
+  });
+
+  it('assigns defined property on overrideContext', () => {
+    let scope = createScopeForTest({ abc: 'xyz' });
+    scope.overrideContext.foo = 'bar';
+    foo.assign(scope, 'baz');
+    expect(scope.overrideContext.foo).toBe('baz');
+  });
+
+  it('connects defined property on bindingContext', () => {
+    let scope = createScopeForTest({ foo: 'bar' });
+    binding.observeProperty.calls.reset();
+    foo.connect(binding, scope);
+    expect(binding.observeProperty).toHaveBeenCalledWith(scope.bindingContext, 'foo');
+  });
+
+  it('connects defined property on overrideContext', () => {
+    let scope = createScopeForTest({ abc: 'xyz' });
+    scope.overrideContext.foo = 'bar';
+    binding.observeProperty.calls.reset();
+    foo.connect(binding, scope);
+    expect(binding.observeProperty).toHaveBeenCalledWith(scope.overrideContext, 'foo');
+  });
+
+  it('connects undefined property on bindingContext', () => {
+    let scope = createScopeForTest({ abc: 'xyz' });
+    binding.observeProperty.calls.reset();
+    foo.connect(binding, scope);
+    expect(binding.observeProperty).toHaveBeenCalledWith(scope.bindingContext, 'foo');
+  });
+
+  it('evaluates defined property on first ancestor bindingContext', () => {
+    let scope = createScopeForTest({ abc: 'xyz' }, { foo: 'bar' });
+    expect(foo.evaluate(scope, null)).toBe('bar');
+  });
+
+  it('evaluates defined property on first ancestor overrideContext', () => {
+    let scope = createScopeForTest({ abc: 'xyz' }, { def: 'rsw' });
+    scope.overrideContext.parentOverrideContext.foo = 'bar';
+    expect(foo.evaluate(scope, null)).toBe('bar');
+  });
+
+  it('assigns defined property on first ancestor bindingContext', () => {
+    let scope = createScopeForTest({ abc: 'xyz' }, { foo: 'bar' });
+    foo.assign(scope, 'baz');
+    expect(scope.overrideContext.parentOverrideContext.bindingContext.foo).toBe('baz');
+  });
+
+  it('assigns defined property on first ancestor overrideContext', () => {
+    let scope = createScopeForTest({ abc: 'xyz' }, { def: 'rsw' });
+    scope.overrideContext.parentOverrideContext.foo = 'bar';
+    foo.assign(scope, 'baz');
+    expect(scope.overrideContext.parentOverrideContext.foo).toBe('baz');
+  });
+
+  it('connects defined property on first ancestor bindingContext', () => {
+    let scope = createScopeForTest({ abc: 'xyz' }, { foo: 'bar' });
+    binding.observeProperty.calls.reset();
+    foo.connect(binding, scope);
+    expect(binding.observeProperty).toHaveBeenCalledWith(scope.overrideContext.parentOverrideContext.bindingContext, 'foo');
+  });
+
+  it('connects defined property on first ancestor overrideContext', () => {
+    let scope = createScopeForTest({ abc: 'xyz' }, { def: 'rsw' });
+    scope.overrideContext.parentOverrideContext.foo = 'bar';
+    binding.observeProperty.calls.reset();
+    foo.connect(binding, scope);
+    expect(binding.observeProperty).toHaveBeenCalledWith(scope.overrideContext.parentOverrideContext, 'foo');
+  });
+
+  it('evaluates $parent', () => {
+    let scope = createScopeForTest({ abc: 'xyz' }, { foo: 'bar' });
+    expect($parent.evaluate(scope, null)).toBe(scope.overrideContext.parentOverrideContext.bindingContext);
+  });
+});

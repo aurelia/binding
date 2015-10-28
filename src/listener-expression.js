@@ -34,11 +34,10 @@ export class Listener {
   }
 
   callSource(event) {
-    let source = this.source;
-    let prevEvent = source.$event;
-    source.$event = event;
-    let result = this.sourceExpression.evaluate(source);
-    source.$event = prevEvent;
+    this.source.overrideContext.$event = event;
+    let mustEvaluate = true;
+    let result = this.sourceExpression.evaluate(this.source, this.lookupFunctions, mustEvaluate);
+    delete this.source.overrideContext.$event;
     if (result !== true && this.preventDefault) {
       event.preventDefault();
     }

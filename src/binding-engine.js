@@ -5,6 +5,7 @@ import {BindingExpression} from './binding-expression';
 import {Expression} from './ast';
 import {connectable} from './connectable-binding';
 import {subscriberCollection} from './subscriber-collection';
+import {createOverrideContext} from './scope';
 
 interface Disposable {
   dispose(): void;
@@ -76,7 +77,8 @@ export class BindingEngine {
     };
   }
 
-  expressionObserver(scope: any, expression: string): PropertyObserver {
+  expressionObserver(bindingContext: any, expression: string): PropertyObserver {
+    let scope = { bindingContext, overrideContext: createOverrideContext(bindingContext) };
     return new ExpressionObserver(scope, this.parser.parse(expression), this.observerLocator);
   }
 

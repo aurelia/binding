@@ -1,14 +1,16 @@
+import {getContextFor} from './scope';
+
 export class Expression {
   constructor(){
     this.isChain = false;
     this.isAssignable = false;
   }
 
-  evaluate(scope: any, lookupFunctions: any, args?: any): any{
+  evaluate(scope: Scope, lookupFunctions: any, args?: any): any {
     throw new Error(`Binding expression "${this}" cannot be evaluated.`);
   }
 
-  assign(scope: any, value: any, lookupFunctions: any): any{
+  assign(scope: Scope, value: any, lookupFunctions: any): any {
     throw new Error(`Binding expression "${this}" cannot be assigned to.`);
   }
 
@@ -200,7 +202,7 @@ export class AccessThis extends Expression {
   }
 
   evaluate(scope, lookupFunctions) {
-    return scope;
+    return scope.bindingContext;
   }
 
   accept(visitor) {
@@ -220,11 +222,13 @@ export class AccessScope extends Expression {
   }
 
   evaluate(scope, lookupFunctions) {
-    return scope[this.name];
+    let context = getContextFor(this.name, scope);
+    return context[this.name];
   }
 
   assign(scope, value){
-    return scope[this.name] = value;
+    let context = getContextFor(this.name, scope);
+    return context[this.name] = value;
   }
 
   accept(visitor){
@@ -232,7 +236,8 @@ export class AccessScope extends Expression {
   }
 
   connect(binding, scope) {
-    binding.observeProperty(scope, this.name);
+    let context = getContextFor(this.name, scope);
+    binding.observeProperty(context, this.name);
   }
 }
 
@@ -320,14 +325,14 @@ export class CallScope extends Expression {
     this.args = args;
   }
 
-  evaluate(scope, lookupFunctions, args){
-    args = args || evalList(scope, this.args, lookupFunctions);
-    let func = getFunction(scope, this.name);
+  evaluate(scope, lookupFunctions, mustEvaluate) {
+    let args = evalList(scope, this.args, lookupFunctions);
+    let context = getContextFor(this.name, scope);
+    let func = getFunction(context, this.name, mustEvaluate);
     if (func) {
-      return func.apply(scope, args);
-    } else {
-      return func;
+      return func.apply(context, args);
     }
+    return undefined;
   }
 
   accept(visitor){
@@ -353,15 +358,14 @@ export class CallMember extends Expression {
     this.args = args;
   }
 
-  evaluate(scope, lookupFunctions, args){
+  evaluate(scope, lookupFunctions, mustEvaluate) {
     var instance = this.object.evaluate(scope, lookupFunctions);
-    args = args || evalList(scope, this.args, lookupFunctions);
-    let func = getFunction(instance, this.name);
+    let args = evalList(scope, this.args, lookupFunctions);
+    let func = getFunction(instance, this.name, mustEvaluate);
     if (func) {
       return func.apply(instance, args);
-    } else {
-      return func;
     }
+    return undefined;
   }
 
   accept(visitor){
@@ -371,7 +375,7 @@ export class CallMember extends Expression {
   connect(binding, scope) {
     this.object.connect(binding, scope);
     let obj = this.object.evaluate(scope);
-    if (getFunction(obj, this.name)) {
+    if (getFunction(obj, this.name, false)) {
       let args = this.args;
       let i = args.length;
       while (i--) {
@@ -382,23 +386,22 @@ export class CallMember extends Expression {
 }
 
 export class CallFunction extends Expression {
-  constructor(func,args){
+  constructor(func, args) {
     super();
 
     this.func = func;
     this.args = args;
   }
 
-  evaluate(scope, lookupFunctions, args){
-    var func = this.func.evaluate(scope, lookupFunctions);
-
+  evaluate(scope, lookupFunctions, mustEvaluate) {
+    let func = this.func.evaluate(scope, lookupFunctions);
     if (typeof func === 'function') {
-      return func.apply(null, args || evalList(scope, this.args, lookupFunctions));
-    } else if (func === null || func === undefined) {
-      return func;
-    } else {
-      throw new Error(`${this.func} is not a function`);
+      return func.apply(null, evalList(scope, this.args, lookupFunctions));
     }
+    if (!mustEvaluate && (func === null || func === undefined)) {
+      return undefined;
+    }
+    throw new Error(`${this.func} is not a function`);
   }
 
   accept(visitor){
@@ -855,22 +858,15 @@ function autoConvertAdd(a, b) {
   return 0;
 }
 
-function getFunction(obj, name) {
-  if (obj === null || obj === undefined) {
-    return obj;
-  }
-
-  let func = obj[name];
-
+function getFunction(obj, name, mustExist) {
+  let func = obj === null || obj === undefined ? null : obj[name];
   if (typeof func === 'function') {
     return func;
   }
-
-  if (func === null || func === undefined) {
-    return func;
-  } else {
-    throw new Error(`${name} is not a function`);
+  if (!mustExist && (func === null || func === undefined)) {
+    return null;
   }
+  throw new Error(`${name} is not a function`);
 }
 
 function getKeyed(obj, key) {

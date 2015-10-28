@@ -2,6 +2,7 @@ import {Container} from 'aurelia-dependency-injection';
 import {bindingMode} from '../src/binding-mode';
 import {BindingEngine} from '../src/binding-engine';
 import {checkDelay, fireEvent} from './shared';
+import {createScopeForTest} from '../src/scope';
 
 describe('BindingExpression', () => {
   let bindingEngine;
@@ -16,7 +17,7 @@ describe('BindingExpression', () => {
     let target = document.createElement('input');
     let bindingExpression = bindingEngine.createBindingExpression('value', 'foo.bar', bindingMode.twoWay);
     let binding = bindingExpression.createBinding(target);
-    binding.bind(source);
+    binding.bind(createScopeForTest(source));
     expect(target.value).toBe(source.foo.bar);
     let sourceObserver = bindingEngine.observerLocator.getObserver(source.foo, 'bar');
     expect(sourceObserver.hasSubscribers()).toBe(true);
@@ -47,7 +48,7 @@ describe('BindingExpression', () => {
     let target = document.createElement('input');
     let bindingExpression = bindingEngine.createBindingExpression('value', 'foo.bar | one:arg | two', bindingMode.twoWay, lookupFunctions);
     let binding = bindingExpression.createBinding(target);
-    binding.bind(source);
+    binding.bind(createScopeForTest(source));
     expect(target.value).toBe(source.foo.bar);
     expect(valueConverters.one.toView).toHaveBeenCalledWith(source.foo.bar, source.arg);
     expect(valueConverters.two.toView).toHaveBeenCalledWith(source.foo.bar);
@@ -123,9 +124,10 @@ describe('BindingExpression', () => {
     let bindingExpression = bindingEngine.createBindingExpression('value', 'foo.bar & one:arg & two', bindingMode.twoWay, lookupFunctions);
     let binding = bindingExpression.createBinding(target);
     function exerciseBindingBehavior(callback) {
-      binding.bind(source);
-      expect(bindingBehaviors.one.bind).toHaveBeenCalledWith(binding, source, 'hello world');
-      expect(bindingBehaviors.two.bind).toHaveBeenCalledWith(binding, source);
+      let scope = createScopeForTest(source);
+      binding.bind(scope);
+      expect(bindingBehaviors.one.bind).toHaveBeenCalledWith(binding, scope, 'hello world');
+      expect(bindingBehaviors.two.bind).toHaveBeenCalledWith(binding, scope);
       expect(target.value).toBe(source.foo.bar);
       let sourceObserver = bindingEngine.observerLocator.getObserver(source.foo, 'bar');
       expect(sourceObserver.hasSubscribers()).toBe(true);
@@ -143,8 +145,8 @@ describe('BindingExpression', () => {
           setTimeout(() => {
             expect(source.foo.bar).toBe(target.value);
             binding.unbind();
-            expect(bindingBehaviors.one.unbind).toHaveBeenCalledWith(binding, source);
-            expect(bindingBehaviors.two.unbind).toHaveBeenCalledWith(binding, source);
+            expect(bindingBehaviors.one.unbind).toHaveBeenCalledWith(binding, scope);
+            expect(bindingBehaviors.two.unbind).toHaveBeenCalledWith(binding, scope);
             expect(sourceObserver.hasSubscribers()).toBe(false);
             expect(argObserver.hasSubscribers()).toBe(false);
             expect(binding.targetProperty.hasSubscribers()).toBe(false);

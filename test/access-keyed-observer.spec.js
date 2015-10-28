@@ -7,6 +7,7 @@ import {
   getBinding
 } from './shared';
 import {initialize} from 'aurelia-pal-browser';
+import {createScopeForTest} from '../src/scope';
 
 describe('AccessKeyedObserver', () => {
   var observerLocator;
@@ -27,7 +28,7 @@ describe('AccessKeyedObserver', () => {
     });
 
     it('binds', () => {
-      binding.bind(obj);
+      binding.bind(createScopeForTest(obj));
       expect(el.value).toBe(obj.record.person[obj.key]);
     });
 
@@ -92,7 +93,7 @@ describe('AccessKeyedObserver', () => {
     });
 
     it('binds', () => {
-      binding.bind(obj);
+      binding.bind(createScopeForTest(obj));
       expect(el.value).toBe(obj.record.person[obj.key].value);
     });
 
@@ -157,7 +158,7 @@ describe('AccessKeyedObserver', () => {
     });
 
     it('binds', () => {
-      binding.bind(obj);
+      binding.bind(createScopeForTest(obj));
       expect(el.value).toBe('John');
     });
 
@@ -189,7 +190,7 @@ describe('AccessKeyedObserver', () => {
     });
 
     it('binds', () => {
-      binding.bind(obj);
+      binding.bind(createScopeForTest(obj));
       expect(el.value).toBe(obj.person['first']);
     });
 
@@ -238,7 +239,7 @@ describe('AccessKeyedObserver', () => {
     });
 
     it('binds', () => {
-      binding.bind(obj);
+      binding.bind(createScopeForTest(obj));
       expect(el.value).toBe('John');
     });
 
@@ -262,7 +263,7 @@ describe('AccessKeyedObserver', () => {
     });
 
     it('binds', () => {
-      binding.bind(obj);
+      binding.bind(createScopeForTest(obj));
       expect(el.value).toBe(obj.array[obj.key]);
     });
 
@@ -328,7 +329,7 @@ describe('AccessKeyedObserver', () => {
     });
 
     it('binds', () => {
-      binding.bind(obj);
+      binding.bind(createScopeForTest(obj));
       expect(el.value).toBe(obj.array[obj.key]);
     });
 
@@ -394,7 +395,7 @@ describe('AccessKeyedObserver', () => {
     });
 
     it('binds', () => {
-      binding.bind(obj);
+      binding.bind(createScopeForTest(obj));
       expect(el.value).toBe(obj.array[obj.key]);
     });
 
@@ -443,7 +444,7 @@ describe('AccessKeyedObserver', () => {
     });
 
     it('binds', () => {
-      binding.bind(obj);
+      binding.bind(createScopeForTest(obj));
       expect(el.value).toBe('b');
     });
 

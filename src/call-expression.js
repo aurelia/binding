@@ -26,12 +26,15 @@ export class Call {
   }
 
   callSource($event) {
-    let source = this.source;
-    let result;
-    let temp = source.$event;
-    source.$event = $event;
-    result = this.sourceExpression.evaluate(source, this.lookupFunctions);
-    source.$event = temp;
+    let overrideContext = this.source.overrideContext;
+    Object.assign(overrideContext, $event);
+    overrideContext.$event = $event; // deprecate this?
+    let mustEvaluate = true;
+    let result = this.sourceExpression.evaluate(this.source, this.lookupFunctions, mustEvaluate);
+    delete overrideContext.$event;
+    for (let prop in $event) {
+      delete overrideContext[prop];
+    }
     return result;
   }
 

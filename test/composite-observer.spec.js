@@ -8,6 +8,7 @@ import {
   getBinding
 } from './shared';
 import {initialize} from 'aurelia-pal-browser';
+import {createScopeForTest} from '../src/scope';
 
 describe('CompositeObserver', () => {
   let observerLocator;
@@ -30,7 +31,7 @@ describe('CompositeObserver', () => {
     expect(yesObserver.hasSubscribers()).toBe(false);
     expect(noObserver.hasSubscribers()).toBe(false);
 
-    binding.bind(obj);
+    binding.bind(createScopeForTest(obj));
     expect(conditionObserver.hasSubscribers()).toBe(true);
     expect(yesObserver.hasSubscribers()).toBe(true);
     expect(noObserver.hasSubscribers()).toBe(false);
@@ -76,7 +77,7 @@ describe('CompositeObserver', () => {
     expect(bObserver.hasSubscribers()).toBe(false);
     expect(cObserver.hasSubscribers()).toBe(false);
 
-    binding.bind(obj);
+    binding.bind(createScopeForTest(obj));
     expect(aObserver.hasSubscribers()).toBe(true);
     expect(bObserver.hasSubscribers()).toBe(false);
     expect(cObserver.hasSubscribers()).toBe(true);
@@ -115,7 +116,7 @@ describe('CompositeObserver', () => {
     let conditionObserver = observerLocator.getObserver(obj, 'condition');
     expect(conditionObserver.hasSubscribers()).toBe(false);
 
-    binding.bind(obj);
+    binding.bind(createScopeForTest(obj));
     expect(conditionObserver.hasSubscribers()).toBe(true);
     expect(el.textContent).toBe((!obj.condition).toString());
 
@@ -143,7 +144,7 @@ describe('CompositeObserver', () => {
     expect(bObserver.hasSubscribers()).toBe(false);
     expect(testObserver.hasSubscribers()).toBe(false);
 
-    binding.bind(obj);
+    binding.bind(createScopeForTest(obj));
     expect(aObserver.hasSubscribers()).toBe(true);
     expect(bObserver.hasSubscribers()).toBe(true);
     //expect(testObserver.hasSubscribers()).toBe(true);
@@ -178,7 +179,7 @@ describe('CompositeObserver', () => {
     expect(bObserver.hasSubscribers()).toBe(false);
     expect(testObserver.hasSubscribers()).toBe(false);
 
-    binding.bind(foo);
+    binding.bind(createScopeForTest(foo));
     expect(aObserver.hasSubscribers()).toBe(true);
     expect(bObserver.hasSubscribers()).toBe(true);
     //expect(testObserver.hasSubscribers()).toBe(true);
@@ -213,7 +214,7 @@ describe('CompositeObserver', () => {
     expect(bObserver.hasSubscribers()).toBe(false);
     expect(testObserver.hasSubscribers()).toBe(false);
 
-    binding.bind(foo);
+    binding.bind(createScopeForTest(foo));
     expect(aObserver.hasSubscribers()).toBe(true);
     expect(bObserver.hasSubscribers()).toBe(true);
     expect(testObserver.hasSubscribers()).toBe(true);
@@ -260,7 +261,7 @@ describe('CompositeObserver', () => {
     expect(yObserver.hasSubscribers()).toBe(false);
     expect(zObserver.hasSubscribers()).toBe(false);
 
-    binding.bind(foo);
+    binding.bind(createScopeForTest(foo));
     expect(objObserver.hasSubscribers()).toBe(true);
     expect(aObserver.hasSubscribers()).toBe(true);
     expect(bObserver.hasSubscribers()).toBe(true);

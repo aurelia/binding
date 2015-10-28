@@ -7,6 +7,7 @@ import {
   getBinding
 } from './shared';
 import {initialize} from 'aurelia-pal-browser';
+import {createScopeForTest} from '../src/scope';
 
 describe('CheckedObserver', () => {
   var observerLocator;
@@ -27,7 +28,7 @@ describe('CheckedObserver', () => {
     });
 
     it('binds', () => {
-      binding.bind(obj);
+      binding.bind(createScopeForTest(obj));
       expect(el.checked).toBe(false);
     });
 
@@ -72,7 +73,7 @@ describe('CheckedObserver', () => {
     });
 
     it('binds', () => {
-      binding.bind(obj);
+      binding.bind(createScopeForTest(obj));
       expect(el.checked).toBe(false);
     });
 
@@ -116,7 +117,7 @@ describe('CheckedObserver', () => {
     });
 
     it('binds', () => {
-      binding.bind(obj);
+      binding.bind(createScopeForTest(obj));
       expect(el.checked).toBe(false);
     });
 
@@ -161,8 +162,8 @@ describe('CheckedObserver', () => {
     });
 
     it('binds', done => {
-      binding.bind(obj);
-      binding2.bind(obj);
+      binding.bind(createScopeForTest(obj));
+      binding2.bind(createScopeForTest(obj));
       expect(el.checked).toBe(false);
       setTimeout(() => {
         expect(el.checked).toBe(true);
@@ -219,9 +220,9 @@ describe('CheckedObserver', () => {
     });
 
     it('binds', () => {
-      radios[0].binding.bind(obj);
-      radios[1].binding.bind(obj);
-      radios[2].binding.bind(obj);
+      radios[0].binding.bind(createScopeForTest(obj));
+      radios[1].binding.bind(createScopeForTest(obj));
+      radios[2].binding.bind(createScopeForTest(obj));
       expect(radios[0].view.checked).toBe(false);
       expect(radios[1].view.checked).toBe(true);
       expect(radios[2].view.checked).toBe(false);
@@ -285,9 +286,9 @@ describe('CheckedObserver', () => {
     });
 
     it('binds', () => {
-      radios[0].binding.bind(obj);
-      radios[1].binding.bind(obj);
-      radios[2].binding.bind(obj);
+      radios[0].binding.bind(createScopeForTest(obj));
+      radios[1].binding.bind(createScopeForTest(obj));
+      radios[2].binding.bind(createScopeForTest(obj));
       expect(radios[0].view.checked).toBe(false);
       expect(radios[1].view.checked).toBe(true);
       expect(radios[2].view.checked).toBe(false);

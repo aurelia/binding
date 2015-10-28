@@ -8,9 +8,10 @@ import {
 import {Parser} from '../src/parser';
 import {CallExpression} from '../src/call-expression';
 import {initialize} from 'aurelia-pal-browser';
+import {createScopeForTest} from '../src/scope';
 
 describe('CallExpression', () => {
-  var expression, viewModel, behavior = {}, binding;
+  let expression, viewModel, target = {}, binding;
 
   beforeAll(() => {
     initialize();
@@ -31,30 +32,41 @@ describe('CallExpression', () => {
   });
 
   it('binds', () => {
-    expect(behavior.foo).toBeUndefined();
-    binding = expression.createBinding(behavior);
-    binding.bind(viewModel);
-    expect(behavior.foo).toBeDefined();
+    expect(target.foo).toBeUndefined();
+    binding = expression.createBinding(target);
+    binding.bind(createScopeForTest(viewModel));
+    expect(target.foo).toBeDefined();
   });
 
-  it('calls', () => {
-    var result = behavior.foo();
+  it('calls with empty args', () => {
+    let result = target.foo();
     expect(result).toBe(viewModel.arg1);
     expect(viewModel.doSomething).toHaveBeenCalledWith(undefined, viewModel.arg1, viewModel.arg2);
+  });
 
-    result = behavior.foo('a');
+  it('calls with string arg', () => {
+    let result = target.foo('a');
     expect(result).toBe(viewModel.arg1);
     expect(viewModel.doSomething).toHaveBeenCalledWith('a', viewModel.arg1, viewModel.arg2);
+  });
 
+  it('calls with object arg and distributes parameters', () => {
+    let args = { arg1: 'hello', arg2: 'world' };
+    let result = target.foo(args);
+    expect(result).toBe(args.arg1);
+    expect(viewModel.doSomething).toHaveBeenCalledWith(args, args.arg1, args.arg2);
+  });
+
+  it('handles args update', () => {
     viewModel.arg1 = 'something else';
     viewModel.arg2 = 'another value';
-    result = behavior.foo();
+    let result = target.foo();
     expect(result).toBe(viewModel.arg1);
     expect(viewModel.doSomething).toHaveBeenCalledWith(undefined, viewModel.arg1, viewModel.arg2);
   });
 
   it('unbinds', () => {
-      binding.unbind();
-      expect(behavior.foo).toBe(null);
+    binding.unbind();
+    expect(target.foo).toBe(null);
   });
 });

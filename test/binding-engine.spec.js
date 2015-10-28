@@ -7,6 +7,7 @@ import {Parser} from '../src/parser';
 import {BindingExpression} from '../src/binding-expression';
 import {BindingEngine} from '../src/binding-engine';
 import {Expression} from '../src/ast';
+import {createScopeForTest} from '../src/scope';
 
 describe('bindingEngine', () => {
   let bindingEngine, observerLocator;
@@ -28,7 +29,7 @@ describe('bindingEngine', () => {
     let bindingExpression = bindingEngine.createBindingExpression(targetProperty, sourceExpression);
     expect(bindingExpression instanceof BindingExpression).toBe(true);
     let binding = bindingExpression.createBinding(target);
-    binding.bind(source);
+    binding.bind(createScopeForTest(source));
     expect(target.value).toBe('bar');
     binding.unbind();
   });
