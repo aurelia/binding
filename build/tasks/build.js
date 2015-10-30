@@ -16,6 +16,7 @@ gulp.task('build-index', function(){
   var importsToAdd = [];
   var files = [
     'camel-case.js',
+    'scope.js',
     'connectable-binding.js',
     'subscriber-collection.js',
     'array-change-records.js',
