@@ -71,10 +71,18 @@ class ModifyArrayObserver extends ModifyCollectionObserver {
 
     array['splice'] = function() {
       var methodCallResult = arrayProto['splice'].apply(array, arguments);
+      var index = arguments[0];
+      if (index >= array.length) {
+        index = array.length - 1;
+      } else if (-index >= array.length) {
+        index = 0;
+      } else if (index < 0 ) {
+        index = array.length + index - 1;
+      }
       observer.addChangeRecord({
        type: 'splice',
        object: array,
-       index: arguments[0],
+       index: index,
        removed: methodCallResult,
        addedCount: arguments.length > 2 ? arguments.length - 2 : 0
       });
