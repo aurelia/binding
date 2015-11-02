@@ -5,7 +5,7 @@ describe('AccessMember', () => {
   let expression;
 
   beforeAll(() => {
-    expression = new AccessMember(new AccessScope('foo'), 'bar');
+    expression = new AccessMember(new AccessScope('foo', 0), 'bar');
   });
 
   it('evaluates member on bindingContext', () => {

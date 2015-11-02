@@ -5,8 +5,8 @@ describe('CallScope', () => {
   let foo, hello, binding;
 
   beforeAll(() => {
-    foo = new CallScope('foo', []);
-    hello = new CallScope('hello', [new AccessScope('arg')])
+    foo = new CallScope('foo', [], 0);
+    hello = new CallScope('hello', [new AccessScope('arg', 0)], 0);
     binding = { observeProperty: jasmine.createSpy('observeProperty') };
   });
 

@@ -197,12 +197,18 @@ export class Conditional extends Expression {
 }
 
 export class AccessThis extends Expression {
-  constructor() {
+  constructor(ancestor) {
     super();
+    this.ancestor = ancestor;
   }
 
   evaluate(scope, lookupFunctions) {
-    return scope.bindingContext;
+    let oc = scope.overrideContext;
+    let i = this.ancestor;
+    while (i-- && oc) {
+      oc = oc.parentOverrideContext;
+    }
+    return i < 1 && oc ? oc.bindingContext : undefined;
   }
 
   accept(visitor) {
@@ -214,20 +220,21 @@ export class AccessThis extends Expression {
 }
 
 export class AccessScope extends Expression {
-  constructor(name){
+  constructor(name, ancestor) {
     super();
 
     this.name = name;
+    this.ancestor = ancestor;
     this.isAssignable = true;
   }
 
   evaluate(scope, lookupFunctions) {
-    let context = getContextFor(this.name, scope);
+    let context = getContextFor(this.name, scope, this.ancestor);
     return context[this.name];
   }
 
   assign(scope, value){
-    let context = getContextFor(this.name, scope);
+    let context = getContextFor(this.name, scope, this.ancestor);
     return context[this.name] = value;
   }
 
@@ -236,7 +243,7 @@ export class AccessScope extends Expression {
   }
 
   connect(binding, scope) {
-    let context = getContextFor(this.name, scope);
+    let context = getContextFor(this.name, scope, this.ancestor);
     binding.observeProperty(context, this.name);
   }
 }
@@ -318,16 +325,17 @@ export class AccessKeyed extends Expression {
 }
 
 export class CallScope extends Expression {
-  constructor(name, args){
+  constructor(name, args, ancestor) {
     super();
 
     this.name = name;
     this.args = args;
+    this.ancestor = ancestor;
   }
 
   evaluate(scope, lookupFunctions, mustEvaluate) {
     let args = evalList(scope, this.args, lookupFunctions);
-    let context = getContextFor(this.name, scope);
+    let context = getContextFor(this.name, scope, this.ancestor);
     let func = getFunction(context, this.name, mustEvaluate);
     if (func) {
       return func.apply(context, args);
@@ -715,10 +723,22 @@ export class Unparser {
   }
 
   visitAccessThis(access) {
-    this.write('$this');
+    if (access.ancestor === 0) {
+      this.write('$this');
+      return;
+    }
+    this.write('$parent');
+    let i = access.ancestor - 1;
+    while(i--) {
+      this.write('.$parent');
+    }
   }
 
   visitAccessScope(access) {
+    let i = access.ancestor;
+    while (i--) {
+      this.write('$parent.');
+    }
     this.write(access.name);
   }
 
@@ -735,6 +755,10 @@ export class Unparser {
   }
 
   visitCallScope(call) {
+    let i = call.ancestor;
+    while (i--) {
+      this.write('$parent.');
+    }
     this.write(call.name);
     this.writeArgs(call.args);
   }

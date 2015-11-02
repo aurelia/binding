@@ -10,19 +10,23 @@ interface Scope {
 }
 
 export function createOverrideContext(bindingContext?: any, parentOverrideContext?: OverrideContext): OverrideContext {
-  bindingContext = bindingContext || null;
-  parentOverrideContext = parentOverrideContext || null;
   return {
-    bindingContext,
-    parentOverrideContext,
-    $parent: parentOverrideContext ? parentOverrideContext.bindingContext : undefined
+    bindingContext: bindingContext,
+    parentOverrideContext: parentOverrideContext || null
   };
 }
 
-export function getContextFor(name: string, scope: Scope): any {
+export function getContextFor(name: string, scope: Scope, ancestor: number): any {
   // traverse the context and it's ancestors, searching for a context that has
   // the name.
   let oc = scope.overrideContext;
+  while (ancestor && oc) {
+    ancestor--;
+    oc = oc.parentOverrideContext;
+  }
+  if (ancestor || !oc) {
+    return undefined;
+  }
   while (oc && !(name in oc) && !(oc.bindingContext && name in oc.bindingContext)) {
     oc = oc.parentOverrideContext;
   }

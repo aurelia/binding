@@ -2,11 +2,10 @@ import {AccessScope} from '../../src/ast';
 import {createOverrideContext, createScopeForTest} from '../../src/scope';
 
 describe('AccessScope', () => {
-  let foo, $parent, binding;
+  let foo, binding;
 
   beforeAll(() => {
-    foo = new AccessScope('foo');
-    $parent = new AccessScope('$parent');
+    foo = new AccessScope('foo', 0);
     binding = { observeProperty: jasmine.createSpy('observeProperty') };
   });
 
@@ -135,10 +134,5 @@ describe('AccessScope', () => {
     binding.observeProperty.calls.reset();
     foo.connect(binding, scope);
     expect(binding.observeProperty).toHaveBeenCalledWith(scope.overrideContext.parentOverrideContext, 'foo');
-  });
-
-  it('evaluates $parent', () => {
-    let scope = createScopeForTest({ abc: 'xyz' }, { foo: 'bar' });
-    expect($parent.evaluate(scope, null)).toBe(scope.overrideContext.parentOverrideContext.bindingContext);
   });
 });

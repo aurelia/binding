@@ -6,9 +6,12 @@ import {
   BindingBehavior,
   AccessScope,
   AccessMember,
+  AccessKeyed,
   CallScope,
   CallMember,
-  AccessThis
+  CallFunction,
+  AccessThis,
+  AccessAncestor
 } from '../src/ast';
 
 describe('Parser', () => {
@@ -56,10 +59,10 @@ describe('Parser', () => {
     expression = parser.parse('foo & bar:x:y:z & baz:a:b:c');
     expect(expression instanceof BindingBehavior).toBe(true);
     expect(expression.name).toBe('baz');
-    expect(expression.args).toEqual([new AccessScope('a'), new AccessScope('b'), new AccessScope('c')])
+    expect(expression.args).toEqual([new AccessScope('a', 0), new AccessScope('b', 0), new AccessScope('c', 0)])
     expect(expression.expression instanceof BindingBehavior).toBe(true);
     expect(expression.expression.name).toBe('bar');
-    expect(expression.expression.args).toEqual([new AccessScope('x'), new AccessScope('y'), new AccessScope('z')])
+    expect(expression.expression.args).toEqual([new AccessScope('x', 0), new AccessScope('y', 0), new AccessScope('z', 0)]);
     expect(expression.expression.expression instanceof AccessScope).toBe(true);
   });
 
@@ -72,10 +75,10 @@ describe('Parser', () => {
     expression = parser.parse('foo | bar:x:y:z | baz:a:b:c');
     expect(expression instanceof ValueConverter).toBe(true);
     expect(expression.name).toBe('baz');
-    expect(expression.args).toEqual([new AccessScope('a'), new AccessScope('b'), new AccessScope('c')])
+    expect(expression.args).toEqual([new AccessScope('a', 0), new AccessScope('b', 0), new AccessScope('c', 0)]);
     expect(expression.expression instanceof ValueConverter).toBe(true);
     expect(expression.expression.name).toBe('bar');
-    expect(expression.expression.args).toEqual([new AccessScope('x'), new AccessScope('y'), new AccessScope('z')])
+    expect(expression.expression.args).toEqual([new AccessScope('x', 0), new AccessScope('y', 0), new AccessScope('z', 0)]);
     expect(expression.expression.expression instanceof AccessScope).toBe(true);
   });
 
@@ -83,10 +86,10 @@ describe('Parser', () => {
     let expression = parser.parse('foo | bar:x:y:z & baz:a:b:c');
     expect(expression instanceof BindingBehavior).toBe(true);
     expect(expression.name).toBe('baz');
-    expect(expression.args).toEqual([new AccessScope('a'), new AccessScope('b'), new AccessScope('c')])
+    expect(expression.args).toEqual([new AccessScope('a', 0), new AccessScope('b', 0), new AccessScope('c', 0)])
     expect(expression.expression instanceof ValueConverter).toBe(true);
     expect(expression.expression.name).toBe('bar');
-    expect(expression.expression.args).toEqual([new AccessScope('x'), new AccessScope('y'), new AccessScope('z')])
+    expect(expression.expression.args).toEqual([new AccessScope('x', 0), new AccessScope('y', 0), new AccessScope('z', 0)]);
     expect(expression.expression.expression instanceof AccessScope).toBe(true);
   });
 
@@ -108,14 +111,14 @@ describe('Parser', () => {
     let expression = parser.parse('foo(x)');
     expect(expression instanceof CallScope).toBe(true);
     expect(expression.name).toBe('foo');
-    expect(expression.args).toEqual([new AccessScope('x')]);
+    expect(expression.args).toEqual([new AccessScope('x', 0)]);
   });
 
   it('parses CallMember', () => {
     let expression = parser.parse('foo.bar(x)');
     expect(expression instanceof CallMember).toBe(true);
     expect(expression.name).toBe('bar');
-    expect(expression.args).toEqual([new AccessScope('x')]);
+    expect(expression.args).toEqual([new AccessScope('x', 0)]);
     expect(expression.object instanceof AccessScope).toBe(true);
     expect(expression.object.name).toBe('foo');
   });
@@ -131,10 +134,72 @@ describe('Parser', () => {
     expect(expression.name).toBe('foo');
   });
 
+  it('translates $this() to CallFunction', () => {
+    let expression = parser.parse('$this()');
+    expect(expression instanceof CallFunction).toBe(true);
+    expect(expression.func instanceof AccessThis).toBe(true);
+  });
+
   it('translates $this.member() to CallScope', () => {
     let expression = parser.parse('$this.foo(x)');
     expect(expression instanceof CallScope).toBe(true);
     expect(expression.name).toBe('foo');
-    expect(expression.args).toEqual([new AccessScope('x')]);
+    expect(expression.args).toEqual([new AccessScope('x', 0)]);
+  });
+
+  it('parses $parent', () => {
+    let s = '$parent';
+    for (let i = 1; i < 10; i++) {
+      let expression = parser.parse(s);
+      expect(expression instanceof AccessThis).toBe(true);
+      expect(expression.ancestor).toBe(i);
+      s += '.$parent';
+    }
+  });
+
+  it('translates $parent.foo to AccessScope', () => {
+    let s = '$parent.foo';
+    for (let i = 1; i < 10; i++) {
+      let expression = parser.parse(s);
+      expect(expression instanceof AccessScope).toBe(true);
+      expect(expression.name).toBe('foo');
+      expect(expression.ancestor).toBe(i);
+      s = '$parent.' + s;
+    }
+  });
+
+  it('translates $parent.foo() to CallScope', () => {
+    let s = '$parent.foo()';
+    for (let i = 1; i < 10; i++) {
+      let expression = parser.parse(s);
+      expect(expression instanceof CallScope).toBe(true);
+      expect(expression.name).toBe('foo');
+      expect(expression.ancestor).toBe(i);
+      s = '$parent.' + s;
+    }
+  });
+
+  it('translates $parent() to CallFunction', () => {
+    let s = '$parent()';
+    for (let i = 1; i < 10; i++) {
+      let expression = parser.parse(s);
+      expect(expression instanceof CallFunction).toBe(true);
+      expect(expression.func instanceof AccessThis).toBe(true);
+      expect(expression.func.ancestor).toBe(i);
+      s = '$parent.' + s;
+    }
+  });
+
+  it('translates $parent[0] to AccessKeyed', () => {
+    let s = '$parent[0]';
+    for (let i = 1; i < 10; i++) {
+      let expression = parser.parse(s);
+      expect(expression instanceof AccessKeyed).toBe(true);
+      expect(expression.object instanceof AccessThis).toBe(true);
+      expect(expression.object.ancestor).toBe(i);
+      expect(expression.key instanceof LiteralPrimitive).toBe(true);
+      expect(expression.key.value).toBe(0);
+      s = '$parent.' + s;
+    }
   });
 });

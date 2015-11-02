@@ -1,8 +1,11 @@
 import {Lexer,Token} from './lexer';
-import {Expression, ArrayOfExpression, Chain, ValueConverter, Assign,
-        Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed,
-        CallScope, CallFunction, CallMember, PrefixNot, BindingBehavior,
-        Binary, LiteralPrimitive, LiteralArray, LiteralObject, LiteralString} from './ast';
+import {
+  Expression, Chain, ValueConverter, Assign, Conditional,
+  AccessThis, AccessScope, AccessMember, AccessKeyed,
+  CallScope, CallFunction, CallMember,
+  PrefixNot, BindingBehavior, Binary,
+  LiteralPrimitive, LiteralArray, LiteralObject, LiteralString
+} from './ast';
 
 let EOF = new Token(-1, null);
 
@@ -249,13 +252,13 @@ export class ParserImplementation {
           let args = this.parseExpressionList(')');
           this.expect(')');
           if (result instanceof AccessThis) {
-            result = new CallScope(name, args);
+            result = new CallScope(name, args, result.ancestor);
           } else {
             result = new CallMember(result, name, args);
           }
         } else {
           if (result instanceof AccessThis) {
-            result = new AccessScope(name);
+            result = new AccessScope(name, result.ancestor);
           } else {
             result = new AccessMember(result, name);
           }
@@ -311,17 +314,30 @@ export class ParserImplementation {
 
     this.advance();
 
-    if (!this.optional('(')) {
-      if (name === '$this') {
-        return new AccessThis();
+    if (name === '$this') {
+      return new AccessThis(0);
+    }
+
+    let ancestor = 0;
+    while (name === '$parent') {
+      ancestor++;
+      if (this.optional('.')) {
+        name = this.peek.key;
+        this.advance();
+      } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === '[') {
+        return new AccessThis(ancestor);
       } else {
-        return new AccessScope(name);
+        this.error(`Unexpected token ${this.peek.text}`);
       }
     }
 
-    let args = this.parseExpressionList(')');
-    this.expect(')');
-    return new CallScope(name, args);
+    if (this.optional('(')) {
+      let args = this.parseExpressionList(')');
+      this.expect(')');
+      return new CallScope(name, args, ancestor);
+    }
+
+    return new AccessScope(name, ancestor);
   }
 
   parseObject() {
