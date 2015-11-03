@@ -46,10 +46,12 @@ class NameBinder {
   constructor(property, target) {
     this.property = property;
     this.target = target;
+    this.source = null;
+    this.context = null;
   }
 
   bind(source) {
-    if (this.source) {
+    if (this.source !== null) {
       if (this.source === source) {
         return;
       }
@@ -57,14 +59,21 @@ class NameBinder {
       this.unbind();
     }
 
-    this.source = source;
-    source.bindingContext[this.property] = this.target;
+    this.source = source || null;
+    this.context = source.bindingContext || source.overrideContext || null;
+
+    if(this.context !== null) {
+      this.context[this.property] = this.target;
+    }
   }
 
   unbind() {
-    if (this.source) {
-      this.source.bindingContext[this.property] = null;
+    if (this.source !== null) {
       this.source = null;
+    }
+
+    if(this.context !== null) {
+      this.context[this.property] = null;
     }
   }
 }
