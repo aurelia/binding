@@ -58,12 +58,12 @@ class NameBinder {
     }
 
     this.source = source;
-    source[this.property] = this.target;
+    source.bindingContext[this.property] = this.target;
   }
 
   unbind() {
     if (this.source) {
-      this.source[this.property] = null;
+      this.source.bindingContext[this.property] = null;
       this.source = null;
     }
   }
