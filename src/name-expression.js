@@ -25,9 +25,8 @@ export class NameExpression {
         return element;
       case 'controller':
         return getAU(element).controller;
-      case 'model':
       case 'view-model':
-        return getAU(element).controller.model;
+        return getAU(element).controller.viewModel;
       case 'view':
         return getAU(element).controller.view;
       default:
@@ -37,7 +36,7 @@ export class NameExpression {
           throw new Error(`Attempted to reference "${apiName}", but it was not found amongst the target's API.`)
         }
 
-        return target.model;
+        return target.viewModel;
     }
   }
 }
