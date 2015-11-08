@@ -134,7 +134,11 @@ export class EventManager {
   }
 
   registerElementPropertyConfig(tagName, propertyName, events) {
-    this.elementHandlerLookup[tagName][propertyName] = {
+    this.elementHandlerLookup[tagName][propertyName] = this.createElementHandler(events);
+  }
+
+  createElementHandler(events) {
+    return {
       subscribe(target, callback) {
         events.forEach(changeEvent => {
           target.addEventListener(changeEvent, callback, false);
@@ -146,7 +150,7 @@ export class EventManager {
           });
         }
       }
-    }
+    };
   }
 
   registerElementHandler(tagName, handler) {
