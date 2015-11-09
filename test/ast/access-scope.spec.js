@@ -151,6 +151,7 @@ describe('AccessScope', () => {
 
   it('connects undefined property on first ancestor bindingContext', () => {
     let scope = createScopeForTest({ abc: 'xyz' }, {});
+    scope.overrideContext.parentOverrideContext.parentOverrideContext = createOverrideContext({ foo: 'bar' });
     binding.observeProperty.calls.reset();
     $parentfoo.connect(binding, scope);
     expect(binding.observeProperty).toHaveBeenCalledWith(scope.overrideContext.parentOverrideContext.bindingContext, 'foo');
