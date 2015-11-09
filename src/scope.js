@@ -17,8 +17,7 @@ export function createOverrideContext(bindingContext?: any, parentOverrideContex
 }
 
 export function getContextFor(name: string, scope: Scope, ancestor: number): any {
-  // traverse the context and it's ancestors, searching for a context that has
-  // the name.
+  // jump up the required number of ancestor contexts (eg $parent.$parent requires two jumps)
   let oc = scope.overrideContext;
   while (ancestor && oc) {
     ancestor--;
@@ -27,6 +26,9 @@ export function getContextFor(name: string, scope: Scope, ancestor: number): any
   if (ancestor || !oc) {
     return undefined;
   }
+  let root = oc;
+
+  // traverse the context and it's ancestors, searching for a context that has the name.
   while (oc && !(name in oc) && !(oc.bindingContext && name in oc.bindingContext)) {
     oc = oc.parentOverrideContext;
   }
@@ -35,7 +37,7 @@ export function getContextFor(name: string, scope: Scope, ancestor: number): any
     return name in oc ? oc : oc.bindingContext;
   }
   // the name wasn't found.  return the root binding context.
-  return scope.bindingContext || scope.overrideContext;
+  return root.bindingContext || root;
 }
 
 export function createScopeForTest(bindingContext: any, parentBindingContext?: any): Scope {
