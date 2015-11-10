@@ -25,22 +25,22 @@
       "lib": "dist/amd"
     },
     "dependencies": {
-      "aurelia-metadata": "github:aurelia/metadata@^0.9.0",
-      "aurelia-pal": "github:aurelia/pal@^0.2.0",
-      "aurelia-task-queue": "github:aurelia/task-queue@^0.8.0",
-      "core-js": "npm:core-js@^0.9.5"
+      "aurelia-metadata": "github:aurelia/metadata@^0.10.0",
+      "aurelia-pal": "github:aurelia/pal@^0.3.0",
+      "aurelia-task-queue": "github:aurelia/task-queue@^0.9.0",
+      "core-js": "npm:core-js@^1.2.6"
     },
     "devDependencies": {
-      "aurelia-dependency-injection": "github:aurelia/dependency-injection@^0.11.2",
-      "aurelia-pal-browser": "github:aurelia/pal-browser@^0.2.0",
+      "aurelia-dependency-injection": "github:aurelia/dependency-injection@^0.12.0",
+      "aurelia-pal-browser": "github:aurelia/pal-browser@^0.3.0",
       "babel": "npm:babel-core@^5.8.24",
       "babel-runtime": "npm:babel-runtime@^5.8.24",
-      "core-js": "npm:core-js@^0.9.5"
+      "core-js": "npm:core-js@^1.2.6"
     }
   },
   "devDependencies": {
     "aurelia-tools": "^0.1.12",
-    "babel-dts-generator": "^0.2.9",
+    "babel-dts-generator": "^0.2.16",
     "babel-eslint": "^4.1.1",
     "conventional-changelog": "0.0.11",
     "del": "^1.1.0",
