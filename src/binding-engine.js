@@ -58,7 +58,7 @@ export class BindingEngine {
     };
   }
 
-  collectionObserver(collection: Array|Map): CollectionObserver {
+  collectionObserver(collection: Array<any>|Map<any, any>): CollectionObserver {
     return {
       subscribe: callback => {
         let observer;

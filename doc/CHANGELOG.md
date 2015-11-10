@@ -1,3 +1,30 @@
+## 0.11.0 (2015-11-10)
+
+
+#### Bug Fixes
+
+* **AST:** make $parent work with overrideContext changes ([1c0cfc88](http://github.com/aurelia/binding/commit/1c0cfc884a9cbf17dde9befc351aa31711e47a65))
+* **all:** remove old decorators api calls; relocate decorators with related code ([0bf30806](http://github.com/aurelia/binding/commit/0bf3080621413a261de886df8e85cbc2c7f55113))
+* **array-observation:** handle out of bounds splices ([154480ba](http://github.com/aurelia/binding/commit/154480ba04cbb6e19558b95be10ca2af8316c539))
+* **build:** add scope to build files ([cb1a189a](http://github.com/aurelia/binding/commit/cb1a189a5482787e63c6d5fedf828cdb606f8d13))
+* **doc:** Fix wrong URL in README.md ([9d8e583d](http://github.com/aurelia/binding/commit/9d8e583d086223b00b709a03f7ad8a60442033b7))
+* **event-manager:** remove non-standard event target props for FF and old IE ([63b35ab4](http://github.com/aurelia/binding/commit/63b35ab4baecc07d5ca2d3598571adb85aa403fd))
+* **name-expression:**
+  * use the viewModel property of controllers ([42facec4](http://github.com/aurelia/binding/commit/42facec4bd88ba64b58ea9d5552ae09ff18c0045))
+  * make more resilient to nulls ([162b8558](http://github.com/aurelia/binding/commit/162b85581e9b0887939e7d42cf7dc0c52c1fb45c))
+  * not binding to proper context ([46f0fdc5](http://github.com/aurelia/binding/commit/46f0fdc5d3b989e01731775dff560d9a7e1b4e06))
+* **scope:**
+  * no auto-traverse when parent is specified ([735323ef](http://github.com/aurelia/binding/commit/735323efe7c9470e72b174d008108778ab6275e0))
+  * connect undefined property on parent scope to correct bindingContext ([987e9555](http://github.com/aurelia/binding/commit/987e9555954fedc13ac074a4a58bb0dc9db7caf8))
+
+
+#### Features
+
+* **binding:** add override scope ([70adcada](http://github.com/aurelia/binding/commit/70adcadabcd2bbb93ac595d0cb79235e60c8f4da))
+* **binding-behaviors:** add support for binding behaviors ([041a4a39](http://github.com/aurelia/binding/commit/041a4a396171f2ba3ea6f0cd8d83d533393a1d45), closes [#61](http://github.com/aurelia/binding/issues/61))
+* **parser:** make '$this' return the scope ([31b081ee](http://github.com/aurelia/binding/commit/31b081ee477543f140ca416af6702ca0165ef1e8), closes [#50](http://github.com/aurelia/binding/issues/50))
+
+
 ### 0.10.2 (2015-10-17)
 
 

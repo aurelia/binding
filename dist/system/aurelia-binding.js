@@ -1,9 +1,17 @@
 System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], function (_export) {
   'use strict';
 
-  var FEATURE, DOM, TaskQueue, decorators, metadata, sourceContext, slotNames, versionSlotNames, i, tempContextsRest, tempCallablesRest, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, arrayProto, ModifyArrayObserver, ArrayObserveObserver, Expression, Chain, ValueConverter, Assign, Conditional, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, PrefixNot, LiteralPrimitive, LiteralString, LiteralArray, LiteralObject, Unparser, evalListCache, bindingMode, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP, EOF, Parser, ParserImplementation, mapProto, ModifyMapObserver, DelegateHandlerEntry, DefaultEventStrategy, EventManager, DirtyChecker, DirtyCheckProperty, PrimitiveObserver, SetterObserver, OoPropertyObserver, version, OoObjectObserver, XLinkAttributeObserver, DataAttributeObserver, StyleObserver, ValueAttributeObserver, selectArrayContext, SelectValueObserver, checkedArrayContext, CheckedObserver, ClassObserver, computedContext, ComputedPropertyObserver, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, targetContext, Binding, CallExpression, Call, ValueConverterResource, ListenerExpression, Listener, NameExpression, NameBinder, valueConverterLookupFunction, taskQueue, eventManager, dirtyChecker, observerLocator, parser, __initialized, bindingEngine, ExpressionObserver;
+  var FEATURE, DOM, TaskQueue, metadata, sourceContext, slotNames, versionSlotNames, i, tempContextsRest, tempCallablesRest, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, arrayProto, ModifyArrayObserver, ArrayObserveObserver, Expression, Chain, BindingBehavior, ValueConverter, Assign, Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, PrefixNot, LiteralPrimitive, LiteralString, LiteralArray, LiteralObject, Unparser, evalListCache, bindingMode, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP, EOF, Parser, ParserImplementation, mapProto, ModifyMapObserver, DelegateHandlerEntry, DefaultEventStrategy, EventManager, DirtyChecker, DirtyCheckProperty, PrimitiveObserver, SetterObserver, OoPropertyObserver, version, OoObjectObserver, XLinkAttributeObserver, DataAttributeObserver, StyleObserver, ValueAttributeObserver, selectArrayContext, SelectValueObserver, checkedArrayContext, CheckedObserver, ClassObserver, computedContext, ComputedPropertyObserver, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, targetContext, Binding, CallExpression, Call, ValueConverterResource, BindingBehaviorResource, ListenerExpression, Listener, NameExpression, NameBinder, lookupFunctions, BindingEngine, ExpressionObserver;
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  _export('camelCase', camelCase);
+
+  _export('createOverrideContext', createOverrideContext);
+
+  _export('getContextFor', getContextFor);
+
+  _export('createScopeForTest', createScopeForTest);
 
   _export('connectable', connectable);
 
@@ -23,15 +31,63 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
   _export('declarePropertyDependencies', declarePropertyDependencies);
 
-  _export('valueConverter', valueConverter);
-
   _export('computedFrom', computedFrom);
 
-  _export('__uninitializeBindingEngine', __uninitializeBindingEngine);
+  _export('valueConverter', valueConverter);
+
+  _export('bindingBehavior', bindingBehavior);
 
   function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function camelCase(name) {
+    return name.charAt(0).toLowerCase() + name.slice(1);
+  }
+
+  function createOverrideContext(bindingContext, parentOverrideContext) {
+    return {
+      bindingContext: bindingContext,
+      parentOverrideContext: parentOverrideContext || null
+    };
+  }
+
+  function getContextFor(name, scope, ancestor) {
+    var oc = scope.overrideContext;
+
+    if (ancestor) {
+      while (ancestor && oc) {
+        ancestor--;
+        oc = oc.parentOverrideContext;
+      }
+      if (ancestor || !oc) {
+        return undefined;
+      }
+      return name in oc ? oc : oc.bindingContext;
+    }
+
+    while (oc && !(name in oc) && !(oc.bindingContext && name in oc.bindingContext)) {
+      oc = oc.parentOverrideContext;
+    }
+    if (oc) {
+      return name in oc ? oc : oc.bindingContext;
+    }
+
+    return scope.bindingContext || scope.overrideContext;
+  }
+
+  function createScopeForTest(bindingContext, parentBindingContext) {
+    if (parentBindingContext) {
+      return {
+        bindingContext: bindingContext,
+        overrideContext: createOverrideContext(bindingContext, createOverrideContext(parentBindingContext))
+      };
+    }
+    return {
+      bindingContext: bindingContext,
+      overrideContext: createOverrideContext(bindingContext)
+    };
+  }
 
   function addObserver(observer) {
     var observerSlots = this._observerSlots === undefined ? 0 : this._observerSlots;
@@ -401,7 +457,7 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
     }
   }
 
-  function evalList(scope, list, valueConverters) {
+  function evalList(scope, list, lookupFunctions) {
     var length = list.length,
         cacheLength,
         i;
@@ -413,7 +469,7 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
     var result = evalListCache[length];
 
     for (i = 0; i < length; ++i) {
-      result[i] = list[i].evaluate(scope, valueConverters);
+      result[i] = list[i].evaluate(scope, lookupFunctions);
     }
 
     return result;
@@ -443,22 +499,15 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
     return 0;
   }
 
-  function getFunction(obj, name) {
-    if (obj === null || obj === undefined) {
-      return obj;
-    }
-
-    var func = obj[name];
-
+  function getFunction(obj, name, mustExist) {
+    var func = obj === null || obj === undefined ? null : obj[name];
     if (typeof func === 'function') {
       return func;
     }
-
-    if (func === null || func === undefined) {
-      return func;
-    } else {
-      throw new Error(name + ' is not a function');
+    if (!mustExist && (func === null || func === undefined)) {
+      return null;
     }
+    throw new Error(name + ' is not a function');
   }
 
   function getKeyed(obj, key) {
@@ -541,7 +590,7 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
   }
 
   function findOriginalEventTarget(event) {
-    return event.originalTarget || event.path && event.path[0] || event.deepPath && event.deepPath[0] || event.target || event.srcElement;
+    return event.path && event.path[0] || event.deepPath && event.deepPath[0] || event.target;
   }
 
   function handleDelegatedEvent(event) {
@@ -567,14 +616,14 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
     version++;
     for (var i = 0, ii = changes.length; i < ii; i++) {
       var change = changes[i];
-      var _name3 = change.name;
+      var _name4 = change.name;
       var objectObserver = change.object.__observer__;
       var observer = undefined;
-      if (!objectObserver || !(observer = objectObserver.observers[_name3]) || observer.__version === version) {
+      if (!objectObserver || !(observer = objectObserver.observers[_name4]) || observer.__version === version) {
         continue;
       }
       observer.__version = version;
-      observer.callSubscribers(change.object[_name3], change.oldValue);
+      observer.callSubscribers(change.object[_name4], change.oldValue);
     }
   }
 
@@ -585,6 +634,17 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
   function declarePropertyDependencies(ctor, propertyName, dependencies) {
     var descriptor = Object.getOwnPropertyDescriptor(ctor.prototype, propertyName);
     descriptor.get.dependencies = dependencies;
+  }
+
+  function computedFrom() {
+    for (var _len = arguments.length, rest = Array(_len), _key = 0; _key < _len; _key++) {
+      rest[_key] = arguments[_key];
+    }
+
+    return function (target, key, descriptor) {
+      descriptor.get.dependencies = rest;
+      return descriptor;
+    };
   }
 
   function createElement(html) {
@@ -608,10 +668,6 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
     return value;
   }
 
-  function camelCase(name) {
-    return name.charAt(0).toLowerCase() + name.slice(1);
-  }
-
   function valueConverter(nameOrTarget) {
     if (nameOrTarget === undefined || typeof nameOrTarget === 'string') {
       return function (target) {
@@ -622,15 +678,14 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
     metadata.define(metadata.resource, new ValueConverterResource(), nameOrTarget);
   }
 
-  function computedFrom() {
-    for (var _len = arguments.length, rest = Array(_len), _key = 0; _key < _len; _key++) {
-      rest[_key] = arguments[_key];
+  function bindingBehavior(nameOrTarget) {
+    if (nameOrTarget === undefined || typeof nameOrTarget === 'string') {
+      return function (target) {
+        metadata.define(metadata.resource, new BindingBehaviorResource(nameOrTarget), target);
+      };
     }
 
-    return function (target, key, descriptor) {
-      descriptor.get.dependencies = rest;
-      return descriptor;
-    };
+    metadata.define(metadata.resource, new BindingBehaviorResource(), nameOrTarget);
   }
 
   function getAU(element) {
@@ -643,35 +698,6 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
     return au;
   }
 
-  function initialize() {
-    var container = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
-
-    container = container || { get: function get() {
-        return null;
-      } };
-    taskQueue = container.get(TaskQueue) || new TaskQueue();
-    eventManager = container.get(EventManager) || new EventManager();
-    dirtyChecker = container.get(DirtyChecker) || new DirtyChecker();
-    observerLocator = container.get(ObserverLocator) || new ObserverLocator(taskQueue, eventManager, dirtyChecker);
-    parser = container.get(Parser) || new Parser();
-    _export('__initialized', __initialized = true);
-  }
-
-  function __uninitializeBindingEngine() {
-    taskQueue = null;
-    eventManager = null;
-    dirtyChecker = null;
-    observerLocator = null;
-    parser = null;
-    _export('__initialized', __initialized = false);
-  }
-
-  function assertInitialized() {
-    if (!__initialized) {
-      initialize();
-    }
-  }
-
   return {
     setters: [function (_coreJs) {}, function (_aureliaPal) {
       FEATURE = _aureliaPal.FEATURE;
@@ -679,7 +705,6 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
     }, function (_aureliaTaskQueue) {
       TaskQueue = _aureliaTaskQueue.TaskQueue;
     }, function (_aureliaMetadata) {
-      decorators = _aureliaMetadata.decorators;
       metadata = _aureliaMetadata.metadata;
     }],
     execute: function () {
@@ -1061,10 +1086,18 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
           array['splice'] = function () {
             var methodCallResult = arrayProto['splice'].apply(array, arguments);
+            var index = arguments[0];
+            if (index >= array.length) {
+              index = array.length - 1;
+            } else if (-index >= array.length) {
+              index = 0;
+            } else if (index < 0) {
+              index = array.length + index - 1;
+            }
             observer.addChangeRecord({
               type: 'splice',
               object: array,
-              index: arguments[0],
+              index: index,
               removed: methodCallResult,
               addedCount: arguments.length > 2 ? arguments.length - 2 : 0
             });
@@ -1138,11 +1171,11 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
           this.isAssignable = false;
         }
 
-        Expression.prototype.evaluate = function evaluate(scope, valueConverters, args) {
+        Expression.prototype.evaluate = function evaluate(scope, lookupFunctions, args) {
           throw new Error('Binding expression "' + this + '" cannot be evaluated.');
         };
 
-        Expression.prototype.assign = function assign(scope, value, valueConverters) {
+        Expression.prototype.assign = function assign(scope, value, lookupFunctions) {
           throw new Error('Binding expression "' + this + '" cannot be assigned to.');
         };
 
@@ -1167,7 +1200,7 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
           this.isChain = true;
         }
 
-        Chain.prototype.evaluate = function evaluate(scope, valueConverters) {
+        Chain.prototype.evaluate = function evaluate(scope, lookupFunctions) {
           var result,
               expressions = this.expressions,
               length = expressions.length,
@@ -1175,7 +1208,7 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
               last;
 
           for (i = 0; i < length; ++i) {
-            last = expressions[i].evaluate(scope, valueConverters);
+            last = expressions[i].evaluate(scope, lookupFunctions);
 
             if (last !== null) {
               result = last;
@@ -1194,13 +1227,72 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
       _export('Chain', Chain);
 
-      ValueConverter = (function (_Expression2) {
-        _inherits(ValueConverter, _Expression2);
+      BindingBehavior = (function (_Expression2) {
+        _inherits(BindingBehavior, _Expression2);
+
+        function BindingBehavior(expression, name, args) {
+          _classCallCheck(this, BindingBehavior);
+
+          _Expression2.call(this);
+
+          this.expression = expression;
+          this.name = name;
+          this.args = args;
+        }
+
+        BindingBehavior.prototype.evaluate = function evaluate(scope, lookupFunctions) {
+          return this.expression.evaluate(scope, lookupFunctions);
+        };
+
+        BindingBehavior.prototype.assign = function assign(scope, value, lookupFunctions) {
+          return this.expression.assign(scope, value, lookupFunctions);
+        };
+
+        BindingBehavior.prototype.accept = function accept(visitor) {
+          visitor.visitBindingBehavior(this);
+        };
+
+        BindingBehavior.prototype.connect = function connect(binding, scope) {
+          this.expression.connect(binding, scope);
+        };
+
+        BindingBehavior.prototype.bind = function bind(binding, scope, lookupFunctions) {
+          if (this.expression.expression && this.expression.bind) {
+            this.expression.bind(binding, scope, lookupFunctions);
+          }
+          var behavior = lookupFunctions.bindingBehaviors(this.name);
+          if (!behavior) {
+            throw new Error('No BindingBehavior named "' + this.name + '" was found!');
+          }
+          var behaviorKey = 'behavior-' + this.name;
+          if (binding[behaviorKey]) {
+            throw new Error('A binding behavior named "' + this.name + '" has already been applied to "' + this.expression + '"');
+          }
+          binding[behaviorKey] = behavior;
+          behavior.bind.apply(behavior, [binding, scope].concat(evalList(scope, this.args, binding.lookupFunctions)));
+        };
+
+        BindingBehavior.prototype.unbind = function unbind(binding, scope) {
+          var behaviorKey = 'behavior-' + this.name;
+          binding[behaviorKey].unbind(binding, scope);
+          binding[behaviorKey] = null;
+          if (this.expression.expression && this.expression.unbind) {
+            this.expression.unbind(binding, scope);
+          }
+        };
+
+        return BindingBehavior;
+      })(Expression);
+
+      _export('BindingBehavior', BindingBehavior);
+
+      ValueConverter = (function (_Expression3) {
+        _inherits(ValueConverter, _Expression3);
 
         function ValueConverter(expression, name, args, allArgs) {
           _classCallCheck(this, ValueConverter);
 
-          _Expression2.call(this);
+          _Expression3.call(this);
 
           this.expression = expression;
           this.name = name;
@@ -1208,30 +1300,30 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
           this.allArgs = allArgs;
         }
 
-        ValueConverter.prototype.evaluate = function evaluate(scope, valueConverters) {
-          var converter = valueConverters(this.name);
+        ValueConverter.prototype.evaluate = function evaluate(scope, lookupFunctions) {
+          var converter = lookupFunctions.valueConverters(this.name);
           if (!converter) {
             throw new Error('No ValueConverter named "' + this.name + '" was found!');
           }
 
           if ('toView' in converter) {
-            return converter.toView.apply(converter, evalList(scope, this.allArgs, valueConverters));
+            return converter.toView.apply(converter, evalList(scope, this.allArgs, lookupFunctions));
           }
 
-          return this.allArgs[0].evaluate(scope, valueConverters);
+          return this.allArgs[0].evaluate(scope, lookupFunctions);
         };
 
-        ValueConverter.prototype.assign = function assign(scope, value, valueConverters) {
-          var converter = valueConverters(this.name);
+        ValueConverter.prototype.assign = function assign(scope, value, lookupFunctions) {
+          var converter = lookupFunctions.valueConverters(this.name);
           if (!converter) {
             throw new Error('No ValueConverter named "' + this.name + '" was found!');
           }
 
           if ('fromView' in converter) {
-            value = converter.fromView.apply(converter, [value].concat(evalList(scope, this.args, valueConverters)));
+            value = converter.fromView.apply(converter, [value].concat(evalList(scope, this.args, lookupFunctions)));
           }
 
-          return this.allArgs[0].assign(scope, value, valueConverters);
+          return this.allArgs[0].assign(scope, value, lookupFunctions);
         };
 
         ValueConverter.prototype.accept = function accept(visitor) {
@@ -1251,20 +1343,20 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
       _export('ValueConverter', ValueConverter);
 
-      Assign = (function (_Expression3) {
-        _inherits(Assign, _Expression3);
+      Assign = (function (_Expression4) {
+        _inherits(Assign, _Expression4);
 
         function Assign(target, value) {
           _classCallCheck(this, Assign);
 
-          _Expression3.call(this);
+          _Expression4.call(this);
 
           this.target = target;
           this.value = value;
         }
 
-        Assign.prototype.evaluate = function evaluate(scope, valueConverters) {
-          return this.target.assign(scope, this.value.evaluate(scope, valueConverters));
+        Assign.prototype.evaluate = function evaluate(scope, lookupFunctions) {
+          return this.target.assign(scope, this.value.evaluate(scope, lookupFunctions));
         };
 
         Assign.prototype.accept = function accept(vistor) {
@@ -1278,20 +1370,20 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
       _export('Assign', Assign);
 
-      Conditional = (function (_Expression4) {
-        _inherits(Conditional, _Expression4);
+      Conditional = (function (_Expression5) {
+        _inherits(Conditional, _Expression5);
 
         function Conditional(condition, yes, no) {
           _classCallCheck(this, Conditional);
 
-          _Expression4.call(this);
+          _Expression5.call(this);
 
           this.condition = condition;
           this.yes = yes;
           this.no = no;
         }
 
-        Conditional.prototype.evaluate = function evaluate(scope, valueConverters) {
+        Conditional.prototype.evaluate = function evaluate(scope, lookupFunctions) {
           return !!this.condition.evaluate(scope) ? this.yes.evaluate(scope) : this.no.evaluate(scope);
         };
 
@@ -1313,24 +1405,57 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
       _export('Conditional', Conditional);
 
-      AccessScope = (function (_Expression5) {
-        _inherits(AccessScope, _Expression5);
+      AccessThis = (function (_Expression6) {
+        _inherits(AccessThis, _Expression6);
 
-        function AccessScope(name) {
+        function AccessThis(ancestor) {
+          _classCallCheck(this, AccessThis);
+
+          _Expression6.call(this);
+          this.ancestor = ancestor;
+        }
+
+        AccessThis.prototype.evaluate = function evaluate(scope, lookupFunctions) {
+          var oc = scope.overrideContext;
+          var i = this.ancestor;
+          while (i-- && oc) {
+            oc = oc.parentOverrideContext;
+          }
+          return i < 1 && oc ? oc.bindingContext : undefined;
+        };
+
+        AccessThis.prototype.accept = function accept(visitor) {
+          visitor.visitAccessThis(this);
+        };
+
+        AccessThis.prototype.connect = function connect(binding, scope) {};
+
+        return AccessThis;
+      })(Expression);
+
+      _export('AccessThis', AccessThis);
+
+      AccessScope = (function (_Expression7) {
+        _inherits(AccessScope, _Expression7);
+
+        function AccessScope(name, ancestor) {
           _classCallCheck(this, AccessScope);
 
-          _Expression5.call(this);
+          _Expression7.call(this);
 
           this.name = name;
+          this.ancestor = ancestor;
           this.isAssignable = true;
         }
 
-        AccessScope.prototype.evaluate = function evaluate(scope, valueConverters) {
-          return scope[this.name];
+        AccessScope.prototype.evaluate = function evaluate(scope, lookupFunctions) {
+          var context = getContextFor(this.name, scope, this.ancestor);
+          return context[this.name];
         };
 
         AccessScope.prototype.assign = function assign(scope, value) {
-          return scope[this.name] = value;
+          var context = getContextFor(this.name, scope, this.ancestor);
+          return context[this.name] = value;
         };
 
         AccessScope.prototype.accept = function accept(visitor) {
@@ -1338,7 +1463,8 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
         };
 
         AccessScope.prototype.connect = function connect(binding, scope) {
-          binding.observeProperty(scope, this.name);
+          var context = getContextFor(this.name, scope, this.ancestor);
+          binding.observeProperty(context, this.name);
         };
 
         return AccessScope;
@@ -1346,21 +1472,21 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
       _export('AccessScope', AccessScope);
 
-      AccessMember = (function (_Expression6) {
-        _inherits(AccessMember, _Expression6);
+      AccessMember = (function (_Expression8) {
+        _inherits(AccessMember, _Expression8);
 
         function AccessMember(object, name) {
           _classCallCheck(this, AccessMember);
 
-          _Expression6.call(this);
+          _Expression8.call(this);
 
           this.object = object;
           this.name = name;
           this.isAssignable = true;
         }
 
-        AccessMember.prototype.evaluate = function evaluate(scope, valueConverters) {
-          var instance = this.object.evaluate(scope, valueConverters);
+        AccessMember.prototype.evaluate = function evaluate(scope, lookupFunctions) {
+          var instance = this.object.evaluate(scope, lookupFunctions);
           return instance === null || instance === undefined ? instance : instance[this.name];
         };
 
@@ -1392,22 +1518,22 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
       _export('AccessMember', AccessMember);
 
-      AccessKeyed = (function (_Expression7) {
-        _inherits(AccessKeyed, _Expression7);
+      AccessKeyed = (function (_Expression9) {
+        _inherits(AccessKeyed, _Expression9);
 
         function AccessKeyed(object, key) {
           _classCallCheck(this, AccessKeyed);
 
-          _Expression7.call(this);
+          _Expression9.call(this);
 
           this.object = object;
           this.key = key;
           this.isAssignable = true;
         }
 
-        AccessKeyed.prototype.evaluate = function evaluate(scope, valueConverters) {
-          var instance = this.object.evaluate(scope, valueConverters);
-          var lookup = this.key.evaluate(scope, valueConverters);
+        AccessKeyed.prototype.evaluate = function evaluate(scope, lookupFunctions) {
+          var instance = this.object.evaluate(scope, lookupFunctions);
+          var lookup = this.key.evaluate(scope, lookupFunctions);
           return getKeyed(instance, lookup);
         };
 
@@ -1438,26 +1564,27 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
       _export('AccessKeyed', AccessKeyed);
 
-      CallScope = (function (_Expression8) {
-        _inherits(CallScope, _Expression8);
+      CallScope = (function (_Expression10) {
+        _inherits(CallScope, _Expression10);
 
-        function CallScope(name, args) {
+        function CallScope(name, args, ancestor) {
           _classCallCheck(this, CallScope);
 
-          _Expression8.call(this);
+          _Expression10.call(this);
 
           this.name = name;
           this.args = args;
+          this.ancestor = ancestor;
         }
 
-        CallScope.prototype.evaluate = function evaluate(scope, valueConverters, args) {
-          args = args || evalList(scope, this.args, valueConverters);
-          var func = getFunction(scope, this.name);
+        CallScope.prototype.evaluate = function evaluate(scope, lookupFunctions, mustEvaluate) {
+          var args = evalList(scope, this.args, lookupFunctions);
+          var context = getContextFor(this.name, scope, this.ancestor);
+          var func = getFunction(context, this.name, mustEvaluate);
           if (func) {
-            return func.apply(scope, args);
-          } else {
-            return func;
+            return func.apply(context, args);
           }
+          return undefined;
         };
 
         CallScope.prototype.accept = function accept(visitor) {
@@ -1477,28 +1604,27 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
       _export('CallScope', CallScope);
 
-      CallMember = (function (_Expression9) {
-        _inherits(CallMember, _Expression9);
+      CallMember = (function (_Expression11) {
+        _inherits(CallMember, _Expression11);
 
         function CallMember(object, name, args) {
           _classCallCheck(this, CallMember);
 
-          _Expression9.call(this);
+          _Expression11.call(this);
 
           this.object = object;
           this.name = name;
           this.args = args;
         }
 
-        CallMember.prototype.evaluate = function evaluate(scope, valueConverters, args) {
-          var instance = this.object.evaluate(scope, valueConverters);
-          args = args || evalList(scope, this.args, valueConverters);
-          var func = getFunction(instance, this.name);
+        CallMember.prototype.evaluate = function evaluate(scope, lookupFunctions, mustEvaluate) {
+          var instance = this.object.evaluate(scope, lookupFunctions);
+          var args = evalList(scope, this.args, lookupFunctions);
+          var func = getFunction(instance, this.name, mustEvaluate);
           if (func) {
             return func.apply(instance, args);
-          } else {
-            return func;
           }
+          return undefined;
         };
 
         CallMember.prototype.accept = function accept(visitor) {
@@ -1508,7 +1634,7 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
         CallMember.prototype.connect = function connect(binding, scope) {
           this.object.connect(binding, scope);
           var obj = this.object.evaluate(scope);
-          if (getFunction(obj, this.name)) {
+          if (getFunction(obj, this.name, false)) {
             var args = this.args;
             var i = args.length;
             while (i--) {
@@ -1522,28 +1648,27 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
       _export('CallMember', CallMember);
 
-      CallFunction = (function (_Expression10) {
-        _inherits(CallFunction, _Expression10);
+      CallFunction = (function (_Expression12) {
+        _inherits(CallFunction, _Expression12);
 
         function CallFunction(func, args) {
           _classCallCheck(this, CallFunction);
 
-          _Expression10.call(this);
+          _Expression12.call(this);
 
           this.func = func;
           this.args = args;
         }
 
-        CallFunction.prototype.evaluate = function evaluate(scope, valueConverters, args) {
-          var func = this.func.evaluate(scope, valueConverters);
-
+        CallFunction.prototype.evaluate = function evaluate(scope, lookupFunctions, mustEvaluate) {
+          var func = this.func.evaluate(scope, lookupFunctions);
           if (typeof func === 'function') {
-            return func.apply(null, args || evalList(scope, this.args, valueConverters));
-          } else if (func === null || func === undefined) {
-            return func;
-          } else {
-            throw new Error(this.func + ' is not a function');
+            return func.apply(null, evalList(scope, this.args, lookupFunctions));
           }
+          if (!mustEvaluate && (func === null || func === undefined)) {
+            return undefined;
+          }
+          throw new Error(this.func + ' is not a function');
         };
 
         CallFunction.prototype.accept = function accept(visitor) {
@@ -1567,20 +1692,20 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
       _export('CallFunction', CallFunction);
 
-      Binary = (function (_Expression11) {
-        _inherits(Binary, _Expression11);
+      Binary = (function (_Expression13) {
+        _inherits(Binary, _Expression13);
 
         function Binary(operation, left, right) {
           _classCallCheck(this, Binary);
 
-          _Expression11.call(this);
+          _Expression13.call(this);
 
           this.operation = operation;
           this.left = left;
           this.right = right;
         }
 
-        Binary.prototype.evaluate = function evaluate(scope, valueConverters) {
+        Binary.prototype.evaluate = function evaluate(scope, lookupFunctions) {
           var left = this.left.evaluate(scope);
 
           switch (this.operation) {
@@ -1639,8 +1764,6 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
               return left >= right;
             case '^':
               return left ^ right;
-            case '&':
-              return left & right;
           }
 
           throw new Error('Internal error [' + this.operation + '] not handled');
@@ -1664,19 +1787,19 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
       _export('Binary', Binary);
 
-      PrefixNot = (function (_Expression12) {
-        _inherits(PrefixNot, _Expression12);
+      PrefixNot = (function (_Expression14) {
+        _inherits(PrefixNot, _Expression14);
 
         function PrefixNot(operation, expression) {
           _classCallCheck(this, PrefixNot);
 
-          _Expression12.call(this);
+          _Expression14.call(this);
 
           this.operation = operation;
           this.expression = expression;
         }
 
-        PrefixNot.prototype.evaluate = function evaluate(scope, valueConverters) {
+        PrefixNot.prototype.evaluate = function evaluate(scope, lookupFunctions) {
           return !this.expression.evaluate(scope);
         };
 
@@ -1693,18 +1816,18 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
       _export('PrefixNot', PrefixNot);
 
-      LiteralPrimitive = (function (_Expression13) {
-        _inherits(LiteralPrimitive, _Expression13);
+      LiteralPrimitive = (function (_Expression15) {
+        _inherits(LiteralPrimitive, _Expression15);
 
         function LiteralPrimitive(value) {
           _classCallCheck(this, LiteralPrimitive);
 
-          _Expression13.call(this);
+          _Expression15.call(this);
 
           this.value = value;
         }
 
-        LiteralPrimitive.prototype.evaluate = function evaluate(scope, valueConverters) {
+        LiteralPrimitive.prototype.evaluate = function evaluate(scope, lookupFunctions) {
           return this.value;
         };
 
@@ -1719,18 +1842,18 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
       _export('LiteralPrimitive', LiteralPrimitive);
 
-      LiteralString = (function (_Expression14) {
-        _inherits(LiteralString, _Expression14);
+      LiteralString = (function (_Expression16) {
+        _inherits(LiteralString, _Expression16);
 
         function LiteralString(value) {
           _classCallCheck(this, LiteralString);
 
-          _Expression14.call(this);
+          _Expression16.call(this);
 
           this.value = value;
         }
 
-        LiteralString.prototype.evaluate = function evaluate(scope, valueConverters) {
+        LiteralString.prototype.evaluate = function evaluate(scope, lookupFunctions) {
           return this.value;
         };
 
@@ -1745,25 +1868,25 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
       _export('LiteralString', LiteralString);
 
-      LiteralArray = (function (_Expression15) {
-        _inherits(LiteralArray, _Expression15);
+      LiteralArray = (function (_Expression17) {
+        _inherits(LiteralArray, _Expression17);
 
         function LiteralArray(elements) {
           _classCallCheck(this, LiteralArray);
 
-          _Expression15.call(this);
+          _Expression17.call(this);
 
           this.elements = elements;
         }
 
-        LiteralArray.prototype.evaluate = function evaluate(scope, valueConverters) {
+        LiteralArray.prototype.evaluate = function evaluate(scope, lookupFunctions) {
           var elements = this.elements,
               length = elements.length,
               result = [],
               i;
 
           for (i = 0; i < length; ++i) {
-            result[i] = elements[i].evaluate(scope, valueConverters);
+            result[i] = elements[i].evaluate(scope, lookupFunctions);
           }
 
           return result;
@@ -1785,19 +1908,19 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
       _export('LiteralArray', LiteralArray);
 
-      LiteralObject = (function (_Expression16) {
-        _inherits(LiteralObject, _Expression16);
+      LiteralObject = (function (_Expression18) {
+        _inherits(LiteralObject, _Expression18);
 
         function LiteralObject(keys, values) {
           _classCallCheck(this, LiteralObject);
 
-          _Expression16.call(this);
+          _Expression18.call(this);
 
           this.keys = keys;
           this.values = values;
         }
 
-        LiteralObject.prototype.evaluate = function evaluate(scope, valueConverters) {
+        LiteralObject.prototype.evaluate = function evaluate(scope, lookupFunctions) {
           var instance = {},
               keys = this.keys,
               values = this.values,
@@ -1805,7 +1928,7 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
               i;
 
           for (i = 0; i < length; ++i) {
-            instance[keys[i]] = values[i].evaluate(scope, valueConverters);
+            instance[keys[i]] = values[i].evaluate(scope, lookupFunctions);
           }
 
           return instance;
@@ -1877,6 +2000,23 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
           }
         };
 
+        Unparser.prototype.visitBindingBehavior = function visitBindingBehavior(behavior) {
+          var args = behavior.args,
+              length = args.length,
+              i;
+
+          this.write('(');
+          behavior.expression.accept(this);
+          this.write('&' + behavior.name);
+
+          for (i = 0; i < length; ++i) {
+            this.write(' :');
+            args[i].accept(this);
+          }
+
+          this.write(')');
+        };
+
         Unparser.prototype.visitValueConverter = function visitValueConverter(converter) {
           var args = converter.args,
               length = args.length,
@@ -1908,7 +2048,23 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
           conditional.no.accept(this);
         };
 
+        Unparser.prototype.visitAccessThis = function visitAccessThis(access) {
+          if (access.ancestor === 0) {
+            this.write('$this');
+            return;
+          }
+          this.write('$parent');
+          var i = access.ancestor - 1;
+          while (i--) {
+            this.write('.$parent');
+          }
+        };
+
         Unparser.prototype.visitAccessScope = function visitAccessScope(access) {
+          var i = access.ancestor;
+          while (i--) {
+            this.write('$parent.');
+          }
           this.write(access.name);
         };
 
@@ -1925,6 +2081,10 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
         };
 
         Unparser.prototype.visitCallScope = function visitCallScope(call) {
+          var i = call.ancestor;
+          while (i--) {
+            this.write('$parent.');
+          }
           this.write(call.name);
           this.writeArgs(call.args);
         };
@@ -2413,25 +2573,25 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
               this.error('Unconsumed token ' + this.peek.text);
             }
 
-            var expr = this.parseValueConverter();
+            var expr = this.parseBindingBehavior();
             expressions.push(expr);
 
             while (this.optional(';')) {
               isChain = true;
             }
 
-            if (isChain && expr instanceof ValueConverter) {
-              this.error('cannot have a value converter in a chain');
+            if (isChain && (expr instanceof BindingBehavior || expr instanceof ValueConverter)) {
+              this.error('Cannot have a binding behavior or value converter in a chain');
             }
           }
 
           return expressions.length === 1 ? expressions[0] : new Chain(expressions);
         };
 
-        ParserImplementation.prototype.parseValueConverter = function parseValueConverter() {
-          var result = this.parseExpression();
+        ParserImplementation.prototype.parseBindingBehavior = function parseBindingBehavior() {
+          var result = this.parseValueConverter();
 
-          while (this.optional('|')) {
+          while (this.optional('&')) {
             var _name = this.peek.text;
             var args = [];
 
@@ -2441,7 +2601,26 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
               args.push(this.parseExpression());
             }
 
-            result = new ValueConverter(result, _name, args, [result].concat(args));
+            result = new BindingBehavior(result, _name, args);
+          }
+
+          return result;
+        };
+
+        ParserImplementation.prototype.parseValueConverter = function parseValueConverter() {
+          var result = this.parseExpression();
+
+          while (this.optional('|')) {
+            var _name2 = this.peek.text;
+            var args = [];
+
+            this.advance();
+
+            while (this.optional(':')) {
+              args.push(this.parseExpression());
+            }
+
+            result = new ValueConverter(result, _name2, args, [result].concat(args));
           }
 
           return result;
@@ -2590,16 +2769,24 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
           while (true) {
             if (this.optional('.')) {
-              var _name2 = this.peek.text;
+              var _name3 = this.peek.text;
 
               this.advance();
 
               if (this.optional('(')) {
                 var args = this.parseExpressionList(')');
                 this.expect(')');
-                result = new CallMember(result, _name2, args);
+                if (result instanceof AccessThis) {
+                  result = new CallScope(_name3, args, result.ancestor);
+                } else {
+                  result = new CallMember(result, _name3, args);
+                }
               } else {
-                result = new AccessMember(result, _name2);
+                if (result instanceof AccessThis) {
+                  result = new AccessScope(_name3, result.ancestor);
+                } else {
+                  result = new AccessMember(result, _name3);
+                }
               }
             } else if (this.optional('[')) {
               var key = this.parseExpression();
@@ -2652,13 +2839,30 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
           this.advance();
 
-          if (!this.optional('(')) {
-            return new AccessScope(name);
+          if (name === '$this') {
+            return new AccessThis(0);
           }
 
-          var args = this.parseExpressionList(')');
-          this.expect(')');
-          return new CallScope(name, args);
+          var ancestor = 0;
+          while (name === '$parent') {
+            ancestor++;
+            if (this.optional('.')) {
+              name = this.peek.key;
+              this.advance();
+            } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === '[') {
+              return new AccessThis(ancestor);
+            } else {
+              this.error('Unexpected token ' + this.peek.text);
+            }
+          }
+
+          if (this.optional('(')) {
+            var args = this.parseExpressionList(')');
+            this.expect(')');
+            return new CallScope(name, args, ancestor);
+          }
+
+          return new AccessScope(name, ancestor);
         };
 
         ParserImplementation.prototype.parseObject = function parseObject() {
@@ -2919,7 +3123,11 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
         };
 
         EventManager.prototype.registerElementPropertyConfig = function registerElementPropertyConfig(tagName, propertyName, events) {
-          this.elementHandlerLookup[tagName][propertyName] = {
+          this.elementHandlerLookup[tagName][propertyName] = this.createElementHandler(events);
+        };
+
+        EventManager.prototype.createElementHandler = function createElementHandler(events) {
+          return {
             subscribe: function subscribe(target, callback) {
               events.forEach(function (changeEvent) {
                 target.addEventListener(changeEvent, callback, false);
@@ -3081,6 +3289,8 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
       PrimitiveObserver = (function () {
         function PrimitiveObserver(primitive, propertyName) {
           _classCallCheck(this, PrimitiveObserver);
+
+          this.doNotCache = true;
 
           this.primitive = primitive;
           this.propertyName = propertyName;
@@ -4214,20 +4424,20 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
       _export('ObjectObservationAdapter', ObjectObservationAdapter);
 
       BindingExpression = (function () {
-        function BindingExpression(observerLocator, targetProperty, sourceExpression, mode, valueConverterLookupFunction, attribute) {
+        function BindingExpression(observerLocator, targetProperty, sourceExpression, mode, lookupFunctions, attribute) {
           _classCallCheck(this, BindingExpression);
 
           this.observerLocator = observerLocator;
           this.targetProperty = targetProperty;
           this.sourceExpression = sourceExpression;
           this.mode = mode;
-          this.valueConverterLookupFunction = valueConverterLookupFunction;
+          this.lookupFunctions = lookupFunctions;
           this.attribute = attribute;
           this.discrete = false;
         }
 
         BindingExpression.prototype.createBinding = function createBinding(target) {
-          return new Binding(this.observerLocator, this.sourceExpression, target, this.targetProperty, this.mode, this.valueConverterLookupFunction);
+          return new Binding(this.observerLocator, this.sourceExpression, target, this.targetProperty, this.mode, this.lookupFunctions);
         };
 
         return BindingExpression;
@@ -4238,15 +4448,23 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
       targetContext = 'Binding:target';
 
       Binding = (function () {
-        function Binding(observerLocator, sourceExpression, target, targetProperty, mode, valueConverterLookupFunction) {
+        function Binding(observerLocator, sourceExpression, target, targetProperty, mode, lookupFunctions) {
           _classCallCheck(this, _Binding);
 
           this.observerLocator = observerLocator;
           this.sourceExpression = sourceExpression;
           this.targetProperty = observerLocator.getObserver(target, targetProperty);
           this.mode = mode;
-          this.valueConverterLookupFunction = valueConverterLookupFunction;
+          this.lookupFunctions = lookupFunctions;
         }
+
+        Binding.prototype.updateTarget = function updateTarget(value) {
+          this.targetProperty.setValue(value);
+        };
+
+        Binding.prototype.updateSource = function updateSource(value) {
+          this.sourceExpression.assign(this.source, value, this.lookupFunctions);
+        };
 
         Binding.prototype.call = function call(context, newValue, oldValue) {
           if (!this.isBound) {
@@ -4254,9 +4472,9 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
           }
           if (context === sourceContext) {
             oldValue = this.targetProperty.getValue();
-            newValue = this.sourceExpression.evaluate(this.source, this.valueConverterLookupFunction);
+            newValue = this.sourceExpression.evaluate(this.source, this.lookupFunctions);
             if (newValue !== oldValue) {
-              this.targetProperty.setValue(newValue);
+              this.updateTarget(newValue);
             }
             this._version++;
             this.sourceExpression.connect(this, this.source);
@@ -4264,7 +4482,7 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
             return;
           }
           if (context === targetContext) {
-            this.sourceExpression.assign(this.source, newValue, this.valueConverterLookupFunction);
+            this.updateSource(newValue);
             return;
           }
           throw new Error('Unexpected call context ' + context);
@@ -4280,26 +4498,37 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
           this.isBound = true;
           this.source = source;
 
+          var sourceExpression = this.sourceExpression;
+          if (sourceExpression.bind) {
+            sourceExpression.bind(this, source, this.lookupFunctions);
+          }
+
           var targetProperty = this.targetProperty;
           if ('bind' in targetProperty) {
             targetProperty.bind();
           }
 
+          var value = sourceExpression.evaluate(source, this.lookupFunctions);
+          this.updateTarget(value);
+
           var mode = this.mode;
           if (mode === bindingMode.oneWay || mode === bindingMode.twoWay) {
-            this.sourceExpression.connect(this, source);
+            sourceExpression.connect(this, source);
 
             if (mode === bindingMode.twoWay) {
               targetProperty.subscribe(targetContext, this);
             }
           }
-
-          var value = this.sourceExpression.evaluate(source, this.valueConverterLookupFunction);
-          targetProperty.setValue(value);
         };
 
         Binding.prototype.unbind = function unbind() {
+          if (!this.isBound) {
+            return;
+          }
           this.isBound = false;
+          if (this.sourceExpression.unbind) {
+            this.sourceExpression.unbind(this, this.source);
+          }
           this.source = null;
           if ('unbind' in this.targetProperty) {
             this.targetProperty.unbind();
@@ -4315,18 +4544,20 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
         return Binding;
       })();
 
+      _export('Binding', Binding);
+
       CallExpression = (function () {
-        function CallExpression(observerLocator, targetProperty, sourceExpression, valueConverterLookupFunction) {
+        function CallExpression(observerLocator, targetProperty, sourceExpression, lookupFunctions) {
           _classCallCheck(this, CallExpression);
 
           this.observerLocator = observerLocator;
           this.targetProperty = targetProperty;
           this.sourceExpression = sourceExpression;
-          this.valueConverterLookupFunction = valueConverterLookupFunction;
+          this.lookupFunctions = lookupFunctions;
         }
 
         CallExpression.prototype.createBinding = function createBinding(target) {
-          return new Call(this.observerLocator, this.sourceExpression, target, this.targetProperty, this.valueConverterLookupFunction);
+          return new Call(this.observerLocator, this.sourceExpression, target, this.targetProperty, this.lookupFunctions);
         };
 
         return CallExpression;
@@ -4335,46 +4566,65 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
       _export('CallExpression', CallExpression);
 
       Call = (function () {
-        function Call(observerLocator, sourceExpression, target, targetProperty, valueConverterLookupFunction) {
+        function Call(observerLocator, sourceExpression, target, targetProperty, lookupFunctions) {
           _classCallCheck(this, Call);
 
           this.sourceExpression = sourceExpression;
           this.target = target;
           this.targetProperty = observerLocator.getObserver(target, targetProperty);
-          this.valueConverterLookupFunction = valueConverterLookupFunction;
+          this.lookupFunctions = lookupFunctions;
         }
+
+        Call.prototype.callSource = function callSource($event) {
+          var overrideContext = this.source.overrideContext;
+          Object.assign(overrideContext, $event);
+          overrideContext.$event = $event;
+          var mustEvaluate = true;
+          var result = this.sourceExpression.evaluate(this.source, this.lookupFunctions, mustEvaluate);
+          delete overrideContext.$event;
+          for (var prop in $event) {
+            delete overrideContext[prop];
+          }
+          return result;
+        };
 
         Call.prototype.bind = function bind(source) {
           var _this4 = this;
 
-          if (this.source) {
+          if (this.isBound) {
             if (this.source === source) {
               return;
             }
-
             this.unbind();
           }
-
+          this.isBound = true;
           this.source = source;
+
+          var sourceExpression = this.sourceExpression;
+          if (sourceExpression.bind) {
+            sourceExpression.bind(this, source, this.lookupFunctions);
+          }
           this.targetProperty.setValue(function ($event) {
-            var result = undefined;
-            var temp = source.$event;
-            source.$event = $event;
-            result = _this4.sourceExpression.evaluate(source, _this4.valueConverterLookupFunction);
-            source.$event = temp;
-            return result;
+            return _this4.callSource($event);
           });
         };
 
         Call.prototype.unbind = function unbind() {
-          if (this.source) {
-            this.targetProperty.setValue(null);
-            this.source = null;
+          if (!this.isBound) {
+            return;
           }
+          this.isBound = false;
+          if (this.sourceExpression.unbind) {
+            this.sourceExpression.unbind(this, this.source);
+          }
+          this.source = null;
+          this.targetProperty.setValue(null);
         };
 
         return Call;
       })();
+
+      _export('Call', Call);
 
       ValueConverterResource = (function () {
         function ValueConverterResource(name) {
@@ -4404,10 +4654,36 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
       _export('ValueConverterResource', ValueConverterResource);
 
-      decorators.configure.parameterizedDecorator('valueConverter', valueConverter);
+      BindingBehaviorResource = (function () {
+        function BindingBehaviorResource(name) {
+          _classCallCheck(this, BindingBehaviorResource);
+
+          this.name = name;
+        }
+
+        BindingBehaviorResource.convention = function convention(name) {
+          if (name.endsWith('BindingBehavior')) {
+            return new BindingBehaviorResource(camelCase(name.substring(0, name.length - 15)));
+          }
+        };
+
+        BindingBehaviorResource.prototype.initialize = function initialize(container, target) {
+          this.instance = container.get(target);
+        };
+
+        BindingBehaviorResource.prototype.register = function register(registry, name) {
+          registry.registerBindingBehavior(name || this.name, this.instance);
+        };
+
+        BindingBehaviorResource.prototype.load = function load(container, target) {};
+
+        return BindingBehaviorResource;
+      })();
+
+      _export('BindingBehaviorResource', BindingBehaviorResource);
 
       ListenerExpression = (function () {
-        function ListenerExpression(eventManager, targetEvent, sourceExpression, delegate, preventDefault) {
+        function ListenerExpression(eventManager, targetEvent, sourceExpression, delegate, preventDefault, lookupFunctions) {
           _classCallCheck(this, ListenerExpression);
 
           this.eventManager = eventManager;
@@ -4416,10 +4692,11 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
           this.delegate = delegate;
           this.discrete = true;
           this.preventDefault = preventDefault;
+          this.lookupFunctions = lookupFunctions;
         }
 
         ListenerExpression.prototype.createBinding = function createBinding(target) {
-          return new Listener(this.eventManager, this.targetEvent, this.delegate, this.sourceExpression, target, this.preventDefault);
+          return new Listener(this.eventManager, this.targetEvent, this.delegate, this.sourceExpression, target, this.preventDefault, this.lookupFunctions);
         };
 
         return ListenerExpression;
@@ -4428,7 +4705,7 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
       _export('ListenerExpression', ListenerExpression);
 
       Listener = (function () {
-        function Listener(eventManager, targetEvent, delegate, sourceExpression, target, preventDefault) {
+        function Listener(eventManager, targetEvent, delegate, sourceExpression, target, preventDefault, lookupFunctions) {
           _classCallCheck(this, Listener);
 
           this.eventManager = eventManager;
@@ -4437,41 +4714,58 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
           this.sourceExpression = sourceExpression;
           this.target = target;
           this.preventDefault = preventDefault;
+          this.lookupFunctions = lookupFunctions;
         }
+
+        Listener.prototype.callSource = function callSource(event) {
+          this.source.overrideContext.$event = event;
+          var mustEvaluate = true;
+          var result = this.sourceExpression.evaluate(this.source, this.lookupFunctions, mustEvaluate);
+          delete this.source.overrideContext.$event;
+          if (result !== true && this.preventDefault) {
+            event.preventDefault();
+          }
+          return result;
+        };
 
         Listener.prototype.bind = function bind(source) {
           var _this5 = this;
 
-          if (this._disposeListener) {
+          if (this.isBound) {
             if (this.source === source) {
               return;
             }
-
             this.unbind();
           }
-
+          this.isBound = true;
           this.source = source;
+
+          var sourceExpression = this.sourceExpression;
+          if (sourceExpression.bind) {
+            sourceExpression.bind(this, source, this.lookupFunctions);
+          }
           this._disposeListener = this.eventManager.addEventListener(this.target, this.targetEvent, function (event) {
-            var prevEvent = source.$event;
-            source.$event = event;
-            var result = _this5.sourceExpression.evaluate(source);
-            source.$event = prevEvent;
-            if (result !== true && _this5.preventDefault) {
-              event.preventDefault();
-            }
-            return result;
+            return _this5.callSource(event);
           }, this.delegate);
         };
 
         Listener.prototype.unbind = function unbind() {
-          if (this._disposeListener) {
-            this._disposeListener();
-            this._disposeListener = null;
+          if (!this.isBound) {
+            return;
           }
+          this.isBound = false;
+          if (this.sourceExpression.unbind) {
+            this.sourceExpression.unbind(this, this.source);
+          }
+          this.source = null;
+          this._disposeListener();
+          this._disposeListener = null;
         };
 
         return Listener;
       })();
+
+      _export('Listener', Listener);
 
       NameExpression = (function () {
         function NameExpression(property, apiName) {
@@ -4492,9 +4786,8 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
               return element;
             case 'controller':
               return getAU(element).controller;
-            case 'model':
             case 'view-model':
-              return getAU(element).controller.model;
+              return getAU(element).controller.viewModel;
             case 'view':
               return getAU(element).controller.view;
             default:
@@ -4504,7 +4797,7 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
                 throw new Error('Attempted to reference "' + apiName + '", but it was not found amongst the target\'s API.');
               }
 
-              return target.model;
+              return target.viewModel;
           }
         };
 
@@ -4519,10 +4812,12 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
           this.property = property;
           this.target = target;
+          this.source = null;
+          this.context = null;
         }
 
         NameBinder.prototype.bind = function bind(source) {
-          if (this.source) {
+          if (this.source !== null) {
             if (this.source === source) {
               return;
             }
@@ -4530,48 +4825,64 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
             this.unbind();
           }
 
-          this.source = source;
-          source[this.property] = this.target;
+          this.source = source || null;
+          this.context = source.bindingContext || source.overrideContext || null;
+
+          if (this.context !== null) {
+            this.context[this.property] = this.target;
+          }
         };
 
         NameBinder.prototype.unbind = function unbind() {
-          if (this.source) {
-            this.source[this.property] = null;
+          if (this.source !== null) {
             this.source = null;
+          }
+
+          if (this.context !== null) {
+            this.context[this.property] = null;
           }
         };
 
         return NameBinder;
       })();
 
-      valueConverterLookupFunction = function valueConverterLookupFunction() {
-        return null;
+      lookupFunctions = {
+        bindingBehaviors: function bindingBehaviors(name) {
+          return null;
+        },
+        valueConverters: function valueConverters(name) {
+          return null;
+        }
       };
 
-      taskQueue = undefined;
-      eventManager = undefined;
-      dirtyChecker = undefined;
-      observerLocator = undefined;
-      parser = undefined;
-      __initialized = false;
+      BindingEngine = (function () {
+        _createClass(BindingEngine, null, [{
+          key: 'inject',
+          value: [ObserverLocator, Parser],
+          enumerable: true
+        }]);
 
-      _export('__initialized', __initialized);
+        function BindingEngine(observerLocator, parser) {
+          _classCallCheck(this, BindingEngine);
 
-      bindingEngine = {
-        initialize: initialize,
+          this.observerLocator = observerLocator;
+          this.parser = parser;
+        }
 
-        createBindingExpression: function createBindingExpression(targetProperty, sourceExpression) {
+        BindingEngine.prototype.createBindingExpression = function createBindingExpression(targetProperty, sourceExpression) {
           var mode = arguments.length <= 2 || arguments[2] === undefined ? bindingMode.oneWay : arguments[2];
+          var lookupFunctions = arguments.length <= 3 || arguments[3] === undefined ? lookupFunctions : arguments[3];
+          return (function () {
+            return new BindingExpression(this.observerLocator, targetProperty, this.parser.parse(sourceExpression), mode, lookupFunctions);
+          }).apply(this, arguments);
+        };
 
-          assertInitialized();
-          return new BindingExpression(observerLocator, targetProperty, parser.parse(sourceExpression), mode, valueConverterLookupFunction);
-        },
+        BindingEngine.prototype.propertyObserver = function propertyObserver(obj, propertyName) {
+          var _this6 = this;
 
-        propertyObserver: function propertyObserver(obj, propertyName) {
           return {
             subscribe: function subscribe(callback) {
-              assertInitialized();
-              var observer = observerLocator.getObserver(obj, propertyName);
+              var observer = _this6.observerLocator.getObserver(obj, propertyName);
               observer.subscribe(callback);
               return {
                 dispose: function dispose() {
@@ -4580,17 +4891,18 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
               };
             }
           };
-        },
+        };
 
-        collectionObserver: function collectionObserver(collection) {
+        BindingEngine.prototype.collectionObserver = function collectionObserver(collection) {
+          var _this7 = this;
+
           return {
             subscribe: function subscribe(callback) {
-              assertInitialized();
               var observer = undefined;
               if (collection instanceof Array) {
-                observer = observerLocator.getArrayObserver(collection);
+                observer = _this7.observerLocator.getArrayObserver(collection);
               } else if (collection instanceof Map) {
-                observer = observerLocator.getMapObserver(collection);
+                observer = _this7.observerLocator.getMapObserver(collection);
               } else {
                 throw new Error('collection must be an instance of Array or Map.');
               }
@@ -4602,28 +4914,28 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
               };
             }
           };
-        },
+        };
 
-        expressionObserver: function expressionObserver(scope, expression) {
-          assertInitialized();
-          return new ExpressionObserver(scope, parser.parse(expression));
-        },
+        BindingEngine.prototype.expressionObserver = function expressionObserver(bindingContext, expression) {
+          var scope = { bindingContext: bindingContext, overrideContext: createOverrideContext(bindingContext) };
+          return new ExpressionObserver(scope, this.parser.parse(expression), this.observerLocator);
+        };
 
-        parseExpression: function parseExpression(expression) {
-          assertInitialized();
-          return parser.parse(expression);
-        },
+        BindingEngine.prototype.parseExpression = function parseExpression(expression) {
+          return this.parser.parse(expression);
+        };
 
-        registerAdapter: function registerAdapter(adapter) {
-          assertInitialized();
-          observerLocator.addAdapter(adapter);
-        }
-      };
+        BindingEngine.prototype.registerAdapter = function registerAdapter(adapter) {
+          this.observerLocator.addAdapter(adapter);
+        };
 
-      _export('bindingEngine', bindingEngine);
+        return BindingEngine;
+      })();
+
+      _export('BindingEngine', BindingEngine);
 
       ExpressionObserver = (function () {
-        function ExpressionObserver(scope, expression) {
+        function ExpressionObserver(scope, expression, observerLocator) {
           _classCallCheck(this, _ExpressionObserver);
 
           this.scope = scope;
@@ -4632,24 +4944,24 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
         }
 
         ExpressionObserver.prototype.subscribe = function subscribe(callback) {
-          var _this6 = this;
+          var _this8 = this;
 
           if (!this.hasSubscribers()) {
-            this.oldValue = this.expression.evaluate(this.scope, valueConverterLookupFunction);
+            this.oldValue = this.expression.evaluate(this.scope, lookupFunctions);
             this.expression.connect(this, this.scope);
           }
           this.addSubscriber(callback);
           return {
             dispose: function dispose() {
-              if (_this6.removeSubscriber(callback) && !_this6.hasSubscribers()) {
-                _this6.unobserve(true);
+              if (_this8.removeSubscriber(callback) && !_this8.hasSubscribers()) {
+                _this8.unobserve(true);
               }
             }
           };
         };
 
         ExpressionObserver.prototype.call = function call() {
-          var newValue = this.expression.evaluate(this.scope, valueConverterLookupFunction);
+          var newValue = this.expression.evaluate(this.scope, lookupFunctions);
           var oldValue = this.oldValue;
           if (newValue !== oldValue) {
             this.oldValue = newValue;

@@ -1,7 +1,69 @@
 import 'core-js';
 import {FEATURE,DOM} from 'aurelia-pal';
 import {TaskQueue} from 'aurelia-task-queue';
-import {decorators,metadata} from 'aurelia-metadata';
+import {metadata} from 'aurelia-metadata';
+
+export function camelCase(name) {
+  return name.charAt(0).toLowerCase() + name.slice(1);
+}
+
+interface OverrideContext {
+  parentOverrideContext: OverrideContext;
+  bindingContext: any;
+}
+
+// view instances implement this interface
+interface Scope {
+  bindingContext: any;
+  overrideContext: OverrideContext;
+}
+
+export function createOverrideContext(bindingContext?: any, parentOverrideContext?: OverrideContext): OverrideContext {
+  return {
+    bindingContext: bindingContext,
+    parentOverrideContext: parentOverrideContext || null
+  };
+}
+
+export function getContextFor(name: string, scope: Scope, ancestor: number): any {
+  let oc = scope.overrideContext;
+
+  if (ancestor) {
+    // jump up the required number of ancestor contexts (eg $parent.$parent requires two jumps)
+    while (ancestor && oc) {
+      ancestor--;
+      oc = oc.parentOverrideContext;
+    }
+    if (ancestor || !oc) {
+      return undefined;
+    }
+    return name in oc ? oc : oc.bindingContext;
+  }
+
+  // traverse the context and it's ancestors, searching for a context that has the name.
+  while (oc && !(name in oc) && !(oc.bindingContext && name in oc.bindingContext)) {
+    oc = oc.parentOverrideContext;
+  }
+  if (oc) {
+    // we located a context with the property.  return it.
+    return name in oc ? oc : oc.bindingContext;
+  }
+  // the name wasn't found.  return the root binding context.
+  return scope.bindingContext || scope.overrideContext;
+}
+
+export function createScopeForTest(bindingContext: any, parentBindingContext?: any): Scope {
+  if (parentBindingContext) {
+    return {
+      bindingContext,
+      overrideContext: createOverrideContext(bindingContext, createOverrideContext(parentBindingContext))
+    }
+  }
+  return {
+    bindingContext,
+    overrideContext: createOverrideContext(bindingContext)
+  };
+}
 
 export const sourceContext = 'Binding:source';
 const slotNames = [];
@@ -816,10 +878,18 @@ class ModifyArrayObserver extends ModifyCollectionObserver {
 
     array['splice'] = function() {
       var methodCallResult = arrayProto['splice'].apply(array, arguments);
+      var index = arguments[0];
+      if (index >= array.length) {
+        index = array.length - 1;
+      } else if (-index >= array.length) {
+        index = 0;
+      } else if (index < 0 ) {
+        index = array.length + index - 1;
+      }
       observer.addChangeRecord({
        type: 'splice',
        object: array,
-       index: arguments[0],
+       index: index,
        removed: methodCallResult,
        addedCount: arguments.length > 2 ? arguments.length - 2 : 0
       });
@@ -884,11 +954,11 @@ export class Expression {
     this.isAssignable = false;
   }
 
-  evaluate(scope: any, valueConverters: any, args?: any): any{
+  evaluate(scope: Scope, lookupFunctions: any, args?: any): any {
     throw new Error(`Binding expression "${this}" cannot be evaluated.`);
   }
 
-  assign(scope: any, value: any, valueConverters: any): any{
+  assign(scope: Scope, value: any, lookupFunctions: any): any {
     throw new Error(`Binding expression "${this}" cannot be assigned to.`);
   }
 
@@ -905,14 +975,14 @@ export class Chain extends Expression {
     this.isChain = true;
   }
 
-  evaluate(scope, valueConverters) {
+  evaluate(scope, lookupFunctions) {
     var result,
         expressions = this.expressions,
         length = expressions.length,
         i, last;
 
     for (i = 0; i < length; ++i) {
-      last = expressions[i].evaluate(scope, valueConverters);
+      last = expressions[i].evaluate(scope, lookupFunctions);
 
       if (last !== null) {
         result = last;
@@ -927,6 +997,57 @@ export class Chain extends Expression {
   }
 }
 
+export class BindingBehavior extends Expression {
+  constructor(expression, name, args) {
+    super();
+
+    this.expression = expression;
+    this.name = name;
+    this.args = args;
+  }
+
+  evaluate(scope, lookupFunctions) {
+    return this.expression.evaluate(scope, lookupFunctions);
+  }
+
+  assign(scope, value, lookupFunctions) {
+    return this.expression.assign(scope, value, lookupFunctions);
+  }
+
+  accept(visitor) {
+    visitor.visitBindingBehavior(this);
+  }
+
+  connect(binding, scope) {
+    this.expression.connect(binding, scope);
+  }
+
+  bind(binding, scope, lookupFunctions) {
+    if (this.expression.expression && this.expression.bind) {
+      this.expression.bind(binding, scope, lookupFunctions);
+    }
+    let behavior = lookupFunctions.bindingBehaviors(this.name);
+    if (!behavior) {
+      throw new Error(`No BindingBehavior named "${this.name}" was found!`);
+    }
+    let behaviorKey = `behavior-${this.name}`;
+    if (binding[behaviorKey]) {
+      throw new Error(`A binding behavior named "${this.name}" has already been applied to "${this.expression}"`);
+    }
+    binding[behaviorKey] = behavior;
+    behavior.bind.apply(behavior, [binding, scope].concat(evalList(scope, this.args, binding.lookupFunctions)));
+  }
+
+  unbind(binding, scope) {
+    let behaviorKey = `behavior-${this.name}`;
+    binding[behaviorKey].unbind(binding, scope);
+    binding[behaviorKey] = null;
+    if (this.expression.expression && this.expression.unbind) {
+      this.expression.unbind(binding, scope);
+    }
+  }
+}
+
 export class ValueConverter extends Expression {
   constructor(expression, name, args, allArgs){
     super();
@@ -937,30 +1058,30 @@ export class ValueConverter extends Expression {
     this.allArgs = allArgs;
   }
 
-  evaluate(scope, valueConverters){
-    var converter = valueConverters(this.name);
+  evaluate(scope, lookupFunctions) {
+    var converter = lookupFunctions.valueConverters(this.name);
     if(!converter){
       throw new Error(`No ValueConverter named "${this.name}" was found!`);
     }
 
     if('toView' in converter){
-      return converter.toView.apply(converter, evalList(scope, this.allArgs, valueConverters));
+      return converter.toView.apply(converter, evalList(scope, this.allArgs, lookupFunctions));
     }
 
-    return this.allArgs[0].evaluate(scope, valueConverters);
+    return this.allArgs[0].evaluate(scope, lookupFunctions);
   }
 
-  assign(scope, value, valueConverters){
-    var converter = valueConverters(this.name);
+  assign(scope, value, lookupFunctions){
+    var converter = lookupFunctions.valueConverters(this.name);
     if(!converter){
       throw new Error(`No ValueConverter named "${this.name}" was found!`);
     }
 
     if('fromView' in converter){
-      value = converter.fromView.apply(converter, [value].concat(evalList(scope, this.args, valueConverters)));
+      value = converter.fromView.apply(converter, [value].concat(evalList(scope, this.args, lookupFunctions)));
     }
 
-    return this.allArgs[0].assign(scope, value, valueConverters);
+    return this.allArgs[0].assign(scope, value, lookupFunctions);
   }
 
   accept(visitor){
@@ -984,8 +1105,8 @@ export class Assign extends Expression {
     this.value = value;
   }
 
-  evaluate(scope, valueConverters){
-    return this.target.assign(scope, this.value.evaluate(scope, valueConverters));
+  evaluate(scope, lookupFunctions){
+    return this.target.assign(scope, this.value.evaluate(scope, lookupFunctions));
   }
 
   accept(vistor){
@@ -1005,7 +1126,7 @@ export class Conditional extends Expression {
     this.no = no;
   }
 
-  evaluate(scope, valueConverters){
+  evaluate(scope, lookupFunctions){
     return (!!this.condition.evaluate(scope)) ? this.yes.evaluate(scope) : this.no.evaluate(scope);
   }
 
@@ -1023,20 +1144,46 @@ export class Conditional extends Expression {
   }
 }
 
+export class AccessThis extends Expression {
+  constructor(ancestor) {
+    super();
+    this.ancestor = ancestor;
+  }
+
+  evaluate(scope, lookupFunctions) {
+    let oc = scope.overrideContext;
+    let i = this.ancestor;
+    while (i-- && oc) {
+      oc = oc.parentOverrideContext;
+    }
+    return i < 1 && oc ? oc.bindingContext : undefined;
+  }
+
+  accept(visitor) {
+    visitor.visitAccessThis(this);
+  }
+
+  connect(binding, scope) {
+  }
+}
+
 export class AccessScope extends Expression {
-  constructor(name){
+  constructor(name, ancestor) {
     super();
 
     this.name = name;
+    this.ancestor = ancestor;
     this.isAssignable = true;
   }
 
-  evaluate(scope, valueConverters){
-    return scope[this.name];
+  evaluate(scope, lookupFunctions) {
+    let context = getContextFor(this.name, scope, this.ancestor);
+    return context[this.name];
   }
 
   assign(scope, value){
-    return scope[this.name] = value;
+    let context = getContextFor(this.name, scope, this.ancestor);
+    return context[this.name] = value;
   }
 
   accept(visitor){
@@ -1044,7 +1191,8 @@ export class AccessScope extends Expression {
   }
 
   connect(binding, scope) {
-    binding.observeProperty(scope, this.name);
+    let context = getContextFor(this.name, scope, this.ancestor);
+    binding.observeProperty(context, this.name);
   }
 }
 
@@ -1057,8 +1205,8 @@ export class AccessMember extends Expression {
     this.isAssignable = true;
   }
 
-  evaluate(scope, valueConverters){
-    var instance = this.object.evaluate(scope, valueConverters);
+  evaluate(scope, lookupFunctions){
+    var instance = this.object.evaluate(scope, lookupFunctions);
     return instance === null || instance === undefined ? instance : instance[this.name];
   }
 
@@ -1095,9 +1243,9 @@ export class AccessKeyed extends Expression {
     this.isAssignable = true;
   }
 
-  evaluate(scope, valueConverters){
-    var instance = this.object.evaluate(scope, valueConverters);
-    var lookup = this.key.evaluate(scope, valueConverters);
+  evaluate(scope, lookupFunctions){
+    var instance = this.object.evaluate(scope, lookupFunctions);
+    var lookup = this.key.evaluate(scope, lookupFunctions);
     return getKeyed(instance, lookup);
   }
 
@@ -1125,21 +1273,22 @@ export class AccessKeyed extends Expression {
 }
 
 export class CallScope extends Expression {
-  constructor(name, args){
+  constructor(name, args, ancestor) {
     super();
 
     this.name = name;
     this.args = args;
+    this.ancestor = ancestor;
   }
 
-  evaluate(scope, valueConverters, args){
-    args = args || evalList(scope, this.args, valueConverters);
-    let func = getFunction(scope, this.name);
+  evaluate(scope, lookupFunctions, mustEvaluate) {
+    let args = evalList(scope, this.args, lookupFunctions);
+    let context = getContextFor(this.name, scope, this.ancestor);
+    let func = getFunction(context, this.name, mustEvaluate);
     if (func) {
-      return func.apply(scope, args);
-    } else {
-      return func;
+      return func.apply(context, args);
     }
+    return undefined;
   }
 
   accept(visitor){
@@ -1165,15 +1314,14 @@ export class CallMember extends Expression {
     this.args = args;
   }
 
-  evaluate(scope, valueConverters, args){
-    var instance = this.object.evaluate(scope, valueConverters);
-    args = args || evalList(scope, this.args, valueConverters);
-    let func = getFunction(instance, this.name);
+  evaluate(scope, lookupFunctions, mustEvaluate) {
+    var instance = this.object.evaluate(scope, lookupFunctions);
+    let args = evalList(scope, this.args, lookupFunctions);
+    let func = getFunction(instance, this.name, mustEvaluate);
     if (func) {
       return func.apply(instance, args);
-    } else {
-      return func;
     }
+    return undefined;
   }
 
   accept(visitor){
@@ -1183,7 +1331,7 @@ export class CallMember extends Expression {
   connect(binding, scope) {
     this.object.connect(binding, scope);
     let obj = this.object.evaluate(scope);
-    if (getFunction(obj, this.name)) {
+    if (getFunction(obj, this.name, false)) {
       let args = this.args;
       let i = args.length;
       while (i--) {
@@ -1194,23 +1342,22 @@ export class CallMember extends Expression {
 }
 
 export class CallFunction extends Expression {
-  constructor(func,args){
+  constructor(func, args) {
     super();
 
     this.func = func;
     this.args = args;
   }
 
-  evaluate(scope, valueConverters, args){
-    var func = this.func.evaluate(scope, valueConverters);
-
+  evaluate(scope, lookupFunctions, mustEvaluate) {
+    let func = this.func.evaluate(scope, lookupFunctions);
     if (typeof func === 'function') {
-      return func.apply(null, args || evalList(scope, this.args, valueConverters));
-    } else if (func === null || func === undefined) {
-      return func;
-    } else {
-      throw new Error(`${this.func} is not a function`);
+      return func.apply(null, evalList(scope, this.args, lookupFunctions));
     }
+    if (!mustEvaluate && (func === null || func === undefined)) {
+      return undefined;
+    }
+    throw new Error(`${this.func} is not a function`);
   }
 
   accept(visitor){
@@ -1239,7 +1386,7 @@ export class Binary extends Expression {
     this.right = right;
   }
 
-  evaluate(scope, valueConverters){
+  evaluate(scope, lookupFunctions){
     var left = this.left.evaluate(scope);
 
     switch (this.operation) {
@@ -1283,7 +1430,6 @@ export class Binary extends Expression {
       case '<=' : return left <= right;
       case '>=' : return left >= right;
       case '^'  : return left ^ right;
-      case '&'  : return left & right;
     }
 
     throw new Error(`Internal error [${this.operation}] not handled`);
@@ -1311,7 +1457,7 @@ export class PrefixNot extends Expression {
     this.expression = expression;
   }
 
-  evaluate(scope, valueConverters){
+  evaluate(scope, lookupFunctions){
     return !this.expression.evaluate(scope);
   }
 
@@ -1331,7 +1477,7 @@ export class LiteralPrimitive extends Expression {
     this.value = value;
   }
 
-  evaluate(scope, valueConverters){
+  evaluate(scope, lookupFunctions){
     return this.value;
   }
 
@@ -1350,7 +1496,7 @@ export class LiteralString extends Expression {
     this.value = value;
   }
 
-  evaluate(scope, valueConverters){
+  evaluate(scope, lookupFunctions){
     return this.value;
   }
 
@@ -1369,14 +1515,14 @@ export class LiteralArray extends Expression {
     this.elements = elements;
   }
 
-  evaluate(scope, valueConverters){
+  evaluate(scope, lookupFunctions){
     var elements = this.elements,
         length = elements.length,
         result = [],
         i;
 
     for(i = 0; i < length; ++i){
-      result[i] = elements[i].evaluate(scope, valueConverters);
+      result[i] = elements[i].evaluate(scope, lookupFunctions);
     }
 
     return result;
@@ -1402,7 +1548,7 @@ export class LiteralObject extends Expression {
     this.values = values;
   }
 
-  evaluate(scope, valueConverters){
+  evaluate(scope, lookupFunctions){
     var instance = {},
         keys = this.keys,
         values = this.values,
@@ -1410,7 +1556,7 @@ export class LiteralObject extends Expression {
         i;
 
     for(i = 0; i < length; ++i){
-      instance[keys[i]] = values[i].evaluate(scope, valueConverters);
+      instance[keys[i]] = values[i].evaluate(scope, lookupFunctions);
     }
 
     return instance;
@@ -1476,6 +1622,23 @@ export class Unparser {
     }
   }
 
+  visitBindingBehavior(behavior) {
+    var args = behavior.args,
+        length = args.length,
+        i;
+
+    this.write('(');
+    behavior.expression.accept(this);
+    this.write(`&${behavior.name}`);
+
+    for (i = 0; i < length; ++i) {
+      this.write(' :');
+      args[i].accept(this);
+    }
+
+    this.write(')');
+  }
+
   visitValueConverter(converter) {
     var args = converter.args,
         length = args.length,
@@ -1507,7 +1670,23 @@ export class Unparser {
     conditional.no.accept(this);
   }
 
+  visitAccessThis(access) {
+    if (access.ancestor === 0) {
+      this.write('$this');
+      return;
+    }
+    this.write('$parent');
+    let i = access.ancestor - 1;
+    while(i--) {
+      this.write('.$parent');
+    }
+  }
+
   visitAccessScope(access) {
+    let i = access.ancestor;
+    while (i--) {
+      this.write('$parent.');
+    }
     this.write(access.name);
   }
 
@@ -1524,6 +1703,10 @@ export class Unparser {
   }
 
   visitCallScope(call) {
+    let i = call.ancestor;
+    while (i--) {
+      this.write('$parent.');
+    }
     this.write(call.name);
     this.writeArgs(call.args);
   }
@@ -1604,7 +1787,7 @@ export class Unparser {
 var evalListCache = [[],[0],[0,0],[0,0,0],[0,0,0,0],[0,0,0,0,0]];
 
 /// Evaluate the [list] in context of the [scope].
-function evalList(scope, list, valueConverters) {
+function evalList(scope, list, lookupFunctions) {
   var length = list.length,
       cacheLength, i;
 
@@ -1615,7 +1798,7 @@ function evalList(scope, list, valueConverters) {
   var result = evalListCache[length];
 
   for (i = 0; i < length; ++i) {
-    result[i] = list[i].evaluate(scope, valueConverters);
+    result[i] = list[i].evaluate(scope, lookupFunctions);
   }
 
   return result;
@@ -1647,22 +1830,15 @@ function autoConvertAdd(a, b) {
   return 0;
 }
 
-function getFunction(obj, name) {
-  if (obj === null || obj === undefined) {
-    return obj;
-  }
-
-  let func = obj[name];
-
+function getFunction(obj, name, mustExist) {
+  let func = obj === null || obj === undefined ? null : obj[name];
   if (typeof func === 'function') {
     return func;
   }
-
-  if (func === null || func === undefined) {
-    return func;
-  } else {
-    throw new Error(`${name} is not a function`);
+  if (!mustExist && (func === null || func === undefined)) {
+    return null;
   }
+  throw new Error(`${name} is not a function`);
 }
 
 function getKeyed(obj, key) {
@@ -2164,19 +2340,38 @@ export class ParserImplementation {
         this.error(`Unconsumed token ${this.peek.text}`);
       }
 
-      let expr = this.parseValueConverter();
+      let expr = this.parseBindingBehavior();
       expressions.push(expr);
 
       while (this.optional(';')) {
         isChain = true;
       }
 
-      if (isChain && expr instanceof ValueConverter) {
-        this.error('cannot have a value converter in a chain');
+      if (isChain && (expr instanceof BindingBehavior || expr instanceof ValueConverter)) {
+        this.error('Cannot have a binding behavior or value converter in a chain');
       }
     }
 
     return (expressions.length === 1) ? expressions[0] : new Chain(expressions);
+  }
+
+  parseBindingBehavior() {
+    let result = this.parseValueConverter();
+
+    while (this.optional('&')) {
+      let name = this.peek.text;
+      let args = [];
+
+      this.advance();
+
+      while (this.optional(':')) {
+        args.push(this.parseExpression());
+      }
+
+      result = new BindingBehavior(result, name, args);
+    }
+
+    return result;
   }
 
   parseValueConverter() {
@@ -2349,9 +2544,17 @@ export class ParserImplementation {
         if (this.optional('(')) {
           let args = this.parseExpressionList(')');
           this.expect(')');
-          result = new CallMember(result, name, args);
+          if (result instanceof AccessThis) {
+            result = new CallScope(name, args, result.ancestor);
+          } else {
+            result = new CallMember(result, name, args);
+          }
         } else {
-          result = new AccessMember(result, name);
+          if (result instanceof AccessThis) {
+            result = new AccessScope(name, result.ancestor);
+          } else {
+            result = new AccessMember(result, name);
+          }
         }
       } else if (this.optional('[')) {
         let key = this.parseExpression();
@@ -2404,13 +2607,30 @@ export class ParserImplementation {
 
     this.advance();
 
-    if (!this.optional('(')) {
-      return new AccessScope(name);
+    if (name === '$this') {
+      return new AccessThis(0);
     }
 
-    let args = this.parseExpressionList(')');
-    this.expect(')');
-    return new CallScope(name, args);
+    let ancestor = 0;
+    while (name === '$parent') {
+      ancestor++;
+      if (this.optional('.')) {
+        name = this.peek.key;
+        this.advance();
+      } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === '[') {
+        return new AccessThis(ancestor);
+      } else {
+        this.error(`Unexpected token ${this.peek.text}`);
+      }
+    }
+
+    if (this.optional('(')) {
+      let args = this.parseExpressionList(')');
+      this.expect(')');
+      return new CallScope(name, args, ancestor);
+    }
+
+    return new AccessScope(name, ancestor);
   }
 
   parseObject() {
@@ -2532,9 +2752,9 @@ class ModifyMapObserver extends ModifyCollectionObserver {
   }
 }
 
+//Note: path and deepPath are designed to handle v0 and v1 shadow dom specs respectively
 function findOriginalEventTarget(event) {
-  return event.originalTarget || (event.path && event.path[0])
-    || (event.deepPath && event.deepPath[0]) || event.target || event.srcElement;
+  return (event.path && event.path[0]) || (event.deepPath && event.deepPath[0]) || event.target;
 }
 
 function handleDelegatedEvent(event) {
@@ -2666,7 +2886,11 @@ export class EventManager {
   }
 
   registerElementPropertyConfig(tagName, propertyName, events) {
-    this.elementHandlerLookup[tagName][propertyName] = {
+    this.elementHandlerLookup[tagName][propertyName] = this.createElementHandler(events);
+  }
+
+  createElementHandler(events) {
+    return {
       subscribe(target, callback) {
         events.forEach(changeEvent => {
           target.addEventListener(changeEvent, callback, false);
@@ -2678,7 +2902,7 @@ export class EventManager {
           });
         }
       }
-    }
+    };
   }
 
   registerElementHandler(tagName, handler) {
@@ -2806,6 +3030,8 @@ export class DirtyCheckProperty {
 }
 
 export class PrimitiveObserver {
+  doNotCache = true;
+
   constructor(primitive, propertyName) {
     this.primitive = primitive;
     this.propertyName = propertyName;
@@ -3474,6 +3700,13 @@ export function declarePropertyDependencies(ctor, propertyName, dependencies) {
   descriptor.get.dependencies = dependencies;
 }
 
+export function computedFrom(...rest){
+  return function(target, key, descriptor){
+    descriptor.get.dependencies = rest;
+    return descriptor;
+  }
+}
+
 export const elements = {
   a: ['class','externalResourcesRequired','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','style','systemLanguage','target','transform','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space'],
   altGlyph: ['class','dx','dy','externalResourcesRequired','format','glyphRef','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','rotate','style','systemLanguage','x','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space','y'],
@@ -3886,12 +4119,12 @@ export class ObjectObservationAdapter {
 
 export class BindingExpression {
   constructor(observerLocator, targetProperty, sourceExpression,
-    mode, valueConverterLookupFunction, attribute){
+    mode, lookupFunctions, attribute){
     this.observerLocator = observerLocator;
     this.targetProperty = targetProperty;
     this.sourceExpression = sourceExpression;
     this.mode = mode;
-    this.valueConverterLookupFunction = valueConverterLookupFunction;
+    this.lookupFunctions = lookupFunctions;
     this.attribute = attribute;
     this.discrete = false;
   }
@@ -3903,7 +4136,7 @@ export class BindingExpression {
       target,
       this.targetProperty,
       this.mode,
-      this.valueConverterLookupFunction
+      this.lookupFunctions
       );
   }
 }
@@ -3911,13 +4144,21 @@ export class BindingExpression {
 const targetContext = 'Binding:target';
 
 @connectable()
-class Binding {
-  constructor(observerLocator, sourceExpression, target, targetProperty, mode, valueConverterLookupFunction) {
+export class Binding {
+  constructor(observerLocator, sourceExpression, target, targetProperty, mode, lookupFunctions) {
     this.observerLocator = observerLocator;
     this.sourceExpression = sourceExpression;
     this.targetProperty = observerLocator.getObserver(target, targetProperty);
     this.mode = mode;
-    this.valueConverterLookupFunction = valueConverterLookupFunction;
+    this.lookupFunctions = lookupFunctions;
+  }
+
+  updateTarget(value) {
+    this.targetProperty.setValue(value);
+  }
+
+  updateSource(value) {
+    this.sourceExpression.assign(this.source, value, this.lookupFunctions);
   }
 
   call(context, newValue, oldValue) {
@@ -3926,9 +4167,9 @@ class Binding {
     }
     if (context === sourceContext) {
       oldValue = this.targetProperty.getValue();
-      newValue = this.sourceExpression.evaluate(this.source, this.valueConverterLookupFunction);
+      newValue = this.sourceExpression.evaluate(this.source, this.lookupFunctions);
       if (newValue !== oldValue) {
-        this.targetProperty.setValue(newValue);
+        this.updateTarget(newValue);
       }
       this._version++;
       this.sourceExpression.connect(this, this.source);
@@ -3936,7 +4177,7 @@ class Binding {
       return;
     }
     if (context === targetContext) {
-      this.sourceExpression.assign(this.source, newValue, this.valueConverterLookupFunction);
+      this.updateSource(newValue);
       return;
     }
     throw new Error(`Unexpected call context ${context}`);
@@ -3952,26 +4193,37 @@ class Binding {
     this.isBound = true;
     this.source = source;
 
+    let sourceExpression = this.sourceExpression;
+    if (sourceExpression.bind) {
+      sourceExpression.bind(this, source, this.lookupFunctions);
+    }
+
     let targetProperty = this.targetProperty;
     if ('bind' in targetProperty){
       targetProperty.bind();
-    }
+    }    
+
+    let value = sourceExpression.evaluate(source, this.lookupFunctions);
+    this.updateTarget(value);
 
     let mode = this.mode;
     if (mode === bindingMode.oneWay || mode === bindingMode.twoWay) {
-      this.sourceExpression.connect(this, source);
+      sourceExpression.connect(this, source);
 
       if (mode === bindingMode.twoWay) {
         targetProperty.subscribe(targetContext, this);
       }
     }
-
-    let value = this.sourceExpression.evaluate(source, this.valueConverterLookupFunction);
-    targetProperty.setValue(value);
   }
 
   unbind() {
+    if (!this.isBound) {
+      return;
+    }
     this.isBound = false;
+    if (this.sourceExpression.unbind) {
+      this.sourceExpression.unbind(this, this.source);
+    }
     this.source = null;
     if ('unbind' in this.targetProperty) {
       this.targetProperty.unbind();
@@ -3984,11 +4236,11 @@ class Binding {
 }
 
 export class CallExpression {
-  constructor(observerLocator, targetProperty, sourceExpression, valueConverterLookupFunction) {
+  constructor(observerLocator, targetProperty, sourceExpression, lookupFunctions) {
     this.observerLocator = observerLocator;
     this.targetProperty = targetProperty;
     this.sourceExpression = sourceExpression;
-    this.valueConverterLookupFunction = valueConverterLookupFunction;
+    this.lookupFunctions = lookupFunctions;
   }
 
   createBinding(target) {
@@ -3997,49 +4249,60 @@ export class CallExpression {
       this.sourceExpression,
       target,
       this.targetProperty,
-      this.valueConverterLookupFunction
+      this.lookupFunctions
       );
   }
 }
 
-class Call {
-  constructor(observerLocator, sourceExpression, target, targetProperty, valueConverterLookupFunction) {
+export class Call {
+  constructor(observerLocator, sourceExpression, target, targetProperty, lookupFunctions) {
     this.sourceExpression = sourceExpression
     this.target = target;
     this.targetProperty = observerLocator.getObserver(target, targetProperty);
-    this.valueConverterLookupFunction = valueConverterLookupFunction;
+    this.lookupFunctions = lookupFunctions;
+  }
+
+  callSource($event) {
+    let overrideContext = this.source.overrideContext;
+    Object.assign(overrideContext, $event);
+    overrideContext.$event = $event; // deprecate this?
+    let mustEvaluate = true;
+    let result = this.sourceExpression.evaluate(this.source, this.lookupFunctions, mustEvaluate);
+    delete overrideContext.$event;
+    for (let prop in $event) {
+      delete overrideContext[prop];
+    }
+    return result;
   }
 
   bind(source) {
-    if (this.source) {
+    if (this.isBound) {
       if (this.source === source) {
         return;
       }
-
       this.unbind();
     }
-
+    this.isBound = true;
     this.source = source;
-    this.targetProperty.setValue($event => {
-      let result;
-      let temp = source.$event;
-      source.$event = $event;
-      result = this.sourceExpression.evaluate(source, this.valueConverterLookupFunction);
-      source.$event = temp;
-      return result;
-    });
+
+    let sourceExpression = this.sourceExpression;
+    if (sourceExpression.bind) {
+      sourceExpression.bind(this, source, this.lookupFunctions);
+    }
+    this.targetProperty.setValue($event => this.callSource($event));
   }
 
   unbind() {
-    if (this.source) {
-      this.targetProperty.setValue(null);
-      this.source = null;
+    if (!this.isBound) {
+      return;
     }
+    this.isBound = false;
+    if (this.sourceExpression.unbind) {
+      this.sourceExpression.unbind(this, this.source);
+    }
+    this.source = null;
+    this.targetProperty.setValue(null);
   }
-}
-
-function camelCase(name) {
-  return name.charAt(0).toLowerCase() + name.slice(1);
 }
 
 export class ValueConverterResource {
@@ -4064,7 +4327,6 @@ export class ValueConverterResource {
   load(container, target) {}
 }
 
-//ES7 Decorators
 export function valueConverter(nameOrTarget){
   if(nameOrTarget === undefined || typeof nameOrTarget === 'string'){
     return function(target){
@@ -4075,23 +4337,47 @@ export function valueConverter(nameOrTarget){
   metadata.define(metadata.resource, new ValueConverterResource(), nameOrTarget);
 }
 
-decorators.configure.parameterizedDecorator('valueConverter', valueConverter);
-
-export function computedFrom(...rest){
-  return function(target, key, descriptor){
-    descriptor.get.dependencies = rest;
-    return descriptor;
+export class BindingBehaviorResource {
+  constructor(name) {
+    this.name = name;
   }
+
+  static convention(name) {
+    if (name.endsWith('BindingBehavior')) {
+      return new BindingBehaviorResource(camelCase(name.substring(0, name.length - 15)));
+    }
+  }
+
+  initialize(container, target) {
+    this.instance = container.get(target);
+  }
+
+  register(registry, name) {
+    registry.registerBindingBehavior(name || this.name, this.instance);
+  }
+
+  load(container, target) {}
+}
+
+export function bindingBehavior(nameOrTarget){
+  if(nameOrTarget === undefined || typeof nameOrTarget === 'string'){
+    return function(target){
+      metadata.define(metadata.resource, new BindingBehaviorResource(nameOrTarget), target);
+    }
+  }
+
+  metadata.define(metadata.resource, new BindingBehaviorResource(), nameOrTarget);
 }
 
 export class ListenerExpression {
-  constructor(eventManager, targetEvent, sourceExpression, delegate, preventDefault) {
+  constructor(eventManager, targetEvent, sourceExpression, delegate, preventDefault, lookupFunctions) {
     this.eventManager = eventManager;
     this.targetEvent = targetEvent;
     this.sourceExpression = sourceExpression;
     this.delegate = delegate;
     this.discrete = true;
     this.preventDefault = preventDefault;
+    this.lookupFunctions = lookupFunctions;
   }
 
   createBinding(target) {
@@ -4101,48 +4387,66 @@ export class ListenerExpression {
       this.delegate,
       this.sourceExpression,
       target,
-      this.preventDefault
+      this.preventDefault,
+      this.lookupFunctions
       );
   }
 }
 
-class Listener {
-  constructor(eventManager, targetEvent, delegate, sourceExpression, target, preventDefault) {
+export class Listener {
+  constructor(eventManager, targetEvent, delegate, sourceExpression, target, preventDefault, lookupFunctions) {
     this.eventManager = eventManager;
     this.targetEvent = targetEvent;
     this.delegate = delegate;
     this.sourceExpression = sourceExpression;
     this.target = target;
     this.preventDefault = preventDefault;
+    this.lookupFunctions = lookupFunctions;
+  }
+
+  callSource(event) {
+    this.source.overrideContext.$event = event;
+    let mustEvaluate = true;
+    let result = this.sourceExpression.evaluate(this.source, this.lookupFunctions, mustEvaluate);
+    delete this.source.overrideContext.$event;
+    if (result !== true && this.preventDefault) {
+      event.preventDefault();
+    }
+    return result;
   }
 
   bind(source) {
-    if (this._disposeListener) {
+    if (this.isBound) {
       if (this.source === source) {
         return;
       }
-
       this.unbind();
     }
-
+    this.isBound = true;
     this.source = source;
-    this._disposeListener = this.eventManager.addEventListener(this.target, this.targetEvent, event => {
-      let prevEvent = source.$event;
-      source.$event = event;
-      let result = this.sourceExpression.evaluate(source);
-      source.$event = prevEvent;
-      if (result !== true && this.preventDefault) {
-        event.preventDefault();
-      }
-      return result;
-    }, this.delegate);
+
+    let sourceExpression = this.sourceExpression;
+    if (sourceExpression.bind) {
+      sourceExpression.bind(this, source, this.lookupFunctions);
+    }
+    this._disposeListener = this.eventManager.addEventListener(
+      this.target,
+      this.targetEvent,
+      event => this.callSource(event),
+      this.delegate);
   }
 
   unbind() {
-    if (this._disposeListener) {
-      this._disposeListener();
-      this._disposeListener = null;
+    if (!this.isBound) {
+      return;
     }
+    this.isBound = false;
+    if (this.sourceExpression.unbind) {
+      this.sourceExpression.unbind(this, this.source);
+    }
+    this.source = null;
+    this._disposeListener();
+    this._disposeListener = null;
   }
 }
 
@@ -4173,9 +4477,8 @@ export class NameExpression {
         return element;
       case 'controller':
         return getAU(element).controller;
-      case 'model':
       case 'view-model':
-        return getAU(element).controller.model;
+        return getAU(element).controller.viewModel;
       case 'view':
         return getAU(element).controller.view;
       default:
@@ -4185,7 +4488,7 @@ export class NameExpression {
           throw new Error(`Attempted to reference "${apiName}", but it was not found amongst the target's API.`)
         }
 
-        return target.model;
+        return target.viewModel;
     }
   }
 }
@@ -4194,10 +4497,12 @@ class NameBinder {
   constructor(property, target) {
     this.property = property;
     this.target = target;
+    this.source = null;
+    this.context = null;
   }
 
   bind(source) {
-    if (this.source) {
+    if (this.source !== null) {
       if (this.source === source) {
         return;
       }
@@ -4205,14 +4510,21 @@ class NameBinder {
       this.unbind();
     }
 
-    this.source = source;
-    source[this.property] = this.target;
+    this.source = source || null;
+    this.context = source.bindingContext || source.overrideContext || null;
+
+    if(this.context !== null) {
+      this.context[this.property] = this.target;
+    }
   }
 
   unbind() {
-    if (this.source) {
-      this.source[this.property] = null;
+    if (this.source !== null) {
       this.source = null;
+    }
+
+    if(this.context !== null) {
+      this.context[this.property] = null;
     }
   }
 }
@@ -4229,71 +4541,53 @@ interface CollectionObserver {
   subscribe(callback: (changeRecords: any) => void): Disposable;
 }
 
-const valueConverterLookupFunction = () => null;
-
-let taskQueue;
-let eventManager;
-let dirtyChecker;
-let observerLocator;
-let parser;
-
-export let __initialized = false;
-
-function initialize(container = null): void {
-  container = container || { get: () => null };
-  taskQueue = container.get(TaskQueue) || new TaskQueue();
-  eventManager = container.get(EventManager) || new EventManager();
-  dirtyChecker = container.get(DirtyChecker) || new DirtyChecker();
-  observerLocator = container.get(ObserverLocator) || new ObserverLocator(taskQueue, eventManager, dirtyChecker);
-  parser = container.get(Parser) || new Parser();
-  __initialized = true;
+interface LookupFunctions {
+  bindingBehaviors(name: string): any;
+  valueConverters(name: string): any;
 }
 
-export function __uninitializeBindingEngine() {
-  taskQueue = null;
-  eventManager = null;
-  dirtyChecker = null;
-  observerLocator = null
-  parser = null;
-  __initialized = false;
-}
+const lookupFunctions = {
+  bindingBehaviors: name => null,
+  valueConverters: name => null
+};
 
-function assertInitialized() {
-  if (!__initialized) {
-    initialize();
+export class BindingEngine {
+  static inject = [ObserverLocator, Parser];
+
+  constructor(observerLocator, parser) {
+    this.observerLocator = observerLocator;
+    this.parser = parser;
   }
-}
 
-export const bindingEngine = {
-  initialize: initialize,
-
-  createBindingExpression(targetProperty: string, sourceExpression: string, mode = bindingMode.oneWay): BindingExpression {
-    assertInitialized();
-    return new BindingExpression(observerLocator, targetProperty, parser.parse(sourceExpression), mode, valueConverterLookupFunction);
-  },
+  createBindingExpression(targetProperty: string, sourceExpression: string, mode = bindingMode.oneWay, lookupFunctions?: LookupFunctions = lookupFunctions): BindingExpression {
+    return new BindingExpression(
+      this.observerLocator,
+      targetProperty,
+      this.parser.parse(sourceExpression),
+      mode,
+      lookupFunctions);
+  }
 
   propertyObserver(obj: Object, propertyName: string): PropertyObserver {
     return {
       subscribe: callback => {
-        assertInitialized();
-        let observer = observerLocator.getObserver(obj, propertyName);
+        let observer = this.observerLocator.getObserver(obj, propertyName);
         observer.subscribe(callback);
         return {
           dispose: () => observer.unsubscribe(callback)
         };
       }
     };
-  },
+  }
 
-  collectionObserver(collection: Array|Map): CollectionObserver {
+  collectionObserver(collection: Array<any>|Map<any, any>): CollectionObserver {
     return {
       subscribe: callback => {
-        assertInitialized();
         let observer;
         if (collection instanceof Array) {
-          observer = observerLocator.getArrayObserver(collection);
+          observer = this.observerLocator.getArrayObserver(collection);
         } else if (collection instanceof Map) {
-          observer = observerLocator.getMapObserver(collection);
+          observer = this.observerLocator.getMapObserver(collection);
         } else {
           throw new Error('collection must be an instance of Array or Map.');
         }
@@ -4303,28 +4597,26 @@ export const bindingEngine = {
         };
       }
     };
-  },
+  }
 
-  expressionObserver(scope: any, expression: string): PropertyObserver {
-    assertInitialized();
-    return new ExpressionObserver(scope, parser.parse(expression));
-  },
+  expressionObserver(bindingContext: any, expression: string): PropertyObserver {
+    let scope = { bindingContext, overrideContext: createOverrideContext(bindingContext) };
+    return new ExpressionObserver(scope, this.parser.parse(expression), this.observerLocator);
+  }
 
   parseExpression(expression: string): Expression {
-    assertInitialized();
-    return parser.parse(expression);
-  },
+    return this.parser.parse(expression);
+  }
 
   registerAdapter(adapter: ObjectObservationAdapter): void {
-    assertInitialized();
-    observerLocator.addAdapter(adapter);
+    this.observerLocator.addAdapter(adapter);
   }
 }
 
 @connectable()
 @subscriberCollection()
 class ExpressionObserver {
-  constructor(scope, expression) {
+  constructor(scope, expression, observerLocator) {
     this.scope = scope;
     this.expression = expression;
     this.observerLocator = observerLocator;
@@ -4332,7 +4624,7 @@ class ExpressionObserver {
 
   subscribe(callback) {
     if (!this.hasSubscribers()) {
-      this.oldValue = this.expression.evaluate(this.scope, valueConverterLookupFunction);
+      this.oldValue = this.expression.evaluate(this.scope, lookupFunctions);
       this.expression.connect(this, this.scope);
     }
     this.addSubscriber(callback);
@@ -4346,7 +4638,7 @@ class ExpressionObserver {
   }
 
   call() {
-    let newValue = this.expression.evaluate(this.scope, valueConverterLookupFunction);
+    let newValue = this.expression.evaluate(this.scope, lookupFunctions);
     let oldValue = this.oldValue;
     if (newValue !== oldValue) {
       this.oldValue = newValue;
