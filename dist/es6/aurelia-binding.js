@@ -875,7 +875,7 @@ class ModifyArrayObserver extends ModifyCollectionObserver {
     array['splice'] = function() {
       var methodCallResult = arrayProto['splice'].apply(array, arguments);
       var index = arguments[0];
-      if (index >= array.length) {
+      if (index >= array.length && array.length > 0) {
         index = array.length - 1;
       } else if (-index >= array.length) {
         index = 0;

@@ -1,3 +1,11 @@
+### 0.11.2 (2015-11-12)
+
+
+#### Bug Fixes
+
+* **ArrayObserver:** fix error when removing last array item ([5c8be37b](http://github.com/aurelia/binding/commit/5c8be37b7d73d432586a51ff4e213ce89aa215c2))
+
+
 ### 0.11.1 (2015-11-11)
 
 
