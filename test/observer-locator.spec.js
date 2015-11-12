@@ -1,10 +1,6 @@
 import {TestObservationAdapter} from './adapter';
 import {DirtyCheckProperty} from '../src/dirty-checking';
-import {
-  OoPropertyObserver,
-  UndefinedPropertyObserver,
-  SetterObserver
-} from '../src/property-observation';
+import {SetterObserver} from '../src/property-observation';
 import {
   ValueAttributeObserver,
   XLinkAttributeObserver,
@@ -25,28 +21,19 @@ describe('ObserverLocator', () => {
     locator = createObserverLocator([new TestObservationAdapter(() => locator)]);
   });
 
-  it('uses ' + FEATURE.objectObserve ? 'OoPropertyObserver' : 'SetterObserver' + ' for defined, primitive properties on pojos', () => {
+  it('uses SetterObserver for defined, primitive properties on pojos', () => {
     var obj = { foo: 'bar' },
-        observer = locator.getObserver(obj, 'foo'),
-        T = FEATURE.objectObserve ? OoPropertyObserver : SetterObserver;
-    expect(observer instanceof T).toBe(true);
+        observer = locator.getObserver(obj, 'foo');
+    expect(observer instanceof SetterObserver).toBe(true);
   });
 
-  // it('uses ' + FEATURE.objectObserve ? 'UndefinedPropertyObserver' : 'SetterObserver' + ' for undefined properties on pojos', () => {
-  //   var obj = {},
-  //       observer = locator.getObserver(obj, 'foo'),
-  //       T = FEATURE.objectObserve ? UndefinedPropertyObserver : SetterObserver;
-  //   expect(observer instanceof T).toBe(true);
-  // });
-
-  it('uses ' + FEATURE.objectObserve ? 'OoPropertyObserver' : 'SetterObserver' + 'for ad-hoc properties on Elements', () => {
+  it('uses SetterObserver for ad-hoc properties on Elements', () => {
     var obj = createElement('<h1></h1>'),
-        observer,
-        T = FEATURE.objectObserve ? OoPropertyObserver : SetterObserver;
+        observer;
     obj.foo = 'bar';
     observer = locator.getObserver(obj, 'foo');
     expect(obj instanceof Element).toBe(true);
-    expect(observer instanceof T).toBe(true);
+    expect(observer instanceof SetterObserver).toBe(true);
   });
 
   it('uses ValueAttributeObserver for element value attributes', () => {

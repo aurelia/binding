@@ -1,4 +1,4 @@
-import {OoPropertyObserver, SetterObserver} from '../src/property-observation';
+import {SetterObserver} from '../src/property-observation';
 import {DirtyCheckProperty} from '../src/dirty-checking';
 import {
   ValueAttributeObserver,
@@ -12,7 +12,6 @@ import {
   createObserverLocator,
   executeSharedPropertyObserverTests
 } from './shared';
-import {FEATURE} from 'aurelia-pal';
 import {initialize} from 'aurelia-pal-browser';
 
 function createSvgUseElement() {
@@ -140,7 +139,7 @@ describe('element observation', () => {
     cases.forEach(test => {
       var el = createElement(test.tag),
           observer = locator.getObserver(el, test.attr);
-      expect(observer instanceof OoPropertyObserver || observer instanceof DirtyCheckProperty || observer instanceof DataAttributeObserver).toBe(true);
+      expect(observer instanceof DirtyCheckProperty || observer instanceof DataAttributeObserver).toBe(true);
       expect(observer.getValue()).toBe(test.old);
       observer.setValue(test.new);
       expect(observer.getValue()).toBe(test.new);
@@ -191,9 +190,8 @@ describe('element observation', () => {
       observer = locator.getObserver(obj, 'foo');
     });
 
-    it('should be an ' + (FEATURE.objectObserve ? 'OoPropertyObserver' : 'SetterObserver'), () => {
-      var T = FEATURE.objectObserve ? OoPropertyObserver : SetterObserver;
-      expect(observer instanceof T).toBe(true);
+    it('should be a SetterObserver', () => {
+      expect(observer instanceof SetterObserver).toBe(true);
     });
 
     it('implements the property observer api', done => {

@@ -1,16 +1,11 @@
 import {projectArraySplices} from './array-change-records';
 import {ModifyCollectionObserver, CollectionLengthObserver} from './collection-observation';
 import {subscriberCollection} from './subscriber-collection';
-import {FEATURE} from 'aurelia-pal';
 
 var arrayProto = Array.prototype;
 
 export function getArrayObserver(taskQueue, array){
-  if(FEATURE.arrayObserve){
-    return new ArrayObserveObserver(array);
-  }else{
-    return ModifyArrayObserver.create(taskQueue, array);
-  }
+  return ModifyArrayObserver.create(taskQueue, array);
 }
 
 class ModifyArrayObserver extends ModifyCollectionObserver {
@@ -102,41 +97,5 @@ class ModifyArrayObserver extends ModifyCollectionObserver {
     };
 
     return observer;
-  }
-}
-
-@subscriberCollection()
-class ArrayObserveObserver {
-  constructor(array){
-    this.array = array;
-  }
-
-  subscribe(context, callable) {
-    if (!this.hasSubscribers()) {
-      this.handler = this.handleChanges.bind(this);
-      Array.observe(this.array, this.handler);
-    }
-    this.addSubscriber(context, callable)
-  }
-
-  unsubscribe(context, callable) {
-    if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
-      Array.unobserve(this.array, this.handler);
-    }
-  }
-
-  getLengthObserver(){
-    return this.lengthObserver || (this.lengthObserver = new CollectionLengthObserver(this.array));
-  }
-
-  handleChanges(changeRecords) {
-    if (this.hasSubscribers()) {
-      let splices = projectArraySplices(this.array, changeRecords);
-      this.callSubscribers(splices);
-    }
-
-    if (this.lengthObserver){
-      this.lengthObserver.call(this.array.length);
-    }
   }
 }

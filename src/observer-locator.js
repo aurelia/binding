@@ -1,4 +1,4 @@
-import {FEATURE, DOM} from 'aurelia-pal';
+import {DOM} from 'aurelia-pal';
 import {TaskQueue} from 'aurelia-task-queue';
 import {getArrayObserver} from './array-observation';
 import {getMapObserver} from './map-observation';
@@ -6,8 +6,6 @@ import {EventManager} from './event-manager';
 import {DirtyChecker, DirtyCheckProperty} from './dirty-checking';
 import {
   SetterObserver,
-  OoObjectObserver,
-  OoPropertyObserver,
   PrimitiveObserver
 } from './property-observation';
 import {
@@ -24,21 +22,6 @@ import {
   ComputedPropertyObserver
 } from './computed-observation';
 import {SVGAnalyzer} from './svg';
-
-function createObserverLookup(obj, observerLocator) {
-  let value = new OoObjectObserver(obj, observerLocator);
-
-  try{
-    Object.defineProperty(obj, "__observer__", {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: value
-    });
-  }catch(_){}
-
-  return value;
-}
 
 export class ObserverLocator {
   static inject = [TaskQueue, EventManager, DirtyChecker, SVGAnalyzer];
@@ -161,11 +144,6 @@ export class ObserverLocator {
         return adapterObserver;
       }
       return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
-    }
-
-    if (FEATURE.objectObserve) {
-      observerLookup = obj.__observer__ || createObserverLookup(obj, this);
-      return observerLookup.getObserver(propertyName, descriptor);
     }
 
     if (obj instanceof Array) {
