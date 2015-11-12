@@ -1,6 +1,6 @@
 declare module 'aurelia-binding' {
   import 'core-js';
-  import { FEATURE, DOM }  from 'aurelia-pal';
+  import { DOM }  from 'aurelia-pal';
   import { TaskQueue }  from 'aurelia-task-queue';
   import { metadata }  from 'aurelia-metadata';
   export interface OverrideContext {
@@ -57,13 +57,6 @@ declare module 'aurelia-binding' {
   class ModifyArrayObserver extends ModifyCollectionObserver {
     constructor(taskQueue: any, array: any);
     static create(taskQueue: any, array: any): any;
-  }
-  class ArrayObserveObserver {
-    constructor(array: any);
-    subscribe(context: any, callable: any): any;
-    unsubscribe(context: any, callable: any): any;
-    getLengthObserver(): any;
-    handleChanges(changeRecords: any): any;
   }
   export class Expression {
     constructor();
@@ -321,19 +314,6 @@ declare module 'aurelia-binding' {
     subscribe(context: any, callable: any): any;
     unsubscribe(context: any, callable: any): any;
     convertProperty(): any;
-  }
-  export class OoPropertyObserver {
-    constructor(obj: any, propertyName: any);
-    getValue(): any;
-    setValue(newValue: any): any;
-    subscribe(context: any, callable: any): any;
-    unsubscribe(context: any, callable: any): any;
-  }
-  export class OoObjectObserver {
-    constructor(obj: any, observerLocator: any);
-    subscriberAdded(): any;
-    subscriberRemoved(propertyName: any, callback: any): any;
-    getObserver(propertyName: any, descriptor: any): any;
   }
   export class XLinkAttributeObserver {
     

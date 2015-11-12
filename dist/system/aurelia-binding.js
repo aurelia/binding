@@ -1,7 +1,7 @@
 System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], function (_export) {
   'use strict';
 
-  var FEATURE, DOM, TaskQueue, metadata, sourceContext, slotNames, versionSlotNames, i, tempContextsRest, tempCallablesRest, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, arrayProto, ModifyArrayObserver, ArrayObserveObserver, Expression, Chain, BindingBehavior, ValueConverter, Assign, Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, PrefixNot, LiteralPrimitive, LiteralString, LiteralArray, LiteralObject, Unparser, evalListCache, bindingMode, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP, EOF, Parser, ParserImplementation, mapProto, ModifyMapObserver, DelegateHandlerEntry, DefaultEventStrategy, EventManager, DirtyChecker, DirtyCheckProperty, PrimitiveObserver, SetterObserver, OoPropertyObserver, version, OoObjectObserver, XLinkAttributeObserver, DataAttributeObserver, StyleObserver, ValueAttributeObserver, selectArrayContext, SelectValueObserver, checkedArrayContext, CheckedObserver, ClassObserver, computedContext, ComputedPropertyObserver, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, targetContext, Binding, CallExpression, Call, ValueConverterResource, BindingBehaviorResource, ListenerExpression, Listener, NameExpression, NameBinder, lookupFunctions, BindingEngine, ExpressionObserver;
+  var DOM, TaskQueue, metadata, sourceContext, slotNames, versionSlotNames, i, tempContextsRest, tempCallablesRest, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, arrayProto, ModifyArrayObserver, Expression, Chain, BindingBehavior, ValueConverter, Assign, Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, PrefixNot, LiteralPrimitive, LiteralString, LiteralArray, LiteralObject, Unparser, evalListCache, bindingMode, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP, EOF, Parser, ParserImplementation, mapProto, ModifyMapObserver, DelegateHandlerEntry, DefaultEventStrategy, EventManager, DirtyChecker, DirtyCheckProperty, PrimitiveObserver, SetterObserver, XLinkAttributeObserver, DataAttributeObserver, StyleObserver, ValueAttributeObserver, selectArrayContext, SelectValueObserver, checkedArrayContext, CheckedObserver, ClassObserver, computedContext, ComputedPropertyObserver, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, targetContext, Binding, CallExpression, Call, ValueConverterResource, BindingBehaviorResource, ListenerExpression, Listener, NameExpression, NameBinder, lookupFunctions, BindingEngine, ExpressionObserver;
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
@@ -450,11 +450,7 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
   }
 
   function _getArrayObserver(taskQueue, array) {
-    if (FEATURE.arrayObserve) {
-      return new ArrayObserveObserver(array);
-    } else {
-      return ModifyArrayObserver.create(taskQueue, array);
-    }
+    return ModifyArrayObserver.create(taskQueue, array);
   }
 
   function evalList(scope, list, lookupFunctions) {
@@ -612,21 +608,6 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
     }
   }
 
-  function ooHandler(changes) {
-    version++;
-    for (var i = 0, ii = changes.length; i < ii; i++) {
-      var change = changes[i];
-      var _name4 = change.name;
-      var objectObserver = change.object.__observer__;
-      var observer = undefined;
-      if (!objectObserver || !(observer = objectObserver.observers[_name4]) || observer.__version === version) {
-        continue;
-      }
-      observer.__version = version;
-      observer.callSubscribers(change.object[_name4], change.oldValue);
-    }
-  }
-
   function hasDeclaredDependencies(descriptor) {
     return descriptor && descriptor.get && descriptor.get.dependencies && descriptor.get.dependencies.length > 0;
   }
@@ -651,21 +632,6 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
     var div = DOM.createElement('div');
     div.innerHTML = html;
     return div.firstChild;
-  }
-
-  function createObserverLookup(obj, observerLocator) {
-    var value = new OoObjectObserver(obj, observerLocator);
-
-    try {
-      Object.defineProperty(obj, "__observer__", {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: value
-      });
-    } catch (_) {}
-
-    return value;
   }
 
   function valueConverter(nameOrTarget) {
@@ -700,7 +666,6 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
   return {
     setters: [function (_coreJs) {}, function (_aureliaPal) {
-      FEATURE = _aureliaPal.FEATURE;
       DOM = _aureliaPal.DOM;
     }, function (_aureliaTaskQueue) {
       TaskQueue = _aureliaTaskQueue.TaskQueue;
@@ -1121,47 +1086,6 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
         return ModifyArrayObserver;
       })(ModifyCollectionObserver);
-
-      ArrayObserveObserver = (function () {
-        function ArrayObserveObserver(array) {
-          _classCallCheck(this, _ArrayObserveObserver);
-
-          this.array = array;
-        }
-
-        ArrayObserveObserver.prototype.subscribe = function subscribe(context, callable) {
-          if (!this.hasSubscribers()) {
-            this.handler = this.handleChanges.bind(this);
-            Array.observe(this.array, this.handler);
-          }
-          this.addSubscriber(context, callable);
-        };
-
-        ArrayObserveObserver.prototype.unsubscribe = function unsubscribe(context, callable) {
-          if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
-            Array.unobserve(this.array, this.handler);
-          }
-        };
-
-        ArrayObserveObserver.prototype.getLengthObserver = function getLengthObserver() {
-          return this.lengthObserver || (this.lengthObserver = new CollectionLengthObserver(this.array));
-        };
-
-        ArrayObserveObserver.prototype.handleChanges = function handleChanges(changeRecords) {
-          if (this.hasSubscribers()) {
-            var splices = projectArraySplices(this.array, changeRecords);
-            this.callSubscribers(splices);
-          }
-
-          if (this.lengthObserver) {
-            this.lengthObserver.call(this.array.length);
-          }
-        };
-
-        var _ArrayObserveObserver = ArrayObserveObserver;
-        ArrayObserveObserver = subscriberCollection()(ArrayObserveObserver) || ArrayObserveObserver;
-        return ArrayObserveObserver;
-      })();
 
       Expression = (function () {
         function Expression() {
@@ -3394,86 +3318,6 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
       _export('SetterObserver', SetterObserver);
 
-      OoPropertyObserver = (function () {
-        function OoPropertyObserver(obj, propertyName) {
-          _classCallCheck(this, _OoPropertyObserver);
-
-          this.obj = obj;
-          this.propertyName = propertyName;
-        }
-
-        OoPropertyObserver.prototype.getValue = function getValue() {
-          return this.obj[this.propertyName];
-        };
-
-        OoPropertyObserver.prototype.setValue = function setValue(newValue) {
-          this.obj[this.propertyName] = newValue;
-        };
-
-        OoPropertyObserver.prototype.subscribe = function subscribe(context, callable) {
-          if (this.addSubscriber(context, callable)) {
-            this.obj.__observer__.subscriberAdded();
-          }
-        };
-
-        OoPropertyObserver.prototype.unsubscribe = function unsubscribe(context, callable) {
-          if (this.removeSubscriber(context, callable)) {
-            this.obj.__observer__.subscriberRemoved();
-          }
-        };
-
-        var _OoPropertyObserver = OoPropertyObserver;
-        OoPropertyObserver = subscriberCollection()(OoPropertyObserver) || OoPropertyObserver;
-        return OoPropertyObserver;
-      })();
-
-      _export('OoPropertyObserver', OoPropertyObserver);
-
-      version = Number.MIN_SAFE_INTEGER;
-
-      OoObjectObserver = (function () {
-        function OoObjectObserver(obj, observerLocator) {
-          _classCallCheck(this, OoObjectObserver);
-
-          this.obj = obj;
-          this.observerLocator = observerLocator;
-          this.observers = {};
-          this.subscribers = 0;
-        }
-
-        OoObjectObserver.prototype.subscriberAdded = function subscriberAdded() {
-          if (this.subscribers === 0) {
-            try {
-              Object.observe(this.obj, ooHandler, ['update', 'add']);
-            } catch (_) {}
-          }
-
-          this.subscribers++;
-        };
-
-        OoObjectObserver.prototype.subscriberRemoved = function subscriberRemoved(propertyName, callback) {
-          this.subscribers--;
-
-          if (this.subscribers === 0) {
-            try {
-              Object.unobserve(this.obj, ooHandler);
-            } catch (_) {}
-          }
-        };
-
-        OoObjectObserver.prototype.getObserver = function getObserver(propertyName, descriptor) {
-          var propertyObserver = this.observers[propertyName];
-          if (!propertyObserver) {
-            propertyObserver = this.observers[propertyName] = new OoPropertyObserver(this.obj, propertyName);
-          }
-          return propertyObserver;
-        };
-
-        return OoObjectObserver;
-      })();
-
-      _export('OoObjectObserver', OoObjectObserver);
-
       XLinkAttributeObserver = (function () {
         function XLinkAttributeObserver(element, propertyName, attributeName) {
           _classCallCheck(this, XLinkAttributeObserver);
@@ -4364,11 +4208,6 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
               return adapterObserver;
             }
             return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
-          }
-
-          if (FEATURE.objectObserve) {
-            observerLookup = obj.__observer__ || createObserverLookup(obj, this);
-            return observerLookup.getObserver(propertyName, descriptor);
           }
 
           if (obj instanceof Array) {

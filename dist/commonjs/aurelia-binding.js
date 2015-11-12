@@ -760,11 +760,7 @@ exports.CollectionLengthObserver = CollectionLengthObserver;
 var arrayProto = Array.prototype;
 
 function _getArrayObserver(taskQueue, array) {
-  if (_aureliaPal.FEATURE.arrayObserve) {
-    return new ArrayObserveObserver(array);
-  } else {
-    return ModifyArrayObserver.create(taskQueue, array);
-  }
+  return ModifyArrayObserver.create(taskQueue, array);
 }
 
 var ModifyArrayObserver = (function (_ModifyCollectionObserver2) {
@@ -864,47 +860,6 @@ var ModifyArrayObserver = (function (_ModifyCollectionObserver2) {
 
   return ModifyArrayObserver;
 })(ModifyCollectionObserver);
-
-var ArrayObserveObserver = (function () {
-  function ArrayObserveObserver(array) {
-    _classCallCheck(this, _ArrayObserveObserver);
-
-    this.array = array;
-  }
-
-  ArrayObserveObserver.prototype.subscribe = function subscribe(context, callable) {
-    if (!this.hasSubscribers()) {
-      this.handler = this.handleChanges.bind(this);
-      Array.observe(this.array, this.handler);
-    }
-    this.addSubscriber(context, callable);
-  };
-
-  ArrayObserveObserver.prototype.unsubscribe = function unsubscribe(context, callable) {
-    if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
-      Array.unobserve(this.array, this.handler);
-    }
-  };
-
-  ArrayObserveObserver.prototype.getLengthObserver = function getLengthObserver() {
-    return this.lengthObserver || (this.lengthObserver = new CollectionLengthObserver(this.array));
-  };
-
-  ArrayObserveObserver.prototype.handleChanges = function handleChanges(changeRecords) {
-    if (this.hasSubscribers()) {
-      var splices = projectArraySplices(this.array, changeRecords);
-      this.callSubscribers(splices);
-    }
-
-    if (this.lengthObserver) {
-      this.lengthObserver.call(this.array.length);
-    }
-  };
-
-  var _ArrayObserveObserver = ArrayObserveObserver;
-  ArrayObserveObserver = subscriberCollection()(ArrayObserveObserver) || ArrayObserveObserver;
-  return ArrayObserveObserver;
-})();
 
 var Expression = (function () {
   function Expression() {
@@ -3300,100 +3255,6 @@ var SetterObserver = (function () {
 
 exports.SetterObserver = SetterObserver;
 
-var OoPropertyObserver = (function () {
-  function OoPropertyObserver(obj, propertyName) {
-    _classCallCheck(this, _OoPropertyObserver);
-
-    this.obj = obj;
-    this.propertyName = propertyName;
-  }
-
-  OoPropertyObserver.prototype.getValue = function getValue() {
-    return this.obj[this.propertyName];
-  };
-
-  OoPropertyObserver.prototype.setValue = function setValue(newValue) {
-    this.obj[this.propertyName] = newValue;
-  };
-
-  OoPropertyObserver.prototype.subscribe = function subscribe(context, callable) {
-    if (this.addSubscriber(context, callable)) {
-      this.obj.__observer__.subscriberAdded();
-    }
-  };
-
-  OoPropertyObserver.prototype.unsubscribe = function unsubscribe(context, callable) {
-    if (this.removeSubscriber(context, callable)) {
-      this.obj.__observer__.subscriberRemoved();
-    }
-  };
-
-  var _OoPropertyObserver = OoPropertyObserver;
-  OoPropertyObserver = subscriberCollection()(OoPropertyObserver) || OoPropertyObserver;
-  return OoPropertyObserver;
-})();
-
-exports.OoPropertyObserver = OoPropertyObserver;
-
-var version = Number.MIN_SAFE_INTEGER;
-function ooHandler(changes) {
-  version++;
-  for (var i = 0, ii = changes.length; i < ii; i++) {
-    var change = changes[i];
-    var _name4 = change.name;
-    var objectObserver = change.object.__observer__;
-    var observer = undefined;
-    if (!objectObserver || !(observer = objectObserver.observers[_name4]) || observer.__version === version) {
-      continue;
-    }
-    observer.__version = version;
-    observer.callSubscribers(change.object[_name4], change.oldValue);
-  }
-}
-
-var OoObjectObserver = (function () {
-  function OoObjectObserver(obj, observerLocator) {
-    _classCallCheck(this, OoObjectObserver);
-
-    this.obj = obj;
-    this.observerLocator = observerLocator;
-    this.observers = {};
-    this.subscribers = 0;
-  }
-
-  OoObjectObserver.prototype.subscriberAdded = function subscriberAdded() {
-    if (this.subscribers === 0) {
-      try {
-        Object.observe(this.obj, ooHandler, ['update', 'add']);
-      } catch (_) {}
-    }
-
-    this.subscribers++;
-  };
-
-  OoObjectObserver.prototype.subscriberRemoved = function subscriberRemoved(propertyName, callback) {
-    this.subscribers--;
-
-    if (this.subscribers === 0) {
-      try {
-        Object.unobserve(this.obj, ooHandler);
-      } catch (_) {}
-    }
-  };
-
-  OoObjectObserver.prototype.getObserver = function getObserver(propertyName, descriptor) {
-    var propertyObserver = this.observers[propertyName];
-    if (!propertyObserver) {
-      propertyObserver = this.observers[propertyName] = new OoPropertyObserver(this.obj, propertyName);
-    }
-    return propertyObserver;
-  };
-
-  return OoObjectObserver;
-})();
-
-exports.OoObjectObserver = OoObjectObserver;
-
 var XLinkAttributeObserver = (function () {
   function XLinkAttributeObserver(element, propertyName, attributeName) {
     _classCallCheck(this, XLinkAttributeObserver);
@@ -4183,21 +4044,6 @@ var SVGAnalyzer = (function () {
 
 exports.SVGAnalyzer = SVGAnalyzer;
 
-function createObserverLookup(obj, observerLocator) {
-  var value = new OoObjectObserver(obj, observerLocator);
-
-  try {
-    Object.defineProperty(obj, "__observer__", {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: value
-    });
-  } catch (_) {}
-
-  return value;
-}
-
 var ObserverLocator = (function () {
   _createClass(ObserverLocator, null, [{
     key: 'inject',
@@ -4323,11 +4169,6 @@ var ObserverLocator = (function () {
         return adapterObserver;
       }
       return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
-    }
-
-    if (_aureliaPal.FEATURE.objectObserve) {
-      observerLookup = obj.__observer__ || createObserverLookup(obj, this);
-      return observerLookup.getObserver(propertyName, descriptor);
     }
 
     if (obj instanceof Array) {

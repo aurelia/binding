@@ -1,5 +1,5 @@
 import 'core-js';
-import {FEATURE,DOM} from 'aurelia-pal';
+import {DOM} from 'aurelia-pal';
 import {TaskQueue} from 'aurelia-task-queue';
 import {metadata} from 'aurelia-metadata';
 
@@ -813,11 +813,7 @@ export class CollectionLengthObserver {
 var arrayProto = Array.prototype;
 
 export function getArrayObserver(taskQueue, array){
-  if(FEATURE.arrayObserve){
-    return new ArrayObserveObserver(array);
-  }else{
-    return ModifyArrayObserver.create(taskQueue, array);
-  }
+  return ModifyArrayObserver.create(taskQueue, array);
 }
 
 class ModifyArrayObserver extends ModifyCollectionObserver {
@@ -909,42 +905,6 @@ class ModifyArrayObserver extends ModifyCollectionObserver {
     };
 
     return observer;
-  }
-}
-
-@subscriberCollection()
-class ArrayObserveObserver {
-  constructor(array){
-    this.array = array;
-  }
-
-  subscribe(context, callable) {
-    if (!this.hasSubscribers()) {
-      this.handler = this.handleChanges.bind(this);
-      Array.observe(this.array, this.handler);
-    }
-    this.addSubscriber(context, callable)
-  }
-
-  unsubscribe(context, callable) {
-    if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
-      Array.unobserve(this.array, this.handler);
-    }
-  }
-
-  getLengthObserver(){
-    return this.lengthObserver || (this.lengthObserver = new CollectionLengthObserver(this.array));
-  }
-
-  handleChanges(changeRecords) {
-    if (this.hasSubscribers()) {
-      let splices = projectArraySplices(this.array, changeRecords);
-      this.callSubscribers(splices);
-    }
-
-    if (this.lengthObserver){
-      this.lengthObserver.call(this.array.length);
-    }
   }
 }
 
@@ -3126,87 +3086,6 @@ export class SetterObserver {
   }
 }
 
-@subscriberCollection()
-export class OoPropertyObserver {
-  constructor(obj, propertyName) {
-    this.obj = obj;
-    this.propertyName = propertyName;
-  }
-
-  getValue() {
-    return this.obj[this.propertyName];
-  }
-
-  setValue(newValue) {
-    this.obj[this.propertyName] = newValue;
-  }
-
-  subscribe(context, callable) {
-    if (this.addSubscriber(context, callable)) {
-      this.obj.__observer__.subscriberAdded();
-    }
-  }
-
-  unsubscribe(context, callable) {
-    if (this.removeSubscriber(context, callable)) {
-      this.obj.__observer__.subscriberRemoved();
-    }
-  }
-}
-
-let version = Number.MIN_SAFE_INTEGER;
-function ooHandler(changes) {
-  version++;
-  for (let i = 0, ii = changes.length; i < ii; i++) {
-    let change = changes[i];
-    let name = change.name;
-    let objectObserver = change.object.__observer__;
-    let observer;
-    if (!objectObserver || !(observer = objectObserver.observers[name]) || observer.__version === version) {
-      continue;
-    }
-    observer.__version = version;
-    observer.callSubscribers(change.object[name], change.oldValue);
-  }
-}
-
-export class OoObjectObserver {
-  constructor(obj, observerLocator){
-    this.obj = obj;
-    this.observerLocator = observerLocator;
-    this.observers = {};
-    this.subscribers = 0;
-  }
-
-  subscriberAdded() {
-    if (this.subscribers === 0) {
-      try {
-        Object.observe(this.obj, ooHandler, ['update', 'add']);
-      } catch(_) {}
-    }
-
-    this.subscribers++;
-  }
-
-  subscriberRemoved(propertyName, callback) {
-    this.subscribers--;
-
-    if (this.subscribers === 0) {
-      try {
-        Object.unobserve(this.obj, ooHandler);
-      } catch(_) {}
-    }
-  }
-
-  getObserver(propertyName, descriptor) {
-    let propertyObserver = this.observers[propertyName];
-    if (!propertyObserver) {
-      propertyObserver = this.observers[propertyName] = new OoPropertyObserver(this.obj, propertyName);
-    }
-    return propertyObserver;
-  }
-}
-
 export class XLinkAttributeObserver {
   // xlink namespaced attributes require getAttributeNS/setAttributeNS
   // (even though the NS version doesn't work for other namespaces
@@ -3934,21 +3813,6 @@ export class SVGAnalyzer {
   }
 }
 
-function createObserverLookup(obj, observerLocator) {
-  let value = new OoObjectObserver(obj, observerLocator);
-
-  try{
-    Object.defineProperty(obj, "__observer__", {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: value
-    });
-  }catch(_){}
-
-  return value;
-}
-
 export class ObserverLocator {
   static inject = [TaskQueue, EventManager, DirtyChecker, SVGAnalyzer];
 
@@ -4070,11 +3934,6 @@ export class ObserverLocator {
         return adapterObserver;
       }
       return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
-    }
-
-    if (FEATURE.objectObserve) {
-      observerLookup = obj.__observer__ || createObserverLookup(obj, this);
-      return observerLookup.getObserver(propertyName, descriptor);
     }
 
     if (obj instanceof Array) {
