@@ -65,7 +65,6 @@ class ModifyArrayObserver extends ModifyCollectionObserver {
     };
 
     array['splice'] = function() {
-      var methodCallResult = arrayProto['splice'].apply(array, arguments);
       var index = arguments[0];
       if (index >= array.length && array.length > 0) {
         index = array.length - 1;
@@ -74,6 +73,7 @@ class ModifyArrayObserver extends ModifyCollectionObserver {
       } else if (index < 0 ) {
         index = array.length + index - 1;
       }
+      var methodCallResult = arrayProto['splice'].apply(array, arguments);
       observer.addChangeRecord({
        type: 'splice',
        object: array,
