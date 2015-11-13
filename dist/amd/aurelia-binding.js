@@ -4531,10 +4531,11 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
     }
 
     Listener.prototype.callSource = function callSource(event) {
-      this.source.overrideContext.$event = event;
+      var overrideContext = this.source.overrideContext;
+      overrideContext.$event = event;
       var mustEvaluate = true;
       var result = this.sourceExpression.evaluate(this.source, this.lookupFunctions, mustEvaluate);
-      delete this.source.overrideContext.$event;
+      delete overrideContext.$event;
       if (result !== true && this.preventDefault) {
         event.preventDefault();
       }

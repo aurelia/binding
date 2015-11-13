@@ -1,3 +1,11 @@
+### 0.11.3 (2015-11-12)
+
+
+#### Bug Fixes
+
+* **Listener:** directly reference overrideContext ([ce0f5a91](http://github.com/aurelia/binding/commit/ce0f5a910245bd9516cea5156b08eecf75d1568d), closes [#221](http://github.com/aurelia/binding/issues/221))
+
+
 ### 0.11.2 (2015-11-12)
 
 
