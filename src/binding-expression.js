@@ -55,9 +55,11 @@ export class Binding {
       if (newValue !== oldValue) {
         this.updateTarget(newValue);
       }
-      this._version++;
-      this.sourceExpression.connect(this, this.source);
-      this.unobserve(false);
+      if (this.mode !== bindingMode.oneTime) {
+        this._version++;
+        this.sourceExpression.connect(this, this.source);
+        this.unobserve(false);
+      }
       return;
     }
     if (context === targetContext) {
@@ -85,7 +87,7 @@ export class Binding {
     let targetProperty = this.targetProperty;
     if ('bind' in targetProperty){
       targetProperty.bind();
-    }    
+    }
 
     let value = sourceExpression.evaluate(source, this.lookupFunctions);
     this.updateTarget(value);
