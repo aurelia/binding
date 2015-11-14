@@ -26,6 +26,20 @@ export class ModifyCollectionObserver {
       return;
     }
 
+    if (changeRecord.type === 'splice') {
+      var index = changeRecord.index;
+      var arrayLength = changeRecord.object.length;
+      if (index > arrayLength) {
+        index = arrayLength - changeRecord.addedCount;
+      } else if (index < 0) {
+        index = arrayLength + changeRecord.removed.length + index - changeRecord.addedCount;
+      }
+      if(index < 0){
+        index = 0;
+      }
+      changeRecord.index = index;
+    }
+
     if (this.changeRecords === null) {
       this.changeRecords = [changeRecord];
     } else {
