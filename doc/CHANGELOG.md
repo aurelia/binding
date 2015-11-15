@@ -1,3 +1,14 @@
+### 0.11.4 (2015-11-15)
+
+
+#### Bug Fixes
+
+* **Binding:** obey binding mode when called by signal ([fbca043e](http://github.com/aurelia/binding/commit/fbca043ef5dd2557fc09e9c04287e4272e8f7d40))
+* **ModifyCollectionObserver:** handle out of bound splices ([6e801927](http://github.com/aurelia/binding/commit/6e801927caf9dfa91eed037e037815b30536946c))
+* **definitions:** scope.bindingContext is not optional ([280de747](http://github.com/aurelia/binding/commit/280de74772b4b9eb479b2eb4db58602933656761))
+* **typings:** BindingEngine and ObserverLocator are classes not interfaces ([c7339246](http://github.com/aurelia/binding/commit/c7339246adb094ebe06f7e93e5714e1faa618790))
+
+
 ### 0.11.3 (2015-11-12)
 
 

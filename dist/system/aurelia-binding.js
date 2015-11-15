@@ -885,6 +885,20 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
             return;
           }
 
+          if (changeRecord.type === 'splice') {
+            var index = changeRecord.index;
+            var arrayLength = changeRecord.object.length;
+            if (index > arrayLength) {
+              index = arrayLength - changeRecord.addedCount;
+            } else if (index < 0) {
+              index = arrayLength + changeRecord.removed.length + index - changeRecord.addedCount;
+            }
+            if (index < 0) {
+              index = 0;
+            }
+            changeRecord.index = index;
+          }
+
           if (this.changeRecords === null) {
             this.changeRecords = [changeRecord];
           } else {
@@ -1051,18 +1065,10 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
           array['splice'] = function () {
             var methodCallResult = arrayProto['splice'].apply(array, arguments);
-            var index = arguments[0];
-            if (index >= array.length && array.length > 0) {
-              index = array.length - 1;
-            } else if (-index >= array.length) {
-              index = 0;
-            } else if (index < 0) {
-              index = array.length + index - 1;
-            }
             observer.addChangeRecord({
               type: 'splice',
               object: array,
-              index: index,
+              index: arguments[0],
               removed: methodCallResult,
               addedCount: arguments.length > 2 ? arguments.length - 2 : 0
             });
@@ -4315,9 +4321,11 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
             if (newValue !== oldValue) {
               this.updateTarget(newValue);
             }
-            this._version++;
-            this.sourceExpression.connect(this, this.source);
-            this.unobserve(false);
+            if (this.mode !== bindingMode.oneTime) {
+              this._version++;
+              this.sourceExpression.connect(this, this.source);
+              this.unobserve(false);
+            }
             return;
           }
           if (context === targetContext) {
