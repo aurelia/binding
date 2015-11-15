@@ -84,12 +84,12 @@ gulp.task('build-system', function () {
 });
 
 gulp.task('build-dts', function(){
-  return gulp.src(paths.output + paths.packageName + '.d.ts')
-      .pipe(rename(paths.packageName + '.d.ts'))
-      .pipe(gulp.dest(paths.output + 'es6'))
-      .pipe(gulp.dest(paths.output + 'commonjs'))
-      .pipe(gulp.dest(paths.output + 'amd'))
-      .pipe(gulp.dest(paths.output + 'system'));
+  return gulp.src(paths.root + paths.packageName + '.d.ts')
+    .pipe(gulp.dest(paths.output))
+    .pipe(gulp.dest(paths.output + 'es6'))
+    .pipe(gulp.dest(paths.output + 'commonjs'))
+    .pipe(gulp.dest(paths.output + 'amd'))
+    .pipe(gulp.dest(paths.output + 'system'));
 });
 
 gulp.task('build', function(callback) {
