@@ -20,9 +20,7 @@ module.exports = {
     "es7.decorators",
     "es7.classProperties"
   ],
-  plugins: [
-    "babel-dts-generator"
-  ],
+  plugins: [],
   extra: {
     dts: {
       packageName: paths.packageName,
