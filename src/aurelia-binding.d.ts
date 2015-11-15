@@ -226,7 +226,7 @@ declare module 'aurelia-binding' {
   /**
    * Parses strings containing javascript expressions and returns a data-binding specialized AST.
    */
-  export interface Parser {
+  export class Parser {
     /**
      * Parses a string containing a javascript expression and returns a data-binding specialized AST. Memoized.
      */
@@ -243,7 +243,7 @@ declare module 'aurelia-binding' {
   /**
    * Internal object observation API. Locates observers for properties, arrays and maps using a variety of strategies.
    */
-  export interface ObserverLocator {
+  export class ObserverLocator {
     /**
      * Gets an observer for property changes.
      */
@@ -265,7 +265,7 @@ declare module 'aurelia-binding' {
   /**
    * Binding system API.
    */
-  export interface BindingEngine {
+  export class BindingEngine {
     /**
      * Creates a binding expression for the specified target property and source expression.
      * @param targetProperty The target attribute, eg "value" / "checked" / "textcontent" / "data-foo".
