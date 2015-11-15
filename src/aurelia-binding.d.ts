@@ -4,14 +4,14 @@
 declare module 'aurelia-binding' {
   /**
    * The "parallel" or "artificial" aspect of the binding scope. Provides access to the parent binding
-   * context and stores contextual bindable members such as $event, $index, $odd, etc. Members on this 
-   * object take precedence over members of the bindingContext object. 
+   * context and stores contextual bindable members such as $event, $index, $odd, etc. Members on this
+   * object take precedence over members of the bindingContext object.
    */
   export interface OverrideContext {
     parentOverrideContext: OverrideContext;
     bindingContext: any;
   }
-  
+
   /**
    * The two part binding scope. The first part is the bindingContext which represents the primary scope, typically a
    * view-model instance and second the overrideContext
@@ -20,15 +20,15 @@ declare module 'aurelia-binding' {
     /**
      * The primary aspect of the binding scope.  Typically a view-model instance.
      */
-    bindingContext?: any;
+    bindingContext: any;
     /**
      * The "parallel" or "artificial" aspect of the binding scope. Provides access to the parent binding
-     * context and stores contextual bindable members such as $event, $index, $odd, etc. Members on this 
-     * object take precedence over members of the bindingContext object. 
+     * context and stores contextual bindable members such as $event, $index, $odd, etc. Members on this
+     * object take precedence over members of the bindingContext object.
      */
     overrideContext: OverrideContext;
   }
-  
+
   /**
    * Provides a mechanism for releasing resources.
    */
@@ -38,7 +38,7 @@ declare module 'aurelia-binding' {
      */
     dispose(): void;
   }
-  
+
   /**
    * Observes property changes.
    */
@@ -48,7 +48,7 @@ declare module 'aurelia-binding' {
      */
     subscribe(callback: (newValue: any, oldValue: any) => void): Disposable;
   }
-  
+
   /**
    * Observes collection mutation.
    */
@@ -58,31 +58,31 @@ declare module 'aurelia-binding' {
      */
     subscribe(callback: (changeRecords: any) => void): Disposable;
   }
-  
+
   /**
    * Describes the direction of the data flow in a binding.
    */
-  export enum bindingMode { 
+  export enum bindingMode {
     /**
-     * Updates the binding target once. This is essentially a simpler form of one-way binding 
+     * Updates the binding target once. This is essentially a simpler form of one-way binding
      * that provides better performance in cases where the source value does not change.
      */
     oneTime = 0,
     /**
-     * Updates the binding target (target) property when the binding source (source) changes. 
-     * This type of binding is appropriate if the element being bound is implicitly read-only. 
-     * If there is no need to monitor the changes of the target property, using the OneWay 
+     * Updates the binding target (target) property when the binding source (source) changes.
+     * This type of binding is appropriate if the element being bound is implicitly read-only.
+     * If there is no need to monitor the changes of the target property, using the OneWay
      * binding mode avoids the overhead of the two-way binding mode.
      */
     oneWay = 1,
     /**
-     * Causes changes to either the source property or the target property to automatically update 
-     * the other. This type of binding is appropriate for editable forms or other fully-interactive 
+     * Causes changes to either the source property or the target property to automatically update
+     * the other. This type of binding is appropriate for editable forms or other fully-interactive
      * UI scenarios.
      */
     twoWay = 2
   }
-  
+
   /**
    * Lookup functions for value converter and binding behavior resources.
    */
@@ -90,15 +90,15 @@ declare module 'aurelia-binding' {
     bindingBehaviors(name: string): any;
     valueConverters(name: string): any;
   }
-  
+
   /**
    * A callable object.
    */
-  export interface Callable {    
+  export interface Callable {
     call(context: any, newValue: any, oldValue: any): void;
     call(context: any, changeRecords: any): void;
   }
-  
+
   /**
    * Observes property changes.
    */
@@ -132,7 +132,7 @@ declare module 'aurelia-binding' {
      */
     unsubscribe(context: any, callable: Callable): void;
   }
-  
+
   /**
    * Observes collection mutation.
    */
@@ -158,9 +158,9 @@ declare module 'aurelia-binding' {
      */
     unsubscribe(context: any, callable: Callable): void;
   }
-  
+
   /**
-   * Provides high-level access to the definition of a binding, which connects the properties of 
+   * Provides high-level access to the definition of a binding, which connects the properties of
    * binding target objects (typically, HTML elements), and any data source
    */
   export interface Binding {
@@ -197,14 +197,14 @@ declare module 'aurelia-binding' {
      */
     unbind(): void;
   }
-  
+
   /**
    * A factory for binding instances.
    */
   export interface BindingExpression {
     createBinding(target: any): Binding;
-  }  
-    
+  }
+
   /**
    * Provides the base class from which the classes that represent expression tree nodes are derived.
    */
@@ -222,7 +222,7 @@ declare module 'aurelia-binding' {
      */
     connect(binding: Binding, scope: Scope): void;
   }
-  
+
   /**
    * Parses strings containing javascript expressions and returns a data-binding specialized AST.
    */
@@ -232,14 +232,14 @@ declare module 'aurelia-binding' {
      */
     parse(input: string): Expression;
   }
-   
+
   /**
    * Provides efficient property observers for properties that would otherwise require dirty-checking.
    */
   export interface ObjectObservationAdapter {
     getObserver(object: any, propertyName: string, descriptor: PropertyDescriptor): InternalPropertyObserver;
   }
-  
+
   /**
    * Internal object observation API. Locates observers for properties, arrays and maps using a variety of strategies.
    */
@@ -264,7 +264,7 @@ declare module 'aurelia-binding' {
 
   /**
    * Binding system API.
-   */  
+   */
   export interface BindingEngine {
     /**
      * Creates a binding expression for the specified target property and source expression.
@@ -285,7 +285,7 @@ declare module 'aurelia-binding' {
     /**
      * Gets an observer for a javascript expression that accesses a property on the binding context.
      * @param bindingContext The binding context (view-model)
-     * @param expression A javascript expression accessing the source property.  
+     * @param expression A javascript expression accessing the source property.
      */
     expressionObserver(bindingContext: any, expression: string): PropertyObserver;
     /**
@@ -293,28 +293,28 @@ declare module 'aurelia-binding' {
      */
     parseExpression(expression: string): Expression;
     /**
-     * Registers an adapter that provides an efficient property observeration strategy for 
+     * Registers an adapter that provides an efficient property observeration strategy for
      * properties that would otherwise require dirty-checking.
      */
     registerAdapter(adapter: ObjectObservationAdapter): void;
   }
-  
+
   /**
    * Returns whether a property's dependencies have been declared.
    */
   export function hasDeclaredDependencies(descriptor: PropertyDescriptor): boolean;
-  
+
   /**
    * Declares a property's dependencies.
    */
   export function declarePropertyDependencies(ctor: any, propertyName: string, dependencies: string[]): void;
-  
+
  /**
   * Decorator: Indicates that the decorated property is computed from other properties.
   * @param propertyNames The names of the properties the decorated property is computed from.  Simple property names, not expressions.
   */
   export function computedFrom(...propertyNames: string[]): any;
- 
+
  /**
   * Decorator: Indicates that the decorated class is a value converter.
   * @param name The name of the value converter.
