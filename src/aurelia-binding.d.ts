@@ -266,6 +266,24 @@ declare module 'aurelia-binding' {
      */
     connect(binding: Binding, scope: Scope): void;
   }
+  
+  /**
+   * A binding behavior expression.
+   */
+  export class BindingBehavior implements Expression {
+    evaluate(scope: Scope, lookupFunctions: LookupFunctions): any;
+    assign(scope: Scope, value: any, lookupFunctions: LookupFunctions): void;
+    connect(binding: Binding, scope: Scope): void;
+  }  
+
+  /**
+   * A value converter expression.
+   */
+  export class ValueConverter implements Expression {
+    evaluate(scope: Scope, lookupFunctions: LookupFunctions): any;
+    assign(scope: Scope, value: any, lookupFunctions: LookupFunctions): void;
+    connect(binding: Binding, scope: Scope): void;
+  }  
 
   /**
    * Parses strings containing javascript expressions and returns a data-binding specialized AST.
@@ -370,4 +388,15 @@ declare module 'aurelia-binding' {
   * @param name The name of the binding behavior.
   */
   export function bindingBehavior(name: string): any;
+  
+  /**
+   * A context used when invoking a binding's callable API to notify
+   * the binding that the context is a "source update".
+   */
+  export const sourceContext: string;
+  
+  /**
+   * An internal API used by Aurelia's array observation components.
+   */
+  export function getChangeRecords(): any;  
 }
