@@ -1,3 +1,11 @@
+### 1.0.0-beta.1 (2015-11-16)
+
+
+#### Bug Fixes
+
+* **typings:** add missing types ([69f3c320](http://github.com/aurelia/binding/commit/69f3c3201bf82f160e74b4dfe5ee3c2c442ec7eb))
+
+
 ### 0.11.4 (2015-11-15)
 
 

@@ -40,6 +40,50 @@ declare module 'aurelia-binding' {
   }
 
   /**
+   * Creates an overrideContext object with the supplied bindingContext and optional parent overrideContext.
+   */
+  export function createOverrideContext(bindingContext: any, parentOverrideContext?: OverrideContext): OverrideContext;
+  
+  /**
+   * Creates a scope object for testing purposes.
+   */
+  export function createScopeForTest(bindingContext: any, parentBindingContext?: any): Scope;
+  
+  /**
+   * A ValueConverter resource.
+   */
+  export class ValueConverterResource {
+    static convention(name: string): ValueConverterResource;
+    constructor(name: string);
+    initialize(container, target): void;
+    register(registry, name): void;
+  }
+  
+  /**
+   * A BindingBehavior resource.
+   */
+  export class BindingBehaviorResource {
+    static convention(name: string): BindingBehaviorResource;
+    constructor(name: string);
+    initialize(container, target): void;
+    register(registry, name): void;
+  }
+  
+  /**
+   * Decorator: Adds efficient subscription management methods to the decorated class's prototype.
+   */
+  export function subscriberCollection(): any;
+  
+  /**
+   * Subscribes to appropriate element events based on the element property
+   * being observed for changes.
+   * This is an internal API and is subject to change without notice in future releases.
+   */
+  export class EventManager {
+    registerElementConfig(config: { tagName: string; properties: { (s: string): string[] }; }): void;
+  }
+
+  /**
    * Observes property changes.
    */
   export interface PropertyObserver {
