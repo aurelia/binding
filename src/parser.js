@@ -54,8 +54,8 @@ export class ParserImplementation {
         isChain = true;
       }
 
-      if (isChain && (expr instanceof BindingBehavior || expr instanceof ValueConverter)) {
-        this.error('Cannot have a binding behavior or value converter in a chain');
+      if (isChain) {
+        this.error('Multiple expressions are not allowed.');
       }
     }
 
