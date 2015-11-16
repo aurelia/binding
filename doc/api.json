@@ -73,6 +73,229 @@
       ]
     },
     {
+      "id": 171,
+      "name": "BindingBehavior",
+      "kind": 128,
+      "kindString": "Class",
+      "flags": {
+        "isExported": true
+      },
+      "comment": {
+        "shortText": "A binding behavior expression."
+      },
+      "children": [
+        {
+          "id": 176,
+          "name": "assign",
+          "kind": 2048,
+          "kindString": "Method",
+          "flags": {
+            "isExported": true
+          },
+          "signatures": [
+            {
+              "id": 177,
+              "name": "assign",
+              "kind": 4096,
+              "kindString": "Call signature",
+              "flags": {},
+              "parameters": [
+                {
+                  "id": 178,
+                  "name": "scope",
+                  "kind": 32768,
+                  "kindString": "Parameter",
+                  "flags": {},
+                  "type": {
+                    "type": "reference",
+                    "name": "Scope",
+                    "id": 6,
+                    "moduleName": "\"aurelia-binding\""
+                  }
+                },
+                {
+                  "id": 179,
+                  "name": "value",
+                  "kind": 32768,
+                  "kindString": "Parameter",
+                  "flags": {},
+                  "type": {
+                    "type": "instrinct",
+                    "name": "any"
+                  }
+                },
+                {
+                  "id": 180,
+                  "name": "lookupFunctions",
+                  "kind": 32768,
+                  "kindString": "Parameter",
+                  "flags": {},
+                  "type": {
+                    "type": "reference",
+                    "name": "LookupFunctions",
+                    "id": 71,
+                    "moduleName": "\"aurelia-binding\""
+                  }
+                }
+              ],
+              "type": {
+                "type": "instrinct",
+                "name": "void"
+              },
+              "implementationOf": {
+                "type": "reference",
+                "name": "Expression.assign",
+                "id": 163
+              }
+            }
+          ],
+          "implementationOf": {
+            "type": "reference",
+            "name": "Expression.assign",
+            "id": 162
+          }
+        },
+        {
+          "id": 181,
+          "name": "connect",
+          "kind": 2048,
+          "kindString": "Method",
+          "flags": {
+            "isExported": true
+          },
+          "signatures": [
+            {
+              "id": 182,
+              "name": "connect",
+              "kind": 4096,
+              "kindString": "Call signature",
+              "flags": {},
+              "parameters": [
+                {
+                  "id": 183,
+                  "name": "binding",
+                  "kind": 32768,
+                  "kindString": "Parameter",
+                  "flags": {},
+                  "type": {
+                    "type": "reference",
+                    "name": "Binding",
+                    "id": 132,
+                    "moduleName": "\"aurelia-binding\""
+                  }
+                },
+                {
+                  "id": 184,
+                  "name": "scope",
+                  "kind": 32768,
+                  "kindString": "Parameter",
+                  "flags": {},
+                  "type": {
+                    "type": "reference",
+                    "name": "Scope",
+                    "id": 6,
+                    "moduleName": "\"aurelia-binding\""
+                  }
+                }
+              ],
+              "type": {
+                "type": "instrinct",
+                "name": "void"
+              },
+              "implementationOf": {
+                "type": "reference",
+                "name": "Expression.connect",
+                "id": 168
+              }
+            }
+          ],
+          "implementationOf": {
+            "type": "reference",
+            "name": "Expression.connect",
+            "id": 167
+          }
+        },
+        {
+          "id": 172,
+          "name": "evaluate",
+          "kind": 2048,
+          "kindString": "Method",
+          "flags": {
+            "isExported": true
+          },
+          "signatures": [
+            {
+              "id": 173,
+              "name": "evaluate",
+              "kind": 4096,
+              "kindString": "Call signature",
+              "flags": {},
+              "parameters": [
+                {
+                  "id": 174,
+                  "name": "scope",
+                  "kind": 32768,
+                  "kindString": "Parameter",
+                  "flags": {},
+                  "type": {
+                    "type": "reference",
+                    "name": "Scope",
+                    "id": 6,
+                    "moduleName": "\"aurelia-binding\""
+                  }
+                },
+                {
+                  "id": 175,
+                  "name": "lookupFunctions",
+                  "kind": 32768,
+                  "kindString": "Parameter",
+                  "flags": {},
+                  "type": {
+                    "type": "reference",
+                    "name": "LookupFunctions",
+                    "id": 71,
+                    "moduleName": "\"aurelia-binding\""
+                  }
+                }
+              ],
+              "type": {
+                "type": "instrinct",
+                "name": "any"
+              },
+              "implementationOf": {
+                "type": "reference",
+                "name": "Expression.evaluate",
+                "id": 159
+              }
+            }
+          ],
+          "implementationOf": {
+            "type": "reference",
+            "name": "Expression.evaluate",
+            "id": 158
+          }
+        }
+      ],
+      "groups": [
+        {
+          "title": "Methods",
+          "kind": 2048,
+          "children": [
+            176,
+            181,
+            172
+          ]
+        }
+      ],
+      "implementedTypes": [
+        {
+          "type": "reference",
+          "name": "Expression",
+          "id": 157
+        }
+      ]
+    },
+    {
       "id": 27,
       "name": "BindingBehaviorResource",
       "kind": 128,
@@ -272,7 +495,7 @@
       ]
     },
     {
-      "id": 195,
+      "id": 223,
       "name": "BindingEngine",
       "kind": 128,
       "kindString": "Class",
@@ -284,7 +507,7 @@
       },
       "children": [
         {
-          "id": 206,
+          "id": 234,
           "name": "collectionObserver",
           "kind": 2048,
           "kindString": "Method",
@@ -293,7 +516,7 @@
           },
           "signatures": [
             {
-              "id": 207,
+              "id": 235,
               "name": "collectionObserver",
               "kind": 4096,
               "kindString": "Call signature",
@@ -303,7 +526,7 @@
               },
               "parameters": [
                 {
-                  "id": 208,
+                  "id": 236,
                   "name": "collection",
                   "kind": 32768,
                   "kindString": "Parameter",
@@ -349,7 +572,7 @@
           ]
         },
         {
-          "id": 196,
+          "id": 224,
           "name": "createBindingExpression",
           "kind": 2048,
           "kindString": "Method",
@@ -358,7 +581,7 @@
           },
           "signatures": [
             {
-              "id": 197,
+              "id": 225,
               "name": "createBindingExpression",
               "kind": 4096,
               "kindString": "Call signature",
@@ -368,7 +591,7 @@
               },
               "parameters": [
                 {
-                  "id": 198,
+                  "id": 226,
                   "name": "targetProperty",
                   "kind": 32768,
                   "kindString": "Parameter",
@@ -382,7 +605,7 @@
                   }
                 },
                 {
-                  "id": 199,
+                  "id": 227,
                   "name": "sourceExpression",
                   "kind": 32768,
                   "kindString": "Parameter",
@@ -396,7 +619,7 @@
                   }
                 },
                 {
-                  "id": 200,
+                  "id": 228,
                   "name": "mode",
                   "kind": 32768,
                   "kindString": "Parameter",
@@ -414,7 +637,7 @@
                   }
                 },
                 {
-                  "id": 201,
+                  "id": 229,
                   "name": "lookupFunctions",
                   "kind": 32768,
                   "kindString": "Parameter",
@@ -442,7 +665,7 @@
           ]
         },
         {
-          "id": 209,
+          "id": 237,
           "name": "expressionObserver",
           "kind": 2048,
           "kindString": "Method",
@@ -451,7 +674,7 @@
           },
           "signatures": [
             {
-              "id": 210,
+              "id": 238,
               "name": "expressionObserver",
               "kind": 4096,
               "kindString": "Call signature",
@@ -461,7 +684,7 @@
               },
               "parameters": [
                 {
-                  "id": 211,
+                  "id": 239,
                   "name": "bindingContext",
                   "kind": 32768,
                   "kindString": "Parameter",
@@ -475,7 +698,7 @@
                   }
                 },
                 {
-                  "id": 212,
+                  "id": 240,
                   "name": "expression",
                   "kind": 32768,
                   "kindString": "Parameter",
@@ -499,7 +722,7 @@
           ]
         },
         {
-          "id": 213,
+          "id": 241,
           "name": "parseExpression",
           "kind": 2048,
           "kindString": "Method",
@@ -508,7 +731,7 @@
           },
           "signatures": [
             {
-              "id": 214,
+              "id": 242,
               "name": "parseExpression",
               "kind": 4096,
               "kindString": "Call signature",
@@ -518,7 +741,7 @@
               },
               "parameters": [
                 {
-                  "id": 215,
+                  "id": 243,
                   "name": "expression",
                   "kind": 32768,
                   "kindString": "Parameter",
@@ -539,7 +762,7 @@
           ]
         },
         {
-          "id": 202,
+          "id": 230,
           "name": "propertyObserver",
           "kind": 2048,
           "kindString": "Method",
@@ -548,7 +771,7 @@
           },
           "signatures": [
             {
-              "id": 203,
+              "id": 231,
               "name": "propertyObserver",
               "kind": 4096,
               "kindString": "Call signature",
@@ -558,7 +781,7 @@
               },
               "parameters": [
                 {
-                  "id": 204,
+                  "id": 232,
                   "name": "obj",
                   "kind": 32768,
                   "kindString": "Parameter",
@@ -569,7 +792,7 @@
                   }
                 },
                 {
-                  "id": 205,
+                  "id": 233,
                   "name": "propertyName",
                   "kind": 32768,
                   "kindString": "Parameter",
@@ -590,7 +813,7 @@
           ]
         },
         {
-          "id": 216,
+          "id": 244,
           "name": "registerAdapter",
           "kind": 2048,
           "kindString": "Method",
@@ -599,7 +822,7 @@
           },
           "signatures": [
             {
-              "id": 217,
+              "id": 245,
               "name": "registerAdapter",
               "kind": 4096,
               "kindString": "Call signature",
@@ -609,7 +832,7 @@
               },
               "parameters": [
                 {
-                  "id": 218,
+                  "id": 246,
                   "name": "adapter",
                   "kind": 32768,
                   "kindString": "Parameter",
@@ -617,7 +840,7 @@
                   "type": {
                     "type": "reference",
                     "name": "ObjectObservationAdapter",
-                    "id": 175,
+                    "id": 203,
                     "moduleName": "\"aurelia-binding\""
                   }
                 }
@@ -635,12 +858,12 @@
           "title": "Methods",
           "kind": 2048,
           "children": [
-            206,
-            196,
-            209,
-            213,
-            202,
-            216
+            234,
+            224,
+            237,
+            241,
+            230,
+            244
           ]
         }
       ]
@@ -777,7 +1000,7 @@
       ]
     },
     {
-      "id": 181,
+      "id": 209,
       "name": "ObserverLocator",
       "kind": 128,
       "kindString": "Class",
@@ -789,7 +1012,7 @@
       },
       "children": [
         {
-          "id": 186,
+          "id": 214,
           "name": "addAdapter",
           "kind": 2048,
           "kindString": "Method",
@@ -798,7 +1021,7 @@
           },
           "signatures": [
             {
-              "id": 187,
+              "id": 215,
               "name": "addAdapter",
               "kind": 4096,
               "kindString": "Call signature",
@@ -808,7 +1031,7 @@
               },
               "parameters": [
                 {
-                  "id": 188,
+                  "id": 216,
                   "name": "adapter",
                   "kind": 32768,
                   "kindString": "Parameter",
@@ -816,7 +1039,7 @@
                   "type": {
                     "type": "reference",
                     "name": "ObjectObservationAdapter",
-                    "id": 175,
+                    "id": 203,
                     "moduleName": "\"aurelia-binding\""
                   }
                 }
@@ -829,7 +1052,7 @@
           ]
         },
         {
-          "id": 189,
+          "id": 217,
           "name": "getArrayObserver",
           "kind": 2048,
           "kindString": "Method",
@@ -838,7 +1061,7 @@
           },
           "signatures": [
             {
-              "id": 190,
+              "id": 218,
               "name": "getArrayObserver",
               "kind": 4096,
               "kindString": "Call signature",
@@ -848,7 +1071,7 @@
               },
               "parameters": [
                 {
-                  "id": 191,
+                  "id": 219,
                   "name": "array",
                   "kind": 32768,
                   "kindString": "Parameter",
@@ -875,7 +1098,7 @@
           ]
         },
         {
-          "id": 192,
+          "id": 220,
           "name": "getMapObserver",
           "kind": 2048,
           "kindString": "Method",
@@ -884,7 +1107,7 @@
           },
           "signatures": [
             {
-              "id": 193,
+              "id": 221,
               "name": "getMapObserver",
               "kind": 4096,
               "kindString": "Call signature",
@@ -894,7 +1117,7 @@
               },
               "parameters": [
                 {
-                  "id": 194,
+                  "id": 222,
                   "name": "map",
                   "kind": 32768,
                   "kindString": "Parameter",
@@ -925,7 +1148,7 @@
           ]
         },
         {
-          "id": 182,
+          "id": 210,
           "name": "getObserver",
           "kind": 2048,
           "kindString": "Method",
@@ -934,7 +1157,7 @@
           },
           "signatures": [
             {
-              "id": 183,
+              "id": 211,
               "name": "getObserver",
               "kind": 4096,
               "kindString": "Call signature",
@@ -944,7 +1167,7 @@
               },
               "parameters": [
                 {
-                  "id": 184,
+                  "id": 212,
                   "name": "obj",
                   "kind": 32768,
                   "kindString": "Parameter",
@@ -955,7 +1178,7 @@
                   }
                 },
                 {
-                  "id": 185,
+                  "id": 213,
                   "name": "propertyName",
                   "kind": 32768,
                   "kindString": "Parameter",
@@ -981,16 +1204,16 @@
           "title": "Methods",
           "kind": 2048,
           "children": [
-            186,
-            189,
-            192,
-            182
+            214,
+            217,
+            220,
+            210
           ]
         }
       ]
     },
     {
-      "id": 171,
+      "id": 199,
       "name": "Parser",
       "kind": 128,
       "kindString": "Class",
@@ -1002,7 +1225,7 @@
       },
       "children": [
         {
-          "id": 172,
+          "id": 200,
           "name": "parse",
           "kind": 2048,
           "kindString": "Method",
@@ -1011,7 +1234,7 @@
           },
           "signatures": [
             {
-              "id": 173,
+              "id": 201,
               "name": "parse",
               "kind": 4096,
               "kindString": "Call signature",
@@ -1021,7 +1244,7 @@
               },
               "parameters": [
                 {
-                  "id": 174,
+                  "id": 202,
                   "name": "input",
                   "kind": 32768,
                   "kindString": "Parameter",
@@ -1047,8 +1270,231 @@
           "title": "Methods",
           "kind": 2048,
           "children": [
-            172
+            200
           ]
+        }
+      ]
+    },
+    {
+      "id": 185,
+      "name": "ValueConverter",
+      "kind": 128,
+      "kindString": "Class",
+      "flags": {
+        "isExported": true
+      },
+      "comment": {
+        "shortText": "A value converter expression."
+      },
+      "children": [
+        {
+          "id": 190,
+          "name": "assign",
+          "kind": 2048,
+          "kindString": "Method",
+          "flags": {
+            "isExported": true
+          },
+          "signatures": [
+            {
+              "id": 191,
+              "name": "assign",
+              "kind": 4096,
+              "kindString": "Call signature",
+              "flags": {},
+              "parameters": [
+                {
+                  "id": 192,
+                  "name": "scope",
+                  "kind": 32768,
+                  "kindString": "Parameter",
+                  "flags": {},
+                  "type": {
+                    "type": "reference",
+                    "name": "Scope",
+                    "id": 6,
+                    "moduleName": "\"aurelia-binding\""
+                  }
+                },
+                {
+                  "id": 193,
+                  "name": "value",
+                  "kind": 32768,
+                  "kindString": "Parameter",
+                  "flags": {},
+                  "type": {
+                    "type": "instrinct",
+                    "name": "any"
+                  }
+                },
+                {
+                  "id": 194,
+                  "name": "lookupFunctions",
+                  "kind": 32768,
+                  "kindString": "Parameter",
+                  "flags": {},
+                  "type": {
+                    "type": "reference",
+                    "name": "LookupFunctions",
+                    "id": 71,
+                    "moduleName": "\"aurelia-binding\""
+                  }
+                }
+              ],
+              "type": {
+                "type": "instrinct",
+                "name": "void"
+              },
+              "implementationOf": {
+                "type": "reference",
+                "name": "Expression.assign",
+                "id": 163
+              }
+            }
+          ],
+          "implementationOf": {
+            "type": "reference",
+            "name": "Expression.assign",
+            "id": 162
+          }
+        },
+        {
+          "id": 195,
+          "name": "connect",
+          "kind": 2048,
+          "kindString": "Method",
+          "flags": {
+            "isExported": true
+          },
+          "signatures": [
+            {
+              "id": 196,
+              "name": "connect",
+              "kind": 4096,
+              "kindString": "Call signature",
+              "flags": {},
+              "parameters": [
+                {
+                  "id": 197,
+                  "name": "binding",
+                  "kind": 32768,
+                  "kindString": "Parameter",
+                  "flags": {},
+                  "type": {
+                    "type": "reference",
+                    "name": "Binding",
+                    "id": 132,
+                    "moduleName": "\"aurelia-binding\""
+                  }
+                },
+                {
+                  "id": 198,
+                  "name": "scope",
+                  "kind": 32768,
+                  "kindString": "Parameter",
+                  "flags": {},
+                  "type": {
+                    "type": "reference",
+                    "name": "Scope",
+                    "id": 6,
+                    "moduleName": "\"aurelia-binding\""
+                  }
+                }
+              ],
+              "type": {
+                "type": "instrinct",
+                "name": "void"
+              },
+              "implementationOf": {
+                "type": "reference",
+                "name": "Expression.connect",
+                "id": 168
+              }
+            }
+          ],
+          "implementationOf": {
+            "type": "reference",
+            "name": "Expression.connect",
+            "id": 167
+          }
+        },
+        {
+          "id": 186,
+          "name": "evaluate",
+          "kind": 2048,
+          "kindString": "Method",
+          "flags": {
+            "isExported": true
+          },
+          "signatures": [
+            {
+              "id": 187,
+              "name": "evaluate",
+              "kind": 4096,
+              "kindString": "Call signature",
+              "flags": {},
+              "parameters": [
+                {
+                  "id": 188,
+                  "name": "scope",
+                  "kind": 32768,
+                  "kindString": "Parameter",
+                  "flags": {},
+                  "type": {
+                    "type": "reference",
+                    "name": "Scope",
+                    "id": 6,
+                    "moduleName": "\"aurelia-binding\""
+                  }
+                },
+                {
+                  "id": 189,
+                  "name": "lookupFunctions",
+                  "kind": 32768,
+                  "kindString": "Parameter",
+                  "flags": {},
+                  "type": {
+                    "type": "reference",
+                    "name": "LookupFunctions",
+                    "id": 71,
+                    "moduleName": "\"aurelia-binding\""
+                  }
+                }
+              ],
+              "type": {
+                "type": "instrinct",
+                "name": "any"
+              },
+              "implementationOf": {
+                "type": "reference",
+                "name": "Expression.evaluate",
+                "id": 159
+              }
+            }
+          ],
+          "implementationOf": {
+            "type": "reference",
+            "name": "Expression.evaluate",
+            "id": 158
+          }
+        }
+      ],
+      "groups": [
+        {
+          "title": "Methods",
+          "kind": 2048,
+          "children": [
+            190,
+            195,
+            186
+          ]
+        }
+      ],
+      "implementedTypes": [
+        {
+          "type": "reference",
+          "name": "Expression",
+          "id": 157
         }
       ]
     },
@@ -2055,6 +2501,18 @@
             158
           ]
         }
+      ],
+      "implementedBy": [
+        {
+          "type": "reference",
+          "name": "BindingBehavior",
+          "id": 171
+        },
+        {
+          "type": "reference",
+          "name": "ValueConverter",
+          "id": 185
+        }
       ]
     },
     {
@@ -2747,7 +3205,7 @@
       ]
     },
     {
-      "id": 175,
+      "id": 203,
       "name": "ObjectObservationAdapter",
       "kind": 256,
       "kindString": "Interface",
@@ -2759,7 +3217,7 @@
       },
       "children": [
         {
-          "id": 176,
+          "id": 204,
           "name": "getObserver",
           "kind": 2048,
           "kindString": "Method",
@@ -2768,14 +3226,14 @@
           },
           "signatures": [
             {
-              "id": 177,
+              "id": 205,
               "name": "getObserver",
               "kind": 4096,
               "kindString": "Call signature",
               "flags": {},
               "parameters": [
                 {
-                  "id": 178,
+                  "id": 206,
                   "name": "object",
                   "kind": 32768,
                   "kindString": "Parameter",
@@ -2786,7 +3244,7 @@
                   }
                 },
                 {
-                  "id": 179,
+                  "id": 207,
                   "name": "propertyName",
                   "kind": 32768,
                   "kindString": "Parameter",
@@ -2797,7 +3255,7 @@
                   }
                 },
                 {
-                  "id": 180,
+                  "id": 208,
                   "name": "descriptor",
                   "kind": 32768,
                   "kindString": "Parameter",
@@ -2822,7 +3280,7 @@
           "title": "Methods",
           "kind": 2048,
           "children": [
-            176
+            204
           ]
         }
       ]
@@ -3041,7 +3499,23 @@
       ]
     },
     {
-      "id": 243,
+      "id": 274,
+      "name": "sourceContext",
+      "kind": 32,
+      "kindString": "Variable",
+      "flags": {
+        "isExported": true
+      },
+      "comment": {
+        "shortText": "A context used when invoking a binding's callable API to notify\nthe binding that the context is a \"source update\"."
+      },
+      "type": {
+        "type": "instrinct",
+        "name": "string"
+      }
+    },
+    {
+      "id": 271,
       "name": "bindingBehavior",
       "kind": 64,
       "kindString": "Function",
@@ -3050,7 +3524,7 @@
       },
       "signatures": [
         {
-          "id": 244,
+          "id": 272,
           "name": "bindingBehavior",
           "kind": 4096,
           "kindString": "Call signature",
@@ -3060,7 +3534,7 @@
           },
           "parameters": [
             {
-              "id": 245,
+              "id": 273,
               "name": "name",
               "kind": 32768,
               "kindString": "Parameter",
@@ -3082,7 +3556,7 @@
       ]
     },
     {
-      "id": 237,
+      "id": 265,
       "name": "computedFrom",
       "kind": 64,
       "kindString": "Function",
@@ -3091,7 +3565,7 @@
       },
       "signatures": [
         {
-          "id": 238,
+          "id": 266,
           "name": "computedFrom",
           "kind": 4096,
           "kindString": "Call signature",
@@ -3101,7 +3575,7 @@
           },
           "parameters": [
             {
-              "id": 239,
+              "id": 267,
               "name": "propertyNames",
               "kind": 32768,
               "kindString": "Parameter",
@@ -3126,7 +3600,7 @@
       ]
     },
     {
-      "id": 219,
+      "id": 247,
       "name": "createOverrideContext",
       "kind": 64,
       "kindString": "Function",
@@ -3135,7 +3609,7 @@
       },
       "signatures": [
         {
-          "id": 220,
+          "id": 248,
           "name": "createOverrideContext",
           "kind": 4096,
           "kindString": "Call signature",
@@ -3145,7 +3619,7 @@
           },
           "parameters": [
             {
-              "id": 221,
+              "id": 249,
               "name": "bindingContext",
               "kind": 32768,
               "kindString": "Parameter",
@@ -3156,7 +3630,7 @@
               }
             },
             {
-              "id": 222,
+              "id": 250,
               "name": "parentOverrideContext",
               "kind": 32768,
               "kindString": "Parameter",
@@ -3181,7 +3655,7 @@
       ]
     },
     {
-      "id": 223,
+      "id": 251,
       "name": "createScopeForTest",
       "kind": 64,
       "kindString": "Function",
@@ -3190,7 +3664,7 @@
       },
       "signatures": [
         {
-          "id": 224,
+          "id": 252,
           "name": "createScopeForTest",
           "kind": 4096,
           "kindString": "Call signature",
@@ -3200,7 +3674,7 @@
           },
           "parameters": [
             {
-              "id": 225,
+              "id": 253,
               "name": "bindingContext",
               "kind": 32768,
               "kindString": "Parameter",
@@ -3211,7 +3685,7 @@
               }
             },
             {
-              "id": 226,
+              "id": 254,
               "name": "parentBindingContext",
               "kind": 32768,
               "kindString": "Parameter",
@@ -3234,7 +3708,7 @@
       ]
     },
     {
-      "id": 232,
+      "id": 260,
       "name": "declarePropertyDependencies",
       "kind": 64,
       "kindString": "Function",
@@ -3243,7 +3717,7 @@
       },
       "signatures": [
         {
-          "id": 233,
+          "id": 261,
           "name": "declarePropertyDependencies",
           "kind": 4096,
           "kindString": "Call signature",
@@ -3253,7 +3727,7 @@
           },
           "parameters": [
             {
-              "id": 234,
+              "id": 262,
               "name": "ctor",
               "kind": 32768,
               "kindString": "Parameter",
@@ -3264,7 +3738,7 @@
               }
             },
             {
-              "id": 235,
+              "id": 263,
               "name": "propertyName",
               "kind": 32768,
               "kindString": "Parameter",
@@ -3275,7 +3749,7 @@
               }
             },
             {
-              "id": 236,
+              "id": 264,
               "name": "dependencies",
               "kind": 32768,
               "kindString": "Parameter",
@@ -3295,7 +3769,32 @@
       ]
     },
     {
-      "id": 229,
+      "id": 275,
+      "name": "getChangeRecords",
+      "kind": 64,
+      "kindString": "Function",
+      "flags": {
+        "isExported": true
+      },
+      "signatures": [
+        {
+          "id": 276,
+          "name": "getChangeRecords",
+          "kind": 4096,
+          "kindString": "Call signature",
+          "flags": {},
+          "comment": {
+            "shortText": "An internal API used by Aurelia's array observation components."
+          },
+          "type": {
+            "type": "instrinct",
+            "name": "any"
+          }
+        }
+      ]
+    },
+    {
+      "id": 257,
       "name": "hasDeclaredDependencies",
       "kind": 64,
       "kindString": "Function",
@@ -3304,7 +3803,7 @@
       },
       "signatures": [
         {
-          "id": 230,
+          "id": 258,
           "name": "hasDeclaredDependencies",
           "kind": 4096,
           "kindString": "Call signature",
@@ -3314,7 +3813,7 @@
           },
           "parameters": [
             {
-              "id": 231,
+              "id": 259,
               "name": "descriptor",
               "kind": 32768,
               "kindString": "Parameter",
@@ -3333,7 +3832,7 @@
       ]
     },
     {
-      "id": 227,
+      "id": 255,
       "name": "subscriberCollection",
       "kind": 64,
       "kindString": "Function",
@@ -3342,7 +3841,7 @@
       },
       "signatures": [
         {
-          "id": 228,
+          "id": 256,
           "name": "subscriberCollection",
           "kind": 4096,
           "kindString": "Call signature",
@@ -3358,7 +3857,7 @@
       ]
     },
     {
-      "id": 240,
+      "id": 268,
       "name": "valueConverter",
       "kind": 64,
       "kindString": "Function",
@@ -3367,7 +3866,7 @@
       },
       "signatures": [
         {
-          "id": 241,
+          "id": 269,
           "name": "valueConverter",
           "kind": 4096,
           "kindString": "Call signature",
@@ -3377,7 +3876,7 @@
           },
           "parameters": [
             {
-              "id": 242,
+              "id": 270,
               "name": "name",
               "kind": 32768,
               "kindString": "Parameter",
@@ -3411,11 +3910,13 @@
       "title": "Classes",
       "kind": 128,
       "children": [
-        27,
-        195,
-        42,
-        181,
         171,
+        27,
+        223,
+        42,
+        209,
+        199,
+        185,
         12
       ]
     },
@@ -3432,24 +3933,32 @@
         113,
         87,
         71,
-        175,
+        203,
         3,
         52,
         6
       ]
     },
     {
+      "title": "Variables",
+      "kind": 32,
+      "children": [
+        274
+      ]
+    },
+    {
       "title": "Functions",
       "kind": 64,
       "children": [
-        243,
-        237,
-        219,
-        223,
-        232,
-        229,
-        227,
-        240
+        271,
+        265,
+        247,
+        251,
+        260,
+        275,
+        257,
+        255,
+        268
       ]
     }
   ]

@@ -1,3 +1,14 @@
+## 1.0.0-beta.1.0.1 (2015-11-16)
+
+
+#### Bug Fixes
+
+* **Parser:** disallow chain ([81c84bb3](http://github.com/aurelia/binding/commit/81c84bb369cf85f89a06dbb4b5e3e91415de166c))
+* **typings:**
+  * add types templating-resources uses. ([afa058a9](http://github.com/aurelia/binding/commit/afa058a92d67d8e718289de516f68ca820f7bcf8))
+  * add missing types ([69f3c320](http://github.com/aurelia/binding/commit/69f3c3201bf82f160e74b4dfe5ee3c2c442ec7eb))
+
+
 ### 1.0.0-beta.1 (2015-11-16)
 
 
