@@ -3,8 +3,6 @@
  */
 declare module 'aurelia-binding' {
   import { Container } from 'aurelia-dependency-injection';
-  import { ViewResources }  from 'aurelia-templating';
-  
 
   /**
    * The "parallel" or "artificial" aspect of the binding scope. Provides access to the parent binding
@@ -60,7 +58,7 @@ declare module 'aurelia-binding' {
     static convention(name: string): ValueConverterResource;
     constructor(name: string);
     initialize(container: Container, target: any): void;
-    register(registry: ViewResources, name: string): void;
+    register(registry: any, name: string): void;
   }
   
   /**
@@ -70,7 +68,7 @@ declare module 'aurelia-binding' {
     static convention(name: string): BindingBehaviorResource;
     constructor(name: string);
     initialize(container: Container, target: any): void;
-    register(registry: ViewResources, name: string): void;
+    register(registry: any, name: string): void;
   }
   
   /**
