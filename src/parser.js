@@ -324,7 +324,7 @@ export class ParserImplementation {
       if (this.optional('.')) {
         name = this.peek.key;
         this.advance();
-      } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === '[') {
+      } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === '[' || this.peek.text === '}') {
         return new AccessThis(ancestor);
       } else {
         this.error(`Unexpected token ${this.peek.text}`);

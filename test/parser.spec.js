@@ -2,6 +2,7 @@ import {Parser} from '../src/parser';
 import {
   LiteralString,
   LiteralPrimitive,
+  LiteralObject,
   ValueConverter,
   BindingBehavior,
   AccessScope,
@@ -201,5 +202,14 @@ describe('Parser', () => {
       expect(expression.key.value).toBe(0);
       s = '$parent.' + s;
     }
+  });
+
+  it('parses $parent in LiteralObject', () => {
+    let expression = parser.parse('{parent: $parent}');
+    expect(expression instanceof LiteralObject).toBe(true);
+    expect(expression.keys.length).toBe(1);
+    expect(expression.values.length).toBe(1);
+    expect(expression.values[0] instanceof AccessThis).toBe(true);
+    expect(expression.values[0].ancestor).toBe(1);
   });
 });
