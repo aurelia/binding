@@ -898,8 +898,8 @@ function getKeyed(obj, key) {
     return obj[parseInt(key)];
   } else if (obj) {
     return obj[key];
-  } else if (obj === null) {
-    throw new Error('Accessing null object');
+  } else if (obj === null || obj === undefined) {
+    return undefined;
   } else {
     return obj[key];
   }
