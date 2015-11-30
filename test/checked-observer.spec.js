@@ -106,6 +106,52 @@ describe('CheckedObserver', () => {
     });
   });
 
+  describe('checkbox - array of objects with matcher', () => {
+    var obj, el, binding;
+
+    beforeAll(() => {
+      obj = { selectedItems: [], itemA: { foo: 'A' } };
+      el = createElement('<input type="checkbox" />');
+      el.model = obj.itemA;
+      document.body.appendChild(el);
+      binding = getBinding(observerLocator, obj, 'selectedItems', el, 'checked', bindingMode.twoWay).binding;
+    });
+
+    it('binds', () => {
+      binding.bind(createScopeForTest(obj));
+      el.matcher = (a, b) => a.foo === b.foo;
+      expect(el.checked).toBe(false);
+    });
+
+    it('responds to model change', done => {
+      obj.selectedItems.push({ foo: 'A' });
+      setTimeout(() => {
+        expect(el.checked).toBe(true);
+        done();
+      }, 0);
+    });
+
+    it('responds to element change', done => {
+      el.checked = false;
+      fireEvent(el, 'change');
+      setTimeout(() => {
+        expect(obj.selectedItems.length).toBe(0);
+        done();
+      }, 0);
+    });
+
+    it('unbinds', () => {
+      var targetProperty = binding.targetProperty;
+      spyOn(targetProperty, 'unbind').and.callThrough();
+      binding.unbind();
+      expect(targetProperty.unbind).toHaveBeenCalled();
+    });
+
+    afterAll(() => {
+      document.body.removeChild(el);
+    });
+  });
+
   describe('checkbox - boolean', () => {
     var obj, el, binding;
 
@@ -312,6 +358,79 @@ describe('CheckedObserver', () => {
         expect(radios[1].view.checked).toBe(false);
         expect(radios[2].view.checked).toBe(true);
         expect(obj.value).toBe(true);
+        done();
+      }, 0);
+    });
+
+    it('unbinds', () => {
+      var i = radios.length;
+      while(i--) {
+        spyOn(radios[i].targetProperty, 'unbind').and.callThrough();
+        radios[i].binding.unbind();
+        expect(radios[i].targetProperty.unbind).toHaveBeenCalled();
+      }
+    });
+
+    afterAll(() => {
+      document.body.removeChild(el);
+    });
+  });
+
+  describe('radio - objects with matcher', () => {
+    var obj, radios, el;
+
+    beforeAll(() => {
+      obj = { value: { foo: 'B' } };
+      el = createElement(
+        `<div>
+          <input name="test" type="radio" />
+          <input name="test" type="radio" />
+          <input name="test" type="radio" />
+        </div>`);
+      document.body.appendChild(el);
+      el.children.item(0).model = { foo: 'A' };
+      el.children.item(1).model = { foo: 'B' };
+      el.children.item(2).model = { foo: 'C' };
+      radios = [
+        getBinding(observerLocator, obj, 'value', el.children.item(0), 'checked', bindingMode.twoWay),
+        getBinding(observerLocator, obj, 'value', el.children.item(1), 'checked', bindingMode.twoWay),
+        getBinding(observerLocator, obj, 'value', el.children.item(2), 'checked', bindingMode.twoWay)];
+    });
+
+    it('binds', done => {
+      radios[0].binding.bind(createScopeForTest(obj));
+      radios[1].binding.bind(createScopeForTest(obj));
+      radios[2].binding.bind(createScopeForTest(obj));
+      let matcher = (a, b) => a.foo === b.foo;
+      el.children.item(0).matcher = matcher;
+      el.children.item(1).matcher = matcher;
+      el.children.item(2).matcher = matcher;
+      setTimeout(() => {
+        expect(radios[0].view.checked).toBe(false);
+        expect(radios[1].view.checked).toBe(true);
+        expect(radios[2].view.checked).toBe(false);
+        done();
+      });
+    });
+
+    it('responds to model change', done => {
+      obj.value = { foo: 'A' };
+      setTimeout(() => {
+        expect(radios[0].view.checked).toBe(true);
+        expect(radios[1].view.checked).toBe(false);
+        expect(radios[2].view.checked).toBe(false);
+        done();
+      }, 0);
+    });
+
+    it('responds to element change', done => {
+      radios[2].view.checked = true;
+      fireEvent(radios[2].view, 'change');
+      setTimeout(() => {
+        expect(radios[0].view.checked).toBe(false);
+        expect(radios[1].view.checked).toBe(false);
+        expect(radios[2].view.checked).toBe(true);
+        expect(obj.value).toBe(radios[2].view.model);
         done();
       }, 0);
     });

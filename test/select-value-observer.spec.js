@@ -273,6 +273,89 @@ describe('SelectValueObserver', () => {
     });
   });
 
+  describe('single-select objects with matcher', () => {
+    var obj, el, binding, elementValueProperty;
+    beforeAll(() => {
+      var option, info;
+      el = createElement('<select></select>');
+      option = document.createElement('option');
+      option.text = 'A';
+      option.model = { foo: 'A' };
+      el.appendChild(option);
+      option = document.createElement('option');
+      option.text = 'B';
+      option.model = { foo: 'B' };
+      el.appendChild(option);
+      option = document.createElement('option');
+      option.text = 'C';
+      option.model = { foo: 'C' };
+      el.appendChild(option);
+      document.body.appendChild(el);
+      obj = { selectedItem: { foo: 'B' } };
+
+      info = getBinding(observerLocator, obj, 'selectedItem', el, 'value', bindingMode.twoWay);
+      binding = info.binding;
+      elementValueProperty = info.targetProperty;
+    });
+
+    it('binds', done => {
+      var targetProperty = binding.targetProperty;
+      spyOn(targetProperty, 'bind').and.callThrough();
+      binding.bind(createScopeForTest(obj));
+      expect(targetProperty.bind).toHaveBeenCalled();
+      el.matcher = (a, b) => a.foo === b.foo;
+      setTimeout(() => {
+        expect(elementValueProperty.getValue()).toBe(obj.selectedItem);
+        expect(getElementValue(el)).toEqual(obj.selectedItem);
+        done();
+      });
+    });
+
+    it('responds to model change', done => {
+      obj.selectedItem = { foo: 'A' };
+      setTimeout(() => {
+        expect(elementValueProperty.getValue()).toBe(obj.selectedItem);
+        expect(getElementValue(el)).toEqual(obj.selectedItem);
+        done();
+      }, 0);
+    });
+
+    it('responds to element change', done => {
+      el.options.item(0).selected = false;
+      el.options.item(1).selected = true;
+      fireEvent(el, 'change');
+      setTimeout(() => {
+        expect(elementValueProperty.getValue()).toBe(obj.selectedItem);
+        expect(getElementValue(el)).toEqual(obj.selectedItem);
+        done();
+      }, 0);
+    });
+
+    it('responds to options change', done => {
+      var option = document.createElement('option');
+      option.text = 'D';
+      option.model = { foo: 'D' };
+      obj.selectedItem = { foo: 'D' };
+      el.appendChild(option);
+      setTimeout(() => {
+        expect(elementValueProperty.getValue()).toBe(obj.selectedItem);
+        expect(getElementValue(el)).toEqual(obj.selectedItem);
+        done();
+      }, 0);
+    });
+
+    it('unbinds', () => {
+      var targetProperty = binding.targetProperty;
+      spyOn(targetProperty, 'unbind').and.callThrough();
+      binding.unbind();
+      expect(targetProperty.unbind).toHaveBeenCalled();
+    });
+
+    afterAll(() => {
+      document.body.removeChild(el);
+    });
+  });
+
   describe('multi-select objects', () => {
     var obj, el, binding, elementValueProperty;
     beforeAll(() => {
@@ -348,6 +431,105 @@ describe('SelectValueObserver', () => {
       option.text = 'D';
       option.model = { foo: 'D' };
       obj.selectedItems = [option.model];
+      el.appendChild(option);
+      setTimeout(() => {
+        expect(elementValueProperty.getValue()).toBe(obj.selectedItems);
+        expect(getElementValue(el)).toEqual(obj.selectedItems.slice(0));
+        done();
+      }, 0);
+    });
+
+    it('unbinds', () => {
+      var targetProperty = binding.targetProperty;
+      spyOn(targetProperty, 'unbind').and.callThrough();
+      binding.unbind();
+      expect(targetProperty.unbind).toHaveBeenCalled();
+    });
+
+    afterAll(() => {
+      document.body.removeChild(el);
+    });
+  });
+
+  describe('multi-select objects with matcher', () => {
+    var obj, el, binding, elementValueProperty;
+    beforeAll(() => {
+      var option, info;
+      el = createElement('<select multiple></select>');
+      option = document.createElement('option');
+      option.text = 'A';
+      option.model = { foo: 'A' };
+      el.appendChild(option);
+      option = document.createElement('option');
+      option.text = 'B';
+      option.model = { foo: 'B' };
+      el.appendChild(option);
+      option = document.createElement('option');
+      option.text = 'C';
+      option.model = { foo: 'C' };
+      el.appendChild(option);
+      document.body.appendChild(el);
+      obj = { selectedItems: [{ foo: 'B'}, { foo: 'C' }] };
+
+      info = getBinding(observerLocator, obj, 'selectedItems', el, 'value', bindingMode.twoWay);
+      binding = info.binding;
+      elementValueProperty = info.targetProperty;
+    });
+
+    it('binds', done => {
+      var targetProperty = binding.targetProperty;
+      spyOn(targetProperty, 'bind').and.callThrough();
+      binding.bind(createScopeForTest(obj));
+      expect(targetProperty.bind).toHaveBeenCalled();
+      el.matcher = (a, b) => a.foo === b.foo;
+      setTimeout(() => {
+        expect(elementValueProperty.getValue()).toBe(obj.selectedItems);
+        expect(getElementValue(el)).toEqual(obj.selectedItems.slice(0));
+        done();
+      });
+    });
+
+    it('responds to model change', done => {
+      obj.selectedItems = [{ foo: 'A' }];
+      setTimeout(() => {
+        expect(elementValueProperty.getValue()).toBe(obj.selectedItems);
+        expect(getElementValue(el)).toEqual(obj.selectedItems.slice(0));
+        done();
+      }, 0);
+    });
+
+    it('responds to model mutate', done => {
+      while(obj.selectedItems.length) {
+        obj.selectedItems.pop();
+      }
+      setTimeout(() => {
+        expect(elementValueProperty.getValue()).toBe(obj.selectedItems);
+        obj.selectedItems.push({ foo: 'B' });
+        setTimeout(() => {
+          expect(elementValueProperty.getValue()).toBe(obj.selectedItems);
+          expect(getElementValue(el)).toEqual(obj.selectedItems.slice(0));
+          done();
+        }, 0);
+      }, 0);
+    });
+
+    it('responds to element change', done => {
+      el.options.item(0).selected = true;
+      el.options.item(1).selected = false;
+      el.options.item(2).selected = true;
+      fireEvent(el, 'change');
+      setTimeout(() => {
+        expect(elementValueProperty.getValue()).toBe(obj.selectedItems);
+        expect(getElementValue(el)).toEqual(obj.selectedItems.slice(0));
+        done();
+      }, 0);
+    });
+
+    it('responds to options change', done => {
+      var option = document.createElement('option');
+      option.text = 'D';
+      option.model = { foo: 'D' };
+      obj.selectedItems = [{ foo: 'D' }];
       el.appendChild(option);
       setTimeout(() => {
         expect(elementValueProperty.getValue()).toBe(obj.selectedItems);
