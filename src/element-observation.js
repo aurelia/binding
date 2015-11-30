@@ -155,7 +155,7 @@ export class SelectValueObserver {
     this.value = newValue;
     this.synchronizeOptions();
     // queue up an initial sync after the bindings have been evaluated.
-    if (this.element.options.length > 0 && !this.initialSync) {
+    if (!this.initialSync) {
       this.initialSync = true;
       this.observerLocator.taskQueue.queueMicroTask(this);
     }
@@ -167,7 +167,7 @@ export class SelectValueObserver {
   }
 
   synchronizeOptions() {
-    var value = this.value, i, options, option, optionValue, clear, isArray;
+    let value = this.value, clear, isArray;
 
     if (value === null || value === undefined) {
       clear = true;
@@ -175,36 +175,65 @@ export class SelectValueObserver {
       isArray = true;
     }
 
-    options = this.element.options;
-    i = options.length;
+    let options = this.element.options;
+    let i = options.length;
+    let matcher = this.element.matcher || ((a, b) => a === b);
     while(i--) {
-      option = options.item(i);
+      let option = options.item(i);
       if (clear) {
         option.selected = false;
         continue;
       }
-      optionValue = option.hasOwnProperty('model') ? option.model : option.value;
+      let optionValue = option.hasOwnProperty('model') ? option.model : option.value;
       if (isArray) {
-        option.selected = value.indexOf(optionValue) !== -1;
+        option.selected = !!value.find(item => !!matcher(optionValue, item));
         continue;
       }
-      option.selected = value === optionValue;
+      option.selected = !!matcher(optionValue, value);
     }
   }
 
   synchronizeValue() {
-    var options = this.element.options, option, i, ii, count = 0, value = [];
+    let options = this.element.options,
+        count = 0,
+        value = [];
 
-    for(i = 0, ii = options.length; i < ii; i++) {
-      option = options.item(i);
+    for (let i = 0, ii = options.length; i < ii; i++) {
+      let option = options.item(i);
       if (!option.selected) {
         continue;
       }
-      value[count] = option.hasOwnProperty('model') ? option.model : option.value;
+      value.push(option.hasOwnProperty('model') ? option.model : option.value);
       count++;
     }
 
-    if (!this.element.multiple) {
+    if (this.element.multiple) {
+      // multi-select
+      if (Array.isArray(this.value)) {
+        let matcher = this.element.matcher || ((a, b) => a === b);
+        // remove items that are no longer selected.
+        let i = 0;
+        while (i < this.value.length) {
+          let a = this.value[i];
+          if (value.findIndex(b => matcher(a, b)) === -1) {
+            this.value.splice(i, 1);
+          } else {
+            i++;
+          }
+        }
+        // add items that have been selected.
+        i = 0;
+        while (i < value.length) {
+          let a = value[i];
+          if (this.value.findIndex(b => matcher(a, b)) === -1) {
+            this.value.push(a);
+          }
+          i++;
+        }
+        return; // don't notify.
+      }
+    } else {
+      // single-select
       if (count === 0) {
         value = null;
       } else {
@@ -212,9 +241,11 @@ export class SelectValueObserver {
       }
     }
 
-    this.oldValue = this.value;
-    this.value = value;
-    this.notify();
+    if (value !== this.value) {
+      this.oldValue = this.value;
+      this.value = value;
+      this.notify();
+    }
   }
 
   notify() {
@@ -289,7 +320,7 @@ export class CheckedObserver {
     this.value = newValue;
     this.synchronizeElement();
     // queue up an initial sync after the bindings have been evaluated.
-    if (!this.element.hasOwnProperty('model') && !this.initialSync) {
+    if (!this.initialSync) {
       this.initialSync = true;
       this.observerLocator.taskQueue.queueMicroTask(this);
     }
@@ -301,26 +332,28 @@ export class CheckedObserver {
   }
 
   synchronizeElement() {
-    var value = this.value,
+    let value = this.value,
         element = this.element,
         elementValue = element.hasOwnProperty('model') ? element.model : element.value,
-        isRadio = element.type === 'radio';
+        isRadio = element.type === 'radio',
+        matcher = element.matcher || ((a, b) => a === b);
 
     element.checked =
-      isRadio && value === elementValue
+      isRadio && !!matcher(value, elementValue)
       || !isRadio && value === true
-      || !isRadio && Array.isArray(value) && value.indexOf(elementValue) !== -1;
+      || !isRadio && Array.isArray(value) && !!value.find(item => !!matcher(item, elementValue));
   }
 
   synchronizeValue(){
-    var value = this.value,
+    let value = this.value,
         element = this.element,
         elementValue = element.hasOwnProperty('model') ? element.model : element.value,
-        index;
+        index,
+        matcher = element.matcher || ((a, b) => a === b);
 
     if (element.type === 'checkbox') {
       if (Array.isArray(value)) {
-        index = value.indexOf(elementValue);
+        index = value.findIndex(item => !!matcher(item, elementValue));
         if (element.checked && index === -1) {
           value.push(elementValue);
         } else if (!element.checked && index !== -1) {
