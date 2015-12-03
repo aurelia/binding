@@ -1923,8 +1923,8 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
       return obj[parseInt(key)];
     } else if (obj) {
       return obj[key];
-    } else if (obj === null) {
-      throw new Error('Accessing null object');
+    } else if (obj === null || obj === undefined) {
+      return undefined;
     } else {
       return obj[key];
     }
@@ -2682,7 +2682,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
         if (this.optional('.')) {
           name = this.peek.key;
           this.advance();
-        } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === '[') {
+        } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === '[' || this.peek.text === '}') {
           return new AccessThis(ancestor);
         } else {
           this.error('Unexpected token ' + this.peek.text);
@@ -3430,7 +3430,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
       this.value = newValue;
       this.synchronizeOptions();
 
-      if (this.element.options.length > 0 && !this.initialSync) {
+      if (!this.initialSync) {
         this.initialSync = true;
         this.observerLocator.taskQueue.queueMicroTask(this);
       }
@@ -3442,12 +3442,8 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
 
     SelectValueObserver.prototype.synchronizeOptions = function synchronizeOptions() {
       var value = this.value,
-          i,
-          options,
-          option,
-          optionValue,
-          clear,
-          isArray;
+          clear = undefined,
+          isArray = undefined;
 
       if (value === null || value === undefined) {
         clear = true;
@@ -3455,51 +3451,110 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
         isArray = true;
       }
 
-      options = this.element.options;
-      i = options.length;
-      while (i--) {
-        option = options.item(i);
+      var options = this.element.options;
+      var i = options.length;
+      var matcher = this.element.matcher || function (a, b) {
+        return a === b;
+      };
+
+      var _loop = function () {
+        var option = options.item(i);
         if (clear) {
           option.selected = false;
-          continue;
+          return 'continue';
         }
-        optionValue = option.hasOwnProperty('model') ? option.model : option.value;
+        var optionValue = option.hasOwnProperty('model') ? option.model : option.value;
         if (isArray) {
-          option.selected = value.indexOf(optionValue) !== -1;
-          continue;
+          option.selected = !!value.find(function (item) {
+            return !!matcher(optionValue, item);
+          });
+          return 'continue';
         }
-        option.selected = value === optionValue;
+        option.selected = !!matcher(optionValue, value);
+      };
+
+      while (i--) {
+        var _ret2 = _loop();
+
+        if (_ret2 === 'continue') continue;
       }
     };
 
     SelectValueObserver.prototype.synchronizeValue = function synchronizeValue() {
+      var _this3 = this;
+
       var options = this.element.options,
-          option,
-          i,
-          ii,
           count = 0,
           value = [];
 
-      for (i = 0, ii = options.length; i < ii; i++) {
-        option = options.item(i);
+      for (var i = 0, ii = options.length; i < ii; i++) {
+        var option = options.item(i);
         if (!option.selected) {
           continue;
         }
-        value[count] = option.hasOwnProperty('model') ? option.model : option.value;
+        value.push(option.hasOwnProperty('model') ? option.model : option.value);
         count++;
       }
 
-      if (!this.element.multiple) {
-        if (count === 0) {
-          value = null;
-        } else {
-          value = value[0];
-        }
-      }
+      if (this.element.multiple) {
+        if (Array.isArray(this.value)) {
+          var _ret3 = (function () {
+            var matcher = _this3.element.matcher || function (a, b) {
+              return a === b;
+            };
 
-      this.oldValue = this.value;
-      this.value = value;
-      this.notify();
+            var i = 0;
+
+            var _loop2 = function () {
+              var a = _this3.value[i];
+              if (value.findIndex(function (b) {
+                return matcher(a, b);
+              }) === -1) {
+                _this3.value.splice(i, 1);
+              } else {
+                i++;
+              }
+            };
+
+            while (i < _this3.value.length) {
+              _loop2();
+            }
+
+            i = 0;
+
+            var _loop3 = function () {
+              var a = value[i];
+              if (_this3.value.findIndex(function (b) {
+                return matcher(a, b);
+              }) === -1) {
+                _this3.value.push(a);
+              }
+              i++;
+            };
+
+            while (i < value.length) {
+              _loop3();
+            }
+            return {
+              v: undefined
+            };
+          })();
+
+          if (typeof _ret3 === 'object') return _ret3.v;
+        }
+      } else {
+          if (count === 0) {
+            value = null;
+          } else {
+            value = value[0];
+          }
+        }
+
+      if (value !== this.value) {
+        this.oldValue = this.value;
+        this.value = value;
+        this.notify();
+      }
     };
 
     SelectValueObserver.prototype.notify = function notify() {
@@ -3524,11 +3579,11 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
     };
 
     SelectValueObserver.prototype.bind = function bind() {
-      var _this3 = this;
+      var _this4 = this;
 
       this.domObserver = _aureliaPal.DOM.createMutationObserver(function () {
-        _this3.synchronizeOptions();
-        _this3.synchronizeValue();
+        _this4.synchronizeOptions();
+        _this4.synchronizeValue();
       });
       this.domObserver.observe(this.element, { childList: true, subtree: true });
     };
@@ -3583,7 +3638,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
       this.value = newValue;
       this.synchronizeElement();
 
-      if (!this.element.hasOwnProperty('model') && !this.initialSync) {
+      if (!this.initialSync) {
         this.initialSync = true;
         this.observerLocator.taskQueue.queueMicroTask(this);
       }
@@ -3597,20 +3652,30 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
       var value = this.value,
           element = this.element,
           elementValue = element.hasOwnProperty('model') ? element.model : element.value,
-          isRadio = element.type === 'radio';
+          isRadio = element.type === 'radio',
+          matcher = element.matcher || function (a, b) {
+        return a === b;
+      };
 
-      element.checked = isRadio && value === elementValue || !isRadio && value === true || !isRadio && Array.isArray(value) && value.indexOf(elementValue) !== -1;
+      element.checked = isRadio && !!matcher(value, elementValue) || !isRadio && value === true || !isRadio && Array.isArray(value) && !!value.find(function (item) {
+        return !!matcher(item, elementValue);
+      });
     };
 
     CheckedObserver.prototype.synchronizeValue = function synchronizeValue() {
       var value = this.value,
           element = this.element,
           elementValue = element.hasOwnProperty('model') ? element.model : element.value,
-          index;
+          index = undefined,
+          matcher = element.matcher || function (a, b) {
+        return a === b;
+      };
 
       if (element.type === 'checkbox') {
         if (Array.isArray(value)) {
-          index = value.indexOf(elementValue);
+          index = value.findIndex(function (item) {
+            return !!matcher(item, elementValue);
+          });
           if (element.checked && index === -1) {
             value.push(elementValue);
           } else if (!element.checked && index !== -1) {
@@ -4390,7 +4455,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
     };
 
     Call.prototype.bind = function bind(source) {
-      var _this4 = this;
+      var _this5 = this;
 
       if (this.isBound) {
         if (this.source === source) {
@@ -4406,7 +4471,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
         sourceExpression.bind(this, source, this.lookupFunctions);
       }
       this.targetProperty.setValue(function ($event) {
-        return _this4.callSource($event);
+        return _this5.callSource($event);
       });
     };
 
@@ -4551,7 +4616,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
     };
 
     Listener.prototype.bind = function bind(source) {
-      var _this5 = this;
+      var _this6 = this;
 
       if (this.isBound) {
         if (this.source === source) {
@@ -4567,7 +4632,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
         sourceExpression.bind(this, source, this.lookupFunctions);
       }
       this._disposeListener = this.eventManager.addEventListener(this.target, this.targetEvent, function (event) {
-        return _this5.callSource(event);
+        return _this6.callSource(event);
       }, this.delegate);
     };
 
@@ -4710,11 +4775,11 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
     };
 
     BindingEngine.prototype.propertyObserver = function propertyObserver(obj, propertyName) {
-      var _this6 = this;
+      var _this7 = this;
 
       return {
         subscribe: function subscribe(callback) {
-          var observer = _this6.observerLocator.getObserver(obj, propertyName);
+          var observer = _this7.observerLocator.getObserver(obj, propertyName);
           observer.subscribe(callback);
           return {
             dispose: function dispose() {
@@ -4726,15 +4791,15 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
     };
 
     BindingEngine.prototype.collectionObserver = function collectionObserver(collection) {
-      var _this7 = this;
+      var _this8 = this;
 
       return {
         subscribe: function subscribe(callback) {
           var observer = undefined;
           if (collection instanceof Array) {
-            observer = _this7.observerLocator.getArrayObserver(collection);
+            observer = _this8.observerLocator.getArrayObserver(collection);
           } else if (collection instanceof Map) {
-            observer = _this7.observerLocator.getMapObserver(collection);
+            observer = _this8.observerLocator.getMapObserver(collection);
           } else {
             throw new Error('collection must be an instance of Array or Map.');
           }
@@ -4776,7 +4841,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
     }
 
     ExpressionObserver.prototype.subscribe = function subscribe(callback) {
-      var _this8 = this;
+      var _this9 = this;
 
       if (!this.hasSubscribers()) {
         this.oldValue = this.expression.evaluate(this.scope, lookupFunctions);
@@ -4785,8 +4850,8 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
       this.addSubscriber(callback);
       return {
         dispose: function dispose() {
-          if (_this8.removeSubscriber(callback) && !_this8.hasSubscribers()) {
-            _this8.unobserve(true);
+          if (_this9.removeSubscriber(callback) && !_this9.hasSubscribers()) {
+            _this9.unobserve(true);
           }
         }
       };

@@ -367,8 +367,10 @@
                   "kindString": "Parameter",
                   "flags": {},
                   "type": {
-                    "type": "instrinct",
-                    "name": "any"
+                    "type": "reference",
+                    "name": "Container",
+                    "id": 406,
+                    "moduleName": "\"aurelia-dependency-injection\""
                   }
                 },
                 {
@@ -425,7 +427,7 @@
                   "flags": {},
                   "type": {
                     "type": "instrinct",
-                    "name": "any"
+                    "name": "string"
                   }
                 }
               ],
@@ -1570,8 +1572,10 @@
                   "kindString": "Parameter",
                   "flags": {},
                   "type": {
-                    "type": "instrinct",
-                    "name": "any"
+                    "type": "reference",
+                    "name": "Container",
+                    "id": 406,
+                    "moduleName": "\"aurelia-dependency-injection\""
                   }
                 },
                 {
@@ -1628,7 +1632,7 @@
                   "flags": {},
                   "type": {
                     "type": "instrinct",
-                    "name": "any"
+                    "name": "string"
                   }
                 }
               ],
