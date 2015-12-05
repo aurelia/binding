@@ -50,10 +50,10 @@ describe('CheckedObserver', () => {
     });
 
     it('unbinds', () => {
-      var targetProperty = binding.targetProperty;
-      spyOn(targetProperty, 'unbind').and.callThrough();
+      var targetObserver = binding.targetObserver;
+      spyOn(targetObserver, 'unbind').and.callThrough();
       binding.unbind();
-      expect(targetProperty.unbind).toHaveBeenCalled();
+      expect(targetObserver.unbind).toHaveBeenCalled();
     });
 
     afterAll(() => {
@@ -95,10 +95,10 @@ describe('CheckedObserver', () => {
     });
 
     it('unbinds', () => {
-      var targetProperty = binding.targetProperty;
-      spyOn(targetProperty, 'unbind').and.callThrough();
+      var targetObserver = binding.targetObserver;
+      spyOn(targetObserver, 'unbind').and.callThrough();
       binding.unbind();
-      expect(targetProperty.unbind).toHaveBeenCalled();
+      expect(targetObserver.unbind).toHaveBeenCalled();
     });
 
     afterAll(() => {
@@ -141,10 +141,10 @@ describe('CheckedObserver', () => {
     });
 
     it('unbinds', () => {
-      var targetProperty = binding.targetProperty;
-      spyOn(targetProperty, 'unbind').and.callThrough();
+      var targetObserver = binding.targetObserver;
+      spyOn(targetObserver, 'unbind').and.callThrough();
       binding.unbind();
-      expect(targetProperty.unbind).toHaveBeenCalled();
+      expect(targetObserver.unbind).toHaveBeenCalled();
     });
 
     afterAll(() => {
@@ -185,10 +185,10 @@ describe('CheckedObserver', () => {
     });
 
     it('unbinds', () => {
-      var targetProperty = binding.targetProperty;
-      spyOn(targetProperty, 'unbind').and.callThrough();
+      var targetObserver = binding.targetObserver;
+      spyOn(targetObserver, 'unbind').and.callThrough();
       binding.unbind();
-      expect(targetProperty.unbind).toHaveBeenCalled();
+      expect(targetObserver.unbind).toHaveBeenCalled();
     });
 
     afterAll(() => {
@@ -235,10 +235,10 @@ describe('CheckedObserver', () => {
     });
 
     it('unbinds', () => {
-      var targetProperty = binding.targetProperty;
-      spyOn(targetProperty, 'unbind').and.callThrough();
+      var targetObserver = binding.targetObserver;
+      spyOn(targetObserver, 'unbind').and.callThrough();
       binding.unbind();
-      expect(targetProperty.unbind).toHaveBeenCalled();
+      expect(targetObserver.unbind).toHaveBeenCalled();
       binding2.unbind();
     });
 
@@ -299,9 +299,9 @@ describe('CheckedObserver', () => {
     it('unbinds', () => {
       var i = radios.length;
       while(i--) {
-        spyOn(radios[i].targetProperty, 'unbind').and.callThrough();
+        spyOn(radios[i].targetObserver, 'unbind').and.callThrough();
         radios[i].binding.unbind();
-        expect(radios[i].targetProperty.unbind).toHaveBeenCalled();
+        expect(radios[i].targetObserver.unbind).toHaveBeenCalled();
       }
     });
 
@@ -365,9 +365,9 @@ describe('CheckedObserver', () => {
     it('unbinds', () => {
       var i = radios.length;
       while(i--) {
-        spyOn(radios[i].targetProperty, 'unbind').and.callThrough();
+        spyOn(radios[i].targetObserver, 'unbind').and.callThrough();
         radios[i].binding.unbind();
-        expect(radios[i].targetProperty.unbind).toHaveBeenCalled();
+        expect(radios[i].targetObserver.unbind).toHaveBeenCalled();
       }
     });
 
@@ -438,9 +438,9 @@ describe('CheckedObserver', () => {
     it('unbinds', () => {
       var i = radios.length;
       while(i--) {
-        spyOn(radios[i].targetProperty, 'unbind').and.callThrough();
+        spyOn(radios[i].targetObserver, 'unbind').and.callThrough();
         radios[i].binding.unbind();
-        expect(radios[i].targetProperty.unbind).toHaveBeenCalled();
+        expect(radios[i].targetObserver.unbind).toHaveBeenCalled();
       }
     });
 

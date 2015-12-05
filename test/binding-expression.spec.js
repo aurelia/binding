@@ -56,7 +56,7 @@ describe('BindingExpression', () => {
     expect(sourceObserver.hasSubscribers()).toBe(true);
     let argObserver = bindingEngine.observerLocator.getObserver(source, 'arg');
     expect(argObserver.hasSubscribers()).toBe(true);
-    expect(binding.targetProperty.hasSubscribers()).toBe(true);
+    expect(binding.targetObserver.hasSubscribers()).toBe(true);
     source.foo.bar = 'xup';
     setTimeout(() => {
       expect(target.value).toBe(source.foo.bar);
@@ -94,7 +94,7 @@ describe('BindingExpression', () => {
           binding.unbind();
           expect(sourceObserver.hasSubscribers()).toBe(false);
           expect(argObserver.hasSubscribers()).toBe(false);
-          expect(binding.targetProperty.hasSubscribers()).toBe(false);
+          expect(binding.targetObserver.hasSubscribers()).toBe(false);
           source.foo.bar = 'test';
           setTimeout(() => {
             expect(valueConverters.one.toView).not.toHaveBeenCalled();
@@ -133,7 +133,7 @@ describe('BindingExpression', () => {
       expect(sourceObserver.hasSubscribers()).toBe(true);
       let argObserver = bindingEngine.observerLocator.getObserver(source, 'arg');
       expect(argObserver.hasSubscribers()).toBe(false);
-      expect(binding.targetProperty.hasSubscribers()).toBe(true);
+      expect(binding.targetObserver.hasSubscribers()).toBe(true);
       source.foo.bar = 'xup';
       setTimeout(() => {
         expect(target.value).toBe(source.foo.bar);
@@ -149,7 +149,7 @@ describe('BindingExpression', () => {
             expect(bindingBehaviors.two.unbind).toHaveBeenCalledWith(binding, scope);
             expect(sourceObserver.hasSubscribers()).toBe(false);
             expect(argObserver.hasSubscribers()).toBe(false);
-            expect(binding.targetProperty.hasSubscribers()).toBe(false);
+            expect(binding.targetObserver.hasSubscribers()).toBe(false);
             source.foo.bar = 'test';
             setTimeout(() => {
               expect(target.value).toBe('burrito');

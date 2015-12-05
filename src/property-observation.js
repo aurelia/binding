@@ -1,6 +1,11 @@
 import 'core-js';
 import {subscriberCollection} from './subscriber-collection';
 
+export const propertyAccessor = {
+  getValue: (obj, propertyName) => obj[propertyName],
+  setValue: (value, obj, propertyName) => obj[propertyName] = value
+};
+
 export class PrimitiveObserver {
   doNotCache = true;
 
