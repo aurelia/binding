@@ -40,6 +40,7 @@ class ModifyArrayObserver extends ModifyCollectionObserver {
     }
 
     array['reverse'] = function(){
+      observer.flushChangeRecords();
       var oldArray = array.slice();
       var methodCallResult = arrayProto['reverse'].apply(array, arguments);
       observer.reset(oldArray);
@@ -58,6 +59,7 @@ class ModifyArrayObserver extends ModifyCollectionObserver {
     };
 
     array['sort'] = function() {
+      observer.flushChangeRecords();
       var oldArray = array.slice();
       var methodCallResult = arrayProto['sort'].apply(array, arguments);
       observer.reset(oldArray);
