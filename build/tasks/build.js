@@ -18,6 +18,7 @@ gulp.task('build-index', function(){
     'camel-case.js',
     'scope.js',
     'connectable-binding.js',
+    'connect-queue.js',
     'subscriber-collection.js',
     'array-change-records.js',
     'map-change-records.js',

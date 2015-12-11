@@ -1,5 +1,6 @@
 import {bindingMode} from './binding-mode';
 import {connectable, sourceContext} from './connectable-binding';
+import {enqueueBindingConnect} from './connect-queue';
 
 export class BindingExpression {
   constructor(observerLocator, targetProperty, sourceExpression,
@@ -91,17 +92,16 @@ export class Binding {
       this.targetObserver = this.observerLocator[method](this.target, this.targetProperty);
     }
 
-    let value = sourceExpression.evaluate(source, this.lookupFunctions);
     if ('bind' in this.targetObserver) {
       this.targetObserver.bind();
     }
+    let value = sourceExpression.evaluate(source, this.lookupFunctions);
     this.updateTarget(value);
 
-    if (mode === bindingMode.oneWay || mode === bindingMode.twoWay) {
+    if (mode === bindingMode.oneWay) {
+      enqueueBindingConnect(this);
+    } else if (mode === bindingMode.twoWay) {
       sourceExpression.connect(this, source);
-    }
-
-    if (mode === bindingMode.twoWay) {
       this.targetObserver.subscribe(targetContext, this);
     }
   }
@@ -122,5 +122,16 @@ export class Binding {
       this.targetObserver.unsubscribe(targetContext, this);
     }
     this.unobserve(true);
+  }
+
+  connect(evaluate) {
+    if (!this.isBound) {
+      return;
+    }
+    if (evaluate) {
+      let value = this.sourceExpression.evaluate(this.source, this.lookupFunctions);
+      this.updateTarget(value);
+    }
+    this.sourceExpression.connect(this, this.source);
   }
 }
