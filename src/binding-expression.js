@@ -65,7 +65,9 @@ export class Binding {
       return;
     }
     if (context === targetContext) {
-      this.updateSource(newValue);
+      if (newValue !== this.sourceExpression.evaluate(this.source, this.lookupFunctions)) {
+        this.updateSource(newValue);
+      }
       return;
     }
     throw new Error(`Unexpected call context ${context}`);

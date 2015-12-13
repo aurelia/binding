@@ -36,72 +36,70 @@ describe('BindingExpression', () => {
 
   it('handles ValueConverter', done => {
     let valueConverters = {
-      one: { toView: value => value, fromView: value => value },
-      two: { toView: value => value, fromView: value => value }
+      numberToString: { toView: value => value.toString(), fromView: value => parseInt(value) },
+      multiply: { toView: (value, arg) => value * arg, fromView: (value, arg) => value / arg }
     };
-    spyOn(valueConverters.one, 'toView').and.callThrough();
-    spyOn(valueConverters.one, 'fromView').and.callThrough();
-    spyOn(valueConverters.two, 'toView').and.callThrough();
-    spyOn(valueConverters.two, 'fromView').and.callThrough();
+    spyOn(valueConverters.numberToString, 'toView').and.callThrough();
+    spyOn(valueConverters.numberToString, 'fromView').and.callThrough();
+    spyOn(valueConverters.multiply, 'toView').and.callThrough();
+    spyOn(valueConverters.multiply, 'fromView').and.callThrough();
     let lookupFunctions = { valueConverters: name => valueConverters[name] };
-    let source = { foo: { bar: 'baz' }, arg: 'hello world' };
+    let source = { foo: { bar: 1 }, arg: 2 };
     let target = document.createElement('input');
-    let bindingExpression = bindingEngine.createBindingExpression('value', 'foo.bar | one:arg | two', bindingMode.twoWay, lookupFunctions);
+    let bindingExpression = bindingEngine.createBindingExpression('value', 'foo.bar | multiply:arg | numberToString', bindingMode.twoWay, lookupFunctions);
     let binding = bindingExpression.createBinding(target);
     binding.bind(createScopeForTest(source));
-    expect(target.value).toBe(source.foo.bar);
-    expect(valueConverters.one.toView).toHaveBeenCalledWith(source.foo.bar, source.arg);
-    expect(valueConverters.two.toView).toHaveBeenCalledWith(source.foo.bar);
+    expect(target.value).toBe('2');
+    expect(valueConverters.numberToString.toView).toHaveBeenCalledWith(2);
+    expect(valueConverters.multiply.toView).toHaveBeenCalledWith(1, 2);
     let sourceObserver = bindingEngine.observerLocator.getObserver(source.foo, 'bar');
     expect(sourceObserver.hasSubscribers()).toBe(true);
     let argObserver = bindingEngine.observerLocator.getObserver(source, 'arg');
     expect(argObserver.hasSubscribers()).toBe(true);
     expect(binding.targetObserver.hasSubscribers()).toBe(true);
-    source.foo.bar = 'xup';
+    source.foo.bar = 2;
     setTimeout(() => {
-      expect(target.value).toBe(source.foo.bar);
-      expect(valueConverters.one.toView).toHaveBeenCalledWith(source.foo.bar, source.arg);
-      expect(valueConverters.one.fromView).toHaveBeenCalledWith(source.foo.bar, source.arg);
-      expect(valueConverters.two.toView).toHaveBeenCalledWith(source.foo.bar);
-      expect(valueConverters.two.fromView).toHaveBeenCalledWith(source.foo.bar);
-      valueConverters.one.toView.calls.reset();
-      valueConverters.one.fromView.calls.reset();
-      valueConverters.two.toView.calls.reset();
-      valueConverters.two.fromView.calls.reset();
-      source.arg = 'goodbye world';
+      expect(target.value).toBe('4');
+      expect(valueConverters.numberToString.toView).toHaveBeenCalledWith(4);
+      expect(valueConverters.multiply.toView).toHaveBeenCalledWith(2, 2);
+      valueConverters.numberToString.toView.calls.reset();
+      valueConverters.numberToString.fromView.calls.reset();
+      valueConverters.multiply.toView.calls.reset();
+      valueConverters.multiply.fromView.calls.reset();
+      source.arg = 4;
       setTimeout(() => {
-        expect(target.value).toBe(source.foo.bar);
-        expect(valueConverters.one.toView).toHaveBeenCalledWith(source.foo.bar, source.arg);
-        expect(valueConverters.one.fromView).not.toHaveBeenCalled();
-        expect(valueConverters.two.toView).toHaveBeenCalledWith(source.foo.bar);
-        expect(valueConverters.two.fromView).not.toHaveBeenCalled();
-        valueConverters.one.toView.calls.reset();
-        valueConverters.one.fromView.calls.reset();
-        valueConverters.two.toView.calls.reset();
-        valueConverters.two.fromView.calls.reset();
-        target.value = 'burrito';
+        expect(target.value).toBe('8');
+        expect(valueConverters.numberToString.toView).toHaveBeenCalledWith(8);
+        expect(valueConverters.numberToString.fromView).not.toHaveBeenCalled();
+        expect(valueConverters.multiply.toView).toHaveBeenCalledWith(2, 4);
+        expect(valueConverters.multiply.fromView).not.toHaveBeenCalled();
+        valueConverters.numberToString.toView.calls.reset();
+        valueConverters.numberToString.fromView.calls.reset();
+        valueConverters.multiply.toView.calls.reset();
+        valueConverters.multiply.fromView.calls.reset();
+        target.value = '24';
         fireEvent(target, 'change');
         setTimeout(() => {
-          expect(valueConverters.one.toView).toHaveBeenCalledWith(target.value, source.arg);
-          expect(valueConverters.one.fromView).toHaveBeenCalledWith(target.value, source.arg);
-          expect(valueConverters.two.toView).toHaveBeenCalledWith(target.value);
-          expect(valueConverters.two.fromView).toHaveBeenCalledWith(target.value);
-          valueConverters.one.toView.calls.reset();
-          valueConverters.one.fromView.calls.reset();
-          valueConverters.two.toView.calls.reset();
-          valueConverters.two.fromView.calls.reset();
-          expect(source.foo.bar).toBe(target.value);
+          expect(valueConverters.numberToString.toView).toHaveBeenCalledWith(24);
+          expect(valueConverters.numberToString.fromView).toHaveBeenCalledWith('24');
+          expect(valueConverters.multiply.toView).toHaveBeenCalledWith(6, 4);
+          expect(valueConverters.multiply.fromView).toHaveBeenCalledWith(24, 4);
+          valueConverters.numberToString.toView.calls.reset();
+          valueConverters.numberToString.fromView.calls.reset();
+          valueConverters.multiply.toView.calls.reset();
+          valueConverters.multiply.fromView.calls.reset();
+          expect(source.foo.bar).toBe(6);
           binding.unbind();
           expect(sourceObserver.hasSubscribers()).toBe(false);
           expect(argObserver.hasSubscribers()).toBe(false);
           expect(binding.targetObserver.hasSubscribers()).toBe(false);
-          source.foo.bar = 'test';
+          source.foo.bar = 4;
           setTimeout(() => {
-            expect(valueConverters.one.toView).not.toHaveBeenCalled();
-            expect(valueConverters.one.fromView).not.toHaveBeenCalled();
-            expect(valueConverters.two.toView).not.toHaveBeenCalled();
-            expect(valueConverters.two.fromView).not.toHaveBeenCalled();
-            expect(target.value).toBe('burrito');
+            expect(valueConverters.numberToString.toView).not.toHaveBeenCalled();
+            expect(valueConverters.numberToString.fromView).not.toHaveBeenCalled();
+            expect(valueConverters.multiply.toView).not.toHaveBeenCalled();
+            expect(valueConverters.multiply.fromView).not.toHaveBeenCalled();
+            expect(target.value).toBe('24');
             done();
           }, checkDelay * 2);
         }, checkDelay * 2);
@@ -111,23 +109,23 @@ describe('BindingExpression', () => {
 
   it('handles BindingBehavior', done => {
     let bindingBehaviors = {
-      one: { bind: (binding, source) => {}, unbind: (binding, source) => {} },
-      two: { bind: (binding, source) => {}, unbind: (binding, source) => {} }
+      numberToString: { bind: (binding, source) => {}, unbind: (binding, source) => {} },
+      multiply: { bind: (binding, source) => {}, unbind: (binding, source) => {} }
     }
-    spyOn(bindingBehaviors.one, 'bind').and.callThrough();
-    spyOn(bindingBehaviors.one, 'unbind').and.callThrough();
-    spyOn(bindingBehaviors.two, 'bind').and.callThrough();
-    spyOn(bindingBehaviors.two, 'unbind').and.callThrough();
+    spyOn(bindingBehaviors.numberToString, 'bind').and.callThrough();
+    spyOn(bindingBehaviors.numberToString, 'unbind').and.callThrough();
+    spyOn(bindingBehaviors.multiply, 'bind').and.callThrough();
+    spyOn(bindingBehaviors.multiply, 'unbind').and.callThrough();
     let lookupFunctions = { bindingBehaviors: name => bindingBehaviors[name] };
     let source = { foo: { bar: 'baz' }, arg: 'hello world' };
     let target = document.createElement('input');
-    let bindingExpression = bindingEngine.createBindingExpression('value', 'foo.bar & one:arg & two', bindingMode.twoWay, lookupFunctions);
+    let bindingExpression = bindingEngine.createBindingExpression('value', 'foo.bar & numberToString:arg & multiply', bindingMode.twoWay, lookupFunctions);
     let binding = bindingExpression.createBinding(target);
     function exerciseBindingBehavior(callback) {
       let scope = createScopeForTest(source);
       binding.bind(scope);
-      expect(bindingBehaviors.one.bind).toHaveBeenCalledWith(binding, scope, 'hello world');
-      expect(bindingBehaviors.two.bind).toHaveBeenCalledWith(binding, scope);
+      expect(bindingBehaviors.numberToString.bind).toHaveBeenCalledWith(binding, scope, 'hello world');
+      expect(bindingBehaviors.multiply.bind).toHaveBeenCalledWith(binding, scope);
       expect(target.value).toBe(source.foo.bar);
       let sourceObserver = bindingEngine.observerLocator.getObserver(source.foo, 'bar');
       expect(sourceObserver.hasSubscribers()).toBe(true);
@@ -145,8 +143,8 @@ describe('BindingExpression', () => {
           setTimeout(() => {
             expect(source.foo.bar).toBe(target.value);
             binding.unbind();
-            expect(bindingBehaviors.one.unbind).toHaveBeenCalledWith(binding, scope);
-            expect(bindingBehaviors.two.unbind).toHaveBeenCalledWith(binding, scope);
+            expect(bindingBehaviors.numberToString.unbind).toHaveBeenCalledWith(binding, scope);
+            expect(bindingBehaviors.multiply.unbind).toHaveBeenCalledWith(binding, scope);
             expect(sourceObserver.hasSubscribers()).toBe(false);
             expect(argObserver.hasSubscribers()).toBe(false);
             expect(binding.targetObserver.hasSubscribers()).toBe(false);
