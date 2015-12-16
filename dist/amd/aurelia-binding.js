@@ -10,6 +10,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
   exports.getContextFor = getContextFor;
   exports.createScopeForTest = createScopeForTest;
   exports.connectable = connectable;
+  exports.enqueueBindingConnect = enqueueBindingConnect;
   exports.subscriberCollection = subscriberCollection;
   exports.calcSplices = calcSplices;
   exports.projectArraySplices = projectArraySplices;
@@ -137,6 +138,59 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
       target.prototype.observeArray = observeArray;
       target.prototype.unobserve = unobserve;
     };
+  }
+
+  var bindings = new Map();
+  var minimumImmediate = 100;
+  var frameBudget = 15;
+
+  var isFlushRequested = false;
+  var immediate = 0;
+
+  function flush(animationFrameStart) {
+    var i = 0;
+    for (var _iterator = bindings, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+      var _ref;
+
+      if (_isArray) {
+        if (_i >= _iterator.length) break;
+        _ref = _iterator[_i++];
+      } else {
+        _i = _iterator.next();
+        if (_i.done) break;
+        _ref = _i.value;
+      }
+
+      var binding = _ref[0];
+
+      bindings['delete'](binding);
+      binding.connect(true);
+      i++;
+
+      if (i % 100 === 0 && _aureliaPal.PLATFORM.performance.now() - animationFrameStart > frameBudget) {
+        break;
+      }
+    }
+
+    if (bindings.size) {
+      _aureliaPal.PLATFORM.requestAnimationFrame(flush);
+    } else {
+      isFlushRequested = false;
+      immediate = 0;
+    }
+  }
+
+  function enqueueBindingConnect(binding) {
+    if (immediate < minimumImmediate) {
+      immediate++;
+      binding.connect(false);
+    } else {
+      bindings.set(binding);
+    }
+    if (!isFlushRequested) {
+      isFlushRequested = true;
+      _aureliaPal.PLATFORM.requestAnimationFrame(flush);
+    }
   }
 
   function addSubscriber(context, callable) {
@@ -604,19 +658,19 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
 
   function getChangeRecords(map) {
     var entries = [];
-    for (var _iterator = map.keys(), _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-      var _ref;
+    for (var _iterator2 = map.keys(), _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+      var _ref2;
 
-      if (_isArray) {
-        if (_i >= _iterator.length) break;
-        _ref = _iterator[_i++];
+      if (_isArray2) {
+        if (_i2 >= _iterator2.length) break;
+        _ref2 = _iterator2[_i2++];
       } else {
-        _i = _iterator.next();
-        if (_i.done) break;
-        _ref = _i.value;
+        _i2 = _iterator2.next();
+        if (_i2.done) break;
+        _ref2 = _i2.value;
       }
 
-      var key = _ref;
+      var key = _ref2;
 
       entries.push(newRecord('added', map, key));
     }
@@ -671,6 +725,12 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
       if (!this.queued) {
         this.queued = true;
         this.taskQueue.queueMicroTask(this);
+      }
+    };
+
+    ModifyCollectionObserver.prototype.flushChangeRecords = function flushChangeRecords() {
+      if (this.changeRecords && this.changeRecords.length || this.oldCollection) {
+        this.call();
       }
     };
 
@@ -806,6 +866,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
       };
 
       array['reverse'] = function () {
+        observer.flushChangeRecords();
         var oldArray = array.slice();
         var methodCallResult = arrayProto['reverse'].apply(array, arguments);
         observer.reset(oldArray);
@@ -824,6 +885,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
       };
 
       array['sort'] = function () {
+        observer.flushChangeRecords();
         var oldArray = array.slice();
         var methodCallResult = arrayProto['sort'].apply(array, arguments);
         observer.reset(oldArray);
@@ -3145,6 +3207,16 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
   })();
 
   exports.DirtyCheckProperty = DirtyCheckProperty;
+  var propertyAccessor = {
+    getValue: function getValue(obj, propertyName) {
+      return obj[propertyName];
+    },
+    setValue: function setValue(value, obj, propertyName) {
+      return obj[propertyName] = value;
+    }
+  };
+
+  exports.propertyAccessor = propertyAccessor;
 
   var PrimitiveObserver = (function () {
     function PrimitiveObserver(primitive, propertyName) {
@@ -3279,6 +3351,16 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
   })();
 
   exports.XLinkAttributeObserver = XLinkAttributeObserver;
+  var dataAttributeAccessor = {
+    getValue: function getValue(obj, propertyName) {
+      return obj.getAttribute(propertyName);
+    },
+    setValue: function setValue(value, obj, propertyName) {
+      return obj.setAttribute(propertyName, value);
+    }
+  };
+
+  exports.dataAttributeAccessor = dataAttributeAccessor;
 
   var DataAttributeObserver = (function () {
     function DataAttributeObserver(element, propertyName) {
@@ -3350,6 +3432,9 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
       this.element = element;
       this.propertyName = propertyName;
       this.handler = handler;
+      if (propertyName === 'files') {
+        this.setValue = function () {};
+      }
     }
 
     ValueAttributeObserver.prototype.getValue = function getValue() {
@@ -4252,6 +4337,18 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
       return new SetterObserver(this.taskQueue, obj, propertyName);
     };
 
+    ObserverLocator.prototype.getAccessor = function getAccessor(obj, propertyName) {
+      if (obj instanceof _aureliaPal.DOM.Element) {
+        if (propertyName === 'class' || propertyName === 'style' || propertyName === 'css' || propertyName === 'value' && obj.tagName.toLowerCase() === 'select' || propertyName === 'checked' && obj.tagName.toLowerCase() === 'input' || /^xlink:.+$/.exec(propertyName)) {
+          return this.getObserver(obj, propertyName);
+        }
+        if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof _aureliaPal.DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
+          return dataAttributeAccessor;
+        }
+      }
+      return propertyAccessor;
+    };
+
     ObserverLocator.prototype.getArrayObserver = function getArrayObserver(array) {
       if ('__array_observer__' in array) {
         return array.__array_observer__;
@@ -4317,13 +4414,14 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
 
       this.observerLocator = observerLocator;
       this.sourceExpression = sourceExpression;
-      this.targetProperty = observerLocator.getObserver(target, targetProperty);
+      this.target = target;
+      this.targetProperty = targetProperty;
       this.mode = mode;
       this.lookupFunctions = lookupFunctions;
     }
 
     Binding.prototype.updateTarget = function updateTarget(value) {
-      this.targetProperty.setValue(value);
+      this.targetObserver.setValue(value, this.target, this.targetProperty);
     };
 
     Binding.prototype.updateSource = function updateSource(value) {
@@ -4335,7 +4433,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
         return;
       }
       if (context === sourceContext) {
-        oldValue = this.targetProperty.getValue();
+        oldValue = this.targetObserver.getValue(this.target, this.targetProperty);
         newValue = this.sourceExpression.evaluate(this.source, this.lookupFunctions);
         if (newValue !== oldValue) {
           this.updateTarget(newValue);
@@ -4348,7 +4446,9 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
         return;
       }
       if (context === targetContext) {
-        this.updateSource(newValue);
+        if (newValue !== this.sourceExpression.evaluate(this.source, this.lookupFunctions)) {
+          this.updateSource(newValue);
+        }
         return;
       }
       throw new Error('Unexpected call context ' + context);
@@ -4369,21 +4469,23 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
         sourceExpression.bind(this, source, this.lookupFunctions);
       }
 
-      var targetProperty = this.targetProperty;
-      if ('bind' in targetProperty) {
-        targetProperty.bind();
+      var mode = this.mode;
+      if (!this.targetObserver) {
+        var method = mode === bindingMode.twoWay ? 'getObserver' : 'getAccessor';
+        this.targetObserver = this.observerLocator[method](this.target, this.targetProperty);
       }
 
+      if ('bind' in this.targetObserver) {
+        this.targetObserver.bind();
+      }
       var value = sourceExpression.evaluate(source, this.lookupFunctions);
       this.updateTarget(value);
 
-      var mode = this.mode;
-      if (mode === bindingMode.oneWay || mode === bindingMode.twoWay) {
+      if (mode === bindingMode.oneWay) {
+        enqueueBindingConnect(this);
+      } else if (mode === bindingMode.twoWay) {
         sourceExpression.connect(this, source);
-
-        if (mode === bindingMode.twoWay) {
-          targetProperty.subscribe(targetContext, this);
-        }
+        this.targetObserver.subscribe(targetContext, this);
       }
     };
 
@@ -4396,13 +4498,24 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
         this.sourceExpression.unbind(this, this.source);
       }
       this.source = null;
-      if ('unbind' in this.targetProperty) {
-        this.targetProperty.unbind();
+      if ('unbind' in this.targetObserver) {
+        this.targetObserver.unbind();
       }
-      if (this.mode === bindingMode.twoWay) {
-        this.targetProperty.unsubscribe(targetContext, this);
+      if (this.targetObserver.unsubscribe) {
+        this.targetObserver.unsubscribe(targetContext, this);
       }
       this.unobserve(true);
+    };
+
+    Binding.prototype.connect = function connect(evaluate) {
+      if (!this.isBound) {
+        return;
+      }
+      if (evaluate) {
+        var value = this.sourceExpression.evaluate(this.source, this.lookupFunctions);
+        this.updateTarget(value);
+      }
+      this.sourceExpression.connect(this, this.source);
     };
 
     var _Binding = Binding;

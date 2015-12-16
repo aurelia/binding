@@ -1,7 +1,7 @@
 System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], function (_export) {
   'use strict';
 
-  var DOM, TaskQueue, metadata, sourceContext, slotNames, versionSlotNames, i, tempContextsRest, tempCallablesRest, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, arrayProto, ModifyArrayObserver, Expression, Chain, BindingBehavior, ValueConverter, Assign, Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, PrefixNot, LiteralPrimitive, LiteralString, LiteralArray, LiteralObject, Unparser, evalListCache, bindingMode, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP, EOF, Parser, ParserImplementation, mapProto, ModifyMapObserver, DelegateHandlerEntry, DefaultEventStrategy, EventManager, DirtyChecker, DirtyCheckProperty, PrimitiveObserver, SetterObserver, XLinkAttributeObserver, DataAttributeObserver, StyleObserver, ValueAttributeObserver, selectArrayContext, SelectValueObserver, checkedArrayContext, CheckedObserver, ClassObserver, computedContext, ComputedPropertyObserver, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, targetContext, Binding, CallExpression, Call, ValueConverterResource, BindingBehaviorResource, ListenerExpression, Listener, NameExpression, NameBinder, lookupFunctions, BindingEngine, ExpressionObserver;
+  var PLATFORM, DOM, TaskQueue, metadata, sourceContext, slotNames, versionSlotNames, i, bindings, minimumImmediate, frameBudget, isFlushRequested, immediate, tempContextsRest, tempCallablesRest, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, arrayProto, ModifyArrayObserver, Expression, Chain, BindingBehavior, ValueConverter, Assign, Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, PrefixNot, LiteralPrimitive, LiteralString, LiteralArray, LiteralObject, Unparser, evalListCache, bindingMode, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP, EOF, Parser, ParserImplementation, mapProto, ModifyMapObserver, DelegateHandlerEntry, DefaultEventStrategy, EventManager, DirtyChecker, DirtyCheckProperty, propertyAccessor, PrimitiveObserver, SetterObserver, XLinkAttributeObserver, dataAttributeAccessor, DataAttributeObserver, StyleObserver, ValueAttributeObserver, selectArrayContext, SelectValueObserver, checkedArrayContext, CheckedObserver, ClassObserver, computedContext, ComputedPropertyObserver, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, targetContext, Binding, CallExpression, Call, ValueConverterResource, BindingBehaviorResource, ListenerExpression, Listener, NameExpression, NameBinder, lookupFunctions, BindingEngine, ExpressionObserver;
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
@@ -14,6 +14,8 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
   _export('createScopeForTest', createScopeForTest);
 
   _export('connectable', connectable);
+
+  _export('enqueueBindingConnect', enqueueBindingConnect);
 
   _export('subscriberCollection', subscriberCollection);
 
@@ -142,6 +144,52 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
       target.prototype.observeArray = observeArray;
       target.prototype.unobserve = unobserve;
     };
+  }
+
+  function flush(animationFrameStart) {
+    var i = 0;
+    for (var _iterator = bindings, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+      var _ref;
+
+      if (_isArray) {
+        if (_i >= _iterator.length) break;
+        _ref = _iterator[_i++];
+      } else {
+        _i = _iterator.next();
+        if (_i.done) break;
+        _ref = _i.value;
+      }
+
+      var binding = _ref[0];
+
+      bindings['delete'](binding);
+      binding.connect(true);
+      i++;
+
+      if (i % 100 === 0 && PLATFORM.performance.now() - animationFrameStart > frameBudget) {
+        break;
+      }
+    }
+
+    if (bindings.size) {
+      PLATFORM.requestAnimationFrame(flush);
+    } else {
+      isFlushRequested = false;
+      immediate = 0;
+    }
+  }
+
+  function enqueueBindingConnect(binding) {
+    if (immediate < minimumImmediate) {
+      immediate++;
+      binding.connect(false);
+    } else {
+      bindings.set(binding);
+    }
+    if (!isFlushRequested) {
+      isFlushRequested = true;
+      PLATFORM.requestAnimationFrame(flush);
+    }
   }
 
   function addSubscriber(context, callable) {
@@ -430,19 +478,19 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
   function getChangeRecords(map) {
     var entries = [];
-    for (var _iterator = map.keys(), _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-      var _ref;
+    for (var _iterator2 = map.keys(), _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+      var _ref2;
 
-      if (_isArray) {
-        if (_i >= _iterator.length) break;
-        _ref = _iterator[_i++];
+      if (_isArray2) {
+        if (_i2 >= _iterator2.length) break;
+        _ref2 = _iterator2[_i2++];
       } else {
-        _i = _iterator.next();
-        if (_i.done) break;
-        _ref = _i.value;
+        _i2 = _iterator2.next();
+        if (_i2.done) break;
+        _ref2 = _i2.value;
       }
 
-      var key = _ref;
+      var key = _ref2;
 
       entries.push(newRecord('added', map, key));
     }
@@ -666,6 +714,7 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
   return {
     setters: [function (_coreJs) {}, function (_aureliaPal) {
+      PLATFORM = _aureliaPal.PLATFORM;
       DOM = _aureliaPal.DOM;
     }, function (_aureliaTaskQueue) {
       TaskQueue = _aureliaTaskQueue.TaskQueue;
@@ -683,7 +732,12 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
       for (i = 0; i < 100; i++) {
         slotNames.push('_observer' + i);
         versionSlotNames.push('_observerVersion' + i);
-      }tempContextsRest = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
+      }bindings = new Map();
+      minimumImmediate = 100;
+      frameBudget = 15;
+      isFlushRequested = false;
+      immediate = 0;
+      tempContextsRest = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
       tempCallablesRest = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
       EDIT_LEAVE = 0;
       EDIT_UPDATE = 1;
@@ -911,6 +965,12 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
           }
         };
 
+        ModifyCollectionObserver.prototype.flushChangeRecords = function flushChangeRecords() {
+          if (this.changeRecords && this.changeRecords.length || this.oldCollection) {
+            this.call();
+          }
+        };
+
         ModifyCollectionObserver.prototype.reset = function reset(oldCollection) {
           this.oldCollection = oldCollection;
 
@@ -1039,6 +1099,7 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
           };
 
           array['reverse'] = function () {
+            observer.flushChangeRecords();
             var oldArray = array.slice();
             var methodCallResult = arrayProto['reverse'].apply(array, arguments);
             observer.reset(oldArray);
@@ -1057,6 +1118,7 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
           };
 
           array['sort'] = function () {
+            observer.flushChangeRecords();
             var oldArray = array.slice();
             var methodCallResult = arrayProto['sort'].apply(array, arguments);
             observer.reset(oldArray);
@@ -3216,6 +3278,17 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
       _export('DirtyCheckProperty', DirtyCheckProperty);
 
+      propertyAccessor = {
+        getValue: function getValue(obj, propertyName) {
+          return obj[propertyName];
+        },
+        setValue: function setValue(value, obj, propertyName) {
+          return obj[propertyName] = value;
+        }
+      };
+
+      _export('propertyAccessor', propertyAccessor);
+
       PrimitiveObserver = (function () {
         function PrimitiveObserver(primitive, propertyName) {
           _classCallCheck(this, PrimitiveObserver);
@@ -3350,6 +3423,17 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
       _export('XLinkAttributeObserver', XLinkAttributeObserver);
 
+      dataAttributeAccessor = {
+        getValue: function getValue(obj, propertyName) {
+          return obj.getAttribute(propertyName);
+        },
+        setValue: function setValue(value, obj, propertyName) {
+          return obj.setAttribute(propertyName, value);
+        }
+      };
+
+      _export('dataAttributeAccessor', dataAttributeAccessor);
+
       DataAttributeObserver = (function () {
         function DataAttributeObserver(element, propertyName) {
           _classCallCheck(this, DataAttributeObserver);
@@ -3420,6 +3504,9 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
           this.element = element;
           this.propertyName = propertyName;
           this.handler = handler;
+          if (propertyName === 'files') {
+            this.setValue = function () {};
+          }
         }
 
         ValueAttributeObserver.prototype.getValue = function getValue() {
@@ -4298,6 +4385,18 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
           return new SetterObserver(this.taskQueue, obj, propertyName);
         };
 
+        ObserverLocator.prototype.getAccessor = function getAccessor(obj, propertyName) {
+          if (obj instanceof DOM.Element) {
+            if (propertyName === 'class' || propertyName === 'style' || propertyName === 'css' || propertyName === 'value' && obj.tagName.toLowerCase() === 'select' || propertyName === 'checked' && obj.tagName.toLowerCase() === 'input' || /^xlink:.+$/.exec(propertyName)) {
+              return this.getObserver(obj, propertyName);
+            }
+            if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
+              return dataAttributeAccessor;
+            }
+          }
+          return propertyAccessor;
+        };
+
         ObserverLocator.prototype.getArrayObserver = function getArrayObserver(array) {
           if ('__array_observer__' in array) {
             return array.__array_observer__;
@@ -4363,13 +4462,14 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
           this.observerLocator = observerLocator;
           this.sourceExpression = sourceExpression;
-          this.targetProperty = observerLocator.getObserver(target, targetProperty);
+          this.target = target;
+          this.targetProperty = targetProperty;
           this.mode = mode;
           this.lookupFunctions = lookupFunctions;
         }
 
         Binding.prototype.updateTarget = function updateTarget(value) {
-          this.targetProperty.setValue(value);
+          this.targetObserver.setValue(value, this.target, this.targetProperty);
         };
 
         Binding.prototype.updateSource = function updateSource(value) {
@@ -4381,7 +4481,7 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
             return;
           }
           if (context === sourceContext) {
-            oldValue = this.targetProperty.getValue();
+            oldValue = this.targetObserver.getValue(this.target, this.targetProperty);
             newValue = this.sourceExpression.evaluate(this.source, this.lookupFunctions);
             if (newValue !== oldValue) {
               this.updateTarget(newValue);
@@ -4394,7 +4494,9 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
             return;
           }
           if (context === targetContext) {
-            this.updateSource(newValue);
+            if (newValue !== this.sourceExpression.evaluate(this.source, this.lookupFunctions)) {
+              this.updateSource(newValue);
+            }
             return;
           }
           throw new Error('Unexpected call context ' + context);
@@ -4415,21 +4517,23 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
             sourceExpression.bind(this, source, this.lookupFunctions);
           }
 
-          var targetProperty = this.targetProperty;
-          if ('bind' in targetProperty) {
-            targetProperty.bind();
+          var mode = this.mode;
+          if (!this.targetObserver) {
+            var method = mode === bindingMode.twoWay ? 'getObserver' : 'getAccessor';
+            this.targetObserver = this.observerLocator[method](this.target, this.targetProperty);
           }
 
+          if ('bind' in this.targetObserver) {
+            this.targetObserver.bind();
+          }
           var value = sourceExpression.evaluate(source, this.lookupFunctions);
           this.updateTarget(value);
 
-          var mode = this.mode;
-          if (mode === bindingMode.oneWay || mode === bindingMode.twoWay) {
+          if (mode === bindingMode.oneWay) {
+            enqueueBindingConnect(this);
+          } else if (mode === bindingMode.twoWay) {
             sourceExpression.connect(this, source);
-
-            if (mode === bindingMode.twoWay) {
-              targetProperty.subscribe(targetContext, this);
-            }
+            this.targetObserver.subscribe(targetContext, this);
           }
         };
 
@@ -4442,13 +4546,24 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
             this.sourceExpression.unbind(this, this.source);
           }
           this.source = null;
-          if ('unbind' in this.targetProperty) {
-            this.targetProperty.unbind();
+          if ('unbind' in this.targetObserver) {
+            this.targetObserver.unbind();
           }
-          if (this.mode === bindingMode.twoWay) {
-            this.targetProperty.unsubscribe(targetContext, this);
+          if (this.targetObserver.unsubscribe) {
+            this.targetObserver.unsubscribe(targetContext, this);
           }
           this.unobserve(true);
+        };
+
+        Binding.prototype.connect = function connect(evaluate) {
+          if (!this.isBound) {
+            return;
+          }
+          if (evaluate) {
+            var value = this.sourceExpression.evaluate(this.source, this.lookupFunctions);
+            this.updateTarget(value);
+          }
+          this.sourceExpression.connect(this, this.source);
         };
 
         var _Binding = Binding;

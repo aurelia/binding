@@ -1,6 +1,6 @@
 {
   "name": "aurelia-binding",
-  "version": "1.0.0-beta.1.0.2",
+  "version": "1.0.0-beta.1.0.3",
   "description": "A modern databinding library for JavaScript and HTML.",
   "license": "MIT",
   "keywords": [
@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "aurelia-metadata": "^1.0.0-beta.1",
-    "aurelia-pal": "^1.0.0-beta.1",
+    "aurelia-pal": "^1.0.0-beta.1.0.1",
     "aurelia-task-queue": "^1.0.0-beta.1",
     "core-js": "zloirock/core-js"
   }

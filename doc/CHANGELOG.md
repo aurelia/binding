@@ -1,3 +1,13 @@
+### 1.0.0-beta.1.0.3 (2015-12-16)
+
+
+#### Bug Fixes
+
+* **array-observation:** handle push then sort ([2ae6d0e4](http://github.com/aurelia/binding/commit/2ae6d0e46f85a865fcf3261ddf0298244573f185), closes [#233](http://github.com/aurelia/binding/issues/233))
+* **binding:** check before assign ([44b5a669](http://github.com/aurelia/binding/commit/44b5a669d563d3aeb1268cad8058a8bbf51d21f8), closes [#258](http://github.com/aurelia/binding/issues/258))
+* **file-input:** Firefox issue ([debed4e5](http://github.com/aurelia/binding/commit/debed4e5fa71ad99e2b97c3def6d605da4da884f), closes [#256](http://github.com/aurelia/binding/issues/256))
+
+
 ## 1.0.0-beta.1.0.2 (2015-12-03)
 
 
