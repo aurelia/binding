@@ -169,8 +169,8 @@ export class ObserverLocator {
     if (obj instanceof DOM.Element) {
       if (propertyName === 'class'
         || propertyName === 'style' || propertyName === 'css'
-        || propertyName === 'value' && obj.tagName.toLowerCase() === 'select'
-        || propertyName ==='checked' && obj.tagName.toLowerCase() === 'input'
+        || propertyName === 'value' && (obj.tagName.toLowerCase() === 'input' || obj.tagName.toLowerCase() === 'select')
+        || propertyName === 'checked' && obj.tagName.toLowerCase() === 'input'
         || /^xlink:.+$/.exec(propertyName)) {
         return this.getObserver(obj, propertyName);
       }

@@ -161,4 +161,8 @@ describe('ObserverLocator', () => {
     expect(observer.___from_adapter).toBe(true);
     expect(adapter.getObserver).toHaveBeenCalledWith(obj, 'foo', descriptor);
   });
+
+  it('getAccessor returns ValueAttributeObserver for input.value', () => {
+    expect(locator.getAccessor(document.createElement('input'), 'value') instanceof ValueAttributeObserver).toBe(true);
+  });
 });
