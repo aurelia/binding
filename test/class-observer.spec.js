@@ -28,10 +28,10 @@ describe('ClassObserver', () => {
   it('adds and removes own classes', () => {
     var contains = element.classList.contains.bind(element.classList);
     expect(contains('foo') && contains('bar')).toBe(true);
-    observerA.setValue(' xxx  yyy  ');
+    observerA.setValue(' xxx \t\r\n\v\f yyy  ');
     expect(contains('foo') && contains('bar')).toBe(true);
     expect(contains('xxx') && contains('yyy')).toBe(true);
-    expect(observerA.getValue()).toBe(' xxx  yyy  ');
+    expect(observerA.getValue()).toBe(' xxx \t\r\n\v\f yyy  ');
     observerA.setValue('');
     expect(contains('foo') && contains('bar')).toBe(true);
     expect(contains('xxx') || contains('yyy')).toBe(false);
