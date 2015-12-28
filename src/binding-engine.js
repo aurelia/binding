@@ -66,8 +66,10 @@ export class BindingEngine {
           observer = this.observerLocator.getArrayObserver(collection);
         } else if (collection instanceof Map) {
           observer = this.observerLocator.getMapObserver(collection);
-        } else {
-          throw new Error('collection must be an instance of Array or Map.');
+        } else if (collection instanceof Set) {
+          observer = this.observerLocator.getSetObserver(collection);
+        }  else {
+          throw new Error('collection must be an instance of Array, Map or Set.');
         }
         observer.subscribe(callback);
         return {

@@ -43,7 +43,8 @@ gulp.task('build-index', function(){
     'binding-behavior-resource.js',
     'listener-expression.js',
     'name-expression.js',
-    'binding-engine.js'
+    'binding-engine.js',
+    'set-observation.js'
     ].map(function(file){
       return paths.root + file;
   });
