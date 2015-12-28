@@ -2,6 +2,7 @@ import {DOM} from 'aurelia-pal';
 import {TaskQueue} from 'aurelia-task-queue';
 import {getArrayObserver} from './array-observation';
 import {getMapObserver} from './map-observation';
+import {getSetObserver} from './set-observation';
 import {EventManager} from './event-manager';
 import {DirtyChecker, DirtyCheckProperty} from './dirty-checking';
 import {
@@ -158,6 +159,12 @@ export class ObserverLocator {
       } else {
         return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
+    } else if (obj instanceof Set) {
+      if (propertyName === 'size') {
+        return this.getSetObserver(obj).getLengthObserver();
+      } else {
+        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
+      }
     }
 
     return new SetterObserver(this.taskQueue, obj, propertyName);
@@ -177,6 +184,14 @@ export class ObserverLocator {
     }
 
     return map.__map_observer__ = getMapObserver(this.taskQueue, map);
+  }
+
+  getSetObserver(set){
+    if ('__set_observer__' in set) {
+      return set.__set_observer__;
+    }
+
+    return set.__set_observer__ = getSetObserver(this.taskQueue, set);
   }
 }
 

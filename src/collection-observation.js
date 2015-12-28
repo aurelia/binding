@@ -10,7 +10,7 @@ export class ModifyCollectionObserver {
     this.changeRecords = null;
     this.oldCollection = null;
     this.collection = collection;
-    this.lengthPropertyName = collection instanceof Map ? 'size' : 'length';
+    this.lengthPropertyName = collection instanceof Map || collection instanceof Set ? 'size' : 'length';
   }
 
   subscribe(context, callable) {
@@ -77,14 +77,14 @@ export class ModifyCollectionObserver {
     if (this.hasSubscribers()) {
       if (oldCollection){
         // TODO (martingust) we might want to refactor this to a common, independent of collection type, way of getting the records
-        if (this.collection instanceof Map) {
+        if (this.collection instanceof Map || this.collection instanceof Set) {
           records = getChangeRecords(oldCollection);
         } else {
           //we might need to combine this with existing change records....
           records = calcSplices(this.collection, 0, this.collection.length, oldCollection, 0, oldCollection.length);
         }
       } else {
-        if (this.collection instanceof Map) {
+        if (this.collection instanceof Map || this.collection instanceof Set) {
           records = changeRecords;
         } else {
           records = projectArraySplices(this.collection, changeRecords);
@@ -104,7 +104,7 @@ export class ModifyCollectionObserver {
 export class CollectionLengthObserver {
   constructor(collection) {
     this.collection = collection;
-    this.lengthPropertyName = collection instanceof Map ? 'size' : 'length';
+    this.lengthPropertyName = collection instanceof Map || collection instanceof Set ? 'size' : 'length';
     this.currentValue = collection[this.lengthPropertyName];
   }
 
