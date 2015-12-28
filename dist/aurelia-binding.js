@@ -1,5 +1,5 @@
 import 'core-js';
-import {DOM} from 'aurelia-pal';
+import {PLATFORM,DOM} from 'aurelia-pal';
 import {TaskQueue} from 'aurelia-task-queue';
 import {metadata} from 'aurelia-metadata';
 
@@ -128,6 +128,47 @@ export function connectable() {
     target.prototype.observeProperty = observeProperty;
     target.prototype.observeArray = observeArray;
     target.prototype.unobserve = unobserve;
+  }
+}
+
+const bindings = new Map();    // the connect queue
+const minimumImmediate = 100;  // number of bindings we should connect immediately before resorting to queueing
+const frameBudget = 15;        // milliseconds allotted to each frame for flushing queue
+
+let isFlushRequested = false;  // whether a flush of the connect queue has been requested
+let immediate = 0;             // count of bindings that have been immediately connected
+
+function flush(animationFrameStart) {
+  let i = 0;
+  for (let [binding] of bindings) {
+    bindings.delete(binding);
+    binding.connect(true);
+    i++;
+    // periodically check whether the frame budget has been hit.
+    // this ensures we don't call performance.now a lot and prevents starving the connect queue.
+    if (i % 100 === 0 && PLATFORM.performance.now() - animationFrameStart > frameBudget) {
+      break;
+    }
+  }
+
+  if (bindings.size) {
+    PLATFORM.requestAnimationFrame(flush);
+  } else {
+    isFlushRequested = false;
+    immediate = 0;
+  }
+}
+
+export function enqueueBindingConnect(binding) {
+  if (immediate < minimumImmediate) {
+    immediate++;
+    binding.connect(false);
+  } else {
+    bindings.set(binding);
+  }
+  if (!isFlushRequested) {
+    isFlushRequested = true;
+    PLATFORM.requestAnimationFrame(flush);
   }
 }
 
@@ -745,6 +786,12 @@ export class ModifyCollectionObserver {
     }
   }
 
+  flushChangeRecords() {
+    if ((this.changeRecords && this.changeRecords.length) || this.oldCollection) {
+      this.call();
+    }
+  }
+
   reset(oldCollection) {
     this.oldCollection = oldCollection;
 
@@ -862,6 +909,7 @@ class ModifyArrayObserver extends ModifyCollectionObserver {
     }
 
     array['reverse'] = function(){
+      observer.flushChangeRecords();
       var oldArray = array.slice();
       var methodCallResult = arrayProto['reverse'].apply(array, arguments);
       observer.reset(oldArray);
@@ -880,6 +928,7 @@ class ModifyArrayObserver extends ModifyCollectionObserver {
     };
 
     array['sort'] = function() {
+      observer.flushChangeRecords();
       var oldArray = array.slice();
       var methodCallResult = arrayProto['sort'].apply(array, arguments);
       observer.reset(oldArray);
@@ -1812,8 +1861,8 @@ function getKeyed(obj, key) {
     return obj[parseInt(key)];
   } else if (obj) {
     return obj[key];
-  } else if (obj === null) {
-    throw new Error('Accessing null object');
+  } else if (obj === null || obj === undefined) {
+    return undefined;
   } else {
     return obj[key];
   }
@@ -2583,7 +2632,7 @@ export class ParserImplementation {
       if (this.optional('.')) {
         name = this.peek.key;
         this.advance();
-      } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === '[') {
+      } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === '[' || this.peek.text === '}') {
         return new AccessThis(ancestor);
       } else {
         this.error(`Unexpected token ${this.peek.text}`);
@@ -2995,6 +3044,11 @@ export class DirtyCheckProperty {
   }
 }
 
+export const propertyAccessor = {
+  getValue: (obj, propertyName) => obj[propertyName],
+  setValue: (value, obj, propertyName) => obj[propertyName] = value
+};
+
 export class PrimitiveObserver {
   doNotCache = true;
 
@@ -3115,6 +3169,11 @@ export class XLinkAttributeObserver {
   }
 }
 
+export const dataAttributeAccessor = {
+  getValue: (obj, propertyName) => obj.getAttribute(propertyName),
+  setValue: (value, obj, propertyName) => obj.setAttribute(propertyName, value)
+};
+
 export class DataAttributeObserver {
   constructor(element, propertyName) {
     this.element = element;
@@ -3168,10 +3227,14 @@ export class StyleObserver {
 
 @subscriberCollection()
 export class ValueAttributeObserver {
-  constructor(element, propertyName, handler){
+  constructor(element, propertyName, handler) {
     this.element = element;
     this.propertyName = propertyName;
     this.handler = handler;
+    if (propertyName === 'files') {
+      // input.files cannot be assigned.
+      this.setValue = () => {};
+    }
   }
 
   getValue() {
@@ -3246,7 +3309,7 @@ export class SelectValueObserver {
     this.value = newValue;
     this.synchronizeOptions();
     // queue up an initial sync after the bindings have been evaluated.
-    if (this.element.options.length > 0 && !this.initialSync) {
+    if (!this.initialSync) {
       this.initialSync = true;
       this.observerLocator.taskQueue.queueMicroTask(this);
     }
@@ -3258,7 +3321,7 @@ export class SelectValueObserver {
   }
 
   synchronizeOptions() {
-    var value = this.value, i, options, option, optionValue, clear, isArray;
+    let value = this.value, clear, isArray;
 
     if (value === null || value === undefined) {
       clear = true;
@@ -3266,36 +3329,65 @@ export class SelectValueObserver {
       isArray = true;
     }
 
-    options = this.element.options;
-    i = options.length;
+    let options = this.element.options;
+    let i = options.length;
+    let matcher = this.element.matcher || ((a, b) => a === b);
     while(i--) {
-      option = options.item(i);
+      let option = options.item(i);
       if (clear) {
         option.selected = false;
         continue;
       }
-      optionValue = option.hasOwnProperty('model') ? option.model : option.value;
+      let optionValue = option.hasOwnProperty('model') ? option.model : option.value;
       if (isArray) {
-        option.selected = value.indexOf(optionValue) !== -1;
+        option.selected = !!value.find(item => !!matcher(optionValue, item));
         continue;
       }
-      option.selected = value === optionValue;
+      option.selected = !!matcher(optionValue, value);
     }
   }
 
   synchronizeValue() {
-    var options = this.element.options, option, i, ii, count = 0, value = [];
+    let options = this.element.options,
+        count = 0,
+        value = [];
 
-    for(i = 0, ii = options.length; i < ii; i++) {
-      option = options.item(i);
+    for (let i = 0, ii = options.length; i < ii; i++) {
+      let option = options.item(i);
       if (!option.selected) {
         continue;
       }
-      value[count] = option.hasOwnProperty('model') ? option.model : option.value;
+      value.push(option.hasOwnProperty('model') ? option.model : option.value);
       count++;
     }
 
-    if (!this.element.multiple) {
+    if (this.element.multiple) {
+      // multi-select
+      if (Array.isArray(this.value)) {
+        let matcher = this.element.matcher || ((a, b) => a === b);
+        // remove items that are no longer selected.
+        let i = 0;
+        while (i < this.value.length) {
+          let a = this.value[i];
+          if (value.findIndex(b => matcher(a, b)) === -1) {
+            this.value.splice(i, 1);
+          } else {
+            i++;
+          }
+        }
+        // add items that have been selected.
+        i = 0;
+        while (i < value.length) {
+          let a = value[i];
+          if (this.value.findIndex(b => matcher(a, b)) === -1) {
+            this.value.push(a);
+          }
+          i++;
+        }
+        return; // don't notify.
+      }
+    } else {
+      // single-select
       if (count === 0) {
         value = null;
       } else {
@@ -3303,9 +3395,11 @@ export class SelectValueObserver {
       }
     }
 
-    this.oldValue = this.value;
-    this.value = value;
-    this.notify();
+    if (value !== this.value) {
+      this.oldValue = this.value;
+      this.value = value;
+      this.notify();
+    }
   }
 
   notify() {
@@ -3380,7 +3474,7 @@ export class CheckedObserver {
     this.value = newValue;
     this.synchronizeElement();
     // queue up an initial sync after the bindings have been evaluated.
-    if (!this.element.hasOwnProperty('model') && !this.initialSync) {
+    if (!this.initialSync) {
       this.initialSync = true;
       this.observerLocator.taskQueue.queueMicroTask(this);
     }
@@ -3392,26 +3486,28 @@ export class CheckedObserver {
   }
 
   synchronizeElement() {
-    var value = this.value,
+    let value = this.value,
         element = this.element,
         elementValue = element.hasOwnProperty('model') ? element.model : element.value,
-        isRadio = element.type === 'radio';
+        isRadio = element.type === 'radio',
+        matcher = element.matcher || ((a, b) => a === b);
 
     element.checked =
-      isRadio && value === elementValue
+      isRadio && !!matcher(value, elementValue)
       || !isRadio && value === true
-      || !isRadio && Array.isArray(value) && value.indexOf(elementValue) !== -1;
+      || !isRadio && Array.isArray(value) && !!value.find(item => !!matcher(item, elementValue));
   }
 
   synchronizeValue(){
-    var value = this.value,
+    let value = this.value,
         element = this.element,
         elementValue = element.hasOwnProperty('model') ? element.model : element.value,
-        index;
+        index,
+        matcher = element.matcher || ((a, b) => a === b);
 
     if (element.type === 'checkbox') {
       if (Array.isArray(value)) {
-        index = value.indexOf(elementValue);
+        index = value.findIndex(item => !!matcher(item, elementValue));
         if (element.checked && index === -1) {
           value.push(elementValue);
         } else if (!element.checked && index !== -1) {
@@ -3959,6 +4055,23 @@ export class ObserverLocator {
     return new SetterObserver(this.taskQueue, obj, propertyName);
   }
 
+  getAccessor(obj, propertyName) {
+    if (obj instanceof DOM.Element) {
+      if (propertyName === 'class'
+        || propertyName === 'style' || propertyName === 'css'
+        || propertyName === 'value' && obj.tagName.toLowerCase() === 'select'
+        || propertyName ==='checked' && obj.tagName.toLowerCase() === 'input'
+        || /^xlink:.+$/.exec(propertyName)) {
+        return this.getObserver(obj, propertyName);
+      }
+      if (/^\w+:|^data-|^aria-/.test(propertyName)
+        || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
+        return dataAttributeAccessor;
+      }
+    }
+    return propertyAccessor;
+  }
+
   getArrayObserver(array){
     if ('__array_observer__' in array) {
       return array.__array_observer__;
@@ -4013,13 +4126,14 @@ export class Binding {
   constructor(observerLocator, sourceExpression, target, targetProperty, mode, lookupFunctions) {
     this.observerLocator = observerLocator;
     this.sourceExpression = sourceExpression;
-    this.targetProperty = observerLocator.getObserver(target, targetProperty);
+    this.target = target;
+    this.targetProperty = targetProperty;
     this.mode = mode;
     this.lookupFunctions = lookupFunctions;
   }
 
   updateTarget(value) {
-    this.targetProperty.setValue(value);
+    this.targetObserver.setValue(value, this.target, this.targetProperty);
   }
 
   updateSource(value) {
@@ -4031,7 +4145,7 @@ export class Binding {
       return;
     }
     if (context === sourceContext) {
-      oldValue = this.targetProperty.getValue();
+      oldValue = this.targetObserver.getValue(this.target, this.targetProperty);
       newValue = this.sourceExpression.evaluate(this.source, this.lookupFunctions);
       if (newValue !== oldValue) {
         this.updateTarget(newValue);
@@ -4044,7 +4158,9 @@ export class Binding {
       return;
     }
     if (context === targetContext) {
-      this.updateSource(newValue);
+      if (newValue !== this.sourceExpression.evaluate(this.source, this.lookupFunctions)) {
+        this.updateSource(newValue);
+      }
       return;
     }
     throw new Error(`Unexpected call context ${context}`);
@@ -4065,21 +4181,23 @@ export class Binding {
       sourceExpression.bind(this, source, this.lookupFunctions);
     }
 
-    let targetProperty = this.targetProperty;
-    if ('bind' in targetProperty){
-      targetProperty.bind();
+    let mode = this.mode;
+    if (!this.targetObserver) {
+      let method = mode === bindingMode.twoWay ? 'getObserver' : 'getAccessor';
+      this.targetObserver = this.observerLocator[method](this.target, this.targetProperty);
     }
 
+    if ('bind' in this.targetObserver) {
+      this.targetObserver.bind();
+    }
     let value = sourceExpression.evaluate(source, this.lookupFunctions);
     this.updateTarget(value);
 
-    let mode = this.mode;
-    if (mode === bindingMode.oneWay || mode === bindingMode.twoWay) {
+    if (mode === bindingMode.oneWay) {
+      enqueueBindingConnect(this);
+    } else if (mode === bindingMode.twoWay) {
       sourceExpression.connect(this, source);
-
-      if (mode === bindingMode.twoWay) {
-        targetProperty.subscribe(targetContext, this);
-      }
+      this.targetObserver.subscribe(targetContext, this);
     }
   }
 
@@ -4092,13 +4210,24 @@ export class Binding {
       this.sourceExpression.unbind(this, this.source);
     }
     this.source = null;
-    if ('unbind' in this.targetProperty) {
-      this.targetProperty.unbind();
+    if ('unbind' in this.targetObserver) {
+      this.targetObserver.unbind();
     }
-    if (this.mode === bindingMode.twoWay) {
-      this.targetProperty.unsubscribe(targetContext, this);
+    if (this.targetObserver.unsubscribe) {
+      this.targetObserver.unsubscribe(targetContext, this);
     }
     this.unobserve(true);
+  }
+
+  connect(evaluate) {
+    if (!this.isBound) {
+      return;
+    }
+    if (evaluate) {
+      let value = this.sourceExpression.evaluate(this.source, this.lookupFunctions);
+      this.updateTarget(value);
+    }
+    this.sourceExpression.connect(this, this.source);
   }
 }
 

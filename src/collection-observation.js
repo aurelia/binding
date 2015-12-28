@@ -52,6 +52,12 @@ export class ModifyCollectionObserver {
     }
   }
 
+  flushChangeRecords() {
+    if ((this.changeRecords && this.changeRecords.length) || this.oldCollection) {
+      this.call();
+    }
+  }
+
   reset(oldCollection) {
     this.oldCollection = oldCollection;
 

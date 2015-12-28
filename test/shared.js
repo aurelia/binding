@@ -33,9 +33,9 @@ export function createObserverLocator(adapters = []) {
 }
 
 export function getBinding(observerLocator, model, modelProperty, view, viewProperty, mode) {
-  var targetProperty, sourceExpression, bindingExpression, binding, parser;
+  var targetObserver, sourceExpression, bindingExpression, binding, parser;
   parser = new Parser();
-  targetProperty = observerLocator.getObserver(view, viewProperty);
+  targetObserver = observerLocator.getObserver(view, viewProperty);
   sourceExpression = parser.parse(modelProperty);
   bindingExpression = new BindingExpression(
     observerLocator,
@@ -47,7 +47,7 @@ export function getBinding(observerLocator, model, modelProperty, view, viewProp
   binding = bindingExpression.createBinding(view);
 
   return {
-    targetProperty: targetProperty,
+    targetObserver: targetObserver,
     sourceExpression: sourceExpression,
     bindingExpression: bindingExpression,
     binding: binding,

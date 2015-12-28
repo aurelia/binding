@@ -1,3 +1,28 @@
+### 1.0.0-beta.1.0.3 (2015-12-16)
+
+
+#### Bug Fixes
+
+* **array-observation:** handle push then sort ([2ae6d0e4](http://github.com/aurelia/binding/commit/2ae6d0e46f85a865fcf3261ddf0298244573f185), closes [#233](http://github.com/aurelia/binding/issues/233))
+* **binding:** check before assign ([44b5a669](http://github.com/aurelia/binding/commit/44b5a669d563d3aeb1268cad8058a8bbf51d21f8), closes [#258](http://github.com/aurelia/binding/issues/258))
+* **file-input:** Firefox issue ([debed4e5](http://github.com/aurelia/binding/commit/debed4e5fa71ad99e2b97c3def6d605da4da884f), closes [#256](http://github.com/aurelia/binding/issues/256))
+
+
+## 1.0.0-beta.1.0.2 (2015-12-03)
+
+
+#### Bug Fixes
+
+* **AccessKeyed:** evaluate null/undefined object should return undefined ([be97c8b6](http://github.com/aurelia/binding/commit/be97c8b638e7316b6af9c543291280e8282b53ac), closes [#241](http://github.com/aurelia/binding/issues/241))
+* **Parser:** parse parent in LiteralObject ([c62280e4](http://github.com/aurelia/binding/commit/c62280e40dc4634ad230112437c8223f474674e0))
+* **typings:** add missing argument types ([2662f7f6](http://github.com/aurelia/binding/commit/2662f7f61b56c581ac7ee9670b9c4c1fd3f213f0), closes [#232](http://github.com/aurelia/binding/issues/232))
+
+
+#### Features
+
+* **select:** enable matcher functions ([c69aa683](http://github.com/aurelia/binding/commit/c69aa683e5b0aff6745d88cbd8ff5ae35d34c34d), closes [#94](http://github.com/aurelia/binding/issues/94))
+
+
 ## 1.0.0-beta.1.0.1 (2015-11-16)
 
 

@@ -1,5 +1,6 @@
 import {bindingMode} from './binding-mode';
 import {connectable, sourceContext} from './connectable-binding';
+import {enqueueBindingConnect} from './connect-queue';
 
 export class BindingExpression {
   constructor(observerLocator, targetProperty, sourceExpression,
@@ -32,13 +33,14 @@ export class Binding {
   constructor(observerLocator, sourceExpression, target, targetProperty, mode, lookupFunctions) {
     this.observerLocator = observerLocator;
     this.sourceExpression = sourceExpression;
-    this.targetProperty = observerLocator.getObserver(target, targetProperty);
+    this.target = target;
+    this.targetProperty = targetProperty;
     this.mode = mode;
     this.lookupFunctions = lookupFunctions;
   }
 
   updateTarget(value) {
-    this.targetProperty.setValue(value);
+    this.targetObserver.setValue(value, this.target, this.targetProperty);
   }
 
   updateSource(value) {
@@ -50,7 +52,7 @@ export class Binding {
       return;
     }
     if (context === sourceContext) {
-      oldValue = this.targetProperty.getValue();
+      oldValue = this.targetObserver.getValue(this.target, this.targetProperty);
       newValue = this.sourceExpression.evaluate(this.source, this.lookupFunctions);
       if (newValue !== oldValue) {
         this.updateTarget(newValue);
@@ -63,7 +65,9 @@ export class Binding {
       return;
     }
     if (context === targetContext) {
-      this.updateSource(newValue);
+      if (newValue !== this.sourceExpression.evaluate(this.source, this.lookupFunctions)) {
+        this.updateSource(newValue);
+      }
       return;
     }
     throw new Error(`Unexpected call context ${context}`);
@@ -84,21 +88,23 @@ export class Binding {
       sourceExpression.bind(this, source, this.lookupFunctions);
     }
 
-    let targetProperty = this.targetProperty;
-    if ('bind' in targetProperty){
-      targetProperty.bind();
+    let mode = this.mode;
+    if (!this.targetObserver) {
+      let method = mode === bindingMode.twoWay ? 'getObserver' : 'getAccessor';
+      this.targetObserver = this.observerLocator[method](this.target, this.targetProperty);
     }
 
+    if ('bind' in this.targetObserver) {
+      this.targetObserver.bind();
+    }
     let value = sourceExpression.evaluate(source, this.lookupFunctions);
     this.updateTarget(value);
 
-    let mode = this.mode;
-    if (mode === bindingMode.oneWay || mode === bindingMode.twoWay) {
+    if (mode === bindingMode.oneWay) {
+      enqueueBindingConnect(this);
+    } else if (mode === bindingMode.twoWay) {
       sourceExpression.connect(this, source);
-
-      if (mode === bindingMode.twoWay) {
-        targetProperty.subscribe(targetContext, this);
-      }
+      this.targetObserver.subscribe(targetContext, this);
     }
   }
 
@@ -111,12 +117,23 @@ export class Binding {
       this.sourceExpression.unbind(this, this.source);
     }
     this.source = null;
-    if ('unbind' in this.targetProperty) {
-      this.targetProperty.unbind();
+    if ('unbind' in this.targetObserver) {
+      this.targetObserver.unbind();
     }
-    if (this.mode === bindingMode.twoWay) {
-      this.targetProperty.unsubscribe(targetContext, this);
+    if (this.targetObserver.unsubscribe) {
+      this.targetObserver.unsubscribe(targetContext, this);
     }
     this.unobserve(true);
+  }
+
+  connect(evaluate) {
+    if (!this.isBound) {
+      return;
+    }
+    if (evaluate) {
+      let value = this.sourceExpression.evaluate(this.source, this.lookupFunctions);
+      this.updateTarget(value);
+    }
+    this.sourceExpression.connect(this, this.source);
   }
 }

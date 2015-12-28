@@ -24,6 +24,11 @@ export class XLinkAttributeObserver {
   }
 }
 
+export const dataAttributeAccessor = {
+  getValue: (obj, propertyName) => obj.getAttribute(propertyName),
+  setValue: (value, obj, propertyName) => obj.setAttribute(propertyName, value)
+};
+
 export class DataAttributeObserver {
   constructor(element, propertyName) {
     this.element = element;
@@ -77,10 +82,14 @@ export class StyleObserver {
 
 @subscriberCollection()
 export class ValueAttributeObserver {
-  constructor(element, propertyName, handler){
+  constructor(element, propertyName, handler) {
     this.element = element;
     this.propertyName = propertyName;
     this.handler = handler;
+    if (propertyName === 'files') {
+      // input.files cannot be assigned.
+      this.setValue = () => {};
+    }
   }
 
   getValue() {

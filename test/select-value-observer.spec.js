@@ -55,10 +55,10 @@ describe('SelectValueObserver', () => {
     });
 
     it('binds', () => {
-      var targetProperty = binding.targetProperty;
-      spyOn(targetProperty, 'bind').and.callThrough();
+      var targetObserver = observerLocator.getObserver(el, 'value');
+      spyOn(targetObserver, 'bind').and.callThrough();
       binding.bind(createScopeForTest(obj));
-      expect(targetProperty.bind).toHaveBeenCalled();
+      expect(targetObserver.bind).toHaveBeenCalled();
       expect(el.value).toBe(obj.selectedItem);
     });
 
@@ -99,10 +99,10 @@ describe('SelectValueObserver', () => {
     });
 
     it('unbinds', () => {
-      var targetProperty = binding.targetProperty;
-      spyOn(targetProperty, 'unbind').and.callThrough();
+      var targetObserver = observerLocator.getObserver(el, 'value');
+      spyOn(targetObserver, 'unbind').and.callThrough();
       binding.unbind();
-      expect(targetProperty.unbind).toHaveBeenCalled();
+      expect(targetObserver.unbind).toHaveBeenCalled();
     });
 
     afterAll(() => {
@@ -124,14 +124,14 @@ describe('SelectValueObserver', () => {
       document.body.appendChild(el);
       info = getBinding(observerLocator, obj, 'selectedItems', el, 'value', bindingMode.twoWay);
       binding = info.binding;
-      elementValueProperty = info.targetProperty;
+      elementValueProperty = info.targetObserver;
     });
 
     it('binds', () => {
-      var targetProperty = binding.targetProperty;
-      spyOn(targetProperty, 'bind').and.callThrough();
+      var targetObserver = observerLocator.getObserver(el, 'value');
+      spyOn(targetObserver, 'bind').and.callThrough();
       binding.bind(createScopeForTest(obj));
-      expect(targetProperty.bind).toHaveBeenCalled();
+      expect(targetObserver.bind).toHaveBeenCalled();
       expect(elementValueProperty.getValue()).toBe(obj.selectedItems);
       expect(getElementValue(el)).toEqual(obj.selectedItems.slice(0));
     });
@@ -183,10 +183,10 @@ describe('SelectValueObserver', () => {
     });
 
     it('unbinds', () => {
-      var targetProperty = binding.targetProperty;
-      spyOn(targetProperty, 'unbind').and.callThrough();
+      var targetObserver = observerLocator.getObserver(el, 'value');
+      spyOn(targetObserver, 'unbind').and.callThrough();
       binding.unbind();
-      expect(targetProperty.unbind).toHaveBeenCalled();
+      expect(targetObserver.unbind).toHaveBeenCalled();
     });
 
     afterAll(() => {
@@ -216,14 +216,14 @@ describe('SelectValueObserver', () => {
 
       info = getBinding(observerLocator, obj, 'selectedItem', el, 'value', bindingMode.twoWay);
       binding = info.binding;
-      elementValueProperty = info.targetProperty;
+      elementValueProperty = info.targetObserver;
     });
 
     it('binds', () => {
-      var targetProperty = binding.targetProperty;
-      spyOn(targetProperty, 'bind').and.callThrough();
+      var targetObserver = observerLocator.getObserver(el, 'value');
+      spyOn(targetObserver, 'bind').and.callThrough();
       binding.bind(createScopeForTest(obj));
-      expect(targetProperty.bind).toHaveBeenCalled();
+      expect(targetObserver.bind).toHaveBeenCalled();
       expect(elementValueProperty.getValue()).toBe(obj.selectedItem);
       expect(getElementValue(el)).toEqual(obj.selectedItem);
     });
@@ -262,10 +262,10 @@ describe('SelectValueObserver', () => {
     });
 
     it('unbinds', () => {
-      var targetProperty = binding.targetProperty;
-      spyOn(targetProperty, 'unbind').and.callThrough();
+      var targetObserver = observerLocator.getObserver(el, 'value');
+      spyOn(targetObserver, 'unbind').and.callThrough();
       binding.unbind();
-      expect(targetProperty.unbind).toHaveBeenCalled();
+      expect(targetObserver.unbind).toHaveBeenCalled();
     });
 
     afterAll(() => {
@@ -295,14 +295,14 @@ describe('SelectValueObserver', () => {
 
       info = getBinding(observerLocator, obj, 'selectedItem', el, 'value', bindingMode.twoWay);
       binding = info.binding;
-      elementValueProperty = info.targetProperty;
+      elementValueProperty = info.targetObserver;
     });
 
     it('binds', done => {
-      var targetProperty = binding.targetProperty;
-      spyOn(targetProperty, 'bind').and.callThrough();
+      var targetObserver = observerLocator.getObserver(el, 'value');
+      spyOn(targetObserver, 'bind').and.callThrough();
       binding.bind(createScopeForTest(obj));
-      expect(targetProperty.bind).toHaveBeenCalled();
+      expect(targetObserver.bind).toHaveBeenCalled();
       el.matcher = (a, b) => a.foo === b.foo;
       setTimeout(() => {
         expect(elementValueProperty.getValue()).toBe(obj.selectedItem);
@@ -345,10 +345,10 @@ describe('SelectValueObserver', () => {
     });
 
     it('unbinds', () => {
-      var targetProperty = binding.targetProperty;
-      spyOn(targetProperty, 'unbind').and.callThrough();
+      var targetObserver = observerLocator.getObserver(el, 'value');
+      spyOn(targetObserver, 'unbind').and.callThrough();
       binding.unbind();
-      expect(targetProperty.unbind).toHaveBeenCalled();
+      expect(targetObserver.unbind).toHaveBeenCalled();
     });
 
     afterAll(() => {
@@ -378,14 +378,14 @@ describe('SelectValueObserver', () => {
 
       info = getBinding(observerLocator, obj, 'selectedItems', el, 'value', bindingMode.twoWay);
       binding = info.binding;
-      elementValueProperty = info.targetProperty;
+      elementValueProperty = info.targetObserver;
     });
 
     it('binds', () => {
-      var targetProperty = binding.targetProperty;
-      spyOn(targetProperty, 'bind').and.callThrough();
+      var targetObserver = observerLocator.getObserver(el, 'value');
+      spyOn(targetObserver, 'bind').and.callThrough();
       binding.bind(createScopeForTest(obj));
-      expect(targetProperty.bind).toHaveBeenCalled();
+      expect(targetObserver.bind).toHaveBeenCalled();
       expect(elementValueProperty.getValue()).toBe(obj.selectedItems);
       expect(getElementValue(el)).toEqual(obj.selectedItems.slice(0));
     });
@@ -440,10 +440,10 @@ describe('SelectValueObserver', () => {
     });
 
     it('unbinds', () => {
-      var targetProperty = binding.targetProperty;
-      spyOn(targetProperty, 'unbind').and.callThrough();
+      var targetObserver = observerLocator.getObserver(el, 'value');
+      spyOn(targetObserver, 'unbind').and.callThrough();
       binding.unbind();
-      expect(targetProperty.unbind).toHaveBeenCalled();
+      expect(targetObserver.unbind).toHaveBeenCalled();
     });
 
     afterAll(() => {
@@ -473,14 +473,14 @@ describe('SelectValueObserver', () => {
 
       info = getBinding(observerLocator, obj, 'selectedItems', el, 'value', bindingMode.twoWay);
       binding = info.binding;
-      elementValueProperty = info.targetProperty;
+      elementValueProperty = info.targetObserver;
     });
 
     it('binds', done => {
-      var targetProperty = binding.targetProperty;
-      spyOn(targetProperty, 'bind').and.callThrough();
+      var targetObserver = observerLocator.getObserver(el, 'value');
+      spyOn(targetObserver, 'bind').and.callThrough();
       binding.bind(createScopeForTest(obj));
-      expect(targetProperty.bind).toHaveBeenCalled();
+      expect(targetObserver.bind).toHaveBeenCalled();
       el.matcher = (a, b) => a.foo === b.foo;
       setTimeout(() => {
         expect(elementValueProperty.getValue()).toBe(obj.selectedItems);
@@ -539,10 +539,10 @@ describe('SelectValueObserver', () => {
     });
 
     it('unbinds', () => {
-      var targetProperty = binding.targetProperty;
-      spyOn(targetProperty, 'unbind').and.callThrough();
+      var targetObserver = observerLocator.getObserver(el, 'value');
+      spyOn(targetObserver, 'unbind').and.callThrough();
       binding.unbind();
-      expect(targetProperty.unbind).toHaveBeenCalled();
+      expect(targetObserver.unbind).toHaveBeenCalled();
     });
 
     afterAll(() => {
@@ -567,7 +567,7 @@ describe('SelectValueObserver', () => {
     });
 
     it('binds', done => {
-      var targetProperty = binding.targetProperty;
+      var targetObserver = observerLocator.getObserver(el, 'value');
       // select-value bind.
       binding.bind(createScopeForTest(obj));
       expect(el.options.item(1).selected).toBe(false);

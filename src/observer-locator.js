@@ -7,7 +7,8 @@ import {EventManager} from './event-manager';
 import {DirtyChecker, DirtyCheckProperty} from './dirty-checking';
 import {
   SetterObserver,
-  PrimitiveObserver
+  PrimitiveObserver,
+  propertyAccessor
 } from './property-observation';
 import {
   SelectValueObserver,
@@ -15,7 +16,8 @@ import {
   ValueAttributeObserver,
   XLinkAttributeObserver,
   DataAttributeObserver,
-  StyleObserver
+  StyleObserver,
+  dataAttributeAccessor
 } from './element-observation';
 import {ClassObserver} from './class-observer';
 import {
@@ -168,6 +170,23 @@ export class ObserverLocator {
     }
 
     return new SetterObserver(this.taskQueue, obj, propertyName);
+  }
+
+  getAccessor(obj, propertyName) {
+    if (obj instanceof DOM.Element) {
+      if (propertyName === 'class'
+        || propertyName === 'style' || propertyName === 'css'
+        || propertyName === 'value' && (obj.tagName.toLowerCase() === 'input' || obj.tagName.toLowerCase() === 'select')
+        || propertyName === 'checked' && obj.tagName.toLowerCase() === 'input'
+        || /^xlink:.+$/.exec(propertyName)) {
+        return this.getObserver(obj, propertyName);
+      }
+      if (/^\w+:|^data-|^aria-/.test(propertyName)
+        || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
+        return dataAttributeAccessor;
+      }
+    }
+    return propertyAccessor;
   }
 
   getArrayObserver(array){

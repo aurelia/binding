@@ -53,8 +53,9 @@ function removeSubscriber(context, callable) {
   return true;
 }
 
-let tempContextsRest = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
-let tempCallablesRest = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
+let arrayPool1 = [];
+let arrayPool2 = [];
+let poolUtilization = [];
 
 function callSubscribers(newValue, oldValue) {
   let context0 = this._context0;
@@ -63,12 +64,32 @@ function callSubscribers(newValue, oldValue) {
   let callable1 = this._callable1;
   let context2 = this._context2;
   let callable2 = this._callable2;
-  let length = !this._contextsRest ? 0 : this._contextsRest.length;
-  let i = length;
+  let length = this._contextsRest ? this._contextsRest.length : 0;
+  let contextsRest;
+  let callablesRest;
+  let poolIndex;
+  let i;
   if (length) {
+    // grab temp arrays from the pool.
+    poolIndex = poolUtilization.length;
+    while (poolIndex-- && poolUtilization[poolIndex]) { }
+    if (poolIndex < 0) {
+      poolIndex = poolUtilization.length;
+      contextsRest = [];
+      callablesRest = [];
+      poolUtilization.push(true);
+      arrayPool1.push(contextsRest);
+      arrayPool2.push(callablesRest);
+    } else {
+      poolUtilization[poolIndex] = true;
+      contextsRest = arrayPool1[poolIndex];
+      callablesRest = arrayPool2[poolIndex];
+    }
+    // copy the contents of the "rest" arrays.
+    i = length;
     while(i--) {
-      tempContextsRest[i] = this._contextsRest[i];
-      tempCallablesRest[i] = this._callablesRest[i];
+      contextsRest[i] = this._contextsRest[i];
+      callablesRest[i] = this._callablesRest[i];
     }
   }
 
@@ -93,16 +114,19 @@ function callSubscribers(newValue, oldValue) {
       context2(newValue, oldValue);
     }
   }
-  for (i = 0; i < length; i++) {
-    let callable = tempCallablesRest[i];
-    let context = tempContextsRest[i]
-    if (callable) {
-      callable.call(context, newValue, oldValue);
-    } else {
-      context(newValue, oldValue);
+  if (length) {
+    for (i = 0; i < length; i++) {
+      let callable = callablesRest[i];
+      let context = contextsRest[i]
+      if (callable) {
+        callable.call(context, newValue, oldValue);
+      } else {
+        context(newValue, oldValue);
+      }
+      contextsRest[i] = null;
+      callablesRest[i] = null;
     }
-    tempContextsRest[i] = null;
-    tempCallablesRest[i] = null;
+    poolUtilization[poolIndex] = false;
   }
 }
 

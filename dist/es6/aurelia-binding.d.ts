@@ -2,6 +2,8 @@
  * A modern databinding library for JavaScript and HTML.
  */
 declare module 'aurelia-binding' {
+  import { Container } from 'aurelia-dependency-injection';
+
   /**
    * The "parallel" or "artificial" aspect of the binding scope. Provides access to the parent binding
    * context and stores contextual bindable members such as $event, $index, $odd, etc. Members on this
@@ -43,37 +45,37 @@ declare module 'aurelia-binding' {
    * Creates an overrideContext object with the supplied bindingContext and optional parent overrideContext.
    */
   export function createOverrideContext(bindingContext: any, parentOverrideContext?: OverrideContext): OverrideContext;
-  
+
   /**
    * Creates a scope object for testing purposes.
    */
   export function createScopeForTest(bindingContext: any, parentBindingContext?: any): Scope;
-  
+
   /**
    * A ValueConverter resource.
    */
   export class ValueConverterResource {
     static convention(name: string): ValueConverterResource;
     constructor(name: string);
-    initialize(container, target): void;
-    register(registry, name): void;
+    initialize(container: Container, target: any): void;
+    register(registry: any, name: string): void;
   }
-  
+
   /**
    * A BindingBehavior resource.
    */
   export class BindingBehaviorResource {
     static convention(name: string): BindingBehaviorResource;
     constructor(name: string);
-    initialize(container, target): void;
-    register(registry, name): void;
+    initialize(container: Container, target: any): void;
+    register(registry: any, name: string): void;
   }
-  
+
   /**
    * Decorator: Adds efficient subscription management methods to the decorated class's prototype.
    */
   export function subscriberCollection(): any;
-  
+
   /**
    * Subscribes to appropriate element events based on the element property
    * being observed for changes.
@@ -217,10 +219,6 @@ declare module 'aurelia-binding' {
      */
     sourceExpression?: Expression;
     /**
-     * The target property observer.
-     */
-    targetProperty?: InternalPropertyObserver;
-    /**
      * Assigns a value to the target.
      */
     updateTarget?: (value: any) => void;
@@ -266,7 +264,7 @@ declare module 'aurelia-binding' {
      */
     connect(binding: Binding, scope: Scope): void;
   }
-  
+
   /**
    * A binding behavior expression.
    */
@@ -274,7 +272,7 @@ declare module 'aurelia-binding' {
     evaluate(scope: Scope, lookupFunctions: LookupFunctions): any;
     assign(scope: Scope, value: any, lookupFunctions: LookupFunctions): void;
     connect(binding: Binding, scope: Scope): void;
-  }  
+  }
 
   /**
    * A value converter expression.
@@ -283,7 +281,7 @@ declare module 'aurelia-binding' {
     evaluate(scope: Scope, lookupFunctions: LookupFunctions): any;
     assign(scope: Scope, value: any, lookupFunctions: LookupFunctions): void;
     connect(binding: Binding, scope: Scope): void;
-  }  
+  }
 
   /**
    * Parses strings containing javascript expressions and returns a data-binding specialized AST.
@@ -388,15 +386,15 @@ declare module 'aurelia-binding' {
   * @param name The name of the binding behavior.
   */
   export function bindingBehavior(name: string): any;
-  
+
   /**
    * A context used when invoking a binding's callable API to notify
    * the binding that the context is a "source update".
    */
   export const sourceContext: string;
-  
+
   /**
    * An internal API used by Aurelia's array observation components.
    */
-  export function getChangeRecords(): any;  
+  export function getChangeRecords(): any;
 }
