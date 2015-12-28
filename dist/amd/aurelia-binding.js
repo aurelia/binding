@@ -13,6 +13,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
   exports.enqueueBindingConnect = enqueueBindingConnect;
   exports.subscriberCollection = subscriberCollection;
   exports.calcSplices = calcSplices;
+  exports.mergeSplice = mergeSplice;
   exports.projectArraySplices = projectArraySplices;
   exports.getChangeRecords = getChangeRecords;
   exports.getArrayObserver = _getArrayObserver;
