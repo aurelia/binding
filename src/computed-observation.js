@@ -1,4 +1,5 @@
 import {subscriberCollection} from './subscriber-collection';
+import {ExpressionObserver} from './binding-engine';
 
 const computedContext = 'ComputedPropertyObserver';
 
@@ -9,6 +10,7 @@ export class ComputedPropertyObserver {
     this.propertyName = propertyName;
     this.descriptor = descriptor;
     this.observerLocator = observerLocator;
+    this.parser = this.observerLocator.parser;
   }
 
   getValue(){
@@ -35,7 +37,7 @@ export class ComputedPropertyObserver {
       let dependencies = this.descriptor.get.dependencies;
       this.observers = [];
       for (let i = 0, ii = dependencies.length; i < ii; i++) {
-        let observer = this.observerLocator.getObserver(this.obj, dependencies[i]);
+        let observer = new ExpressionObserver(this.obj, this.parser.parse(dependencies[i]), this.observerLocator);
         // todo:  consider throwing when a dependency's observer is an instance of DirtyCheckProperty.
         this.observers.push(observer);
         observer.subscribe(computedContext, this);
