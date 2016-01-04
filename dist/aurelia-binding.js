@@ -601,7 +601,7 @@ function intersect(start1, end1, start2, end2) {
   }
 }
 
-function mergeSplice(splices, index, removed, addedCount) {
+export function mergeSplice(splices, index, removed, addedCount) {
   var splice = newSplice(index, removed, addedCount);
 
   var inserted = false;

@@ -12,6 +12,7 @@ exports.connectable = connectable;
 exports.enqueueBindingConnect = enqueueBindingConnect;
 exports.subscriberCollection = subscriberCollection;
 exports.calcSplices = calcSplices;
+exports.mergeSplice = mergeSplice;
 exports.projectArraySplices = projectArraySplices;
 exports.getChangeRecords = getChangeRecords;
 exports.getArrayObserver = _getArrayObserver;

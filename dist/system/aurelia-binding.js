@@ -21,6 +21,8 @@ System.register(['core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metada
 
   _export('calcSplices', calcSplices);
 
+  _export('mergeSplice', mergeSplice);
+
   _export('projectArraySplices', projectArraySplices);
 
   _export('getChangeRecords', getChangeRecords);
