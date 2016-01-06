@@ -97,10 +97,11 @@ export class ValueAttributeObserver {
   }
 
   setValue(newValue) {
-    this.element[this.propertyName] =
-      (newValue === undefined || newValue === null) ? '' : newValue;
-
-    this.notify();
+    newValue = newValue === undefined || newValue === null ? '' : newValue;
+    if (this.element[this.propertyName] !== newValue) {
+      this.element[this.propertyName] = newValue;
+      this.notify();
+    }
   }
 
   notify() {
