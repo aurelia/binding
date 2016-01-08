@@ -1,0 +1,48 @@
+<template>
+  <div>
+    <form>
+      <div>
+        <label for="firstName">First Name (debounced 200ms)</label>
+        <input type="text" id="firstName" placeholder="First Name"
+               value.bind="firstName & debounce">
+        <p>${firstName}</p>
+      </div>
+
+      <div>
+        <label for="lastName">Last Name (debounced 800ms)</label>
+        <input type="text" id="lastName" placeholder="Last Name"
+               value.bind="lastName & debounce:800">
+        <p>${lastName}</p>
+      </div>
+    </form>
+
+    <div mousemove.delegate="mouseMove($event)">
+      <div>
+        <h3>mousemove - no debouncing</h3>
+      </div>
+
+      <div>
+        <strong>Move the mouse inside this panel! (${mouseX}, ${mouseY})</strong>
+      </div>
+    </div>
+
+    <div mousemove.delegate="mouseMove200($event) & debounce">
+      <div>
+        <h3>mousemove - 200ms debounce</h3>
+      </div>
+      <div>
+        <strong>Move the mouse inside this panel! (${mouse200X}, ${mouse200Y})</strong>
+      </div>
+    </div>
+
+    <div mousemove.delegate="mouseMove800($event) & debounce:800">
+      <div>
+        <h3>mousemove - 800ms debounce</h3>
+      </div>
+
+      <div>
+        <strong>Move the mouse inside this panel! (${mouse800X}, ${mouse800Y})</strong>
+      </div>
+    </div>
+  </div>
+</template>

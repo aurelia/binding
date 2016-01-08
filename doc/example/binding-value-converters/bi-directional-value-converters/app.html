@@ -1,0 +1,7 @@
+<template>
+  <require from="./rgb-to-hex"></require>
+
+  <label for="color">Select Color:</label>
+  <input id="color" type="color" value.bind="rgb | rgbToHex" />
+  <br/> r: ${rgb.r}, g:${rgb.g}, b:${rgb.b}
+</template>

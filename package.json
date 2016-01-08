@@ -78,7 +78,16 @@
   },
   "aurelia": {
     "documentation": {
-      "articles": []
+      "articles": [
+        {
+          "title": "Binding: Binding Behaviors",
+          "href": "doc/article/en-US/binding-binding-behaviors.md"
+        },
+        {
+          "title": "Binding: Value Converters",
+          "href": "doc/article/en-US/binding-value-converters.md"
+        }
+      ]
     }
   }
 }

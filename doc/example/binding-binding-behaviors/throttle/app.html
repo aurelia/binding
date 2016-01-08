@@ -1,0 +1,46 @@
+<template>
+  <div>
+    <form>
+      <div>
+        <label for="firstName">First Name (throttled 200ms)</label>
+        <input type="text" id="firstName" placeholder="First Name"
+               value.bind="firstName & throttle">
+        <p>${firstName}</p>
+      </div>
+
+      <div>
+        <label for="lastName">Last Name (throttled 800ms)</label>
+        <input type="text" id="lastName" placeholder="Last Name"
+               value.bind="lastName & throttle:800">
+        <p>${lastName}</p>
+      </div>
+    </form>
+
+    <div mousemove.delegate="mouseMove($event)">
+      <div>
+        <h3>mousemove - no throttling</h3>
+      </div>
+      <div>
+        <strong>Move the mouse inside this panel! (${mouseX}, ${mouseY})</strong>
+      </div>
+    </div>
+
+    <div mousemove.delegate="mouseMove200($event) & throttle">
+      <div>
+        <h3>mousemove - 200ms throttle</h3>
+      </div>
+      <div>
+        <strong>Move the mouse inside this panel! (${mouse200X}, ${mouse200Y})</strong>
+      </div>
+    </div>
+
+    <div mousemove.delegate="mouseMove800($event) & throttle:800">
+      <div>
+        <h3>mousemove - 800ms throttle</h3>
+      </div>
+      <div>
+        <strong>Move the mouse inside this panel! (${mouse800X}, ${mouse800Y})</strong>
+      </div>
+    </div>
+  </div>
+</template>
