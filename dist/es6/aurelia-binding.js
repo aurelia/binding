@@ -227,8 +227,9 @@ function removeSubscriber(context, callable) {
   return true;
 }
 
-let tempContextsRest = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
-let tempCallablesRest = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
+let arrayPool1 = [];
+let arrayPool2 = [];
+let poolUtilization = [];
 
 function callSubscribers(newValue, oldValue) {
   let context0 = this._context0;
@@ -237,12 +238,32 @@ function callSubscribers(newValue, oldValue) {
   let callable1 = this._callable1;
   let context2 = this._context2;
   let callable2 = this._callable2;
-  let length = !this._contextsRest ? 0 : this._contextsRest.length;
-  let i = length;
+  let length = this._contextsRest ? this._contextsRest.length : 0;
+  let contextsRest;
+  let callablesRest;
+  let poolIndex;
+  let i;
   if (length) {
+    // grab temp arrays from the pool.
+    poolIndex = poolUtilization.length;
+    while (poolIndex-- && poolUtilization[poolIndex]) { }
+    if (poolIndex < 0) {
+      poolIndex = poolUtilization.length;
+      contextsRest = [];
+      callablesRest = [];
+      poolUtilization.push(true);
+      arrayPool1.push(contextsRest);
+      arrayPool2.push(callablesRest);
+    } else {
+      poolUtilization[poolIndex] = true;
+      contextsRest = arrayPool1[poolIndex];
+      callablesRest = arrayPool2[poolIndex];
+    }
+    // copy the contents of the "rest" arrays.
+    i = length;
     while(i--) {
-      tempContextsRest[i] = this._contextsRest[i];
-      tempCallablesRest[i] = this._callablesRest[i];
+      contextsRest[i] = this._contextsRest[i];
+      callablesRest[i] = this._callablesRest[i];
     }
   }
 
@@ -267,16 +288,19 @@ function callSubscribers(newValue, oldValue) {
       context2(newValue, oldValue);
     }
   }
-  for (i = 0; i < length; i++) {
-    let callable = tempCallablesRest[i];
-    let context = tempContextsRest[i]
-    if (callable) {
-      callable.call(context, newValue, oldValue);
-    } else {
-      context(newValue, oldValue);
+  if (length) {
+    for (i = 0; i < length; i++) {
+      let callable = callablesRest[i];
+      let context = contextsRest[i]
+      if (callable) {
+        callable.call(context, newValue, oldValue);
+      } else {
+        context(newValue, oldValue);
+      }
+      contextsRest[i] = null;
+      callablesRest[i] = null;
     }
-    tempContextsRest[i] = null;
-    tempCallablesRest[i] = null;
+    poolUtilization[poolIndex] = false;
   }
 }
 
@@ -744,7 +768,7 @@ export class ModifyCollectionObserver {
     this.changeRecords = null;
     this.oldCollection = null;
     this.collection = collection;
-    this.lengthPropertyName = collection instanceof Map ? 'size' : 'length';
+    this.lengthPropertyName = collection instanceof Map || collection instanceof Set ? 'size' : 'length';
   }
 
   subscribe(context, callable) {
@@ -817,14 +841,14 @@ export class ModifyCollectionObserver {
     if (this.hasSubscribers()) {
       if (oldCollection){
         // TODO (martingust) we might want to refactor this to a common, independent of collection type, way of getting the records
-        if (this.collection instanceof Map) {
+        if (this.collection instanceof Map || this.collection instanceof Set) {
           records = getChangeRecords(oldCollection);
         } else {
           //we might need to combine this with existing change records....
           records = calcSplices(this.collection, 0, this.collection.length, oldCollection, 0, oldCollection.length);
         }
       } else {
-        if (this.collection instanceof Map) {
+        if (this.collection instanceof Map || this.collection instanceof Set) {
           records = changeRecords;
         } else {
           records = projectArraySplices(this.collection, changeRecords);
@@ -844,7 +868,7 @@ export class ModifyCollectionObserver {
 export class CollectionLengthObserver {
   constructor(collection) {
     this.collection = collection;
-    this.lengthPropertyName = collection instanceof Map ? 'size' : 'length';
+    this.lengthPropertyName = collection instanceof Map || collection instanceof Set ? 'size' : 'length';
     this.currentValue = collection[this.lengthPropertyName];
   }
 
@@ -871,94 +895,123 @@ export class CollectionLengthObserver {
   }
 }
 
-var arrayProto = Array.prototype;
+let pop = Array.prototype.pop;
+let push = Array.prototype.push;
+let reverse = Array.prototype.reverse;
+let shift = Array.prototype.shift;
+let sort = Array.prototype.sort;
+let splice = Array.prototype.splice;
+let unshift = Array.prototype.unshift;
 
-export function getArrayObserver(taskQueue, array){
+Array.prototype.pop = function() {
+  let methodCallResult = pop.apply(this, arguments);
+  if (this.__arrayObserver !== undefined) {
+    this.__arrayObserver.addChangeRecord({
+      type: 'delete',
+      object: this,
+      name: this.length,
+      oldValue: methodCallResult
+    });
+  }
+  return methodCallResult;
+}
+
+Array.prototype.push = function() {
+  let methodCallResult = push.apply(this, arguments);
+  if (this.__arrayObserver !== undefined) {
+    this.__arrayObserver.addChangeRecord({
+      type: 'splice',
+      object: this,
+      index: this.length - arguments.length,
+      removed: [],
+      addedCount: arguments.length
+    });
+  }
+  return methodCallResult;
+}
+
+Array.prototype.reverse = function() {
+  let oldArray;
+  if (this.__arrayObserver !== undefined) {
+    this.__arrayObserver.flushChangeRecords();
+    oldArray = this.slice();
+  }
+  let methodCallResult = reverse.apply(this, arguments);
+  if (this.__arrayObserver !== undefined) {
+    this.__arrayObserver.reset(oldArray);
+  }
+  return methodCallResult;
+}
+
+Array.prototype.shift = function() {
+  let methodCallResult = shift.apply(this, arguments);
+  if (this.__arrayObserver !== undefined) {
+    this.__arrayObserver.addChangeRecord({
+      type: 'delete',
+      object: this,
+      name: 0,
+      oldValue: methodCallResult
+    });
+  }
+  return methodCallResult
+};
+
+Array.prototype.sort = function() {
+  let oldArray;
+  if (this.__arrayObserver !== undefined) {
+    this.__arrayObserver.flushChangeRecords();
+    oldArray = this.slice();
+  }
+  let methodCallResult = sort.apply(this, arguments);
+  if (this.__arrayObserver !== undefined) {
+    this.__arrayObserver.reset(oldArray);
+  }
+  return methodCallResult;
+};
+
+Array.prototype.splice = function() {
+  let methodCallResult = splice.apply(this, arguments);
+  if (this.__arrayObserver !== undefined) {
+    this.__arrayObserver.addChangeRecord({
+      type: 'splice',
+      object: this,
+      index: arguments[0],
+      removed: methodCallResult,
+      addedCount: arguments.length > 2 ? arguments.length - 2 : 0
+    });
+  }
+  return methodCallResult;
+};
+
+Array.prototype.unshift = function() {
+  let methodCallResult = unshift.apply(this, arguments);
+  if (this.__arrayObserver !== undefined) {
+    this.__arrayObserver.addChangeRecord({
+      type: 'splice',
+      object: this,
+      index: 0,
+      removed: [],
+      addedCount: arguments.length
+    });
+  }
+  return methodCallResult;
+};
+
+export function getArrayObserver(taskQueue, array) {
   return ModifyArrayObserver.create(taskQueue, array);
 }
 
 class ModifyArrayObserver extends ModifyCollectionObserver {
-  constructor(taskQueue, array){
+  constructor(taskQueue, array) {
     super(taskQueue, array);
   }
 
-  static create(taskQueue, array){
-    var observer = new ModifyArrayObserver(taskQueue, array);
-
-    array['pop'] = function(){
-      var methodCallResult = arrayProto['pop'].apply(array, arguments);
-      observer.addChangeRecord({
-       type: 'delete',
-       object: array,
-       name: array.length,
-       oldValue: methodCallResult
-      });
-      return methodCallResult;
-    }
-
-    array['push'] = function(){
-      var methodCallResult = arrayProto['push'].apply(array, arguments);
-      observer.addChangeRecord({
-       type: 'splice',
-       object: array,
-       index: array.length - arguments.length,
-       removed: [],
-       addedCount: arguments.length
-      });
-      return methodCallResult;
-    }
-
-    array['reverse'] = function(){
-      observer.flushChangeRecords();
-      var oldArray = array.slice();
-      var methodCallResult = arrayProto['reverse'].apply(array, arguments);
-      observer.reset(oldArray);
-      return methodCallResult;
-    }
-
-    array['shift'] = function() {
-      var methodCallResult = arrayProto['shift'].apply(array, arguments);
-      observer.addChangeRecord({
-       type: 'delete',
-       object: array,
-       name: 0,
-       oldValue: methodCallResult
-      });
-      return methodCallResult
-    };
-
-    array['sort'] = function() {
-      observer.flushChangeRecords();
-      var oldArray = array.slice();
-      var methodCallResult = arrayProto['sort'].apply(array, arguments);
-      observer.reset(oldArray);
-      return methodCallResult;
-    };
-
-    array['splice'] = function() {
-      var methodCallResult = arrayProto['splice'].apply(array, arguments);
-      observer.addChangeRecord({
-       type: 'splice',
-       object: array,
-       index: arguments[0],
-       removed: methodCallResult,
-       addedCount: arguments.length > 2 ? arguments.length - 2 : 0
-      });
-      return methodCallResult;
-    };
-
-    array['unshift'] = function() {
-      var methodCallResult = arrayProto['unshift'].apply(array, arguments);
-      observer.addChangeRecord({
-       type: 'splice',
-       object: array,
-       index: 0,
-       removed: [],
-       addedCount: arguments.length
-      });
-      return methodCallResult;
-    };
-
+  static create(taskQueue, array) {
+    let observer = new ModifyArrayObserver(taskQueue, array);
+    Object.defineProperty(
+      array,
+      '__arrayObserver',
+      { value: observer, enumerable: false, configurable: false });
     return observer;
   }
 }
@@ -3242,10 +3295,11 @@ export class ValueAttributeObserver {
   }
 
   setValue(newValue) {
-    this.element[this.propertyName] =
-      (newValue === undefined || newValue === null) ? '' : newValue;
-
-    this.notify();
+    newValue = newValue === undefined || newValue === null ? '' : newValue;
+    if (this.element[this.propertyName] !== newValue) {
+      this.element[this.propertyName] = newValue;
+      this.notify();
+    }
   }
 
   notify() {
@@ -3578,7 +3632,7 @@ export class ClassObserver {
 
     // Add the classes, tracking the version at which they were added.
     if (newValue !== null && newValue !== undefined && newValue.length) {
-      names = newValue.split(' ');
+      names = newValue.split(/\s+/);
       for(let i = 0, length = names.length; i < length; i++) {
         name = names[i];
         if (name === '') {
@@ -4050,6 +4104,12 @@ export class ObserverLocator {
       } else {
         return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
+    } else if (obj instanceof Set) {
+      if (propertyName === 'size') {
+        return this.getSetObserver(obj).getLengthObserver();
+      } else {
+        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
+      }
     }
 
     return new SetterObserver(this.taskQueue, obj, propertyName);
@@ -4059,8 +4119,8 @@ export class ObserverLocator {
     if (obj instanceof DOM.Element) {
       if (propertyName === 'class'
         || propertyName === 'style' || propertyName === 'css'
-        || propertyName === 'value' && obj.tagName.toLowerCase() === 'select'
-        || propertyName ==='checked' && obj.tagName.toLowerCase() === 'input'
+        || propertyName === 'value' && (obj.tagName.toLowerCase() === 'input' || obj.tagName.toLowerCase() === 'select')
+        || propertyName === 'checked' && obj.tagName.toLowerCase() === 'input'
         || /^xlink:.+$/.exec(propertyName)) {
         return this.getObserver(obj, propertyName);
       }
@@ -4086,6 +4146,14 @@ export class ObserverLocator {
     }
 
     return map.__map_observer__ = getMapObserver(this.taskQueue, map);
+  }
+
+  getSetObserver(set){
+    if ('__set_observer__' in set) {
+      return set.__set_observer__;
+    }
+
+    return set.__set_observer__ = getSetObserver(this.taskQueue, set);
   }
 }
 
@@ -4585,8 +4653,10 @@ export class BindingEngine {
           observer = this.observerLocator.getArrayObserver(collection);
         } else if (collection instanceof Map) {
           observer = this.observerLocator.getMapObserver(collection);
-        } else {
-          throw new Error('collection must be an instance of Array or Map.');
+        } else if (collection instanceof Set) {
+          observer = this.observerLocator.getSetObserver(collection);
+        }  else {
+          throw new Error('collection must be an instance of Array, Map or Set.');
         }
         observer.subscribe(callback);
         return {
@@ -4644,5 +4714,59 @@ class ExpressionObserver {
     this._version++;
     this.expression.connect(this, this.scope);
     this.unobserve(false);
+  }
+}
+
+let setProto = Set.prototype;
+
+export function getSetObserver(taskQueue, set){
+  return ModifySetObserver.create(taskQueue, set);
+}
+
+class ModifySetObserver extends ModifyCollectionObserver {
+  constructor(taskQueue, set){
+    super(taskQueue, set);
+  }
+
+  static create(taskQueue, set) {
+    let observer = new ModifySetObserver(taskQueue, set);
+
+    set['add'] = function () {
+      let type = 'add';
+      let hasValue = set.has(arguments[0]);
+      let methodCallResult = setProto['add'].apply(set, arguments);
+      if (!hasValue) {
+        observer.addChangeRecord({
+          type: type,
+          object: set,
+          value: arguments[0]
+        });
+      }
+      return methodCallResult;
+    }
+
+    set['delete'] = function () {
+      let hasValue = set.has(arguments[0]);
+      let methodCallResult = setProto['delete'].apply(set, arguments);
+      if (hasValue) {
+        observer.addChangeRecord({
+          type: 'delete',
+          object: set,
+          value: arguments[0]
+        });
+      }
+      return methodCallResult;
+    }
+
+    set['clear'] = function () {
+      let methodCallResult = setProto['clear'].apply(set, arguments);
+      observer.addChangeRecord({
+        type: 'clear',
+        object: set
+      });
+      return methodCallResult;
+    }
+
+    return observer;
   }
 }

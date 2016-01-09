@@ -14,10 +14,10 @@ System.config({
   },
 
   map: {
-    "aurelia-dependency-injection": "npm:aurelia-dependency-injection@1.0.0-beta.1",
+    "aurelia-dependency-injection": "npm:aurelia-dependency-injection@1.0.0-beta.1.0.1",
     "aurelia-metadata": "npm:aurelia-metadata@1.0.0-beta.1",
-    "aurelia-pal": "npm:aurelia-pal@1.0.0-beta.1.0.1",
-    "aurelia-pal-browser": "npm:aurelia-pal-browser@1.0.0-beta.1.0.1",
+    "aurelia-pal": "npm:aurelia-pal@1.0.0-beta.1.0.2",
+    "aurelia-pal-browser": "npm:aurelia-pal-browser@1.0.0-beta.1.0.3",
     "aurelia-task-queue": "npm:aurelia-task-queue@1.0.0-beta.1.0.1",
     "babel": "npm:babel-core@5.8.34",
     "babel-runtime": "npm:babel-runtime@5.8.34",
@@ -37,21 +37,22 @@ System.config({
     "npm:assert@1.3.0": {
       "util": "npm:util@0.10.3"
     },
-    "npm:aurelia-dependency-injection@1.0.0-beta.1": {
+    "npm:aurelia-dependency-injection@1.0.0-beta.1.0.1": {
       "aurelia-logging": "npm:aurelia-logging@1.0.0-beta.1",
       "aurelia-metadata": "npm:aurelia-metadata@1.0.0-beta.1",
-      "aurelia-pal": "npm:aurelia-pal@1.0.0-beta.1.0.1",
+      "aurelia-pal": "npm:aurelia-pal@1.0.0-beta.1.0.2",
       "core-js": "npm:core-js@1.2.6"
     },
     "npm:aurelia-metadata@1.0.0-beta.1": {
-      "aurelia-pal": "npm:aurelia-pal@1.0.0-beta.1.0.1",
+      "aurelia-pal": "npm:aurelia-pal@1.0.0-beta.1.0.2",
       "core-js": "npm:core-js@1.2.6"
     },
-    "npm:aurelia-pal-browser@1.0.0-beta.1.0.1": {
-      "aurelia-pal": "npm:aurelia-pal@1.0.0-beta.1.0.1"
+    "npm:aurelia-pal-browser@1.0.0-beta.1.0.3": {
+      "aurelia-pal": "npm:aurelia-pal@1.0.0-beta.1.0.2",
+      "core-js": "npm:core-js@1.2.6"
     },
     "npm:aurelia-task-queue@1.0.0-beta.1.0.1": {
-      "aurelia-pal": "npm:aurelia-pal@1.0.0-beta.1.0.1"
+      "aurelia-pal": "npm:aurelia-pal@1.0.0-beta.1.0.2"
     },
     "npm:babel-runtime@5.8.34": {
       "process": "github:jspm/nodelibs-process@0.1.2"

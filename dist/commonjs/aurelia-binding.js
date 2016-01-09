@@ -22,6 +22,7 @@ exports.declarePropertyDependencies = declarePropertyDependencies;
 exports.computedFrom = computedFrom;
 exports.valueConverter = valueConverter;
 exports.bindingBehavior = bindingBehavior;
+exports.getSetObserver = getSetObserver;
 
 function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
@@ -256,8 +257,9 @@ function removeSubscriber(context, callable) {
   return true;
 }
 
-var tempContextsRest = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
-var tempCallablesRest = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
+var arrayPool1 = [];
+var arrayPool2 = [];
+var poolUtilization = [];
 
 function callSubscribers(newValue, oldValue) {
   var context0 = this._context0;
@@ -266,12 +268,31 @@ function callSubscribers(newValue, oldValue) {
   var callable1 = this._callable1;
   var context2 = this._context2;
   var callable2 = this._callable2;
-  var length = !this._contextsRest ? 0 : this._contextsRest.length;
-  var i = length;
+  var length = this._contextsRest ? this._contextsRest.length : 0;
+  var contextsRest = undefined;
+  var callablesRest = undefined;
+  var poolIndex = undefined;
+  var i = undefined;
   if (length) {
+    poolIndex = poolUtilization.length;
+    while (poolIndex-- && poolUtilization[poolIndex]) {}
+    if (poolIndex < 0) {
+      poolIndex = poolUtilization.length;
+      contextsRest = [];
+      callablesRest = [];
+      poolUtilization.push(true);
+      arrayPool1.push(contextsRest);
+      arrayPool2.push(callablesRest);
+    } else {
+      poolUtilization[poolIndex] = true;
+      contextsRest = arrayPool1[poolIndex];
+      callablesRest = arrayPool2[poolIndex];
+    }
+
+    i = length;
     while (i--) {
-      tempContextsRest[i] = this._contextsRest[i];
-      tempCallablesRest[i] = this._callablesRest[i];
+      contextsRest[i] = this._contextsRest[i];
+      callablesRest[i] = this._callablesRest[i];
     }
   }
 
@@ -296,16 +317,19 @@ function callSubscribers(newValue, oldValue) {
       context2(newValue, oldValue);
     }
   }
-  for (i = 0; i < length; i++) {
-    var callable = tempCallablesRest[i];
-    var context = tempContextsRest[i];
-    if (callable) {
-      callable.call(context, newValue, oldValue);
-    } else {
-      context(newValue, oldValue);
+  if (length) {
+    for (i = 0; i < length; i++) {
+      var callable = callablesRest[i];
+      var context = contextsRest[i];
+      if (callable) {
+        callable.call(context, newValue, oldValue);
+      } else {
+        context(newValue, oldValue);
+      }
+      contextsRest[i] = null;
+      callablesRest[i] = null;
     }
-    tempContextsRest[i] = null;
-    tempCallablesRest[i] = null;
+    poolUtilization[poolIndex] = false;
   }
 }
 
@@ -694,7 +718,7 @@ var ModifyCollectionObserver = (function () {
     this.changeRecords = null;
     this.oldCollection = null;
     this.collection = collection;
-    this.lengthPropertyName = collection instanceof Map ? 'size' : 'length';
+    this.lengthPropertyName = collection instanceof Map || collection instanceof Set ? 'size' : 'length';
   }
 
   ModifyCollectionObserver.prototype.subscribe = function subscribe(context, callable) {
@@ -766,13 +790,13 @@ var ModifyCollectionObserver = (function () {
 
     if (this.hasSubscribers()) {
       if (oldCollection) {
-        if (this.collection instanceof Map) {
+        if (this.collection instanceof Map || this.collection instanceof Set) {
           records = getChangeRecords(oldCollection);
         } else {
           records = calcSplices(this.collection, 0, this.collection.length, oldCollection, 0, oldCollection.length);
         }
       } else {
-        if (this.collection instanceof Map) {
+        if (this.collection instanceof Map || this.collection instanceof Set) {
           records = changeRecords;
         } else {
           records = projectArraySplices(this.collection, changeRecords);
@@ -799,7 +823,7 @@ var CollectionLengthObserver = (function () {
     _classCallCheck(this, _CollectionLengthObserver);
 
     this.collection = collection;
-    this.lengthPropertyName = collection instanceof Map ? 'size' : 'length';
+    this.lengthPropertyName = collection instanceof Map || collection instanceof Set ? 'size' : 'length';
     this.currentValue = collection[this.lengthPropertyName];
   }
 
@@ -832,7 +856,107 @@ var CollectionLengthObserver = (function () {
 
 exports.CollectionLengthObserver = CollectionLengthObserver;
 
-var arrayProto = Array.prototype;
+var pop = Array.prototype.pop;
+var push = Array.prototype.push;
+var reverse = Array.prototype.reverse;
+var shift = Array.prototype.shift;
+var sort = Array.prototype.sort;
+var splice = Array.prototype.splice;
+var unshift = Array.prototype.unshift;
+
+Array.prototype.pop = function () {
+  var methodCallResult = pop.apply(this, arguments);
+  if (this.__arrayObserver !== undefined) {
+    this.__arrayObserver.addChangeRecord({
+      type: 'delete',
+      object: this,
+      name: this.length,
+      oldValue: methodCallResult
+    });
+  }
+  return methodCallResult;
+};
+
+Array.prototype.push = function () {
+  var methodCallResult = push.apply(this, arguments);
+  if (this.__arrayObserver !== undefined) {
+    this.__arrayObserver.addChangeRecord({
+      type: 'splice',
+      object: this,
+      index: this.length - arguments.length,
+      removed: [],
+      addedCount: arguments.length
+    });
+  }
+  return methodCallResult;
+};
+
+Array.prototype.reverse = function () {
+  var oldArray = undefined;
+  if (this.__arrayObserver !== undefined) {
+    this.__arrayObserver.flushChangeRecords();
+    oldArray = this.slice();
+  }
+  var methodCallResult = reverse.apply(this, arguments);
+  if (this.__arrayObserver !== undefined) {
+    this.__arrayObserver.reset(oldArray);
+  }
+  return methodCallResult;
+};
+
+Array.prototype.shift = function () {
+  var methodCallResult = shift.apply(this, arguments);
+  if (this.__arrayObserver !== undefined) {
+    this.__arrayObserver.addChangeRecord({
+      type: 'delete',
+      object: this,
+      name: 0,
+      oldValue: methodCallResult
+    });
+  }
+  return methodCallResult;
+};
+
+Array.prototype.sort = function () {
+  var oldArray = undefined;
+  if (this.__arrayObserver !== undefined) {
+    this.__arrayObserver.flushChangeRecords();
+    oldArray = this.slice();
+  }
+  var methodCallResult = sort.apply(this, arguments);
+  if (this.__arrayObserver !== undefined) {
+    this.__arrayObserver.reset(oldArray);
+  }
+  return methodCallResult;
+};
+
+Array.prototype.splice = function () {
+  var methodCallResult = splice.apply(this, arguments);
+  if (this.__arrayObserver !== undefined) {
+    this.__arrayObserver.addChangeRecord({
+      type: 'splice',
+      object: this,
+      index: arguments[0],
+      removed: methodCallResult,
+      addedCount: arguments.length > 2 ? arguments.length - 2 : 0
+    });
+  }
+  return methodCallResult;
+};
+
+Array.prototype.unshift = function () {
+  var methodCallResult = unshift.apply(this, arguments);
+  if (this.__arrayObserver !== undefined) {
+    this.__arrayObserver.addChangeRecord({
+      type: 'splice',
+      object: this,
+      index: 0,
+      removed: [],
+      addedCount: arguments.length
+    });
+  }
+  return methodCallResult;
+};
 
 function _getArrayObserver(taskQueue, array) {
   return ModifyArrayObserver.create(taskQueue, array);
@@ -849,81 +973,7 @@ var ModifyArrayObserver = (function (_ModifyCollectionObserver2) {
 
   ModifyArrayObserver.create = function create(taskQueue, array) {
     var observer = new ModifyArrayObserver(taskQueue, array);
-
-    array['pop'] = function () {
-      var methodCallResult = arrayProto['pop'].apply(array, arguments);
-      observer.addChangeRecord({
-        type: 'delete',
-        object: array,
-        name: array.length,
-        oldValue: methodCallResult
-      });
-      return methodCallResult;
-    };
-
-    array['push'] = function () {
-      var methodCallResult = arrayProto['push'].apply(array, arguments);
-      observer.addChangeRecord({
-        type: 'splice',
-        object: array,
-        index: array.length - arguments.length,
-        removed: [],
-        addedCount: arguments.length
-      });
-      return methodCallResult;
-    };
-
-    array['reverse'] = function () {
-      observer.flushChangeRecords();
-      var oldArray = array.slice();
-      var methodCallResult = arrayProto['reverse'].apply(array, arguments);
-      observer.reset(oldArray);
-      return methodCallResult;
-    };
-
-    array['shift'] = function () {
-      var methodCallResult = arrayProto['shift'].apply(array, arguments);
-      observer.addChangeRecord({
-        type: 'delete',
-        object: array,
-        name: 0,
-        oldValue: methodCallResult
-      });
-      return methodCallResult;
-    };
-
-    array['sort'] = function () {
-      observer.flushChangeRecords();
-      var oldArray = array.slice();
-      var methodCallResult = arrayProto['sort'].apply(array, arguments);
-      observer.reset(oldArray);
-      return methodCallResult;
-    };
-
-    array['splice'] = function () {
-      var methodCallResult = arrayProto['splice'].apply(array, arguments);
-      observer.addChangeRecord({
-        type: 'splice',
-        object: array,
-        index: arguments[0],
-        removed: methodCallResult,
-        addedCount: arguments.length > 2 ? arguments.length - 2 : 0
-      });
-      return methodCallResult;
-    };
-
-    array['unshift'] = function () {
-      var methodCallResult = arrayProto['unshift'].apply(array, arguments);
-      observer.addChangeRecord({
-        type: 'splice',
-        object: array,
-        index: 0,
-        removed: [],
-        addedCount: arguments.length
-      });
-      return methodCallResult;
-    };
-
+    Object.defineProperty(array, '__arrayObserver', { value: observer, enumerable: false, configurable: false });
     return observer;
   };
 
@@ -3450,9 +3500,11 @@ var ValueAttributeObserver = (function () {
   };
 
   ValueAttributeObserver.prototype.setValue = function setValue(newValue) {
-    this.element[this.propertyName] = newValue === undefined || newValue === null ? '' : newValue;
-
-    this.notify();
+    newValue = newValue === undefined || newValue === null ? '' : newValue;
+    if (this.element[this.propertyName] !== newValue) {
+      this.element[this.propertyName] = newValue;
+      this.notify();
+    }
   };
 
   ValueAttributeObserver.prototype.notify = function notify() {
@@ -3846,7 +3898,7 @@ var ClassObserver = (function () {
         name;
 
     if (newValue !== null && newValue !== undefined && newValue.length) {
-      names = newValue.split(' ');
+      names = newValue.split(/\s+/);
       for (var i = 0, _length = names.length; i < _length; i++) {
         name = names[i];
         if (name === '') {
@@ -4340,6 +4392,12 @@ var ObserverLocator = (function () {
       } else {
         return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
+    } else if (obj instanceof Set) {
+      if (propertyName === 'size') {
+        return this.getSetObserver(obj).getLengthObserver();
+      } else {
+        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
+      }
     }
 
     return new SetterObserver(this.taskQueue, obj, propertyName);
@@ -4347,7 +4405,7 @@ var ObserverLocator = (function () {
 
   ObserverLocator.prototype.getAccessor = function getAccessor(obj, propertyName) {
     if (obj instanceof _aureliaPal.DOM.Element) {
-      if (propertyName === 'class' || propertyName === 'style' || propertyName === 'css' || propertyName === 'value' && obj.tagName.toLowerCase() === 'select' || propertyName === 'checked' && obj.tagName.toLowerCase() === 'input' || /^xlink:.+$/.exec(propertyName)) {
+      if (propertyName === 'class' || propertyName === 'style' || propertyName === 'css' || propertyName === 'value' && (obj.tagName.toLowerCase() === 'input' || obj.tagName.toLowerCase() === 'select') || propertyName === 'checked' && obj.tagName.toLowerCase() === 'input' || /^xlink:.+$/.exec(propertyName)) {
         return this.getObserver(obj, propertyName);
       }
       if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof _aureliaPal.DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
@@ -4372,6 +4430,24 @@ var ObserverLocator = (function () {
 
     return map.__map_observer__ = _getMapObserver(this.taskQueue, map);
   };
+
+  ObserverLocator.prototype.getSetObserver = (function (_getSetObserver) {
+    function getSetObserver(_x) {
+      return _getSetObserver.apply(this, arguments);
+    }
+
+    getSetObserver.toString = function () {
+      return _getSetObserver.toString();
+    };
+
+    return getSetObserver;
+  })(function (set) {
+    if ('__set_observer__' in set) {
+      return set.__set_observer__;
+    }
+
+    return set.__set_observer__ = getSetObserver(this.taskQueue, set);
+  });
 
   return ObserverLocator;
 })();
@@ -4921,8 +4997,10 @@ var BindingEngine = (function () {
           observer = _this8.observerLocator.getArrayObserver(collection);
         } else if (collection instanceof Map) {
           observer = _this8.observerLocator.getMapObserver(collection);
+        } else if (collection instanceof Set) {
+          observer = _this8.observerLocator.getSetObserver(collection);
         } else {
-          throw new Error('collection must be an instance of Array or Map.');
+          throw new Error('collection must be an instance of Array, Map or Set.');
         }
         observer.subscribe(callback);
         return {
@@ -4995,3 +5073,63 @@ var ExpressionObserver = (function () {
   ExpressionObserver = connectable()(ExpressionObserver) || ExpressionObserver;
   return ExpressionObserver;
 })();
+
+var setProto = Set.prototype;
+
+function getSetObserver(taskQueue, set) {
+  return ModifySetObserver.create(taskQueue, set);
+}
+
+var ModifySetObserver = (function (_ModifyCollectionObserver4) {
+  _inherits(ModifySetObserver, _ModifyCollectionObserver4);
+
+  function ModifySetObserver(taskQueue, set) {
+    _classCallCheck(this, ModifySetObserver);
+
+    _ModifyCollectionObserver4.call(this, taskQueue, set);
+  }
+
+  ModifySetObserver.create = function create(taskQueue, set) {
+    var observer = new ModifySetObserver(taskQueue, set);
+
+    set['add'] = function () {
+      var type = 'add';
+      var hasValue = set.has(arguments[0]);
+      var methodCallResult = setProto['add'].apply(set, arguments);
+      if (!hasValue) {
+        observer.addChangeRecord({
+          type: type,
+          object: set,
+          value: arguments[0]
+        });
+      }
+      return methodCallResult;
+    };
+
+    set['delete'] = function () {
+      var hasValue = set.has(arguments[0]);
+      var methodCallResult = setProto['delete'].apply(set, arguments);
+      if (hasValue) {
+        observer.addChangeRecord({
+          type: 'delete',
+          object: set,
+          value: arguments[0]
+        });
+      }
+      return methodCallResult;
+    };
+
+    set['clear'] = function () {
+      var methodCallResult = setProto['clear'].apply(set, arguments);
+      observer.addChangeRecord({
+        type: 'clear',
+        object: set
+      });
+      return methodCallResult;
+    };
+
+    return observer;
+  };
+
+  return ModifySetObserver;
+})(ModifyCollectionObserver);

@@ -1,3 +1,21 @@
+### 1.0.0-beta.1.0.4 (2016-01-08)
+
+
+#### Bug Fixes
+
+* **ClassObserver:** split classes by any ASCII whitespace. ([776eef49](http://github.com/aurelia/binding/commit/776eef4956a07648de4a15cce4273ddcb13e348d), closes [#257](http://github.com/aurelia/binding/issues/257))
+* **ObserverLocator:** getAccessor incorrectly handles input.value ([ae751048](http://github.com/aurelia/binding/commit/ae751048b43f96e60b7874a2cb569b20b04d0100), closes [#264](http://github.com/aurelia/binding/issues/264))
+* **ValueAttributeObserver:** notify only when changing element value ([6ac4d42d](http://github.com/aurelia/binding/commit/6ac4d42d28bcaf888e186dfd8795d4fb5956ced3))
+* **subscriberCollection:** handle cascading calls ([5b3ae75f](http://github.com/aurelia/binding/commit/5b3ae75fb216d898b6b56b3a18a1f0981263c865), closes [#252](http://github.com/aurelia/binding/issues/252))
+
+
+#### Features
+
+* **Array:** observe array prototype methods ([f34972dc](http://github.com/aurelia/binding/commit/f34972dc5187c1762b2ac749c3d92fbb3669dad9))
+* **SetObservation:** add set observation ([9bb17313](http://github.com/aurelia/binding/commit/9bb1731399669a0b18d62b04bf0856609d2888be))
+* **api:** export mergeSplice ([c909ba22](http://github.com/aurelia/binding/commit/c909ba22d897f260a9d2eaf5e4f37919a8c36cfa))
+
+
 ### 1.0.0-beta.1.0.3 (2015-12-16)
 
 
