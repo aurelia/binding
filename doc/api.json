@@ -369,7 +369,7 @@
                   "type": {
                     "type": "reference",
                     "name": "Container",
-                    "id": 405,
+                    "id": 411,
                     "moduleName": "\"aurelia-dependency-injection\""
                   }
                 },
@@ -1574,7 +1574,7 @@
                   "type": {
                     "type": "reference",
                     "name": "Container",
-                    "id": 405,
+                    "id": 411,
                     "moduleName": "\"aurelia-dependency-injection\""
                   }
                 },
@@ -3817,6 +3817,77 @@
       ]
     },
     {
+      "id": 276,
+      "name": "mergeSplice",
+      "kind": 64,
+      "kindString": "Function",
+      "flags": {
+        "isExported": true
+      },
+      "signatures": [
+        {
+          "id": 277,
+          "name": "mergeSplice",
+          "kind": 4096,
+          "kindString": "Call signature",
+          "flags": {},
+          "comment": {
+            "shortText": "An internal API used by Aurelia's array observation components."
+          },
+          "parameters": [
+            {
+              "id": 278,
+              "name": "splices",
+              "kind": 32768,
+              "kindString": "Parameter",
+              "flags": {},
+              "type": {
+                "type": "instrinct",
+                "name": "any"
+              }
+            },
+            {
+              "id": 279,
+              "name": "index",
+              "kind": 32768,
+              "kindString": "Parameter",
+              "flags": {},
+              "type": {
+                "type": "instrinct",
+                "name": "any"
+              }
+            },
+            {
+              "id": 280,
+              "name": "removed",
+              "kind": 32768,
+              "kindString": "Parameter",
+              "flags": {},
+              "type": {
+                "type": "instrinct",
+                "name": "any"
+              }
+            },
+            {
+              "id": 281,
+              "name": "addedCount",
+              "kind": 32768,
+              "kindString": "Parameter",
+              "flags": {},
+              "type": {
+                "type": "instrinct",
+                "name": "any"
+              }
+            }
+          ],
+          "type": {
+            "type": "instrinct",
+            "name": "any"
+          }
+        }
+      ]
+    },
+    {
       "id": 254,
       "name": "subscriberCollection",
       "kind": 64,
@@ -3942,6 +4013,7 @@
         259,
         274,
         256,
+        276,
         254,
         267
       ]

@@ -1,3 +1,11 @@
+### 1.0.0-beta.1.0.5 (2016-01-08)
+
+
+#### Bug Fixes
+
+* **dts:** add missing export ([6c1f3f17](http://github.com/aurelia/binding/commit/6c1f3f17cb78040488d3e17dfac9fceedbb834bb))
+
+
 ### 1.0.0-beta.1.0.4 (2016-01-08)
 
 

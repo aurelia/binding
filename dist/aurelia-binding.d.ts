@@ -397,4 +397,9 @@ declare module 'aurelia-binding' {
    * An internal API used by Aurelia's array observation components.
    */
   export function getChangeRecords(): any;
+
+  /**
+   * An internal API used by Aurelia's array observation components.
+   */
+  export function mergeSplice(splices, index, removed, addedCount): any;
 }
