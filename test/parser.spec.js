@@ -212,4 +212,16 @@ describe('Parser', () => {
     expect(expression.values[0] instanceof AccessThis).toBe(true);
     expect(expression.values[0].ancestor).toBe(1);
   });
+  
+  it('parses es6 shorthand LiteralObject', () => {
+    let expression = parser.parse('{ foo, bar }');
+    expect(expression instanceof LiteralObject).toBe(true);
+    expect(expression.keys.length).toBe(2);
+    expect(expression.values.length).toBe(2);
+    
+    expect(expression.values[0] instanceof AccessScope).toBe(true);
+    expect(expression.values[0].name).toBe('foo');
+    expect(expression.values[1] instanceof AccessScope).toBe(true);
+    expect(expression.values[1].name).toBe('bar');
+  });
 });
