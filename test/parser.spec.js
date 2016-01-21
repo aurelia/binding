@@ -224,4 +224,19 @@ describe('Parser', () => {
     expect(expression.values[1] instanceof AccessScope).toBe(true);
     expect(expression.values[1].name).toBe('bar');
   });
+  
+  it('does not parse invalid shorthand properties', () => {
+      let pass = false;
+      try {
+          parser.parse('{ foo.bar, bar.baz }');
+          pass = true;
+      } catch (e) { pass = false; }
+      expect(pass).toBe(false);
+      
+      try {
+          parser.parse('{ "foo.bar" }');
+          pass = true;
+      } catch (e) { pass = false; }
+      expect(pass).toBe(false);
+  });
 });
