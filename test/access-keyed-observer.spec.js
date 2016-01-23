@@ -267,10 +267,11 @@ describe('AccessKeyedObserver', () => {
       expect(el.value).toBe(obj.array[obj.key]);
     });
 
-    it('responds to property change', done => {
+    it('does not respond to property change', done => {
+      let original = el.value;
       obj.array[obj.key] = 'foo';
       setTimeout(() => {
-        expect(el.value).toBe(obj.array[obj.key]);
+        expect(el.value).toBe(original);
         done();
         }, checkDelay * 2);
     });
@@ -399,10 +400,11 @@ describe('AccessKeyedObserver', () => {
       expect(el.value).toBe(obj.array[obj.key]);
     });
 
-    it('responds to property change', done => {
+    it('does not respond to property change', done => {
+      let original = el.value;
       obj.array[obj.key] = 'foo';
       setTimeout(() => {
-        expect(el.value).toBe(obj.array[obj.key]);
+        expect(el.value).toBe(original);
         done();
         }, checkDelay * 2);
     });

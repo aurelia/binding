@@ -317,7 +317,10 @@ export class AccessKeyed extends Expression {
     if (obj instanceof Object) {
       this.key.connect(binding, scope);
       let key = this.key.evaluate(scope);
-      if (key !== null && key !== undefined) {
+      // observe the property represented by the key as long as it's not an array
+      // being accessed by an integer key which would require dirty-checking.
+      if (key !== null && key !== undefined
+        && !(Array.isArray(obj) && typeof(key) === 'number')) {
         binding.observeProperty(obj, key);
       }
     }
