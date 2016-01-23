@@ -51,31 +51,47 @@ export class StyleObserver {
   constructor(element, propertyName) {
     this.element = element;
     this.propertyName = propertyName;
+    
+    this.styles = [];
   }
-
+  
   getValue() {
     return this.element.style.cssText;
   }
-
+  
   setValue(newValue) {
-    if (newValue instanceof Object) {
-      newValue = this.flattenCss(newValue);
-    }
-    this.element.style.cssText = newValue;
+    this.clearStyles( (newValue instanceof Object ? this.objectUpdate(newValue) : this.stringUpdate(newValue)) );
   }
 
   subscribe() {
     throw new Error(`Observation of a "${this.element.nodeName}" element\'s "${this.propertyName}" property is not supported.`);
   }
 
-  flattenCss(object) {
-    var s = '';
-    for(var propertyName in object) {
-      if (object.hasOwnProperty(propertyName)){
-        s += propertyName + ': ' + object[propertyName] + '; ';
-      }
+  clearStyles(styles) {
+    this.styles.forEach( (v) => {
+        if ( !styles.includes(v) ) { this.element.style[v] = ''; }
+    });
+    this.styles = styles;
+  }
+
+  stringUpdate(css) {
+    let pairs = css.split(/(?:[:;]\s*)/).filter( v => v.length );
+    let props = [];
+    for( let i = 0, length = pairs.length; i < length; i++ )
+    {
+        props.push(pairs[i]);
+        this.element.style[pairs[i]] = pairs[++i];
     }
-    return s;
+    return props;
+  }
+
+  objectUpdate(object) {
+    let props = Object.getOwnPropertyNames(object);
+    for( let propertyName of props ) 
+    {
+        this.element.style[propertyName] = object[propertyName];
+    }
+    return props;
   }
 }
 
