@@ -98,6 +98,16 @@ describe('SelectValueObserver', () => {
       }, 0);
     });
 
+    it('notifies', () => {
+      let targetObserver = binding.targetObserver;
+      let spy = jasmine.createSpy('callback');
+      let oldValue = binding.targetObserver.getValue();
+      let newValue = [];
+      targetObserver.subscribe(spy);
+      targetObserver.setValue(newValue);
+      expect(spy).toHaveBeenCalledWith(newValue, oldValue);
+    });
+
     it('unbinds', () => {
       var targetObserver = observerLocator.getObserver(el, 'value');
       spyOn(targetObserver, 'unbind').and.callThrough();

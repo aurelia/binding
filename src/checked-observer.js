@@ -18,6 +18,7 @@ export class CheckedObserver {
     if (this.value === newValue) {
       return;
     }
+
     // unsubscribe from old array.
     if (this.arrayObserver) {
       this.arrayObserver.unsubscribe(checkedArrayContext, this);
@@ -29,8 +30,10 @@ export class CheckedObserver {
       this.arrayObserver.subscribe(checkedArrayContext, this);
     }
     // assign and sync element.
+    this.oldValue = this.value;
     this.value = newValue;
     this.synchronizeElement();
+    this.notify();
     // queue up an initial sync after the bindings have been evaluated.
     if (!this.initialSync) {
       this.initialSync = true;

@@ -33,8 +33,10 @@ export class SelectValueObserver {
       this.arrayObserver.subscribe(selectArrayContext, this);
     }
     // assign and sync element.
+    this.oldValue = this.value;
     this.value = newValue;
     this.synchronizeOptions();
+    this.notify();
     // queue up an initial sync after the bindings have been evaluated.
     if (!this.initialSync) {
       this.initialSync = true;

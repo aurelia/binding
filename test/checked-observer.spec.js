@@ -49,6 +49,16 @@ describe('CheckedObserver', () => {
       }, 0);
     });
 
+    it('notifies', () => {
+      let targetObserver = binding.targetObserver;
+      let spy = jasmine.createSpy('callback');
+      let oldValue = binding.targetObserver.getValue();
+      let newValue = [];
+      targetObserver.subscribe(spy);
+      targetObserver.setValue(newValue);
+      expect(spy).toHaveBeenCalledWith(newValue, oldValue);
+    });
+
     it('unbinds', () => {
       var targetObserver = binding.targetObserver;
       spyOn(targetObserver, 'unbind').and.callThrough();
@@ -92,6 +102,16 @@ describe('CheckedObserver', () => {
         expect(obj.selectedItems.length).toBe(0);
         done();
       }, 0);
+    });
+
+    it('notifies', () => {
+      let targetObserver = binding.targetObserver;
+      let spy = jasmine.createSpy('callback');
+      let oldValue = binding.targetObserver.getValue();
+      let newValue = [];
+      targetObserver.subscribe(spy);
+      targetObserver.setValue(newValue);
+      expect(spy).toHaveBeenCalledWith(newValue, oldValue);
     });
 
     it('unbinds', () => {
@@ -140,6 +160,16 @@ describe('CheckedObserver', () => {
       }, 0);
     });
 
+    it('notifies', () => {
+      let targetObserver = binding.targetObserver;
+      let spy = jasmine.createSpy('callback');
+      let oldValue = binding.targetObserver.getValue();
+      let newValue = [];
+      targetObserver.subscribe(spy);
+      targetObserver.setValue(newValue);
+      expect(spy).toHaveBeenCalledWith(newValue, oldValue);
+    });
+
     it('unbinds', () => {
       var targetObserver = binding.targetObserver;
       spyOn(targetObserver, 'unbind').and.callThrough();
@@ -182,6 +212,16 @@ describe('CheckedObserver', () => {
         expect(obj.checked).toBe(false);
         done();
       }, 0);
+    });
+
+    it('notifies', () => {
+      let targetObserver = binding.targetObserver;
+      let spy = jasmine.createSpy('callback');
+      let oldValue = binding.targetObserver.getValue();
+      let newValue = true;
+      targetObserver.subscribe(spy);
+      targetObserver.setValue(newValue);
+      expect(spy).toHaveBeenCalledWith(newValue, oldValue);
     });
 
     it('unbinds', () => {
@@ -232,6 +272,16 @@ describe('CheckedObserver', () => {
         expect(obj.selectedItems.length).toBe(1);
         done();
       }, 0);
+    });
+
+    it('notifies', () => {
+      let targetObserver = binding.targetObserver;
+      let spy = jasmine.createSpy('callback');
+      let oldValue = binding.targetObserver.getValue();
+      let newValue = [];
+      targetObserver.subscribe(spy);
+      targetObserver.setValue(newValue);
+      expect(spy).toHaveBeenCalledWith(newValue, oldValue);
     });
 
     it('unbinds', () => {
