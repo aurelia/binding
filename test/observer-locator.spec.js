@@ -5,10 +5,10 @@ import {
   ValueAttributeObserver,
   XLinkAttributeObserver,
   DataAttributeObserver,
-  StyleObserver,
-  SelectValueObserver,
-  CheckedObserver
+  StyleObserver
 } from '../src/element-observation';
+import {SelectValueObserver} from '../src/select-value-observer';
+import {CheckedObserver} from '../src/checked-observer';
 import {createElement, createObserverLocator} from './shared';
 import {FEATURE} from 'aurelia-pal';
 import {initialize} from 'aurelia-pal-browser';

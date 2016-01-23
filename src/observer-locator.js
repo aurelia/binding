@@ -10,9 +10,9 @@ import {
   PrimitiveObserver,
   propertyAccessor
 } from './property-observation';
+import {SelectValueObserver} from './select-value-observer';
+import {CheckedObserver} from './checked-observer';
 import {
-  SelectValueObserver,
-  CheckedObserver,
   ValueAttributeObserver,
   XLinkAttributeObserver,
   DataAttributeObserver,
