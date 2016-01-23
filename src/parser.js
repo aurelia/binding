@@ -350,13 +350,21 @@ export class ParserImplementation {
       do {
         // TODO(kasperl): Stricter checking. Only allow identifiers
         // and strings as keys. Maybe also keywords?
-        let value = this.peek.value;
-        keys.push(typeof value === 'string' ? value : this.peek.text);
+        let peek = this.peek;
+        let value = peek.value;
+        keys.push(typeof value === 'string' ? value : peek.text);
 
         this.advance();
-        this.expect(':');
+        if ( peek.key && (this.peek.text === ',' || this.peek.text === '}') )
+        {
+            --this.index;
+            values.push(this.parseAccessOrCallScope());
+        }
+        else {
+            this.expect(':');
+            values.push(this.parseExpression());
+        }
 
-        values.push(this.parseExpression());
       } while (this.optional(','));
     }
 
