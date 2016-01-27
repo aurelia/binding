@@ -52,7 +52,8 @@ export class StyleObserver {
     this.element = element;
     this.propertyName = propertyName;
     
-    this.styles = [];
+    this.styles = null;
+    this.version = 0;
   }
   
   getValue() {
@@ -60,39 +61,58 @@ export class StyleObserver {
   }
   
   setValue(newValue) {
-    this.clearStyles( (newValue instanceof Object ? this.objectUpdate(newValue) : this.stringUpdate(newValue)) );
+    let styles = this.styles || {},
+        style,
+        version = this.version;
+        
+    if ( newValue !== null && newValue !== undefined )
+    {
+      if ( newValue instanceof Object )
+      {
+        for( style in newValue ) 
+        {
+          if ( newValue.hasOwnProperty(style) )
+          {
+            styles[style] = version;
+            this.element.style[style] = newValue[style];
+          }
+        }
+      }
+      else if ( newValue.length ) {
+        let pairs = newValue.split(/(?:[:;]\s*)/);
+        for( let i = 0, length = pairs.length; i < length; i++ )
+        {
+          style = pairs[i];
+          if ( !style ) { continue; }
+            
+          styles[style] = version;
+          
+          this.element.style[style] = pairs[++i];
+        }
+      }
+    }
+      
+    this.styles = styles;
+    this.version += 1;
+
+    if (version === 0) {
+      return;
+    }
+
+    version -= 1;
+    for(style in styles) {
+      if (!styles.hasOwnProperty(style) || styles[style] !== version) {
+        continue;
+      }
+      
+      this.element.style[style] = '';
+    }
   }
 
   subscribe() {
     throw new Error(`Observation of a "${this.element.nodeName}" element\'s "${this.propertyName}" property is not supported.`);
   }
 
-  clearStyles(styles) {
-    this.styles.forEach( (v) => {
-        if ( !styles.includes(v) ) { this.element.style[v] = ''; }
-    });
-    this.styles = styles;
-  }
-
-  stringUpdate(css) {
-    let pairs = css.split(/(?:[:;]\s*)/).filter( v => v.length );
-    let props = [];
-    for( let i = 0, length = pairs.length; i < length; i++ )
-    {
-        props.push(pairs[i]);
-        this.element.style[pairs[i]] = pairs[++i];
-    }
-    return props;
-  }
-
-  objectUpdate(object) {
-    let props = Object.getOwnPropertyNames(object);
-    for( let propertyName of props ) 
-    {
-        this.element.style[propertyName] = object[propertyName];
-    }
-    return props;
-  }
 }
 
 @subscriberCollection()
