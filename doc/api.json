@@ -3854,7 +3854,7 @@
               "flags": {},
               "type": {
                 "type": "instrinct",
-                "name": "any"
+                "name": "number"
               }
             },
             {
@@ -3876,7 +3876,7 @@
               "flags": {},
               "type": {
                 "type": "instrinct",
-                "name": "any"
+                "name": "number"
               }
             }
           ],

@@ -401,5 +401,5 @@ declare module 'aurelia-binding' {
   /**
    * An internal API used by Aurelia's array observation components.
    */
-  export function mergeSplice(splices, index, removed, addedCount): any;
+  export function mergeSplice(splices: any, index: number, removed: any, addedCount: number): any;
 }

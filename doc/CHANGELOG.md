@@ -1,3 +1,19 @@
+### 1.0.0-beta.1.1.0 (2016-01-29)
+
+#### Bug Fixes
+
+* **AccessKeyed:** avoid dirty-checking keyed array access ([7d01567a](http://github.com/aurelia/binding/commit/7d01567a00f5b0bb334b48614300273f7a99caed), closes [#289](http://github.com/aurelia/binding/issues/289))
+* **StyleObserver:** set style properties individually ([8e9a2eb5](http://github.com/aurelia/binding/commit/8e9a2eb5b55106c32d6c4b1c6d60af5de6d9f4b1), closes [#290](http://github.com/aurelia/binding/issues/290))
+* **choice-observers:** notify on setValue ([86722faf](http://github.com/aurelia/binding/commit/86722faf435ca9b667c28d0ced4235b06c88e30c), closes [#251](http://github.com/aurelia/binding/issues/251))
+* **definitions:** no implicit any ([eff3162e](http://github.com/aurelia/binding/commit/eff3162efedff7af4ef1b772e61ff49ce6f28460), closes [#286](http://github.com/aurelia/binding/issues/286))
+
+
+#### Features
+
+* **Parser:** parse es6 shorthand initializers ([0d28ff91](http://github.com/aurelia/binding/commit/0d28ff91686853baacb583fa824618409ed4d1d4))
+* **all:** update jspm meta; core-js; aurelia deps ([b93daa46](http://github.com/aurelia/binding/commit/b93daa4681ea970b5310fa5bef3e63a55788cc3e))
+
+
 ### 1.0.0-beta.1.0.5 (2016-01-08)
 
 
