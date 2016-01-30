@@ -33,6 +33,8 @@ gulp.task('build-index', function(){
     'dirty-checking.js',
     'property-observation.js',
     'element-observation.js',
+    'checked-observer.js',
+    'select-value-observer.js',
     'class-observer.js',
     'computed-observation.js',
     'svg.js',
