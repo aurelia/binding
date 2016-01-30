@@ -1,3 +1,11 @@
+### 1.0.0-beta.1.1.1 (2016-01-30)
+
+
+#### Bug Fixes
+
+* **build:** missing files ([e594a7d8](http://github.com/aurelia/binding/commit/e594a7d8fc1c4613e993aea945f0bacad035f565))
+
+
 ### 1.0.0-beta.1.1.0 (2016-01-29)
 
 #### Bug Fixes

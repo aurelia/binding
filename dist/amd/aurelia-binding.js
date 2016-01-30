@@ -3569,6 +3569,348 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
 
   exports.ValueAttributeObserver = ValueAttributeObserver;
 
+  var checkedArrayContext = 'CheckedObserver:array';
+
+  var CheckedObserver = (function () {
+    function CheckedObserver(element, handler, observerLocator) {
+      _classCallCheck(this, _CheckedObserver);
+
+      this.element = element;
+      this.handler = handler;
+      this.observerLocator = observerLocator;
+    }
+
+    CheckedObserver.prototype.getValue = function getValue() {
+      return this.value;
+    };
+
+    CheckedObserver.prototype.setValue = function setValue(newValue) {
+      if (this.value === newValue) {
+        return;
+      }
+
+      if (this.arrayObserver) {
+        this.arrayObserver.unsubscribe(checkedArrayContext, this);
+        this.arrayObserver = null;
+      }
+
+      if (this.element.type === 'checkbox' && Array.isArray(newValue)) {
+        this.arrayObserver = this.observerLocator.getArrayObserver(newValue);
+        this.arrayObserver.subscribe(checkedArrayContext, this);
+      }
+
+      this.oldValue = this.value;
+      this.value = newValue;
+      this.synchronizeElement();
+      this.notify();
+
+      if (!this.initialSync) {
+        this.initialSync = true;
+        this.observerLocator.taskQueue.queueMicroTask(this);
+      }
+    };
+
+    CheckedObserver.prototype.call = function call(context, splices) {
+      this.synchronizeElement();
+    };
+
+    CheckedObserver.prototype.synchronizeElement = function synchronizeElement() {
+      var value = this.value,
+          element = this.element,
+          elementValue = element.hasOwnProperty('model') ? element.model : element.value,
+          isRadio = element.type === 'radio',
+          matcher = element.matcher || function (a, b) {
+        return a === b;
+      };
+
+      element.checked = isRadio && !!matcher(value, elementValue) || !isRadio && value === true || !isRadio && Array.isArray(value) && !!value.find(function (item) {
+        return !!matcher(item, elementValue);
+      });
+    };
+
+    CheckedObserver.prototype.synchronizeValue = function synchronizeValue() {
+      var value = this.value,
+          element = this.element,
+          elementValue = element.hasOwnProperty('model') ? element.model : element.value,
+          index = undefined,
+          matcher = element.matcher || function (a, b) {
+        return a === b;
+      };
+
+      if (element.type === 'checkbox') {
+        if (Array.isArray(value)) {
+          index = value.findIndex(function (item) {
+            return !!matcher(item, elementValue);
+          });
+          if (element.checked && index === -1) {
+            value.push(elementValue);
+          } else if (!element.checked && index !== -1) {
+            value.splice(index, 1);
+          }
+
+          return;
+        } else {
+          value = element.checked;
+        }
+      } else if (element.checked) {
+        value = elementValue;
+      } else {
+        return;
+      }
+
+      this.oldValue = this.value;
+      this.value = value;
+      this.notify();
+    };
+
+    CheckedObserver.prototype.notify = function notify() {
+      var oldValue = this.oldValue;
+      var newValue = this.value;
+
+      this.callSubscribers(newValue, oldValue);
+    };
+
+    CheckedObserver.prototype.subscribe = function subscribe(context, callable) {
+      if (!this.hasSubscribers()) {
+        this.disposeHandler = this.handler.subscribe(this.element, this.synchronizeValue.bind(this, false));
+      }
+      this.addSubscriber(context, callable);
+    };
+
+    CheckedObserver.prototype.unsubscribe = function unsubscribe(context, callable) {
+      if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
+        this.disposeHandler();
+        this.disposeHandler = null;
+      }
+    };
+
+    CheckedObserver.prototype.unbind = function unbind() {
+      if (this.arrayObserver) {
+        this.arrayObserver.unsubscribe(checkedArrayContext, this);
+        this.arrayObserver = null;
+      }
+    };
+
+    var _CheckedObserver = CheckedObserver;
+    CheckedObserver = subscriberCollection()(CheckedObserver) || CheckedObserver;
+    return CheckedObserver;
+  })();
+
+  exports.CheckedObserver = CheckedObserver;
+
+  var selectArrayContext = 'SelectValueObserver:array';
+
+  var SelectValueObserver = (function () {
+    function SelectValueObserver(element, handler, observerLocator) {
+      _classCallCheck(this, _SelectValueObserver);
+
+      this.element = element;
+      this.handler = handler;
+      this.observerLocator = observerLocator;
+    }
+
+    SelectValueObserver.prototype.getValue = function getValue() {
+      return this.value;
+    };
+
+    SelectValueObserver.prototype.setValue = function setValue(newValue) {
+      if (newValue !== null && newValue !== undefined && this.element.multiple && !Array.isArray(newValue)) {
+        throw new Error('Only null or Array instances can be bound to a multi-select.');
+      }
+      if (this.value === newValue) {
+        return;
+      }
+
+      if (this.arrayObserver) {
+        this.arrayObserver.unsubscribe(selectArrayContext, this);
+        this.arrayObserver = null;
+      }
+
+      if (Array.isArray(newValue)) {
+        this.arrayObserver = this.observerLocator.getArrayObserver(newValue);
+        this.arrayObserver.subscribe(selectArrayContext, this);
+      }
+
+      this.oldValue = this.value;
+      this.value = newValue;
+      this.synchronizeOptions();
+      this.notify();
+
+      if (!this.initialSync) {
+        this.initialSync = true;
+        this.observerLocator.taskQueue.queueMicroTask(this);
+      }
+    };
+
+    SelectValueObserver.prototype.call = function call(context, splices) {
+      this.synchronizeOptions();
+    };
+
+    SelectValueObserver.prototype.synchronizeOptions = function synchronizeOptions() {
+      var value = this.value,
+          clear = undefined,
+          isArray = undefined;
+
+      if (value === null || value === undefined) {
+        clear = true;
+      } else if (Array.isArray(value)) {
+        isArray = true;
+      }
+
+      var options = this.element.options;
+      var i = options.length;
+      var matcher = this.element.matcher || function (a, b) {
+        return a === b;
+      };
+
+      var _loop = function () {
+        var option = options.item(i);
+        if (clear) {
+          option.selected = false;
+          return 'continue';
+        }
+        var optionValue = option.hasOwnProperty('model') ? option.model : option.value;
+        if (isArray) {
+          option.selected = !!value.find(function (item) {
+            return !!matcher(optionValue, item);
+          });
+          return 'continue';
+        }
+        option.selected = !!matcher(optionValue, value);
+      };
+
+      while (i--) {
+        var _ret2 = _loop();
+
+        if (_ret2 === 'continue') continue;
+      }
+    };
+
+    SelectValueObserver.prototype.synchronizeValue = function synchronizeValue() {
+      var _this3 = this;
+
+      var options = this.element.options,
+          count = 0,
+          value = [];
+
+      for (var i = 0, ii = options.length; i < ii; i++) {
+        var option = options.item(i);
+        if (!option.selected) {
+          continue;
+        }
+        value.push(option.hasOwnProperty('model') ? option.model : option.value);
+        count++;
+      }
+
+      if (this.element.multiple) {
+        if (Array.isArray(this.value)) {
+          var _ret3 = (function () {
+            var matcher = _this3.element.matcher || function (a, b) {
+              return a === b;
+            };
+
+            var i = 0;
+
+            var _loop2 = function () {
+              var a = _this3.value[i];
+              if (value.findIndex(function (b) {
+                return matcher(a, b);
+              }) === -1) {
+                _this3.value.splice(i, 1);
+              } else {
+                i++;
+              }
+            };
+
+            while (i < _this3.value.length) {
+              _loop2();
+            }
+
+            i = 0;
+
+            var _loop3 = function () {
+              var a = value[i];
+              if (_this3.value.findIndex(function (b) {
+                return matcher(a, b);
+              }) === -1) {
+                _this3.value.push(a);
+              }
+              i++;
+            };
+
+            while (i < value.length) {
+              _loop3();
+            }
+            return {
+              v: undefined
+            };
+          })();
+
+          if (typeof _ret3 === 'object') return _ret3.v;
+        }
+      } else {
+          if (count === 0) {
+            value = null;
+          } else {
+            value = value[0];
+          }
+        }
+
+      if (value !== this.value) {
+        this.oldValue = this.value;
+        this.value = value;
+        this.notify();
+      }
+    };
+
+    SelectValueObserver.prototype.notify = function notify() {
+      var oldValue = this.oldValue;
+      var newValue = this.value;
+
+      this.callSubscribers(newValue, oldValue);
+    };
+
+    SelectValueObserver.prototype.subscribe = function subscribe(context, callable) {
+      if (!this.hasSubscribers()) {
+        this.disposeHandler = this.handler.subscribe(this.element, this.synchronizeValue.bind(this, false));
+      }
+      this.addSubscriber(context, callable);
+    };
+
+    SelectValueObserver.prototype.unsubscribe = function unsubscribe(context, callable) {
+      if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
+        this.disposeHandler();
+        this.disposeHandler = null;
+      }
+    };
+
+    SelectValueObserver.prototype.bind = function bind() {
+      var _this4 = this;
+
+      this.domObserver = _aureliaPal.DOM.createMutationObserver(function () {
+        _this4.synchronizeOptions();
+        _this4.synchronizeValue();
+      });
+      this.domObserver.observe(this.element, { childList: true, subtree: true });
+    };
+
+    SelectValueObserver.prototype.unbind = function unbind() {
+      this.domObserver.disconnect();
+      this.domObserver = null;
+
+      if (this.arrayObserver) {
+        this.arrayObserver.unsubscribe(selectArrayContext, this);
+        this.arrayObserver = null;
+      }
+    };
+
+    var _SelectValueObserver = SelectValueObserver;
+    SelectValueObserver = subscriberCollection()(SelectValueObserver) || SelectValueObserver;
+    return SelectValueObserver;
+  })();
+
+  exports.SelectValueObserver = SelectValueObserver;
+
   var ClassObserver = (function () {
     function ClassObserver(element) {
       _classCallCheck(this, ClassObserver);
@@ -4344,7 +4686,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
     };
 
     Call.prototype.bind = function bind(source) {
-      var _this3 = this;
+      var _this5 = this;
 
       if (this.isBound) {
         if (this.source === source) {
@@ -4360,7 +4702,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
         sourceExpression.bind(this, source, this.lookupFunctions);
       }
       this.targetProperty.setValue(function ($event) {
-        return _this3.callSource($event);
+        return _this5.callSource($event);
       });
     };
 
@@ -4505,7 +4847,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
     };
 
     Listener.prototype.bind = function bind(source) {
-      var _this4 = this;
+      var _this6 = this;
 
       if (this.isBound) {
         if (this.source === source) {
@@ -4521,7 +4863,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
         sourceExpression.bind(this, source, this.lookupFunctions);
       }
       this._disposeListener = this.eventManager.addEventListener(this.target, this.targetEvent, function (event) {
-        return _this4.callSource(event);
+        return _this6.callSource(event);
       }, this.delegate);
     };
 
@@ -4664,11 +5006,11 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
     };
 
     BindingEngine.prototype.propertyObserver = function propertyObserver(obj, propertyName) {
-      var _this5 = this;
+      var _this7 = this;
 
       return {
         subscribe: function subscribe(callback) {
-          var observer = _this5.observerLocator.getObserver(obj, propertyName);
+          var observer = _this7.observerLocator.getObserver(obj, propertyName);
           observer.subscribe(callback);
           return {
             dispose: function dispose() {
@@ -4680,17 +5022,17 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
     };
 
     BindingEngine.prototype.collectionObserver = function collectionObserver(collection) {
-      var _this6 = this;
+      var _this8 = this;
 
       return {
         subscribe: function subscribe(callback) {
           var observer = undefined;
           if (collection instanceof Array) {
-            observer = _this6.observerLocator.getArrayObserver(collection);
+            observer = _this8.observerLocator.getArrayObserver(collection);
           } else if (collection instanceof Map) {
-            observer = _this6.observerLocator.getMapObserver(collection);
+            observer = _this8.observerLocator.getMapObserver(collection);
           } else if (collection instanceof Set) {
-            observer = _this6.observerLocator.getSetObserver(collection);
+            observer = _this8.observerLocator.getSetObserver(collection);
           } else {
             throw new Error('collection must be an instance of Array, Map or Set.');
           }
@@ -4732,7 +5074,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
     }
 
     ExpressionObserver.prototype.subscribe = function subscribe(callback) {
-      var _this7 = this;
+      var _this9 = this;
 
       if (!this.hasSubscribers()) {
         this.oldValue = this.expression.evaluate(this.scope, lookupFunctions);
@@ -4741,8 +5083,8 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
       this.addSubscriber(callback);
       return {
         dispose: function dispose() {
-          if (_this7.removeSubscriber(callback) && !_this7.hasSubscribers()) {
-            _this7.unobserve(true);
+          if (_this9.removeSubscriber(callback) && !_this9.hasSubscribers()) {
+            _this9.unobserve(true);
           }
         }
       };
