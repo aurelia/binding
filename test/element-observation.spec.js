@@ -156,27 +156,31 @@ describe('element observation', () => {
       expect(observer instanceof StyleObserver).toBe(true);
       expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of a "DIV" element\'s "' + attrs[i] + '" property is not supported.'));
 
-      observer.setValue('width: 30px; height: 20px; background-color: red;');
-      expect(observer.getValue()).toBe('width: 30px; height: 20px; background-color: red;');
+      observer.setValue('width: 30px; height:20px; background-color: red;background-image: url("http://aurelia.io/test.png");');
+      expect(observer.getValue()).toBe('width: 30px; height: 20px; background-image: url("http://aurelia.io/test.png"); background-color: red;');
       expect(el.style.height).toBe('20px');
       expect(el.style.width).toBe('30px');
       expect(el.style.backgroundColor).toBe('red');
+      expect(el.style.backgroundImage).toBe('url("http://aurelia.io/test.png")');
 
       observer.setValue('');
       expect(el.style.height).toBe('');
       expect(el.style.width).toBe('');
       expect(el.style.backgroundColor).toBe('');
+      expect(el.style.backgroundImage).toBe('');
 
-      observer.setValue({ width: '50px', height: '40px', 'background-color': 'blue' });
-      expect(observer.getValue()).toBe('width: 50px; height: 40px; background-color: blue;');
+      observer.setValue({ width: '50px', height: '40px', 'background-color': 'blue', 'background-image': 'url("http://aurelia.io/test2.png")' });
+      expect(observer.getValue()).toBe('width: 50px; height: 40px; background-image: url("http://aurelia.io/test2.png"); background-color: blue;');
       expect(el.style.height).toBe('40px');
       expect(el.style.width).toBe('50px');
       expect(el.style.backgroundColor).toBe('blue');
+      expect(el.style.backgroundImage).toBe('url("http://aurelia.io/test2.png")')
 
       observer.setValue({});
       expect(el.style.height).toBe('');
       expect(el.style.width).toBe('');
       expect(el.style.backgroundColor).toBe('');
+      expect(el.style.backgroundImage).toBe('');
     }
   });
 
