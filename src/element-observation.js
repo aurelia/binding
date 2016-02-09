@@ -79,7 +79,7 @@ export class StyleObserver {
         }
       }
       else if ( newValue.length ) {
-        let pairs = newValue.split(/(?:[:;]\s*)/);
+        let pairs = newValue.split(/(?:;|:(?!\/))\s*/);
         for( let i = 0, length = pairs.length; i < length; i++ )
         {
           style = pairs[i];
