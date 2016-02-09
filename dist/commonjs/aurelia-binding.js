@@ -3480,7 +3480,7 @@ var StyleObserver = (function () {
           }
         }
       } else if (newValue.length) {
-        var pairs = newValue.split(/(?:[:;]\s*)/);
+        var pairs = newValue.split(/(?:;|:(?!\/))\s*/);
         for (var i = 0, _length = pairs.length; i < _length; i++) {
           style = pairs[i];
           if (!style) {

@@ -1,3 +1,11 @@
+### 1.0.0-beta.1.1.3 (2016-02-09)
+
+
+#### Bug Fixes
+
+* **StyleObserver:** parse style without breaking urls ([432fe387](http://github.com/aurelia/binding/commit/432fe3873cce9c8b954325282b301f7d655e0b1f), closes [#301](http://github.com/aurelia/binding/issues/301))
+
+
 ### 1.0.0-beta.1.1.2 (2016-02-08)
 
 
