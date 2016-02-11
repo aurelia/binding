@@ -55,7 +55,7 @@ export class CheckedObserver {
 
     element.checked =
       isRadio && !!matcher(value, elementValue)
-      || !isRadio && value === true
+      || !isRadio && Boolean(value) === true
       || !isRadio && Array.isArray(value) && !!value.find(item => !!matcher(item, elementValue));
   }
 
