@@ -61,5 +61,6 @@ export function connectable() {
     target.prototype.observeProperty = observeProperty;
     target.prototype.observeArray = observeArray;
     target.prototype.unobserve = unobserve;
+    target.prototype.addObserver = addObserver;
   }
 }
