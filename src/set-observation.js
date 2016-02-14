@@ -5,12 +5,23 @@ import {ModifyCollectionObserver} from './collection-observation';
 let setProto = Set.prototype;
 
 export function getSetObserver(taskQueue, set){
-  return ModifySetObserver.create(taskQueue, set);
+  return ModifySetObserver.for(taskQueue, set);
 }
 
 class ModifySetObserver extends ModifyCollectionObserver {
   constructor(taskQueue, set){
     super(taskQueue, set);
+  }
+
+  static for(taskQueue, set) {
+    if (!('__set_observer__' in set)) {
+      let observer = ModifySetObserver.create(taskQueue, set);
+      Object.defineProperty(
+        set,
+        '__set_observer__',
+        { value: observer, enumerable: false, configurable: false });
+    }
+    return set.__set_observer__;
   }
 
   static create(taskQueue, set) {
