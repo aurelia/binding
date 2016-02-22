@@ -16,15 +16,22 @@ class ModifySetObserver extends ModifyCollectionObserver {
   static create(taskQueue, set) {
     let observer = new ModifySetObserver(taskQueue, set);
 
+    let methods = ['add', 'delete', 'clear'];
+    if (methods.find(m => setProto[m] !== set[m])) {
+      setProto = {};
+      methods.forEach(m => setProto[m] = set[m]);
+    }
+
     set['add'] = function () {
       let type = 'add';
-      let hasValue = set.has(arguments[0]);
+      let oldSize = set.size;
       let methodCallResult = setProto['add'].apply(set, arguments);
+      let hasValue = set.size === oldSize;
       if (!hasValue) {
         observer.addChangeRecord({
           type: type,
           object: set,
-          value: arguments[0]
+          value: Array.from(set).pop()
         });
       }
       return methodCallResult;

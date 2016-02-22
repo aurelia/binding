@@ -17,7 +17,7 @@ describe('ModifySetObserver', () => {
     observer = getSetObserver(taskQueue, set);
     callback = jasmine.createSpy('callback');
     observer.subscribe(callback);
-  })
+  });
 
   it('should add changeRecord on add', done => {
     set.add('baz');
@@ -57,6 +57,80 @@ describe('ModifySetObserver', () => {
     taskQueue.queueMicroTask({
       call: () => {
         expect(callback).not.toHaveBeenCalled();
+        observer.unsubscribe(callback);
+        done();
+      }
+    });
+  });
+
+  it('should add changeRecord on clear', done => {
+    set.clear();
+    taskQueue.queueMicroTask({
+      call: () => {
+        expect(callback).toHaveBeenCalledWith([{ type: 'clear', object: set }], undefined);
+        observer.unsubscribe(callback);
+        done();
+      }
+    });
+  });
+});
+
+describe('ModifySetObserver of extended Set', () => {
+  let taskQueue;
+  let set;
+  let observer;
+  let callback;
+  function createNumericSet() {
+    let s = new Set();
+    s.add = function(v) {
+      if (typeof v !== 'number') {
+        v = 0;
+      }
+      Set.prototype.add.call(this, v);
+      return this;
+    };
+    return s;
+  }
+  beforeAll(() => {
+    initialize();
+    taskQueue = new TaskQueue();
+  });
+
+  beforeEach(() => {
+    set = createNumericSet();
+    set.add(100);
+    observer = getSetObserver(taskQueue, set);
+    callback = jasmine.createSpy('callback');
+    observer.subscribe(callback);
+  });
+
+  it('should add changeRecord on add', done => {
+    set.add(1);
+    taskQueue.queueMicroTask({
+      call: () => {
+        expect(callback).toHaveBeenCalledWith([{ type: 'add', object: set, value: 1 }], undefined);
+        observer.unsubscribe(callback);
+        done();
+      }
+    });
+  });
+
+  it('should add changeRecord on add when the value has been altered', done => {
+    set.add('baz');
+    taskQueue.queueMicroTask({
+      call: () => {
+        expect(callback).toHaveBeenCalledWith([{ type: 'add', object: set, value: 0 }], undefined);
+        observer.unsubscribe(callback);
+        done();
+      }
+    });
+  });
+
+  it('should add changeRecord on delete', done => {
+    set.delete(100);
+    taskQueue.queueMicroTask({
+      call: () => {
+        expect(callback).toHaveBeenCalledWith([{ type: 'delete', object: set, value: 100 }], undefined);
         observer.unsubscribe(callback);
         done();
       }
