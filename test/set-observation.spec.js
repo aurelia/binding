@@ -17,7 +17,24 @@ describe('ModifySetObserver', () => {
     observer = getSetObserver(taskQueue, set);
     callback = jasmine.createSpy('callback');
     observer.subscribe(callback);
-  })
+  });
+
+  it('getSetObserver should return same observer instance for the same Set instance', () => {
+    let set = new Set();
+    let observer1 = getSetObserver(taskQueue, set);
+    let observer2 = getSetObserver(taskQueue, set);
+
+    expect(observer1 === observer2).toBe(true);
+  });
+
+  it('getSetObserver should return different observer instances for different Set instances', () => {
+    let set1 = new Set();
+    let set2 = new Set();
+    let observer1 = getSetObserver(taskQueue, set1);
+    let observer2 = getSetObserver(taskQueue, set2);
+
+    expect(observer1 !== observer2).toBe(true);
+  });
 
   it('should add changeRecord on add', done => {
     set.add('baz');

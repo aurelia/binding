@@ -8,6 +8,23 @@ describe('array observation', () => {
     taskQueue = new TaskQueue();
   });
 
+  it('getArrayObserver should return same observer instance for the same Array instance', () => {
+    let array = ['foo', 'bar', 'hello', 'world'];
+    let observer1 = getArrayObserver(taskQueue, array);
+    let observer2 = getArrayObserver(taskQueue, array);
+
+    expect(observer1 === observer2).toBe(true);
+  });
+
+  it('getArrayObserver should return different observer instances for different Array instances', () => {
+    let array1 = ['foo', 'bar', 'hello', 'world'];
+    let array2 = ['foo', 'bar', 'hello', 'world'];
+    let observer1 = getArrayObserver(taskQueue, array1);
+    let observer2 = getArrayObserver(taskQueue, array2);
+
+    expect(observer1 !== observer2).toBe(true);
+  });
+
   it('pops', () => {
     let array = ['foo', 'bar', 'hello', 'world'];
     array.pop();
