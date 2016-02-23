@@ -190,27 +190,15 @@ export class ObserverLocator {
   }
 
   getArrayObserver(array){
-    if ('__array_observer__' in array) {
-      return array.__array_observer__;
-    }
-
-    return array.__array_observer__ = getArrayObserver(this.taskQueue, array);
+    return getArrayObserver(this.taskQueue, array);
   }
 
   getMapObserver(map){
-    if ('__map_observer__' in map) {
-      return map.__map_observer__;
-    }
-
-    return map.__map_observer__ = getMapObserver(this.taskQueue, map);
+    return getMapObserver(this.taskQueue, map);
   }
 
   getSetObserver(set){
-    if ('__set_observer__' in set) {
-      return set.__set_observer__;
-    }
-
-    return set.__set_observer__ = getSetObserver(this.taskQueue, set);
+    return getSetObserver(this.taskQueue, set);
   }
 }
 

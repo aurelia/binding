@@ -12,8 +12,8 @@ let unshift = Array.prototype.unshift;
 
 Array.prototype.pop = function() {
   let methodCallResult = pop.apply(this, arguments);
-  if (this.__arrayObserver !== undefined) {
-    this.__arrayObserver.addChangeRecord({
+  if (this.__array_observer__ !== undefined) {
+    this.__array_observer__.addChangeRecord({
       type: 'delete',
       object: this,
       name: this.length,
@@ -21,12 +21,12 @@ Array.prototype.pop = function() {
     });
   }
   return methodCallResult;
-}
+};
 
 Array.prototype.push = function() {
   let methodCallResult = push.apply(this, arguments);
-  if (this.__arrayObserver !== undefined) {
-    this.__arrayObserver.addChangeRecord({
+  if (this.__array_observer__ !== undefined) {
+    this.__array_observer__.addChangeRecord({
       type: 'splice',
       object: this,
       index: this.length - arguments.length,
@@ -35,25 +35,25 @@ Array.prototype.push = function() {
     });
   }
   return methodCallResult;
-}
+};
 
 Array.prototype.reverse = function() {
   let oldArray;
-  if (this.__arrayObserver !== undefined) {
-    this.__arrayObserver.flushChangeRecords();
+  if (this.__array_observer__ !== undefined) {
+    this.__array_observer__.flushChangeRecords();
     oldArray = this.slice();
   }
   let methodCallResult = reverse.apply(this, arguments);
-  if (this.__arrayObserver !== undefined) {
-    this.__arrayObserver.reset(oldArray);
+  if (this.__array_observer__ !== undefined) {
+    this.__array_observer__.reset(oldArray);
   }
   return methodCallResult;
-}
+};
 
 Array.prototype.shift = function() {
   let methodCallResult = shift.apply(this, arguments);
-  if (this.__arrayObserver !== undefined) {
-    this.__arrayObserver.addChangeRecord({
+  if (this.__array_observer__ !== undefined) {
+    this.__array_observer__.addChangeRecord({
       type: 'delete',
       object: this,
       name: 0,
@@ -65,21 +65,21 @@ Array.prototype.shift = function() {
 
 Array.prototype.sort = function() {
   let oldArray;
-  if (this.__arrayObserver !== undefined) {
-    this.__arrayObserver.flushChangeRecords();
+  if (this.__array_observer__ !== undefined) {
+    this.__array_observer__.flushChangeRecords();
     oldArray = this.slice();
   }
   let methodCallResult = sort.apply(this, arguments);
-  if (this.__arrayObserver !== undefined) {
-    this.__arrayObserver.reset(oldArray);
+  if (this.__array_observer__ !== undefined) {
+    this.__array_observer__.reset(oldArray);
   }
   return methodCallResult;
 };
 
 Array.prototype.splice = function() {
   let methodCallResult = splice.apply(this, arguments);
-  if (this.__arrayObserver !== undefined) {
-    this.__arrayObserver.addChangeRecord({
+  if (this.__array_observer__ !== undefined) {
+    this.__array_observer__.addChangeRecord({
       type: 'splice',
       object: this,
       index: arguments[0],
@@ -92,8 +92,8 @@ Array.prototype.splice = function() {
 
 Array.prototype.unshift = function() {
   let methodCallResult = unshift.apply(this, arguments);
-  if (this.__arrayObserver !== undefined) {
-    this.__arrayObserver.addChangeRecord({
+  if (this.__array_observer__ !== undefined) {
+    this.__array_observer__.addChangeRecord({
       type: 'splice',
       object: this,
       index: 0,
@@ -105,7 +105,7 @@ Array.prototype.unshift = function() {
 };
 
 export function getArrayObserver(taskQueue, array) {
-  return ModifyArrayObserver.create(taskQueue, array);
+  return ModifyArrayObserver.for(taskQueue, array);
 }
 
 class ModifyArrayObserver extends ModifyCollectionObserver {
@@ -113,12 +113,25 @@ class ModifyArrayObserver extends ModifyCollectionObserver {
     super(taskQueue, array);
   }
 
+  /**
+   * Searches for observer or creates a new one associated with given array instance
+   * @param taskQueue
+   * @param array instance for which observer is searched
+   * @returns ModifyArrayObserver always the same instance for any given array instance
+   */
+  static for(taskQueue, array) {
+    if (!('__array_observer__' in array)) {
+      let observer = ModifyArrayObserver.create(taskQueue, array);
+      Object.defineProperty(
+        array,
+        '__array_observer__',
+        { value: observer, enumerable: false, configurable: false });
+    }
+    return array.__array_observer__;
+  }
+
   static create(taskQueue, array) {
     let observer = new ModifyArrayObserver(taskQueue, array);
-    Object.defineProperty(
-      array,
-      '__arrayObserver',
-      { value: observer, enumerable: false, configurable: false });
     return observer;
   }
 }

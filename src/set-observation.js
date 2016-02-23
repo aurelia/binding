@@ -5,12 +5,29 @@ import {ModifyCollectionObserver} from './collection-observation';
 let setProto = Set.prototype;
 
 export function getSetObserver(taskQueue, set){
-  return ModifySetObserver.create(taskQueue, set);
+  return ModifySetObserver.for(taskQueue, set);
 }
 
 class ModifySetObserver extends ModifyCollectionObserver {
   constructor(taskQueue, set){
     super(taskQueue, set);
+  }
+
+  /**
+   * Searches for observer or creates a new one associated with given set instance
+   * @param taskQueue
+   * @param set instance for which observer is searched
+   * @returns ModifySetObserver always the same instance for any given set instance
+   */
+  static for(taskQueue, set) {
+    if (!('__set_observer__' in set)) {
+      let observer = ModifySetObserver.create(taskQueue, set);
+      Object.defineProperty(
+        set,
+        '__set_observer__',
+        { value: observer, enumerable: false, configurable: false });
+    }
+    return set.__set_observer__;
   }
 
   static create(taskQueue, set) {
@@ -28,7 +45,7 @@ class ModifySetObserver extends ModifyCollectionObserver {
         });
       }
       return methodCallResult;
-    }
+    };
 
     set['delete'] = function () {
       let hasValue = set.has(arguments[0]);
@@ -41,7 +58,7 @@ class ModifySetObserver extends ModifyCollectionObserver {
         });
       }
       return methodCallResult;
-    }
+    };
 
     set['clear'] = function () {
       let methodCallResult = setProto['clear'].apply(set, arguments);
@@ -50,7 +67,7 @@ class ModifySetObserver extends ModifyCollectionObserver {
         object: set
       });
       return methodCallResult;
-    }
+    };
 
     return observer;
   }
