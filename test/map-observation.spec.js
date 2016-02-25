@@ -9,6 +9,23 @@ describe('ModifyMapObserver', () => {
     taskQueue = new TaskQueue();
   });
 
+  it('getMapObserver should return same observer instance for the same Map instance', () => {
+    let map = new Map();
+    let observer1 = getMapObserver(taskQueue, map);
+    let observer2 = getMapObserver(taskQueue, map);
+
+    expect(observer1 === observer2).toBe(true);
+  });
+
+  it('getMapObserver should return different observer instances for different Map instances', () => {
+    let map1 = new Map();
+    let map2 = new Map();
+    let observer1 = getMapObserver(taskQueue, map1);
+    let observer2 = getMapObserver(taskQueue, map2);
+
+    expect(observer1 !== observer2).toBe(true);
+  });
+
   it('identifies set with falsey oldValue as an "update"', done => {
     let map = new Map();
     map.set('foo', 0); // falsey old value.

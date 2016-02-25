@@ -5,12 +5,29 @@ import {ModifyCollectionObserver} from './collection-observation';
 let mapProto = Map.prototype;
 
 export function getMapObserver(taskQueue, map){
-  return ModifyMapObserver.create(taskQueue, map);
+  return ModifyMapObserver.for(taskQueue, map);
 }
 
 class ModifyMapObserver extends ModifyCollectionObserver {
   constructor(taskQueue, map){
     super(taskQueue, map);
+  }
+
+  /**
+   * Searches for observer or creates a new one associated with given map instance
+   * @param taskQueue
+   * @param map instance for which observer is searched
+   * @returns ModifyMapObserver always the same instance for any given map instance
+   */
+  static for(taskQueue, map) {
+    if (!('__map_observer__' in map)) {
+      let observer = ModifyMapObserver.create(taskQueue, map);
+      Object.defineProperty(
+        map,
+        '__map_observer__',
+        { value: observer, enumerable: false, configurable: false });
+    }
+    return map.__map_observer__;
   }
 
   static create(taskQueue, map) {
@@ -27,7 +44,7 @@ class ModifyMapObserver extends ModifyCollectionObserver {
         oldValue: oldValue
       });
       return methodCallResult;
-    }
+    };
 
     map['delete'] = function () {
       let oldValue = map.get(arguments[0]);
@@ -39,7 +56,7 @@ class ModifyMapObserver extends ModifyCollectionObserver {
         oldValue: oldValue
       });
       return methodCallResult;
-    }
+    };
 
     map['clear'] = function () {
       let methodCallResult = mapProto['clear'].apply(map, arguments);
@@ -48,7 +65,7 @@ class ModifyMapObserver extends ModifyCollectionObserver {
         object: map
       });
       return methodCallResult;
-    }
+    };
 
     return observer;
   }
