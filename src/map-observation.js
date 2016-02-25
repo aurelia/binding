@@ -33,33 +33,48 @@ class ModifyMapObserver extends ModifyCollectionObserver {
   static create(taskQueue, map) {
     let observer = new ModifyMapObserver(taskQueue, map);
 
+    let proto = mapProto;
+    if (proto.add !== map.add || proto.delete !== map.delete || proto.clear !== map.clear) {
+      proto = {
+        add: map.add,
+        delete: map.delete,
+        clear: map.clear
+      };
+    }
+
     map['set'] = function () {
+      let hasValue = map.has(arguments[0]);
+      let type = hasValue ? 'update' : 'add';
       let oldValue = map.get(arguments[0]);
-      let type = typeof oldValue !== 'undefined' ? 'update' : 'add';
-      let methodCallResult = mapProto['set'].apply(map, arguments);
-      observer.addChangeRecord({
-        type: type,
-        object: map,
-        key: arguments[0],
-        oldValue: oldValue
-      });
+      let methodCallResult = proto['set'].apply(map, arguments);
+      if (!hasValue || oldValue !== map.get(arguments[0])) {
+        observer.addChangeRecord({
+          type: type,
+          object: map,
+          key: arguments[0],
+          oldValue: oldValue
+        });
+      }
       return methodCallResult;
     };
 
     map['delete'] = function () {
+      let hasValue = map.has(arguments[0]);
       let oldValue = map.get(arguments[0]);
-      let methodCallResult = mapProto['delete'].apply(map, arguments);
-      observer.addChangeRecord({
-        type: 'delete',
-        object: map,
-        key: arguments[0],
-        oldValue: oldValue
-      });
+      let methodCallResult = proto['delete'].apply(map, arguments);
+      if (hasValue) {
+        observer.addChangeRecord({
+          type: 'delete',
+          object: map,
+          key: arguments[0],
+          oldValue: oldValue
+        });
+      }
       return methodCallResult;
     };
 
     map['clear'] = function () {
-      let methodCallResult = mapProto['clear'].apply(map, arguments);
+      let methodCallResult = proto['clear'].apply(map, arguments);
       observer.addChangeRecord({
         type: 'clear',
         object: map

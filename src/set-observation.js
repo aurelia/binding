@@ -33,15 +33,25 @@ class ModifySetObserver extends ModifyCollectionObserver {
   static create(taskQueue, set) {
     let observer = new ModifySetObserver(taskQueue, set);
 
+    let proto = setProto;
+    if (proto.add !== set.add || proto.delete !== set.delete || proto.clear !== set.clear) {
+      proto = {
+        add: set.add,
+        delete: set.delete,
+        clear: set.clear
+      };
+    }
+
     set['add'] = function () {
       let type = 'add';
-      let hasValue = set.has(arguments[0]);
-      let methodCallResult = setProto['add'].apply(set, arguments);
+      let oldSize = set.size;
+      let methodCallResult = proto['add'].apply(set, arguments);
+      let hasValue = set.size === oldSize;
       if (!hasValue) {
         observer.addChangeRecord({
           type: type,
           object: set,
-          value: arguments[0]
+          value: Array.from(set).pop()
         });
       }
       return methodCallResult;
@@ -49,7 +59,7 @@ class ModifySetObserver extends ModifyCollectionObserver {
 
     set['delete'] = function () {
       let hasValue = set.has(arguments[0]);
-      let methodCallResult = setProto['delete'].apply(set, arguments);
+      let methodCallResult = proto['delete'].apply(set, arguments);
       if (hasValue) {
         observer.addChangeRecord({
           type: 'delete',
@@ -61,7 +71,7 @@ class ModifySetObserver extends ModifyCollectionObserver {
     };
 
     set['clear'] = function () {
-      let methodCallResult = setProto['clear'].apply(set, arguments);
+      let methodCallResult = proto['clear'].apply(set, arguments);
       observer.addChangeRecord({
         type: 'clear',
         object: set
