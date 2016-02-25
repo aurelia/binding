@@ -1,16 +1,12 @@
+import './setup';
 import {fireEvent, checkDelay} from './shared';
 import {Parser} from '../src/parser';
 import {EventManager} from '../src/event-manager';
 import {ListenerExpression} from '../src/listener-expression';
-import {initialize as initializePAL} from 'aurelia-pal-browser';
 import {createScopeForTest} from '../src/scope';
 import {DOM} from 'aurelia-pal';
 
 describe('ListenerExpression', () => {
-  beforeAll(() => {
-    initializePAL();
-  });
-
   it('binds', () => {
     let eventName = 'mousemove';
 

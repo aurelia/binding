@@ -1,3 +1,4 @@
+import './setup';
 import {bindingMode} from '../src/binding-mode';
 import {sourceContext} from '../src/connectable-binding';
 import {
@@ -7,14 +8,12 @@ import {
   createObserverLocator,
   getBinding
 } from './shared';
-import {initialize} from 'aurelia-pal-browser';
 import {createScopeForTest} from '../src/scope';
 
 describe('CompositeObserver', () => {
   let observerLocator;
 
   beforeAll(() => {
-    initialize();
     observerLocator = createObserverLocator();
   });
 

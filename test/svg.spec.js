@@ -1,3 +1,4 @@
+import './setup';
 import {
   XLinkAttributeObserver,
   DataAttributeObserver,
@@ -14,7 +15,6 @@ import {
   presentationElements,
   presentationAttributes
 } from '../src/svg';
-import {initialize} from 'aurelia-pal-browser';
 
 // Many svg attributes are picky about what they are assigned.
 var attributeValues = {
@@ -60,7 +60,6 @@ describe('element observation', () => {
   let analyzer;
 
   beforeAll(() => {
-    initialize();
     analyzer = new SVGAnalyzer();
   });
 

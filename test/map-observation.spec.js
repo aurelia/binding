@@ -1,11 +1,10 @@
+import './setup';
 import {TaskQueue} from 'aurelia-task-queue';
 import {getMapObserver} from '../src/map-observation';
-import {initialize} from 'aurelia-pal-browser';
 
 describe('getMapObserver', () => {
   let taskQueue;
   beforeAll(() => {
-    initialize();
     taskQueue = new TaskQueue();
   });
 
@@ -49,7 +48,6 @@ describe('ModifyMapObserver', () => {
   let observer;
   let callback;
   beforeAll(() => {
-    initialize();
     taskQueue = new TaskQueue();
   });
 
@@ -144,7 +142,6 @@ describe('ModifyMapObserver of extended Map', () => {
     return m;
   }
   beforeAll(() => {
-    initialize();
     taskQueue = new TaskQueue();
   });
 

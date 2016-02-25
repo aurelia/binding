@@ -1,11 +1,10 @@
+import './setup';
 import {createObserverLocator, checkDelay} from './shared';
 import {ModifyCollectionObserver} from '../src/collection-observation';
-import {initialize} from 'aurelia-pal-browser';
 
 describe('collection length', () => {
   var locator;
   beforeAll(() => {
-    initialize();
     locator = createObserverLocator();
   });
 
@@ -43,7 +42,6 @@ describe('collection length', () => {
 describe('addChangeRecord', () => {
   var locator;
   beforeAll(() => {
-    initialize();
     locator = new ModifyCollectionObserver();
     locator.lengthObserver = true;
     locator.queued = true;

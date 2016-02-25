@@ -1,6 +1,6 @@
+import './setup';
 import {TaskQueue} from 'aurelia-task-queue';
 import {getSetObserver} from '../src/set-observation';
-import {initialize} from 'aurelia-pal-browser';
 
 describe('getSetObserver', () => {
   let taskQueue;
@@ -8,7 +8,6 @@ describe('getSetObserver', () => {
   let observer;
   let callback;
   beforeAll(() => {
-    initialize();
     taskQueue = new TaskQueue();
   });
 
@@ -98,7 +97,6 @@ describe('ModifySetObserver', () => {
   let observer;
   let callback;
   beforeAll(() => {
-    initialize();
     taskQueue = new TaskQueue();
   });
 
@@ -182,7 +180,6 @@ describe('ModifySetObserver of extended Set', () => {
     return s;
   }
   beforeAll(() => {
-    initialize();
     taskQueue = new TaskQueue();
   });
 

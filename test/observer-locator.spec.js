@@ -1,3 +1,4 @@
+import './setup';
 import {TestObservationAdapter} from './adapter';
 import {DirtyCheckProperty} from '../src/dirty-checking';
 import {SetterObserver} from '../src/property-observation';
@@ -11,13 +12,11 @@ import {SelectValueObserver} from '../src/select-value-observer';
 import {CheckedObserver} from '../src/checked-observer';
 import {createElement, createObserverLocator} from './shared';
 import {FEATURE} from 'aurelia-pal';
-import {initialize} from 'aurelia-pal-browser';
 
 describe('ObserverLocator', () => {
   var locator;
 
   beforeAll(() => {
-    initialize();
     locator = createObserverLocator([new TestObservationAdapter(() => locator)]);
   });
 

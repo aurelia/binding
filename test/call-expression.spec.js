@@ -1,3 +1,4 @@
+import './setup';
 import {
   createElement,
   fireEvent,
@@ -7,14 +8,12 @@ import {
 } from './shared';
 import {Parser} from '../src/parser';
 import {CallExpression} from '../src/call-expression';
-import {initialize} from 'aurelia-pal-browser';
 import {createScopeForTest} from '../src/scope';
 
 describe('CallExpression', () => {
   let expression, viewModel, target = {}, binding;
 
   beforeAll(() => {
-    initialize();
     viewModel = {
       arg1: 1,
       arg2: { hello: 'world' },

@@ -1,4 +1,3 @@
-import 'core-js';
 import {subscriberCollection} from './subscriber-collection';
 
 export const propertyAccessor = {

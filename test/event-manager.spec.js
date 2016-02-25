@@ -1,10 +1,8 @@
+import './setup';
 import {EventManager} from '../src/event-manager';
 import {createElement, createEvent} from './shared';
-import {initialize} from 'aurelia-pal-browser';
 
 describe('EventManager', () => {
-  beforeAll(() => initialize());
-
   describe('getElementHandler', () => {
     var em;
     beforeAll(() => em = new EventManager());

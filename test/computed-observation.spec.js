@@ -1,11 +1,9 @@
+import './setup';
 import {declarePropertyDependencies} from '../src/computed-observation';
 import {ComputedPropertyObserver} from '../src/computed-observation';
 import {createObserverLocator, Person, Foo} from './shared';
-import {initialize} from 'aurelia-pal-browser';
 
 describe('declarePropertyDependencies', () => {
-  beforeAll(() => initialize());
-
   it('should declare dependencies for properties with a getter', () => {
     var dependencies = ['firstName', 'lastName'],
         person = new Person();

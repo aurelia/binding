@@ -1,3 +1,4 @@
+import './setup';
 import {SetterObserver} from '../src/property-observation';
 import {DirtyCheckProperty} from '../src/dirty-checking';
 import {
@@ -12,7 +13,6 @@ import {
   createObserverLocator,
   executeSharedPropertyObserverTests
 } from './shared';
-import {initialize} from 'aurelia-pal-browser';
 
 function createSvgUseElement() {
   var html = [
@@ -33,7 +33,6 @@ function createSvgUseElement() {
 describe('element observation', () => {
   var locator;
   beforeAll(() => {
-    initialize();
     locator = createObserverLocator();
   });
 

@@ -1,12 +1,10 @@
+import './setup';
 import {PLATFORM, DOM} from 'aurelia-pal';
-import {initialize as initializePAL} from 'aurelia-pal-browser';
 import {Container} from 'aurelia-dependency-injection';
 import {TaskQueue} from 'aurelia-task-queue';
 import {BindingEngine} from '../src/binding-engine';
 import {bindingMode} from '../src/binding-mode';
 import {createOverrideContext} from '../src/scope';
-
-initializePAL();
 
 describe('connect-queue', () => {
   let bindingEngine, taskQueue;

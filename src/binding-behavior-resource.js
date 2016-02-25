@@ -1,4 +1,3 @@
-import 'core-js';
 import {camelCase} from './camel-case';
 import {metadata} from 'aurelia-metadata';
 

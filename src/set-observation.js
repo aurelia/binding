@@ -1,4 +1,3 @@
-import 'core-js';
 import {getChangeRecords} from './map-change-records';
 import {ModifyCollectionObserver} from './collection-observation';
 

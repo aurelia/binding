@@ -1,9 +1,7 @@
+import './setup';
 import {BindingBehaviorResource} from '../src/binding-behavior-resource';
-import {initialize} from 'aurelia-pal-browser';
 
 describe('BindingBehaviorResource', () => {
-  beforeAll(() => initialize());
-
   it('uses ends with BindingBehavior convention', () => {
     expect(BindingBehaviorResource.convention('FooBindingBehavior')).toBeDefined();
     expect(BindingBehaviorResource.convention('FooBindingBehavior') instanceof BindingBehaviorResource).toBe(true);

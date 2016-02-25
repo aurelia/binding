@@ -1,3 +1,4 @@
+import './setup';
 import {bindingMode} from '../src/binding-mode';
 import {
   createElement,
@@ -6,14 +7,12 @@ import {
   createObserverLocator,
   getBinding
 } from './shared';
-import {initialize} from 'aurelia-pal-browser';
 import {createScopeForTest} from '../src/scope';
 
 describe('AccessKeyedObserver', () => {
   var observerLocator;
 
   beforeAll(() => {
-    initialize();
     observerLocator = createObserverLocator();
   });
 
