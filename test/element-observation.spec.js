@@ -155,7 +155,7 @@ describe('element observation', () => {
       expect(observer instanceof StyleObserver).toBe(true);
       expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of a "DIV" element\'s "' + attrs[i] + '" property is not supported.'));
 
-      observer.setValue('width: 30px; height:20px; background-color: red;background-image: url("http://aurelia.io/test.png");');
+      observer.setValue(' 	  width : 30px;height:20px; background-color	: red;background-image: url("http://aurelia.io/test.png"); 	 ');
       expect(observer.getValue()).toBe('width: 30px; height: 20px; background-image: url("http://aurelia.io/test.png"); background-color: red;');
       expect(el.style.height).toBe('20px');
       expect(el.style.width).toBe('30px');
