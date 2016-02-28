@@ -411,4 +411,10 @@ declare module 'aurelia-binding' {
    * An internal API used by Aurelia's array observation components.
    */
   export function mergeSplice(splices: any, index: number, removed: any, addedCount: number): any;
+  
+  /**
+  * Decorator: Specifies that a property is observable.
+  * @param targetOrConfig The name of the property, or a configuration object.
+  */
+  export function observable(targetOrConfig?: Object, key?: any, descriptor?: any): any;
 }
