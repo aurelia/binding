@@ -1,5 +1,4 @@
 export function observable(targetOrConfig, key, descriptor) {
-	console.trace('observable');
 	let deco = function(target, key2, descriptor2) {
 		// use a convention to compute the inner property name and the callback 
 		// function name.
