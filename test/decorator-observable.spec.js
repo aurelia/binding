@@ -2,104 +2,104 @@ import './setup';
 import {observable} from '../src/decorator-observable.js';
 
 describe('observable decorator', () => {
-	it('valueChanged should be called when changing the decorated property - no initializer', () => {
-		class Test  {
-			@observable value;
-			valueChanged () {
-				this.test = this.value;
-			}
-		};
+  it('valueChanged should be called when changing the decorated property - no initializer', () => {
+    class Test {
+      @observable value;
+      valueChanged() {
+        this.test = this.value;
+      }
+    };
 
-		var test = new Test();
+    var test = new Test();
 
-		expect(test.test).not.toBeDefined();
-		test.value = 'hello';
-		expect(test.test).toBeDefined();
-		expect(test.test).toEqual('hello');
+    expect(test.test).not.toBeDefined();
+    test.value = 'hello';
+    expect(test.test).toBeDefined();
+    expect(test.test).toEqual('hello');
 
-		test.value = 'world';
-		expect(test.test).toEqual('world');
-	});
+    test.value = 'world';
+    expect(test.test).toEqual('world');
+  });
 
-	it('customHandler should be called when changing the decorated property - no initializer', () => {
-		class Test  {
-			@observable({changeHandler: 'customHandler'}) value;
-			valueChanged () {
-				this.test = 'fail';
-			}
-			customHandler () {
-				this.test = this.value + ' world';
-			}
-		};
+  it('customHandler should be called when changing the decorated property - no initializer', () => {
+    class Test {
+      @observable({ changeHandler: 'customHandler' }) value;
+      valueChanged() {
+        this.test = 'fail';
+      }
+      customHandler() {
+        this.test = this.value + ' world';
+      }
+    };
 
-		var test = new Test();
+    var test = new Test();
 
-		expect(test.test).not.toBeDefined();
-		test.value = 'hello';
-		expect(test.test).toBeDefined();
-		expect(test.test).toEqual('hello world');
-	});	
+    expect(test.test).not.toBeDefined();
+    test.value = 'hello';
+    expect(test.test).toBeDefined();
+    expect(test.test).toEqual('hello world');
+  });
 
-	it('valueChanged does not exist - no initializer', () => {
-		class Test  {
-			@observable value = 'old';
-		};
+  it('valueChanged does not exist - no initializer', () => {
+    class Test {
+      @observable value = 'old';
+    };
 
-		var test = new Test();
+    var test = new Test();
 
-		expect(test.valueChanged).not.toBeDefined();
-		test.value = 'new';
-		expect(test.value).toEqual('new');
-	});	
-	
-	it('valueChanged should be called when changing the decorated property - with initializer', () => {
-		class Test  {
-			@observable value;
-			valueChanged () {
-				this.test = this.value;
-			}
-		};
+    expect(test.valueChanged).not.toBeDefined();
+    test.value = 'new';
+    expect(test.value).toEqual('new');
+  });
 
-		var test = new Test();
+  it('valueChanged should be called when changing the decorated property - with initializer', () => {
+    class Test {
+      @observable value;
+      valueChanged() {
+        this.test = this.value;
+      }
+    };
 
-		expect(test.test).not.toBeDefined();
-		test.value = 'hello';
-		expect(test.test).toBeDefined();
-		expect(test.test).toEqual('hello');
+    var test = new Test();
 
-		test.value = 'world';
-		expect(test.test).toEqual('world');
-	});
+    expect(test.test).not.toBeDefined();
+    test.value = 'hello';
+    expect(test.test).toBeDefined();
+    expect(test.test).toEqual('hello');
 
-	it('customHandler should be called when changing the decorated property - with initializer', () => {
-		class Test  {
-			@observable({changeHandler: 'customHandler'}) value = '';
-			valueChanged () {
-				this.test = 'fail';
-			}
-			customHandler () {
-				this.test = this.value + ' world';
-			}
-		};
+    test.value = 'world';
+    expect(test.test).toEqual('world');
+  });
 
-		var test = new Test();
+  it('customHandler should be called when changing the decorated property - with initializer', () => {
+    class Test {
+      @observable({ changeHandler: 'customHandler' }) value = '';
+      valueChanged() {
+        this.test = 'fail';
+      }
+      customHandler() {
+        this.test = this.value + ' world';
+      }
+    };
 
-		expect(test.test).not.toBeDefined();
-		test.value = 'hello';
-		expect(test.test).toBeDefined();
-		expect(test.test).toEqual('hello world');
-	});	
+    var test = new Test();
 
-	it('valueChanged does not exist - with initializer', () => {
-		class Test  {
-			@observable value = 'old';
-		};
+    expect(test.test).not.toBeDefined();
+    test.value = 'hello';
+    expect(test.test).toBeDefined();
+    expect(test.test).toEqual('hello world');
+  });
 
-		var test = new Test();
+  it('valueChanged does not exist - with initializer', () => {
+    class Test {
+      @observable value = 'old';
+    };
 
-		expect(test.valueChanged).not.toBeDefined();
-		test.value = 'new';
-		expect(test.value).toEqual('new');
-	});
+    var test = new Test();
+
+    expect(test.valueChanged).not.toBeDefined();
+    test.value = 'new';
+    expect(test.value).toEqual('new');
+  });
 
 });
