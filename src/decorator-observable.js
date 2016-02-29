@@ -6,7 +6,7 @@ export function observable(targetOrConfig, key, descriptor) {
     let callbackName = (targetOrConfig && targetOrConfig.changeHandler) || `${key2}Changed`;
 
     // typescript or babel?
-    let babel = arguments.length === 3;
+    let babel = descriptor2 !== undefined;
 
     if (babel) {
       // babel passes in the property descriptor with a method to get the initial value.
@@ -16,7 +16,7 @@ export function observable(targetOrConfig, key, descriptor) {
         target[innerPropertyName] = descriptor2.initializer();
       }
     } else {
-      descriptor = {};
+      descriptor2 = {};
     }
 		
     // we're adding a getter and setter which means the property descriptor
@@ -39,7 +39,7 @@ export function observable(targetOrConfig, key, descriptor) {
     descriptor2.get.dependencies = [innerPropertyName];
 
     if (!babel) {
-      Object.defineProperty(target, key2, descriptor);
+      Object.defineProperty(target, key2, descriptor2);
     }
   }
 
