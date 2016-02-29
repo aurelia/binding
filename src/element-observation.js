@@ -82,7 +82,7 @@ export class StyleObserver {
         let pairs = newValue.split(/(?:;|:(?!\/))\s*/);
         for( let i = 0, length = pairs.length; i < length; i++ )
         {
-          style = pairs[i];
+          style = pairs[i].trim();
           if ( !style ) { continue; }
             
           styles[style] = version;
