@@ -9,14 +9,14 @@ function getAU(element) {
 }
 
 export class NameExpression {
-  constructor(property, apiName) {
-    this.property = property;
+  constructor(sourceExpression, apiName) {
+    this.sourceExpression = sourceExpression;
     this.apiName = apiName;
     this.discrete = true;
   }
 
   createBinding(target) {
-    return new NameBinder(this.property, NameExpression.locateAPI(target, this.apiName));
+    return new NameBinder(this.sourceExpression, NameExpression.locateAPI(target, this.apiName));
   }
 
   static locateAPI(element: Element, apiName: string): Object {
@@ -42,37 +42,29 @@ export class NameExpression {
 }
 
 class NameBinder {
-  constructor(property, target) {
-    this.property = property;
+  constructor(sourceExpression, target) {
+    this.sourceExpression = sourceExpression;
     this.target = target;
-    this.source = null;
-    this.context = null;
   }
 
   bind(source) {
-    if (this.source !== null) {
+    if (this.isBound) {
       if (this.source === source) {
         return;
       }
-
       this.unbind();
     }
-
-    this.source = source || null;
-    this.context = source.bindingContext || source.overrideContext || null;
-
-    if(this.context !== null) {
-      this.context[this.property] = this.target;
-    }
+    this.isBound = true;
+    this.source = source;
+    this.sourceExpression.assign(this.source, this.target);
   }
 
   unbind() {
-    if (this.source !== null) {
-      this.source = null;
+    if (!this.isBound) {
+      return;
     }
-
-    if(this.context !== null) {
-      this.context[this.property] = null;
-    }
+    this.isBound = false;
+    this.sourceExpression.assign(this.source, null);
+    this.source = null;
   }
 }
