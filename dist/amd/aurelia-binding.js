@@ -1,4 +1,4 @@
-define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], function (exports, _coreJs, _aureliaPal, _aureliaTaskQueue, _aureliaMetadata) {
+define(['exports', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], function (exports, _aureliaPal, _aureliaTaskQueue, _aureliaMetadata) {
   'use strict';
 
   exports.__esModule = true;
@@ -23,7 +23,8 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
   exports.computedFrom = computedFrom;
   exports.valueConverter = valueConverter;
   exports.bindingBehavior = bindingBehavior;
-  exports.getSetObserver = getSetObserver;
+  exports.getSetObserver = _getSetObserver;
+  exports.observable = observable;
 
   function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
@@ -139,6 +140,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
       target.prototype.observeProperty = observeProperty;
       target.prototype.observeArray = observeArray;
       target.prototype.unobserve = unobserve;
+      target.prototype.addObserver = addObserver;
     };
   }
 
@@ -859,8 +861,8 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
 
   Array.prototype.pop = function () {
     var methodCallResult = pop.apply(this, arguments);
-    if (this.__arrayObserver !== undefined) {
-      this.__arrayObserver.addChangeRecord({
+    if (this.__array_observer__ !== undefined) {
+      this.__array_observer__.addChangeRecord({
         type: 'delete',
         object: this,
         name: this.length,
@@ -872,8 +874,8 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
 
   Array.prototype.push = function () {
     var methodCallResult = push.apply(this, arguments);
-    if (this.__arrayObserver !== undefined) {
-      this.__arrayObserver.addChangeRecord({
+    if (this.__array_observer__ !== undefined) {
+      this.__array_observer__.addChangeRecord({
         type: 'splice',
         object: this,
         index: this.length - arguments.length,
@@ -886,21 +888,21 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
 
   Array.prototype.reverse = function () {
     var oldArray = undefined;
-    if (this.__arrayObserver !== undefined) {
-      this.__arrayObserver.flushChangeRecords();
+    if (this.__array_observer__ !== undefined) {
+      this.__array_observer__.flushChangeRecords();
       oldArray = this.slice();
     }
     var methodCallResult = reverse.apply(this, arguments);
-    if (this.__arrayObserver !== undefined) {
-      this.__arrayObserver.reset(oldArray);
+    if (this.__array_observer__ !== undefined) {
+      this.__array_observer__.reset(oldArray);
     }
     return methodCallResult;
   };
 
   Array.prototype.shift = function () {
     var methodCallResult = shift.apply(this, arguments);
-    if (this.__arrayObserver !== undefined) {
-      this.__arrayObserver.addChangeRecord({
+    if (this.__array_observer__ !== undefined) {
+      this.__array_observer__.addChangeRecord({
         type: 'delete',
         object: this,
         name: 0,
@@ -912,21 +914,21 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
 
   Array.prototype.sort = function () {
     var oldArray = undefined;
-    if (this.__arrayObserver !== undefined) {
-      this.__arrayObserver.flushChangeRecords();
+    if (this.__array_observer__ !== undefined) {
+      this.__array_observer__.flushChangeRecords();
       oldArray = this.slice();
     }
     var methodCallResult = sort.apply(this, arguments);
-    if (this.__arrayObserver !== undefined) {
-      this.__arrayObserver.reset(oldArray);
+    if (this.__array_observer__ !== undefined) {
+      this.__array_observer__.reset(oldArray);
     }
     return methodCallResult;
   };
 
   Array.prototype.splice = function () {
     var methodCallResult = splice.apply(this, arguments);
-    if (this.__arrayObserver !== undefined) {
-      this.__arrayObserver.addChangeRecord({
+    if (this.__array_observer__ !== undefined) {
+      this.__array_observer__.addChangeRecord({
         type: 'splice',
         object: this,
         index: arguments[0],
@@ -939,8 +941,8 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
 
   Array.prototype.unshift = function () {
     var methodCallResult = unshift.apply(this, arguments);
-    if (this.__arrayObserver !== undefined) {
-      this.__arrayObserver.addChangeRecord({
+    if (this.__array_observer__ !== undefined) {
+      this.__array_observer__.addChangeRecord({
         type: 'splice',
         object: this,
         index: 0,
@@ -952,7 +954,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
   };
 
   function _getArrayObserver(taskQueue, array) {
-    return ModifyArrayObserver.create(taskQueue, array);
+    return ModifyArrayObserver['for'](taskQueue, array);
   }
 
   var ModifyArrayObserver = (function (_ModifyCollectionObserver2) {
@@ -964,9 +966,16 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
       _ModifyCollectionObserver2.call(this, taskQueue, array);
     }
 
+    ModifyArrayObserver['for'] = function _for(taskQueue, array) {
+      if (!('__array_observer__' in array)) {
+        var observer = ModifyArrayObserver.create(taskQueue, array);
+        Object.defineProperty(array, '__array_observer__', { value: observer, enumerable: false, configurable: false });
+      }
+      return array.__array_observer__;
+    };
+
     ModifyArrayObserver.create = function create(taskQueue, array) {
       var observer = new ModifyArrayObserver(taskQueue, array);
-      Object.defineProperty(array, '__arrayObserver', { value: observer, enumerable: false, configurable: false });
       return observer;
     };
 
@@ -2894,7 +2903,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
   var mapProto = Map.prototype;
 
   function _getMapObserver(taskQueue, map) {
-    return ModifyMapObserver.create(taskQueue, map);
+    return ModifyMapObserver['for'](taskQueue, map);
   }
 
   var ModifyMapObserver = (function (_ModifyCollectionObserver3) {
@@ -2906,36 +2915,59 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
       _ModifyCollectionObserver3.call(this, taskQueue, map);
     }
 
+    ModifyMapObserver['for'] = function _for(taskQueue, map) {
+      if (!('__map_observer__' in map)) {
+        var observer = ModifyMapObserver.create(taskQueue, map);
+        Object.defineProperty(map, '__map_observer__', { value: observer, enumerable: false, configurable: false });
+      }
+      return map.__map_observer__;
+    };
+
     ModifyMapObserver.create = function create(taskQueue, map) {
       var observer = new ModifyMapObserver(taskQueue, map);
 
+      var proto = mapProto;
+      if (proto.add !== map.add || proto['delete'] !== map['delete'] || proto.clear !== map.clear) {
+        proto = {
+          add: map.add,
+          'delete': map['delete'],
+          clear: map.clear
+        };
+      }
+
       map['set'] = function () {
+        var hasValue = map.has(arguments[0]);
+        var type = hasValue ? 'update' : 'add';
         var oldValue = map.get(arguments[0]);
-        var type = typeof oldValue !== 'undefined' ? 'update' : 'add';
-        var methodCallResult = mapProto['set'].apply(map, arguments);
-        observer.addChangeRecord({
-          type: type,
-          object: map,
-          key: arguments[0],
-          oldValue: oldValue
-        });
+        var methodCallResult = proto['set'].apply(map, arguments);
+        if (!hasValue || oldValue !== map.get(arguments[0])) {
+          observer.addChangeRecord({
+            type: type,
+            object: map,
+            key: arguments[0],
+            oldValue: oldValue
+          });
+        }
         return methodCallResult;
       };
 
       map['delete'] = function () {
+        var hasValue = map.has(arguments[0]);
         var oldValue = map.get(arguments[0]);
-        var methodCallResult = mapProto['delete'].apply(map, arguments);
-        observer.addChangeRecord({
-          type: 'delete',
-          object: map,
-          key: arguments[0],
-          oldValue: oldValue
-        });
+        var methodCallResult = proto['delete'].apply(map, arguments);
+        if (hasValue) {
+          observer.addChangeRecord({
+            type: 'delete',
+            object: map,
+            key: arguments[0],
+            oldValue: oldValue
+          });
+        }
         return methodCallResult;
       };
 
       map['clear'] = function () {
-        var methodCallResult = mapProto['clear'].apply(map, arguments);
+        var methodCallResult = proto['clear'].apply(map, arguments);
         observer.addChangeRecord({
           type: 'clear',
           object: map
@@ -3475,7 +3507,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
         } else if (newValue.length) {
           var pairs = newValue.split(/(?:;|:(?!\/))\s*/);
           for (var i = 0, _length = pairs.length; i < _length; i++) {
-            style = pairs[i];
+            style = pairs[i].trim();
             if (!style) {
               continue;
             }
@@ -4450,38 +4482,16 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
     };
 
     ObserverLocator.prototype.getArrayObserver = function getArrayObserver(array) {
-      if ('__array_observer__' in array) {
-        return array.__array_observer__;
-      }
-
-      return array.__array_observer__ = _getArrayObserver(this.taskQueue, array);
+      return _getArrayObserver(this.taskQueue, array);
     };
 
     ObserverLocator.prototype.getMapObserver = function getMapObserver(map) {
-      if ('__map_observer__' in map) {
-        return map.__map_observer__;
-      }
-
-      return map.__map_observer__ = _getMapObserver(this.taskQueue, map);
+      return _getMapObserver(this.taskQueue, map);
     };
 
-    ObserverLocator.prototype.getSetObserver = (function (_getSetObserver) {
-      function getSetObserver(_x) {
-        return _getSetObserver.apply(this, arguments);
-      }
-
-      getSetObserver.toString = function () {
-        return _getSetObserver.toString();
-      };
-
-      return getSetObserver;
-    })(function (set) {
-      if ('__set_observer__' in set) {
-        return set.__set_observer__;
-      }
-
-      return set.__set_observer__ = getSetObserver(this.taskQueue, set);
-    });
+    ObserverLocator.prototype.getSetObserver = function getSetObserver(set) {
+      return _getSetObserver(this.taskQueue, set);
+    };
 
     return ObserverLocator;
   })();
@@ -4896,16 +4906,16 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
   }
 
   var NameExpression = (function () {
-    function NameExpression(property, apiName) {
+    function NameExpression(sourceExpression, apiName) {
       _classCallCheck(this, NameExpression);
 
-      this.property = property;
+      this.sourceExpression = sourceExpression;
       this.apiName = apiName;
       this.discrete = true;
     }
 
     NameExpression.prototype.createBinding = function createBinding(target) {
-      return new NameBinder(this.property, NameExpression.locateAPI(target, this.apiName));
+      return new NameBinder(this.sourceExpression, NameExpression.locateAPI(target, this.apiName));
     };
 
     NameExpression.locateAPI = function locateAPI(element, apiName) {
@@ -4935,40 +4945,32 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
   exports.NameExpression = NameExpression;
 
   var NameBinder = (function () {
-    function NameBinder(property, target) {
+    function NameBinder(sourceExpression, target) {
       _classCallCheck(this, NameBinder);
 
-      this.property = property;
+      this.sourceExpression = sourceExpression;
       this.target = target;
-      this.source = null;
-      this.context = null;
     }
 
     NameBinder.prototype.bind = function bind(source) {
-      if (this.source !== null) {
+      if (this.isBound) {
         if (this.source === source) {
           return;
         }
-
         this.unbind();
       }
-
-      this.source = source || null;
-      this.context = source.bindingContext || source.overrideContext || null;
-
-      if (this.context !== null) {
-        this.context[this.property] = this.target;
-      }
+      this.isBound = true;
+      this.source = source;
+      this.sourceExpression.assign(this.source, this.target);
     };
 
     NameBinder.prototype.unbind = function unbind() {
-      if (this.source !== null) {
-        this.source = null;
+      if (!this.isBound) {
+        return;
       }
-
-      if (this.context !== null) {
-        this.context[this.property] = null;
-      }
+      this.isBound = false;
+      this.sourceExpression.assign(this.source, null);
+      this.source = null;
     };
 
     return NameBinder;
@@ -5110,8 +5112,8 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
 
   var setProto = Set.prototype;
 
-  function getSetObserver(taskQueue, set) {
-    return ModifySetObserver.create(taskQueue, set);
+  function _getSetObserver(taskQueue, set) {
+    return ModifySetObserver['for'](taskQueue, set);
   }
 
   var ModifySetObserver = (function (_ModifyCollectionObserver4) {
@@ -5123,18 +5125,36 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
       _ModifyCollectionObserver4.call(this, taskQueue, set);
     }
 
+    ModifySetObserver['for'] = function _for(taskQueue, set) {
+      if (!('__set_observer__' in set)) {
+        var observer = ModifySetObserver.create(taskQueue, set);
+        Object.defineProperty(set, '__set_observer__', { value: observer, enumerable: false, configurable: false });
+      }
+      return set.__set_observer__;
+    };
+
     ModifySetObserver.create = function create(taskQueue, set) {
       var observer = new ModifySetObserver(taskQueue, set);
 
+      var proto = setProto;
+      if (proto.add !== set.add || proto['delete'] !== set['delete'] || proto.clear !== set.clear) {
+        proto = {
+          add: set.add,
+          'delete': set['delete'],
+          clear: set.clear
+        };
+      }
+
       set['add'] = function () {
         var type = 'add';
-        var hasValue = set.has(arguments[0]);
-        var methodCallResult = setProto['add'].apply(set, arguments);
+        var oldSize = set.size;
+        var methodCallResult = proto['add'].apply(set, arguments);
+        var hasValue = set.size === oldSize;
         if (!hasValue) {
           observer.addChangeRecord({
             type: type,
             object: set,
-            value: arguments[0]
+            value: Array.from(set).pop()
           });
         }
         return methodCallResult;
@@ -5142,7 +5162,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
 
       set['delete'] = function () {
         var hasValue = set.has(arguments[0]);
-        var methodCallResult = setProto['delete'].apply(set, arguments);
+        var methodCallResult = proto['delete'].apply(set, arguments);
         if (hasValue) {
           observer.addChangeRecord({
             type: 'delete',
@@ -5154,7 +5174,7 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
       };
 
       set['clear'] = function () {
-        var methodCallResult = setProto['clear'].apply(set, arguments);
+        var methodCallResult = proto['clear'].apply(set, arguments);
         observer.addChangeRecord({
           type: 'clear',
           object: set
@@ -5167,4 +5187,49 @@ define(['exports', 'core-js', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-meta
 
     return ModifySetObserver;
   })(ModifyCollectionObserver);
+
+  function observable(targetOrConfig, key, descriptor) {
+    var deco = function deco(target, key2, descriptor2) {
+      var innerPropertyName = '_' + key2;
+      var callbackName = targetOrConfig && targetOrConfig.changeHandler || key2 + 'Changed';
+
+      var babel = descriptor2 !== undefined;
+
+      if (babel) {
+        if (typeof descriptor2.initializer === 'function') {
+          target[innerPropertyName] = descriptor2.initializer();
+        }
+      } else {
+        descriptor2 = {};
+      }
+
+      delete descriptor2.writable;
+      delete descriptor2.initializer;
+
+      descriptor2.get = function () {
+        return this[innerPropertyName];
+      };
+      descriptor2.set = function (newValue) {
+        var oldValue = this[innerPropertyName];
+        this[innerPropertyName] = newValue;
+        if (this[callbackName]) {
+          this[callbackName](newValue, oldValue);
+        }
+      };
+
+      descriptor2.get.dependencies = [innerPropertyName];
+
+      if (!babel) {
+        Object.defineProperty(target, key2, descriptor2);
+      }
+    };
+
+    if (key) {
+      var target = targetOrConfig;
+      targetOrConfig = null;
+      return deco(target, key, descriptor);
+    }
+
+    return deco;
+  }
 });

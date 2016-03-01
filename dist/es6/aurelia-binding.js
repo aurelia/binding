@@ -1,4 +1,3 @@
-import 'core-js';
 import {PLATFORM,DOM} from 'aurelia-pal';
 import {TaskQueue} from 'aurelia-task-queue';
 import {metadata} from 'aurelia-metadata';
@@ -128,6 +127,7 @@ export function connectable() {
     target.prototype.observeProperty = observeProperty;
     target.prototype.observeArray = observeArray;
     target.prototype.unobserve = unobserve;
+    target.prototype.addObserver = addObserver;
   }
 }
 
@@ -905,8 +905,8 @@ let unshift = Array.prototype.unshift;
 
 Array.prototype.pop = function() {
   let methodCallResult = pop.apply(this, arguments);
-  if (this.__arrayObserver !== undefined) {
-    this.__arrayObserver.addChangeRecord({
+  if (this.__array_observer__ !== undefined) {
+    this.__array_observer__.addChangeRecord({
       type: 'delete',
       object: this,
       name: this.length,
@@ -914,12 +914,12 @@ Array.prototype.pop = function() {
     });
   }
   return methodCallResult;
-}
+};
 
 Array.prototype.push = function() {
   let methodCallResult = push.apply(this, arguments);
-  if (this.__arrayObserver !== undefined) {
-    this.__arrayObserver.addChangeRecord({
+  if (this.__array_observer__ !== undefined) {
+    this.__array_observer__.addChangeRecord({
       type: 'splice',
       object: this,
       index: this.length - arguments.length,
@@ -928,25 +928,25 @@ Array.prototype.push = function() {
     });
   }
   return methodCallResult;
-}
+};
 
 Array.prototype.reverse = function() {
   let oldArray;
-  if (this.__arrayObserver !== undefined) {
-    this.__arrayObserver.flushChangeRecords();
+  if (this.__array_observer__ !== undefined) {
+    this.__array_observer__.flushChangeRecords();
     oldArray = this.slice();
   }
   let methodCallResult = reverse.apply(this, arguments);
-  if (this.__arrayObserver !== undefined) {
-    this.__arrayObserver.reset(oldArray);
+  if (this.__array_observer__ !== undefined) {
+    this.__array_observer__.reset(oldArray);
   }
   return methodCallResult;
-}
+};
 
 Array.prototype.shift = function() {
   let methodCallResult = shift.apply(this, arguments);
-  if (this.__arrayObserver !== undefined) {
-    this.__arrayObserver.addChangeRecord({
+  if (this.__array_observer__ !== undefined) {
+    this.__array_observer__.addChangeRecord({
       type: 'delete',
       object: this,
       name: 0,
@@ -958,21 +958,21 @@ Array.prototype.shift = function() {
 
 Array.prototype.sort = function() {
   let oldArray;
-  if (this.__arrayObserver !== undefined) {
-    this.__arrayObserver.flushChangeRecords();
+  if (this.__array_observer__ !== undefined) {
+    this.__array_observer__.flushChangeRecords();
     oldArray = this.slice();
   }
   let methodCallResult = sort.apply(this, arguments);
-  if (this.__arrayObserver !== undefined) {
-    this.__arrayObserver.reset(oldArray);
+  if (this.__array_observer__ !== undefined) {
+    this.__array_observer__.reset(oldArray);
   }
   return methodCallResult;
 };
 
 Array.prototype.splice = function() {
   let methodCallResult = splice.apply(this, arguments);
-  if (this.__arrayObserver !== undefined) {
-    this.__arrayObserver.addChangeRecord({
+  if (this.__array_observer__ !== undefined) {
+    this.__array_observer__.addChangeRecord({
       type: 'splice',
       object: this,
       index: arguments[0],
@@ -985,8 +985,8 @@ Array.prototype.splice = function() {
 
 Array.prototype.unshift = function() {
   let methodCallResult = unshift.apply(this, arguments);
-  if (this.__arrayObserver !== undefined) {
-    this.__arrayObserver.addChangeRecord({
+  if (this.__array_observer__ !== undefined) {
+    this.__array_observer__.addChangeRecord({
       type: 'splice',
       object: this,
       index: 0,
@@ -998,7 +998,7 @@ Array.prototype.unshift = function() {
 };
 
 export function getArrayObserver(taskQueue, array) {
-  return ModifyArrayObserver.create(taskQueue, array);
+  return ModifyArrayObserver.for(taskQueue, array);
 }
 
 class ModifyArrayObserver extends ModifyCollectionObserver {
@@ -1006,12 +1006,25 @@ class ModifyArrayObserver extends ModifyCollectionObserver {
     super(taskQueue, array);
   }
 
+  /**
+   * Searches for observer or creates a new one associated with given array instance
+   * @param taskQueue
+   * @param array instance for which observer is searched
+   * @returns ModifyArrayObserver always the same instance for any given array instance
+   */
+  static for(taskQueue, array) {
+    if (!('__array_observer__' in array)) {
+      let observer = ModifyArrayObserver.create(taskQueue, array);
+      Object.defineProperty(
+        array,
+        '__array_observer__',
+        { value: observer, enumerable: false, configurable: false });
+    }
+    return array.__array_observer__;
+  }
+
   static create(taskQueue, array) {
     let observer = new ModifyArrayObserver(taskQueue, array);
-    Object.defineProperty(
-      array,
-      '__arrayObserver',
-      { value: observer, enumerable: false, configurable: false });
     return observer;
   }
 }
@@ -2782,7 +2795,7 @@ export class ParserImplementation {
 let mapProto = Map.prototype;
 
 export function getMapObserver(taskQueue, map){
-  return ModifyMapObserver.create(taskQueue, map);
+  return ModifyMapObserver.for(taskQueue, map);
 }
 
 class ModifyMapObserver extends ModifyCollectionObserver {
@@ -2790,42 +2803,74 @@ class ModifyMapObserver extends ModifyCollectionObserver {
     super(taskQueue, map);
   }
 
+  /**
+   * Searches for observer or creates a new one associated with given map instance
+   * @param taskQueue
+   * @param map instance for which observer is searched
+   * @returns ModifyMapObserver always the same instance for any given map instance
+   */
+  static for(taskQueue, map) {
+    if (!('__map_observer__' in map)) {
+      let observer = ModifyMapObserver.create(taskQueue, map);
+      Object.defineProperty(
+        map,
+        '__map_observer__',
+        { value: observer, enumerable: false, configurable: false });
+    }
+    return map.__map_observer__;
+  }
+
   static create(taskQueue, map) {
     let observer = new ModifyMapObserver(taskQueue, map);
 
-    map['set'] = function () {
-      let oldValue = map.get(arguments[0]);
-      let type = typeof oldValue !== 'undefined' ? 'update' : 'add';
-      let methodCallResult = mapProto['set'].apply(map, arguments);
-      observer.addChangeRecord({
-        type: type,
-        object: map,
-        key: arguments[0],
-        oldValue: oldValue
-      });
-      return methodCallResult;
+    let proto = mapProto;
+    if (proto.add !== map.add || proto.delete !== map.delete || proto.clear !== map.clear) {
+      proto = {
+        add: map.add,
+        delete: map.delete,
+        clear: map.clear
+      };
     }
+
+    map['set'] = function () {
+      let hasValue = map.has(arguments[0]);
+      let type = hasValue ? 'update' : 'add';
+      let oldValue = map.get(arguments[0]);
+      let methodCallResult = proto['set'].apply(map, arguments);
+      if (!hasValue || oldValue !== map.get(arguments[0])) {
+        observer.addChangeRecord({
+          type: type,
+          object: map,
+          key: arguments[0],
+          oldValue: oldValue
+        });
+      }
+      return methodCallResult;
+    };
 
     map['delete'] = function () {
+      let hasValue = map.has(arguments[0]);
       let oldValue = map.get(arguments[0]);
-      let methodCallResult = mapProto['delete'].apply(map, arguments);
-      observer.addChangeRecord({
-        type: 'delete',
-        object: map,
-        key: arguments[0],
-        oldValue: oldValue
-      });
+      let methodCallResult = proto['delete'].apply(map, arguments);
+      if (hasValue) {
+        observer.addChangeRecord({
+          type: 'delete',
+          object: map,
+          key: arguments[0],
+          oldValue: oldValue
+        });
+      }
       return methodCallResult;
-    }
+    };
 
     map['clear'] = function () {
-      let methodCallResult = mapProto['clear'].apply(map, arguments);
+      let methodCallResult = proto['clear'].apply(map, arguments);
       observer.addChangeRecord({
         type: 'clear',
         object: map
       });
       return methodCallResult;
-    }
+    };
 
     return observer;
   }
@@ -3292,7 +3337,7 @@ export class StyleObserver {
         let pairs = newValue.split(/(?:;|:(?!\/))\s*/);
         for( let i = 0, length = pairs.length; i < length; i++ )
         {
-          style = pairs[i];
+          style = pairs[i].trim();
           if ( !style ) { continue; }
             
           styles[style] = version;
@@ -4185,27 +4230,15 @@ export class ObserverLocator {
   }
 
   getArrayObserver(array){
-    if ('__array_observer__' in array) {
-      return array.__array_observer__;
-    }
-
-    return array.__array_observer__ = getArrayObserver(this.taskQueue, array);
+    return getArrayObserver(this.taskQueue, array);
   }
 
   getMapObserver(map){
-    if ('__map_observer__' in map) {
-      return map.__map_observer__;
-    }
-
-    return map.__map_observer__ = getMapObserver(this.taskQueue, map);
+    return getMapObserver(this.taskQueue, map);
   }
 
   getSetObserver(set){
-    if ('__set_observer__' in set) {
-      return set.__set_observer__;
-    }
-
-    return set.__set_observer__ = getSetObserver(this.taskQueue, set);
+    return getSetObserver(this.taskQueue, set);
   }
 }
 
@@ -4578,14 +4611,14 @@ function getAU(element) {
 }
 
 export class NameExpression {
-  constructor(property, apiName) {
-    this.property = property;
+  constructor(sourceExpression, apiName) {
+    this.sourceExpression = sourceExpression;
     this.apiName = apiName;
     this.discrete = true;
   }
 
   createBinding(target) {
-    return new NameBinder(this.property, NameExpression.locateAPI(target, this.apiName));
+    return new NameBinder(this.sourceExpression, NameExpression.locateAPI(target, this.apiName));
   }
 
   static locateAPI(element: Element, apiName: string): Object {
@@ -4611,38 +4644,30 @@ export class NameExpression {
 }
 
 class NameBinder {
-  constructor(property, target) {
-    this.property = property;
+  constructor(sourceExpression, target) {
+    this.sourceExpression = sourceExpression;
     this.target = target;
-    this.source = null;
-    this.context = null;
   }
 
   bind(source) {
-    if (this.source !== null) {
+    if (this.isBound) {
       if (this.source === source) {
         return;
       }
-
       this.unbind();
     }
-
-    this.source = source || null;
-    this.context = source.bindingContext || source.overrideContext || null;
-
-    if(this.context !== null) {
-      this.context[this.property] = this.target;
-    }
+    this.isBound = true;
+    this.source = source;
+    this.sourceExpression.assign(this.source, this.target);
   }
 
   unbind() {
-    if (this.source !== null) {
-      this.source = null;
+    if (!this.isBound) {
+      return;
     }
-
-    if(this.context !== null) {
-      this.context[this.property] = null;
-    }
+    this.isBound = false;
+    this.sourceExpression.assign(this.source, null);
+    this.source = null;
   }
 }
 
@@ -4772,7 +4797,7 @@ class ExpressionObserver {
 let setProto = Set.prototype;
 
 export function getSetObserver(taskQueue, set){
-  return ModifySetObserver.create(taskQueue, set);
+  return ModifySetObserver.for(taskQueue, set);
 }
 
 class ModifySetObserver extends ModifyCollectionObserver {
@@ -4780,26 +4805,53 @@ class ModifySetObserver extends ModifyCollectionObserver {
     super(taskQueue, set);
   }
 
+  /**
+   * Searches for observer or creates a new one associated with given set instance
+   * @param taskQueue
+   * @param set instance for which observer is searched
+   * @returns ModifySetObserver always the same instance for any given set instance
+   */
+  static for(taskQueue, set) {
+    if (!('__set_observer__' in set)) {
+      let observer = ModifySetObserver.create(taskQueue, set);
+      Object.defineProperty(
+        set,
+        '__set_observer__',
+        { value: observer, enumerable: false, configurable: false });
+    }
+    return set.__set_observer__;
+  }
+
   static create(taskQueue, set) {
     let observer = new ModifySetObserver(taskQueue, set);
 
+    let proto = setProto;
+    if (proto.add !== set.add || proto.delete !== set.delete || proto.clear !== set.clear) {
+      proto = {
+        add: set.add,
+        delete: set.delete,
+        clear: set.clear
+      };
+    }
+
     set['add'] = function () {
       let type = 'add';
-      let hasValue = set.has(arguments[0]);
-      let methodCallResult = setProto['add'].apply(set, arguments);
+      let oldSize = set.size;
+      let methodCallResult = proto['add'].apply(set, arguments);
+      let hasValue = set.size === oldSize;
       if (!hasValue) {
         observer.addChangeRecord({
           type: type,
           object: set,
-          value: arguments[0]
+          value: Array.from(set).pop()
         });
       }
       return methodCallResult;
-    }
+    };
 
     set['delete'] = function () {
       let hasValue = set.has(arguments[0]);
-      let methodCallResult = setProto['delete'].apply(set, arguments);
+      let methodCallResult = proto['delete'].apply(set, arguments);
       if (hasValue) {
         observer.addChangeRecord({
           type: 'delete',
@@ -4808,17 +4860,71 @@ class ModifySetObserver extends ModifyCollectionObserver {
         });
       }
       return methodCallResult;
-    }
+    };
 
     set['clear'] = function () {
-      let methodCallResult = setProto['clear'].apply(set, arguments);
+      let methodCallResult = proto['clear'].apply(set, arguments);
       observer.addChangeRecord({
         type: 'clear',
         object: set
       });
       return methodCallResult;
-    }
+    };
 
     return observer;
   }
+}
+
+export function observable(targetOrConfig, key, descriptor) {
+  let deco = function (target, key2, descriptor2) {
+    // use a convention to compute the inner property name and the callback 
+    // function name.
+    let innerPropertyName = `_${key2}`;
+    let callbackName = (targetOrConfig && targetOrConfig.changeHandler) || `${key2}Changed`;
+
+    // typescript or babel?
+    let babel = descriptor2 !== undefined;
+
+    if (babel) {
+      // babel passes in the property descriptor with a method to get the initial value.
+
+      // set the initial value of the property if it is defined.
+      if (typeof descriptor2.initializer === 'function') {
+        target[innerPropertyName] = descriptor2.initializer();
+      }
+    } else {
+      descriptor2 = {};
+    }
+		
+    // we're adding a getter and setter which means the property descriptor
+    // cannot have a "value" or "writable" attribute
+    delete descriptor2.writable;
+    delete descriptor2.initializer;
+
+    // add the getter and setter to the property descriptor.
+    descriptor2.get = function () { return this[innerPropertyName]; };
+    descriptor2.set = function (newValue) {
+      let oldValue = this[innerPropertyName];
+      this[innerPropertyName] = newValue;
+      if (this[callbackName]) {
+        this[callbackName](newValue, oldValue);
+      }
+    };
+
+    // make sure Aurelia doesn't use dirty-checking by declaring the property's
+    // dependencies. This is the equivalent of "@computedFrom(...)".
+    descriptor2.get.dependencies = [innerPropertyName];
+
+    if (!babel) {
+      Object.defineProperty(target, key2, descriptor2);
+    }
+  }
+
+  if (key) {
+    let target = targetOrConfig;
+    targetOrConfig = null;
+    return deco(target, key, descriptor);
+  }
+
+  return deco;
 }

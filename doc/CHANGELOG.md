@@ -1,3 +1,28 @@
+### 1.0.0-beta.1.2.0 (2016-03-01)
+
+
+#### Bug Fixes
+
+* ***-observation:** allow binding extended Map/Set ([a79f1486](http://github.com/aurelia/binding/commit/a79f1486fe5d2a93ed6346133121fb16bcaa700b))
+* **all:** remove core-js dependency ([a48268df](http://github.com/aurelia/binding/commit/a48268dfdfe31cf4b2201c170d6b79139c6280a2))
+* **bower:** remove core-js ([3076972b](http://github.com/aurelia/binding/commit/3076972b38a028d4d901f092f11aa72c3ad3e377))
+* **decorator-observable:** TypeScript ([98219be8](http://github.com/aurelia/binding/commit/98219be8533aded633c5391964ef73ec85ea669b))
+* **definitions:**
+  * observable decorator definition ([d6244f22](http://github.com/aurelia/binding/commit/d6244f222e80bd37f3a72af71465860af80a0dad))
+  * addEventListener function definition ([206e3422](http://github.com/aurelia/binding/commit/206e342282dfceaed0bfbde78220084ea836420d), closes [#317](http://github.com/aurelia/binding/issues/317))
+* **element-observation:** handle extra spacing around css properties ([cb8a9074](http://github.com/aurelia/binding/commit/cb8a9074784206f285ee7d373eb90f1296c31366), closes [#325](http://github.com/aurelia/binding/issues/325))
+
+
+#### Features
+
+* **Binding:** enable custom observers during connect ([d31e9321](http://github.com/aurelia/binding/commit/d31e9321ae34aaa8e7678fc029fa1afd0ae914e8))
+* **observable decorator:**
+  * add decorator-observable ([92eef20a](http://github.com/aurelia/binding/commit/92eef20af8788f1ab64f4f61c9da53db448effd7))
+  * observe local property decorator ([80c2dbc7](http://github.com/aurelia/binding/commit/80c2dbc72d281fc443a63cb75bbf64e5d248d97d))
+* **observers:** enable extended maps and sets ([a5e1eccb](http://github.com/aurelia/binding/commit/a5e1eccb417e0828f9de4faeee2ca33c54b80a5d), closes [#319](http://github.com/aurelia/binding/issues/319))
+* **ref:** support expressions ([1d80f7b5](http://github.com/aurelia/binding/commit/1d80f7b5dd86f6b0dcdca1176a6a36f729c353d2), closes [#214](http://github.com/aurelia/binding/issues/214))
+
+
 ### 1.0.0-beta.1.1.3 (2016-02-09)
 
 

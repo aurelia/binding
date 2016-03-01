@@ -83,6 +83,15 @@ declare module 'aurelia-binding' {
    */
   export class EventManager {
     registerElementConfig(config: { tagName: string; properties: { (s: string): string[] }; }): void;
+    /**
+     * Subscribes to specified event on the target element.
+     * @param target Target element.
+     * @param targetEvent Name of event to subscribe.
+     * @param callback Event listener callback.
+     * @param delegate True to use event delegation mechanism.
+     * @returns function wich removes event listener.
+     */
+    addEventListener(target: Element, targetEvent: string, callback: (event: Event) => any, delegate: boolean): () => void;
   }
 
   /**
@@ -402,4 +411,10 @@ declare module 'aurelia-binding' {
    * An internal API used by Aurelia's array observation components.
    */
   export function mergeSplice(splices: any, index: number, removed: any, addedCount: number): any;
+  
+  /**
+  * Decorator: Specifies that a property is observable.
+  * @param targetOrConfig The name of the property, or a configuration object.
+  */
+  export function observable(targetOrConfig?: Object, key?: any, descriptor?: any): any;
 }
