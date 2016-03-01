@@ -1264,7 +1264,7 @@ export class AccessScope extends Expression {
 
   assign(scope, value){
     let context = getContextFor(this.name, scope, this.ancestor);
-    return context[this.name] = value;
+    return context ? (context[this.name] = value) : undefined;
   }
 
   accept(visitor){

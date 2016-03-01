@@ -1,3 +1,11 @@
+### 1.0.0-beta.1.2.1 (2016-03-01)
+
+
+#### Bug Fixes
+
+* **ast:** make AccessScope#assign resilient ([4661076c](http://github.com/aurelia/binding/commit/4661076c1af3d5ccd7b47c40da0d90b64de0cc23))
+
+
 ### 1.0.0-beta.1.2.0 (2016-03-01)
 
 

@@ -1274,7 +1274,7 @@ define(['exports', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], fun
 
     AccessScope.prototype.assign = function assign(scope, value) {
       var context = getContextFor(this.name, scope, this.ancestor);
-      return context[this.name] = value;
+      return context ? context[this.name] = value : undefined;
     };
 
     AccessScope.prototype.accept = function accept(visitor) {
