@@ -6,6 +6,7 @@ import {Expression} from './ast';
 import {connectable} from './connectable-binding';
 import {subscriberCollection} from './subscriber-collection';
 import {createOverrideContext} from './scope';
+import {options} from './options';
 
 interface Disposable {
   dispose(): void;
@@ -35,6 +36,7 @@ export class BindingEngine {
   constructor(observerLocator, parser) {
     this.observerLocator = observerLocator;
     this.parser = parser;
+    this.options = options;
   }
 
   createBindingExpression(targetProperty: string, sourceExpression: string, mode = bindingMode.oneWay, lookupFunctions?: LookupFunctions = lookupFunctions): BindingExpression {

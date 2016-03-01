@@ -1,4 +1,5 @@
 import {getContextFor} from './scope';
+import {options} from './options';
 
 export class Expression {
   constructor(){
@@ -249,7 +250,7 @@ export class AccessScope extends Expression {
 }
 
 export class AccessMember extends Expression {
-  constructor(object, name){
+  constructor(object, name) {
     super();
 
     this.object = object;
@@ -257,15 +258,18 @@ export class AccessMember extends Expression {
     this.isAssignable = true;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     var instance = this.object.evaluate(scope, lookupFunctions);
     return instance === null || instance === undefined ? instance : instance[this.name];
   }
 
-  assign(scope, value){
+  assign(scope, value) {
     var instance = this.object.evaluate(scope);
 
-    if(instance === null || instance === undefined){
+    if (instance === null || instance === undefined) {
+      if (!options.automaticallyCreateInstance) {
+        return;
+      }
       instance = {};
       this.object.assign(scope, instance);
     }
@@ -273,7 +277,7 @@ export class AccessMember extends Expression {
     return instance[this.name] = value;
   }
 
-  accept(visitor){
+  accept(visitor) {
     visitor.visitAccessMember(this);
   }
 
