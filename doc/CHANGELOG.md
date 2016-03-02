@@ -1,3 +1,11 @@
+### 1.0.0-beta.1.2.2 (2016-03-02)
+
+
+#### Bug Fixes
+
+* **all:** remove for/of loops ([7caea5d4](http://github.com/aurelia/binding/commit/7caea5d47e185d27cc3e9c696e934fb70113c183))
+
+
 ### 1.0.0-beta.1.2.1 (2016-03-01)
 
 

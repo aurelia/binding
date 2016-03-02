@@ -153,20 +153,15 @@ define(['exports', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], fun
 
   function flush(animationFrameStart) {
     var i = 0;
-    for (var _iterator = bindings, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-      var _ref;
+    var keys = bindings.keys();
+    var item = undefined;
 
-      if (_isArray) {
-        if (_i >= _iterator.length) break;
-        _ref = _iterator[_i++];
-      } else {
-        _i = _iterator.next();
-        if (_i.done) break;
-        _ref = _i.value;
+    while (item = keys.next()) {
+      if (item.done) {
+        break;
       }
 
-      var binding = _ref[0];
-
+      var binding = item.value;
       bindings['delete'](binding);
       binding.connect(true);
       i++;
@@ -684,23 +679,20 @@ define(['exports', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], fun
   }
 
   function getChangeRecords(map) {
-    var entries = [];
-    for (var _iterator2 = map.keys(), _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-      var _ref2;
+    var entries = new Array(map.size);
+    var keys = map.keys();
+    var i = 0;
+    var item = undefined;
 
-      if (_isArray2) {
-        if (_i2 >= _iterator2.length) break;
-        _ref2 = _iterator2[_i2++];
-      } else {
-        _i2 = _iterator2.next();
-        if (_i2.done) break;
-        _ref2 = _i2.value;
+    while (item = keys.next()) {
+      if (item.done) {
+        break;
       }
 
-      var key = _ref2;
-
-      entries.push(newRecord('added', map, key));
+      entries[i] = newRecord('added', map, item.value);
+      i++;
     }
+
     return entries;
   }
 

@@ -140,7 +140,15 @@ let immediate = 0;             // count of bindings that have been immediately c
 
 function flush(animationFrameStart) {
   let i = 0;
-  for (let [binding] of bindings) {
+  let keys = bindings.keys();
+  let item;
+
+  while (item = keys.next()) {
+    if (item.done) {
+      break;
+    }
+    
+    let binding = item.value;
     bindings.delete(binding);
     binding.connect(true);
     i++;
@@ -753,10 +761,20 @@ function newRecord(type, object, key, oldValue){
 }
 
 export function getChangeRecords(map){
-  let entries = [];
-  for (let key of map.keys()) {
-    entries.push(newRecord('added', map, key));
+  let entries = new Array(map.size);
+  let keys = map.keys();
+  let i = 0;
+  let item;
+
+  while (item = keys.next()) {
+    if (item.done) {
+      break;
+    }
+    
+    entries[i] = newRecord('added', map, item.value);
+    i++;
   }
+  
   return entries;
 }
 
