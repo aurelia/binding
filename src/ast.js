@@ -687,7 +687,7 @@ export class Unparser {
     this.write(`&${behavior.name}`);
 
     for (i = 0; i < length; ++i) {
-      this.write(' :');
+      this.write(':');
       args[i].accept(this);
     }
 
@@ -704,7 +704,7 @@ export class Unparser {
     this.write(`|${converter.name}`);
 
     for (i = 0; i < length; ++i) {
-      this.write(' :');
+      this.write(':');
       args[i].accept(this);
     }
 
