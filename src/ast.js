@@ -682,7 +682,6 @@ export class Unparser {
         length = args.length,
         i;
 
-    this.write('(');
     behavior.expression.accept(this);
     this.write(`&${behavior.name}`);
 
@@ -690,8 +689,6 @@ export class Unparser {
       this.write(' :');
       args[i].accept(this);
     }
-
-    this.write(')');
   }
 
   visitValueConverter(converter) {
@@ -699,7 +696,6 @@ export class Unparser {
         length = args.length,
         i;
 
-    this.write('(');
     converter.expression.accept(this);
     this.write(`|${converter.name}`);
 
@@ -707,8 +703,6 @@ export class Unparser {
       this.write(' :');
       args[i].accept(this);
     }
-
-    this.write(')');
   }
 
   visitAssign(assign) {
@@ -784,11 +778,9 @@ export class Unparser {
   }
 
   visitBinary(binary) {
-    this.write('(');
     binary.left.accept(this);
     this.write(binary.operation);
     binary.right.accept(this);
-    this.write(')');
   }
 
   visitLiteralPrimitive(literal) {
