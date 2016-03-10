@@ -335,6 +335,13 @@ declare module 'aurelia-binding' {
    * Binding system API.
    */
   export class BindingEngine {
+
+    /**
+     * Gets or sets whether an object should automatically be created when a
+     * binding is assigning a property of a null or undefined object.
+     */
+    options: { automaticallyCreateInstance: boolean; };
+
     /**
      * Creates a binding expression for the specified target property and source expression.
      * @param targetProperty The target attribute, eg "value" / "checked" / "textcontent" / "data-foo".
@@ -411,7 +418,7 @@ declare module 'aurelia-binding' {
    * An internal API used by Aurelia's array observation components.
    */
   export function mergeSplice(splices: any, index: number, removed: any, addedCount: number): any;
-  
+
   /**
   * Decorator: Specifies that a property is observable.
   * @param targetOrConfig The name of the property, or a configuration object.
