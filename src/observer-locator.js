@@ -38,24 +38,54 @@ export class ObserverLocator {
   }
 
   getObserver(obj, propertyName) {
-    let observersLookup = obj.__observers__;
+    let resolved = this.resolveProperty(obj, propertyName);
+    
+    let observersLookup = resolved.obj.__observers__;
     let observer;
 
-    if (observersLookup && propertyName in observersLookup) {
-      return observersLookup[propertyName];
+    if (observersLookup && resolved.propertyName in observersLookup) {
+      return observersLookup[resolved.propertyName];
     }
 
-    observer = this.createPropertyObserver(obj, propertyName);
+    observer = this.createPropertyObserver(resolved.obj, resolved.propertyName);
 
     if (!observer.doNotCache) {
       if (observersLookup === undefined){
-        observersLookup = this.getOrCreateObserversLookup(obj);
+        observersLookup = this.getOrCreateObserversLookup(resolved.obj);
       }
 
-      observersLookup[propertyName] = observer;
+      observersLookup[resolved.propertyName] = observer;
     }
 
     return observer;
+  }
+  
+  resolveProperty(obj, propertyName) {
+    if (typeof obj !== 'object') {
+      throw new Error('Unable to observe property ' + propertyName + ' on non object value');
+    }
+    
+    if (/^[a-z0-9_$]+$/i.test(propertyName)) {
+      return { 
+        obj: obj, 
+        propertyName: propertyName 
+      };
+    } else if (/^[a-z0-9_$]+(?:\.[a-z0-9_$]+)*$/i.test(propertyName)) {
+      let path = propertyName.split('.');
+      let leaf = obj;
+      for (let index = 0, length = path.length - 1; index < length; index++) {
+        leaf = leaf[path[index]];
+        if (typeof leaf !== 'object') {
+          throw new Error('Unable to observe property ' + propertyName + ' on non object value');
+        }
+      }
+      return { 
+        obj: leaf, 
+        propertyName: path[path.length - 1]
+      };
+    }
+    
+    throw new Error('Unsupported observable property name: ' + propertyName);
   }
 
   getOrCreateObserversLookup(obj) {
