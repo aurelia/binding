@@ -1,25 +1,20 @@
-import {DOM} from 'aurelia-pal';
+import {Container} from 'aurelia-dependency-injection';
 import {ObserverLocator} from '../src/observer-locator';
-import {DirtyChecker} from '../src/dirty-checking';
-import {EventManager} from '../src/event-manager';
 import {Parser} from '../src/parser';
 import {BindingExpression} from '../src/binding-expression';
-import {SVGAnalyzer} from '../src/svg';
-import {TaskQueue} from 'aurelia-task-queue';
 
-export var checkDelay = 20;
+export const checkDelay = 20;
+
+export function createObserverLocator(container = new Container()) {
+  let locator = container.get(ObserverLocator);
+  locator.dirtyChecker.checkDelay = checkDelay;
+  return locator;
+}
 
 export function createElement(html) {
   var div = document.createElement('div');
   div.innerHTML = html;
   return div.firstChild;
-}
-
-export function createObserverLocator(adapters = []) {
-  let locator = new ObserverLocator(new TaskQueue(), new EventManager(), new DirtyChecker(), new SVGAnalyzer());
-  adapters.forEach(a => locator.addAdapter(a));
-  locator.dirtyChecker.checkDelay = checkDelay;
-  return locator;
 }
 
 export function getBinding(observerLocator, model, modelProperty, view, viewProperty, mode) {

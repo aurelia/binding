@@ -17,7 +17,8 @@ describe('ObserverLocator', () => {
   var locator;
 
   beforeAll(() => {
-    locator = createObserverLocator([new TestObservationAdapter(() => locator)]);
+    locator = createObserverLocator();
+    locator.addAdapter(new TestObservationAdapter(() => locator));
   });
 
   it('uses SetterObserver for defined, primitive properties on pojos', () => {
