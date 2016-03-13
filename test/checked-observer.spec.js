@@ -1,8 +1,8 @@
 import './setup';
+import {DOM} from 'aurelia-pal';
 import {bindingMode} from '../src/binding-mode';
 import {
   createElement,
-  fireEvent,
   checkDelay,
   createObserverLocator,
   getBinding
@@ -41,7 +41,7 @@ describe('CheckedObserver', () => {
 
     it('responds to element change', done => {
       el.checked = false;
-      fireEvent(el, 'change');
+      el.dispatchEvent(DOM.createCustomEvent('change'));
       setTimeout(() => {
         expect(obj.selectedItems.length).toBe(0);
         done();
@@ -96,7 +96,7 @@ describe('CheckedObserver', () => {
 
     it('responds to element change', done => {
       el.checked = false;
-      fireEvent(el, 'change');
+      el.dispatchEvent(DOM.createCustomEvent('change'));
       setTimeout(() => {
         expect(obj.selectedItems.length).toBe(0);
         done();
@@ -152,7 +152,7 @@ describe('CheckedObserver', () => {
 
     it('responds to element change', done => {
       el.checked = false;
-      fireEvent(el, 'change');
+      el.dispatchEvent(DOM.createCustomEvent('change'));
       setTimeout(() => {
         expect(obj.selectedItems.length).toBe(0);
         done();
@@ -206,7 +206,7 @@ describe('CheckedObserver', () => {
 
     it('responds to element change', done => {
       el.checked = false;
-      fireEvent(el, 'change');
+      el.dispatchEvent(DOM.createCustomEvent('change'));
       setTimeout(() => {
         expect(obj.checked).toBe(false);
         done();
@@ -266,7 +266,7 @@ describe('CheckedObserver', () => {
 
     it('responds to element change', done => {
       el.checked = true;
-      fireEvent(el, 'change');
+      el.dispatchEvent(DOM.createCustomEvent('change'));
       setTimeout(() => {
         expect(obj.selectedItems.length).toBe(1);
         done();
@@ -335,7 +335,7 @@ describe('CheckedObserver', () => {
 
     it('responds to element change', done => {
       radios[2].view.checked = true;
-      fireEvent(radios[2].view, 'change');
+      radios[2].view.dispatchEvent(DOM.createCustomEvent('change'));
       setTimeout(() => {
         expect(radios[0].view.checked).toBe(false);
         expect(radios[1].view.checked).toBe(false);
@@ -401,7 +401,7 @@ describe('CheckedObserver', () => {
 
     it('responds to element change', done => {
       radios[2].view.checked = true;
-      fireEvent(radios[2].view, 'change');
+      radios[2].view.dispatchEvent(DOM.createCustomEvent('change'));
       setTimeout(() => {
         expect(radios[0].view.checked).toBe(false);
         expect(radios[1].view.checked).toBe(false);
@@ -474,7 +474,7 @@ describe('CheckedObserver', () => {
 
     it('responds to element change', done => {
       radios[2].view.checked = true;
-      fireEvent(radios[2].view, 'change');
+      radios[2].view.dispatchEvent(DOM.createCustomEvent('change'));
       setTimeout(() => {
         expect(radios[0].view.checked).toBe(false);
         expect(radios[1].view.checked).toBe(false);

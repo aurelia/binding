@@ -1,7 +1,6 @@
 import './setup';
 import {
   createElement,
-  fireEvent,
   checkDelay,
   createObserverLocator,
   getBinding

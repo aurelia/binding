@@ -1,8 +1,8 @@
+import {DOM} from 'aurelia-pal';
 import './setup';
 import {bindingMode} from '../src/binding-mode';
 import {
   createElement,
-  fireEvent,
   checkDelay,
   createObserverLocator,
   getBinding
@@ -65,7 +65,7 @@ describe('AccessKeyedObserver', () => {
 
     it('responds to element change', done => {
       el.value = 'Jake';
-      fireEvent(el, 'change');
+      el.dispatchEvent(DOM.createCustomEvent('change'));
       setTimeout(() => {
         expect(el.value).toBe(obj.record.person[obj.key]);
         done();
@@ -130,7 +130,7 @@ describe('AccessKeyedObserver', () => {
 
     it('responds to element change', done => {
       el.value = 'Jake';
-      fireEvent(el, 'change');
+      el.dispatchEvent(DOM.createCustomEvent('change'));
       setTimeout(() => {
         expect(el.value).toBe(obj.record.person[obj.key].value);
         done();
@@ -211,7 +211,7 @@ describe('AccessKeyedObserver', () => {
 
     it('responds to element change', done => {
       el.value = 'Jake';
-      fireEvent(el, 'change');
+      el.dispatchEvent(DOM.createCustomEvent('change'));
       setTimeout(() => {
         expect(el.value).toBe(obj.person['first']);
         done();
@@ -302,7 +302,7 @@ describe('AccessKeyedObserver', () => {
 
     it('responds to element change', done => {
       el.value = 'bar';
-      fireEvent(el, 'change');
+      el.dispatchEvent(DOM.createCustomEvent('change'));
       setTimeout(() => {
         expect(el.value).toBe(obj.array[obj.key]);
         done();
@@ -368,7 +368,7 @@ describe('AccessKeyedObserver', () => {
 
     it('responds to element change', done => {
       el.value = 'bar';
-      fireEvent(el, 'change');
+      el.dispatchEvent(DOM.createCustomEvent('change'));
       setTimeout(() => {
         expect(el.value).toBe(obj.array[obj.key]);
         done();
@@ -418,7 +418,7 @@ describe('AccessKeyedObserver', () => {
 
     it('responds to element change', done => {
       el.value = 'bar';
-      fireEvent(el, 'change');
+      el.dispatchEvent(DOM.createCustomEvent('change'));
       setTimeout(() => {
         expect(el.value).toBe(obj.array[obj.key]);
         done();

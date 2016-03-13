@@ -1,6 +1,6 @@
 import './setup';
+import {DOM} from 'aurelia-pal';
 import {EventManager} from '../src/event-manager';
-import {createElement, createEvent} from './shared';
 
 describe('EventManager', () => {
   describe('getElementHandler', () => {
@@ -8,7 +8,7 @@ describe('EventManager', () => {
     beforeAll(() => em = new EventManager());
 
     it('handles input', () => {
-      var element = createElement('<input>');
+      var element = DOM.createElement('input');
 
       expect(em.getElementHandler(element, 'value')).not.toBeNull();
       expect(em.getElementHandler(element, 'checked')).not.toBeNull();
@@ -17,21 +17,21 @@ describe('EventManager', () => {
     });
 
     it('handles textarea', () => {
-      var element = createElement('<textarea></textarea>');
+      var element = DOM.createElement('textarea');
 
       expect(em.getElementHandler(element, 'value')).not.toBeNull();
       expect(em.getElementHandler(element, 'id')).toBeNull();
     });
 
     it('handles select', () => {
-      var element = createElement('<select></select>');
+      var element = DOM.createElement('select');
 
       expect(em.getElementHandler(element, 'value')).not.toBeNull();
       expect(em.getElementHandler(element, 'id')).toBeNull();
     });
 
     it('handles textContent and innerHTML properties', () => {
-      var element = createElement('<div></div>');
+      var element = DOM.createElement('div');
 
       expect(em.getElementHandler(element, 'textContent')).not.toBeNull();
       expect(em.getElementHandler(element, 'innerHTML')).not.toBeNull();
@@ -39,7 +39,7 @@ describe('EventManager', () => {
     });
 
     it('handles scrollTop and scrollLeft properties', () => {
-      var element = createElement('<div></div>');
+      var element = DOM.createElement('div');
 
       expect(em.getElementHandler(element, 'scrollTop')).not.toBeNull();
       expect(em.getElementHandler(element, 'scrollLeft')).not.toBeNull();
@@ -47,11 +47,12 @@ describe('EventManager', () => {
     });
 
     it('can subscribe', () => {
-      var element = createElement('<input value="foo">'),
+      var element = DOM.createElement('input'),
           handler = em.getElementHandler(element, 'value'),
           dispose,
           callback = jasmine.createSpy('callback'),
-          inputEvent = createEvent('input');
+          inputEvent = DOM.createCustomEvent('input');
+      element.value = 'foo';
       expect(handler).toBeDefined();
       expect(handler.subscribe).toBeDefined();
 

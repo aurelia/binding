@@ -1,8 +1,8 @@
 import './setup';
+import {DOM} from 'aurelia-pal';
 import {bindingMode} from '../src/binding-mode';
 import {
   createElement,
-  fireEvent,
   checkDelay,
   createObserverLocator,
   getBinding
@@ -71,7 +71,7 @@ describe('SelectValueObserver', () => {
 
     it('responds to element change', done => {
       el.value = 'A';
-      fireEvent(el, 'change');
+      el.dispatchEvent(DOM.createCustomEvent('change'));
       setTimeout(() => {
         expect(el.value).toBe(obj.selectedItem);
         done();
@@ -171,7 +171,7 @@ describe('SelectValueObserver', () => {
     it('responds to element change', done => {
       el.options.item(1).selected = true;
       el.options.item(2).selected = true;
-      fireEvent(el, 'change');
+      el.dispatchEvent(DOM.createCustomEvent('change'));
       setTimeout(() => {
         expect(elementValueProperty.getValue()).toBe(obj.selectedItems);
         expect(getElementValue(el)).toEqual(obj.selectedItems.slice(0));
@@ -249,7 +249,7 @@ describe('SelectValueObserver', () => {
     it('responds to element change', done => {
       el.options.item(0).selected = false;
       el.options.item(1).selected = true;
-      fireEvent(el, 'change');
+      el.dispatchEvent(DOM.createCustomEvent('change'));
       setTimeout(() => {
         expect(elementValueProperty.getValue()).toBe(obj.selectedItem);
         expect(getElementValue(el)).toEqual(obj.selectedItem);
@@ -332,7 +332,7 @@ describe('SelectValueObserver', () => {
     it('responds to element change', done => {
       el.options.item(0).selected = false;
       el.options.item(1).selected = true;
-      fireEvent(el, 'change');
+      el.dispatchEvent(DOM.createCustomEvent('change'));
       setTimeout(() => {
         expect(elementValueProperty.getValue()).toBe(obj.selectedItem);
         expect(getElementValue(el)).toEqual(obj.selectedItem);
@@ -427,7 +427,7 @@ describe('SelectValueObserver', () => {
       el.options.item(0).selected = true;
       el.options.item(1).selected = false;
       el.options.item(2).selected = true;
-      fireEvent(el, 'change');
+      el.dispatchEvent(DOM.createCustomEvent('change'));
       setTimeout(() => {
         expect(elementValueProperty.getValue()).toBe(obj.selectedItems);
         expect(getElementValue(el)).toEqual(obj.selectedItems.slice(0));
@@ -526,7 +526,7 @@ describe('SelectValueObserver', () => {
       el.options.item(0).selected = true;
       el.options.item(1).selected = false;
       el.options.item(2).selected = true;
-      fireEvent(el, 'change');
+      el.dispatchEvent(DOM.createCustomEvent('change'));
       setTimeout(() => {
         expect(elementValueProperty.getValue()).toBe(obj.selectedItems);
         expect(getElementValue(el)).toEqual(obj.selectedItems.slice(0));

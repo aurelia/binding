@@ -3,7 +3,6 @@ import {bindingMode} from '../src/binding-mode';
 import {sourceContext} from '../src/connectable-binding';
 import {
   createElement,
-  fireEvent,
   checkDelay,
   createObserverLocator,
   getBinding

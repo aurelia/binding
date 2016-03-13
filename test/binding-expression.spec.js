@@ -1,7 +1,8 @@
 import {Container} from 'aurelia-dependency-injection';
+import {DOM} from 'aurelia-pal';
 import {bindingMode} from '../src/binding-mode';
 import {BindingEngine} from '../src/binding-engine';
-import {checkDelay, fireEvent} from './shared';
+import {checkDelay} from './shared';
 import {createScopeForTest} from '../src/scope';
 
 describe('BindingExpression', () => {
@@ -78,7 +79,7 @@ describe('BindingExpression', () => {
         valueConverters.multiply.toView.calls.reset();
         valueConverters.multiply.fromView.calls.reset();
         target.value = '24';
-        fireEvent(target, 'change');
+        target.dispatchEvent(DOM.createCustomEvent('change'));
         setTimeout(() => {
           expect(valueConverters.numberToString.toView).toHaveBeenCalledWith(24);
           expect(valueConverters.numberToString.fromView).toHaveBeenCalledWith('24');
@@ -139,7 +140,7 @@ describe('BindingExpression', () => {
         setTimeout(() => {
           expect(target.value).toBe(source.foo.bar);
           target.value = 'burrito';
-          fireEvent(target, 'change');
+          target.dispatchEvent(DOM.createCustomEvent('change'));
           setTimeout(() => {
             expect(source.foo.bar).toBe(target.value);
             binding.unbind();

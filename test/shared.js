@@ -1,3 +1,4 @@
+import {DOM} from 'aurelia-pal';
 import {ObserverLocator} from '../src/observer-locator';
 import {DirtyChecker} from '../src/dirty-checking';
 import {EventManager} from '../src/event-manager';
@@ -12,17 +13,6 @@ export function createElement(html) {
   var div = document.createElement('div');
   div.innerHTML = html;
   return div.firstChild;
-}
-
-export function createEvent(name) {
-  var event = document.createEvent('Event');
-  event.initEvent(name, true, true);
-  return event;
-}
-
-export function fireEvent(element, name) {
-  var event = createEvent(name);
-  element.dispatchEvent(event);
 }
 
 export function createObserverLocator(adapters = []) {
