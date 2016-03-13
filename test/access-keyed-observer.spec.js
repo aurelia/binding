@@ -1,19 +1,19 @@
-import {DOM} from 'aurelia-pal';
 import './setup';
+import {DOM} from 'aurelia-pal';
+import {Container} from 'aurelia-dependency-injection';
 import {bindingMode} from '../src/binding-mode';
-import {
-  createElement,
-  checkDelay,
-  createObserverLocator,
-  getBinding
-} from './shared';
+import {createObserverLocator} from './shared';
 import {createScopeForTest} from '../src/scope';
+import {BindingEngine} from '../src/binding-engine';
 
 describe('AccessKeyedObserver', () => {
-  var observerLocator;
+  let engine, checkDelay;
 
   beforeAll(() => {
-    observerLocator = createObserverLocator();
+    let container = new Container();
+    createObserverLocator(container);
+    engine = container.get(BindingEngine);
+    checkDelay = engine.observerLocator.dirtyChecker.checkDelay;
   });
 
   describe('object property, key property', () => {
@@ -21,9 +21,9 @@ describe('AccessKeyedObserver', () => {
 
     beforeAll(() => {
       obj = { record: { person: { first: 'John', last: 'Doe' } }, key: 'first' };
-      el = createElement('<input type="text" />');
+      el = DOM.createElement('input');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, 'record.person[key]', el, 'value', bindingMode.twoWay).binding;
+      binding = engine.createBindingExpression('value', 'record.person[key]', bindingMode.twoWay).createBinding(el);
     });
 
     it('binds', () => {
@@ -86,9 +86,9 @@ describe('AccessKeyedObserver', () => {
 
     beforeAll(() => {
       obj = { record: { person: { first: { value: 'John', lastUpdated: new Date() }, last: { value: 'Doe', lastUpdated: new Date() } } }, key: 'first' };
-      el = createElement('<input type="text" />');
+      el = DOM.createElement('input');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, 'record.person[key].value', el, 'value', bindingMode.twoWay).binding;
+      binding = engine.createBindingExpression('value', 'record.person[key].value', bindingMode.twoWay).createBinding(el);
     });
 
     it('binds', () => {
@@ -151,9 +151,9 @@ describe('AccessKeyedObserver', () => {
 
     beforeAll(() => {
       obj = { key: 'first' };
-      el = createElement('<input type="text" />');
+      el = DOM.createElement('input');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, '{ first: \'John\', last: \'Doe\' }[key]', el, 'value', bindingMode.twoWay).binding;
+      binding = engine.createBindingExpression('value', '{ first: \'John\', last: \'Doe\' }[key]', bindingMode.twoWay).createBinding(el);
     });
 
     it('binds', () => {
@@ -183,9 +183,9 @@ describe('AccessKeyedObserver', () => {
 
     beforeAll(() => {
       obj = { person: { first: 'John', last: 'Doe' } };
-      el = createElement('<input type="text" />');
+      el = DOM.createElement('input');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, 'person[\'first\']', el, 'value', bindingMode.twoWay).binding;
+      binding = engine.createBindingExpression('value', 'person[\'first\']', bindingMode.twoWay).createBinding(el);
     });
 
     it('binds', () => {
@@ -232,9 +232,9 @@ describe('AccessKeyedObserver', () => {
 
     beforeAll(() => {
       obj = {};
-      el = createElement('<input type="text" />');
+      el = DOM.createElement('input');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, '{ first: \'John\', last: \'Doe\' }[\'first\']', el, 'value', bindingMode.twoWay).binding;
+      binding = engine.createBindingExpression('value', '{ first: \'John\', last: \'Doe\' }[\'first\']', bindingMode.twoWay).createBinding(el);
     });
 
     it('binds', () => {
@@ -256,9 +256,9 @@ describe('AccessKeyedObserver', () => {
 
     beforeAll(() => {
       obj = { array: ['a', 'b', 'c'], key: 1 };
-      el = createElement('<input type="text" />');
+      el = DOM.createElement('input');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, 'array[key]', el, 'value', bindingMode.twoWay).binding;
+      binding = engine.createBindingExpression('value', 'array[key]', bindingMode.twoWay).createBinding(el);
     });
 
     it('binds', () => {
@@ -323,9 +323,9 @@ describe('AccessKeyedObserver', () => {
 
     beforeAll(() => {
       obj = { array: ['a', 'b', 'c'], key: '1' };
-      el = createElement('<input type="text" />');
+      el = DOM.createElement('input');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, 'array[key]', el, 'value', bindingMode.twoWay).binding;
+      binding = engine.createBindingExpression('value', 'array[key]', bindingMode.twoWay).createBinding(el);
     });
 
     it('binds', () => {
@@ -389,9 +389,9 @@ describe('AccessKeyedObserver', () => {
 
     beforeAll(() => {
       obj = { array: ['a', 'b', 'c'], key: 1 };
-      el = createElement('<input type="text" />');
+      el = DOM.createElement('input');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, 'array[1]', el, 'value', bindingMode.twoWay).binding;
+      binding = engine.createBindingExpression('value', 'array[1]', bindingMode.twoWay).createBinding(el);
     });
 
     it('binds', () => {
@@ -439,9 +439,9 @@ describe('AccessKeyedObserver', () => {
 
     beforeAll(() => {
       obj = { key: 1 };
-      el = createElement('<input type="text" />');
+      el = DOM.createElement('input');
       document.body.appendChild(el);
-      binding = getBinding(observerLocator, obj, '[\'a\', \'b\', \'c\'][key]', el, 'value', bindingMode.twoWay).binding;
+      binding = engine.createBindingExpression('value', '[\'a\', \'b\', \'c\'][key]', bindingMode.twoWay).createBinding(el);
     });
 
     it('binds', () => {
