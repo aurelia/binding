@@ -20,6 +20,7 @@ gulp.task('build-index', function(){
     'connectable-binding.js',
     'connect-queue.js',
     'subscriber-collection.js',
+    'expression-observer.js',
     'array-change-records.js',
     'map-change-records.js',
     'collection-observation.js',
@@ -47,7 +48,7 @@ gulp.task('build-index', function(){
     'name-expression.js',
     'binding-engine.js',
     'set-observation.js',
-	'decorator-observable.js'
+    'decorator-observable.js'
     ].map(function(file){
       return paths.root + file;
   });

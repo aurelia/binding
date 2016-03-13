@@ -1,28 +1,9 @@
 import {bindingMode} from './binding-mode';
-import {ObserverLocator, ObjectObservationAdapter} from './observer-locator';
+import {ObserverLocator} from './observer-locator';
 import {Parser} from './parser';
 import {BindingExpression} from './binding-expression';
-import {Expression} from './ast';
-import {connectable} from './connectable-binding';
-import {subscriberCollection} from './subscriber-collection';
 import {createOverrideContext} from './scope';
-
-interface Disposable {
-  dispose(): void;
-}
-
-interface PropertyObserver {
-  subscribe(callback: (newValue: any, oldValue: any) => void): Disposable;
-}
-
-interface CollectionObserver {
-  subscribe(callback: (changeRecords: any) => void): Disposable;
-}
-
-interface LookupFunctions {
-  bindingBehaviors(name: string): any;
-  valueConverters(name: string): any;
-}
+import {ExpressionObserver} from './expression-observer';
 
 const lookupFunctions = {
   bindingBehaviors: name => null,
@@ -37,7 +18,7 @@ export class BindingEngine {
     this.parser = parser;
   }
 
-  createBindingExpression(targetProperty: string, sourceExpression: string, mode = bindingMode.oneWay, lookupFunctions?: LookupFunctions = lookupFunctions): BindingExpression {
+  createBindingExpression(targetProperty, sourceExpression, mode = bindingMode.oneWay, lookupFunctions = lookupFunctions) {
     return new BindingExpression(
       this.observerLocator,
       targetProperty,
@@ -46,7 +27,7 @@ export class BindingEngine {
       lookupFunctions);
   }
 
-  propertyObserver(obj: Object, propertyName: string): PropertyObserver {
+  propertyObserver(obj, propertyName) {
     return {
       subscribe: callback => {
         let observer = this.observerLocator.getObserver(obj, propertyName);
@@ -58,7 +39,7 @@ export class BindingEngine {
     };
   }
 
-  collectionObserver(collection: Array<any>|Map<any, any>): CollectionObserver {
+  collectionObserver(collection) {
     return {
       subscribe: callback => {
         let observer;
@@ -79,53 +60,16 @@ export class BindingEngine {
     };
   }
 
-  expressionObserver(bindingContext: any, expression: string): PropertyObserver {
+  expressionObserver(bindingContext, expression) {
     let scope = { bindingContext, overrideContext: createOverrideContext(bindingContext) };
-    return new ExpressionObserver(scope, this.parser.parse(expression), this.observerLocator);
+    return new ExpressionObserver(scope, this.parser.parse(expression), this.observerLocator, lookupFunctions);
   }
 
-  parseExpression(expression: string): Expression {
+  parseExpression(expression) {
     return this.parser.parse(expression);
   }
 
-  registerAdapter(adapter: ObjectObservationAdapter): void {
+  registerAdapter(adapter) {
     this.observerLocator.addAdapter(adapter);
-  }
-}
-
-@connectable()
-@subscriberCollection()
-class ExpressionObserver {
-  constructor(scope, expression, observerLocator) {
-    this.scope = scope;
-    this.expression = expression;
-    this.observerLocator = observerLocator;
-  }
-
-  subscribe(callback) {
-    if (!this.hasSubscribers()) {
-      this.oldValue = this.expression.evaluate(this.scope, lookupFunctions);
-      this.expression.connect(this, this.scope);
-    }
-    this.addSubscriber(callback);
-    return {
-      dispose: () => {
-        if (this.removeSubscriber(callback) && !this.hasSubscribers()) {
-          this.unobserve(true);
-        }
-      }
-    }
-  }
-
-  call() {
-    let newValue = this.expression.evaluate(this.scope, lookupFunctions);
-    let oldValue = this.oldValue;
-    if (newValue !== oldValue) {
-      this.oldValue = newValue;
-      this.callSubscribers(newValue, oldValue);
-    }
-    this._version++;
-    this.expression.connect(this, this.scope);
-    this.unobserve(false);
   }
 }
