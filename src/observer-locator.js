@@ -4,6 +4,7 @@ import {getArrayObserver} from './array-observation';
 import {getMapObserver} from './map-observation';
 import {getSetObserver} from './set-observation';
 import {EventManager} from './event-manager';
+import {Parser} from './parser';
 import {DirtyChecker, DirtyCheckProperty} from './dirty-checking';
 import {
   SetterObserver,
@@ -27,14 +28,15 @@ import {
 import {SVGAnalyzer} from './svg';
 
 export class ObserverLocator {
-  static inject = [TaskQueue, EventManager, DirtyChecker, SVGAnalyzer];
+  static inject = [TaskQueue, EventManager, DirtyChecker, SVGAnalyzer, Parser];
 
-  constructor(taskQueue, eventManager, dirtyChecker, svgAnalyzer) {
+  constructor(taskQueue, eventManager, dirtyChecker, svgAnalyzer, parser) {
     this.taskQueue = taskQueue;
     this.eventManager = eventManager;
     this.dirtyChecker = dirtyChecker;
     this.svgAnalyzer = svgAnalyzer;
     this.adapters = [];
+    this.parser = parser;
   }
 
   getObserver(obj, propertyName) {
