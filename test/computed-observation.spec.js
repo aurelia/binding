@@ -1,11 +1,21 @@
 import './setup';
-import {declarePropertyDependencies} from '../src/computed-observation';
-import {ComputedPropertyObserver} from '../src/computed-observation';
+import {declarePropertyDependencies, computedFrom} from '../src/computed-observation';
+import {ExpressionObserver} from '../src/expression-observer';
 import {createObserverLocator, Person, Foo} from './shared';
 
 describe('declarePropertyDependencies', () => {
   it('should declare dependencies for properties with a getter', () => {
-    var dependencies = ['firstName', 'lastName'],
+    class Person {
+      constructor() {
+        this.firstName = 'John';
+        this.lastName = 'Doe';
+      }
+      get fullName() {
+        return `${this.firstName} ${this.lastName}`;
+      }
+    }
+
+    let dependencies = ['firstName', 'lastName'],
         person = new Person();
     declarePropertyDependencies(Person, 'fullName', dependencies);
     expect(Object.getOwnPropertyDescriptor(person.constructor.prototype, 'fullName').get.dependencies)
@@ -13,17 +23,51 @@ describe('declarePropertyDependencies', () => {
   });
 
   it('should declare dependencies for properties with a setter', () => {
-    var dependencies = ['baz'],
-        foo = new Foo();
+    class Foo {
+      constructor() {
+        this._bar = null;
+      }
+      get bar() {
+        return this._bar;
+      }
+      set bar(newValue) {
+        this._bar = newValue;
+      }
+    }
 
+    let dependencies = ['baz'],
+        foo = new Foo();
     declarePropertyDependencies(Foo, 'bar', dependencies);
     expect(Object.getOwnPropertyDescriptor(foo.constructor.prototype, 'bar').get.dependencies)
       .toBe(dependencies);
   });
 });
 
-describe('ComputedObservationAdapter', () => {
+describe('createComputedObserver', () => {
   var person, observer, locator;
+
+  class Person {
+    constructor() {
+      this.obj = { firstName: 'John', lastName: 'Doe' };
+    }
+    @computedFrom('obj.firstName', 'obj.lastName')
+    get fullName() {
+      return `${this.obj.firstName} ${this.obj.lastName}`;
+    }
+  }
+
+  class Foo {
+    constructor() {
+      this._bar = null;
+    }
+    @computedFrom('_bar');
+    get bar() {
+      return this._bar;
+    }
+    set bar(newValue) {
+      this._bar = newValue;
+    }
+  }
 
   beforeAll(() => {
     locator = createObserverLocator();
@@ -31,8 +75,8 @@ describe('ComputedObservationAdapter', () => {
     observer = locator.getObserver(person, 'fullName');
   });
 
-  it('should be an ComputedPropertyObserver', () => {
-    expect(observer instanceof ComputedPropertyObserver).toBe(true);
+  it('should be an ExpressionObserver', () => {
+    expect(observer instanceof ExpressionObserver).toBe(true);
   });
 
   it('gets the value', () => {
@@ -56,11 +100,11 @@ describe('ComputedObservationAdapter', () => {
     observer.subscribe(callback);
     expect(observer.oldValue).toBe(observer.getValue());
 
-    person.lastName = 'Dough';
+    person.obj.lastName = 'Dough';
     setTimeout(() => {
       expect(callback).toHaveBeenCalledWith(person.fullName, oldValue);
       oldValue = observer.getValue();
-      person.firstName = 'Jon';
+      person.obj.firstName = 'Jon';
       setTimeout(() => {
         expect(callback).toHaveBeenCalledWith(person.fullName, oldValue);
         observer.unsubscribe(callback);

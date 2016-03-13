@@ -41,40 +41,6 @@ export function getBinding(observerLocator, model, modelProperty, view, viewProp
   };
 }
 
-export class Person {
-  constructor() {
-    this.firstName = 'John';
-    this.lastName = 'Doe';
-  }
-  get fullName() {
-    return `${this.firstName} ${this.lastName}`;
-  }
-}
-
-export class Foo {
-  constructor() {
-    this._bar = null;
-  }
-  get bar() {
-    return this._bar;
-  }
-  set bar(newValue) {
-    this._bar = newValue;
-  }
-}
-
-export class FooNoDep {
-  constructor() {
-    this._bar = null;
-  }
-  get bar() {
-    return this._bar;
-  }
-  set bar(newValue) {
-    this._bar = newValue;
-  }
-}
-
 function countSubscribers(observer) {
   let count = 0;
   if (observer._context0) { count++; }
