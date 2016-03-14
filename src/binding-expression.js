@@ -83,9 +83,8 @@ export class Binding {
     this.isBound = true;
     this.source = source;
 
-    let sourceExpression = this.sourceExpression;
-    if (sourceExpression.bind) {
-      sourceExpression.bind(this, source, this.lookupFunctions);
+    if (this.sourceExpression.bind) {
+      this.sourceExpression.bind(this, source, this.lookupFunctions);
     }
 
     let mode = this.mode;
@@ -97,13 +96,13 @@ export class Binding {
     if ('bind' in this.targetObserver) {
       this.targetObserver.bind();
     }
-    let value = sourceExpression.evaluate(source, this.lookupFunctions);
+    let value = this.sourceExpression.evaluate(source, this.lookupFunctions);
     this.updateTarget(value);
 
     if (mode === bindingMode.oneWay) {
       enqueueBindingConnect(this);
     } else if (mode === bindingMode.twoWay) {
-      sourceExpression.connect(this, source);
+      this.sourceExpression.connect(this, source);
       this.targetObserver.subscribe(targetContext, this);
     }
   }

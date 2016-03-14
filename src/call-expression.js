@@ -48,9 +48,8 @@ export class Call {
     this.isBound = true;
     this.source = source;
 
-    let sourceExpression = this.sourceExpression;
-    if (sourceExpression.bind) {
-      sourceExpression.bind(this, source, this.lookupFunctions);
+    if (this.sourceExpression.bind) {
+      this.sourceExpression.bind(this, source, this.lookupFunctions);
     }
     this.targetProperty.setValue($event => this.callSource($event));
   }
