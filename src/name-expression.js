@@ -9,14 +9,15 @@ function getAU(element) {
 }
 
 export class NameExpression {
-  constructor(sourceExpression, apiName) {
+  constructor(sourceExpression, apiName, lookupFunctions) {
     this.sourceExpression = sourceExpression;
     this.apiName = apiName;
+    this.lookupFunctions = lookupFunctions;
     this.discrete = true;
   }
 
   createBinding(target) {
-    return new NameBinder(this.sourceExpression, NameExpression.locateAPI(target, this.apiName));
+    return new NameBinder(this.sourceExpression, NameExpression.locateAPI(target, this.apiName), this.lookupFunctions);
   }
 
   static locateAPI(element: Element, apiName: string): Object {
@@ -42,9 +43,10 @@ export class NameExpression {
 }
 
 class NameBinder {
-  constructor(sourceExpression, target) {
+  constructor(sourceExpression, target, lookupFunctions) {
     this.sourceExpression = sourceExpression;
     this.target = target;
+    this.lookupFunctions = lookupFunctions;
   }
 
   bind(source) {
@@ -56,7 +58,10 @@ class NameBinder {
     }
     this.isBound = true;
     this.source = source;
-    this.sourceExpression.assign(this.source, this.target);
+    if (this.sourceExpression.bind) {
+      this.sourceExpression.bind(this, source, this.lookupFunctions);
+    }
+    this.sourceExpression.assign(this.source, this.target, this.lookupFunctions);
   }
 
   unbind() {
@@ -64,7 +69,10 @@ class NameBinder {
       return;
     }
     this.isBound = false;
-    this.sourceExpression.assign(this.source, null);
+    this.sourceExpression.assign(this.source, null, this.lookupFunctions);
+    if (this.sourceExpression.unbind) {
+      this.sourceExpression.unbind(this, this.source);
+    }
     this.source = null;
   }
 }

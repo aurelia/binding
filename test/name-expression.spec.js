@@ -3,7 +3,8 @@ import {
   AccessMember,
   AccessKeyed,
   LiteralPrimitive,
-  LiteralString
+  LiteralString,
+  BindingBehavior
 } from '../src/ast';
 import {createScopeForTest} from '../src/scope';
 import {NameExpression} from '../src/name-expression';
@@ -64,5 +65,26 @@ describe('NameExpression', () => {
     expect(scope.bindingContext.foo[5]).toBe(element.au.controller);
     binding.unbind();
     expect(scope.bindingContext.foo[5]).toBe(null);
+  });
+
+  it('supports binding behaviors', () => {
+    let sourceExpression = new BindingBehavior(new AccessScope('foo'), 'test', []);
+    let testBehavior = {
+      bind: jasmine.createSpy('bind'),
+      unbind: jasmine.createSpy('unbind')
+    };
+    let lookupFunctions = {
+      bindingBehaviors: name => testBehavior,
+      valueConverters: name => null
+    };
+    let expression = new NameExpression(sourceExpression, 'element', lookupFunctions);
+    let scope = createScopeForTest({});
+    let binding = expression.createBinding(element);
+    binding.bind(scope);
+    expect(scope.bindingContext.foo).toBe(element);
+    expect(binding.lookupFunctions.bindingBehaviors().bind).toHaveBeenCalledWith(binding, scope);
+    binding.unbind();
+    expect(scope.bindingContext.foo).toBe(null);
+    expect(binding.lookupFunctions.bindingBehaviors().unbind).toHaveBeenCalledWith(binding, scope);
   });
 });
