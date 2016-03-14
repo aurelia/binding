@@ -37,6 +37,7 @@ export class ExpressionObserver {
   unsubscribe(context, callable) {
     if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
       this.unobserve(true);
+      this.oldValue = undefined;
     }
   }
 
