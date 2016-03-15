@@ -28,7 +28,6 @@ gulp.task('build-index', function(){
     'ast.js',
     'unparser.js',
     'expression-cloner.js',
-    'expression-rebaser.js',
     'binding-mode.js',
     'lexer.js',
     'parser.js',
