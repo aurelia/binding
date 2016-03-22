@@ -351,6 +351,59 @@ export function subscriberCollection() {
   }
 }
 
+@connectable()
+@subscriberCollection()
+export class ExpressionObserver {
+  constructor(scope, expression, observerLocator, lookupFunctions) {
+    this.scope = scope;
+    this.expression = expression;
+    this.observerLocator = observerLocator;
+    this.lookupFunctions = lookupFunctions;
+  }
+
+  getValue() {
+    return this.expression.evaluate(this.scope, this.lookupFunctions);
+  }
+
+  setValue(newValue) {
+    this.expression.assign(this.scope, newValue);
+  }
+
+  subscribe(context, callable) {
+    if (!this.hasSubscribers()) {
+      this.oldValue = this.expression.evaluate(this.scope, this.lookupFunctions);
+      this.expression.connect(this, this.scope);
+    }
+    this.addSubscriber(context, callable);
+    if (arguments.length === 1 && context instanceof Function) {
+      return {
+        dispose: () => {
+          this.unsubscribe(context, callable);
+        }
+      }
+    }
+  }
+
+  unsubscribe(context, callable) {
+    if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
+      this.unobserve(true);
+      this.oldValue = undefined;
+    }
+  }
+
+  call() {
+    let newValue = this.expression.evaluate(this.scope, this.lookupFunctions);
+    let oldValue = this.oldValue;
+    if (newValue !== oldValue) {
+      this.oldValue = newValue;
+      this.callSubscribers(newValue, oldValue);
+    }
+    this._version++;
+    this.expression.connect(this, this.scope);
+    this.unobserve(false);
+  }
+}
+
 function isIndex(s) {
   return +s === s >>> 0;
 }
@@ -1091,8 +1144,8 @@ export class Chain extends Expression {
     return result;
   }
 
-  accept(visitor){
-    visitor.visitChain(this);
+  accept(visitor) {
+    return visitor.visitChain(this);
   }
 }
 
@@ -1114,7 +1167,7 @@ export class BindingBehavior extends Expression {
   }
 
   accept(visitor) {
-    visitor.visitBindingBehavior(this);
+    return visitor.visitBindingBehavior(this);
   }
 
   connect(binding, scope) {
@@ -1184,7 +1237,7 @@ export class ValueConverter extends Expression {
   }
 
   accept(visitor){
-    visitor.visitValueConverter(this);
+    return visitor.visitValueConverter(this);
   }
 
   connect(binding, scope) {
@@ -1230,7 +1283,7 @@ export class Conditional extends Expression {
   }
 
   accept(visitor){
-    visitor.visitConditional(this);
+    return visitor.visitConditional(this);
   }
 
   connect(binding, scope) {
@@ -1259,7 +1312,7 @@ export class AccessThis extends Expression {
   }
 
   accept(visitor) {
-    visitor.visitAccessThis(this);
+    return visitor.visitAccessThis(this);
   }
 
   connect(binding, scope) {
@@ -1286,7 +1339,7 @@ export class AccessScope extends Expression {
   }
 
   accept(visitor){
-    visitor.visitAccessScope(this);
+    return visitor.visitAccessScope(this);
   }
 
   connect(binding, scope) {
@@ -1321,7 +1374,7 @@ export class AccessMember extends Expression {
   }
 
   accept(visitor){
-    visitor.visitAccessMember(this);
+    return visitor.visitAccessMember(this);
   }
 
   connect(binding, scope) {
@@ -1355,7 +1408,7 @@ export class AccessKeyed extends Expression {
   }
 
   accept(visitor){
-    visitor.visitAccessKeyed(this);
+    return visitor.visitAccessKeyed(this);
   }
 
   connect(binding, scope) {
@@ -1394,7 +1447,7 @@ export class CallScope extends Expression {
   }
 
   accept(visitor){
-    visitor.visitCallScope(this);
+    return visitor.visitCallScope(this);
   }
 
   connect(binding, scope) {
@@ -1427,7 +1480,7 @@ export class CallMember extends Expression {
   }
 
   accept(visitor){
-    visitor.visitCallMember(this);
+    return visitor.visitCallMember(this);
   }
 
   connect(binding, scope) {
@@ -1463,7 +1516,7 @@ export class CallFunction extends Expression {
   }
 
   accept(visitor){
-    visitor.visitCallFunction(this);
+    return visitor.visitCallFunction(this);
   }
 
   connect(binding, scope) {
@@ -1538,7 +1591,7 @@ export class Binary extends Expression {
   }
 
   accept(visitor){
-    visitor.visitBinary(this);
+    return visitor.visitBinary(this);
   }
 
   connect(binding, scope) {
@@ -1564,7 +1617,7 @@ export class PrefixNot extends Expression {
   }
 
   accept(visitor){
-    visitor.visitPrefix(this);
+    return visitor.visitPrefix(this);
   }
 
   connect(binding, scope) {
@@ -1584,7 +1637,7 @@ export class LiteralPrimitive extends Expression {
   }
 
   accept(visitor){
-    visitor.visitLiteralPrimitive(this);
+    return visitor.visitLiteralPrimitive(this);
   }
 
   connect(binding, scope) {
@@ -1603,7 +1656,7 @@ export class LiteralString extends Expression {
   }
 
   accept(visitor){
-    visitor.visitLiteralString(this);
+    return visitor.visitLiteralString(this);
   }
 
   connect(binding, scope) {
@@ -1631,7 +1684,7 @@ export class LiteralArray extends Expression {
   }
 
   accept(visitor){
-    visitor.visitLiteralArray(this);
+    return visitor.visitLiteralArray(this);
   }
 
   connect(binding, scope) {
@@ -1665,7 +1718,7 @@ export class LiteralObject extends Expression {
   }
 
   accept(visitor){
-    visitor.visitLiteralObject(this);
+    return visitor.visitLiteralObject(this);
   }
 
   connect(binding, scope){
@@ -1673,216 +1726,6 @@ export class LiteralObject extends Expression {
     for (let i = 0; i < length; i++) {
       this.values[i].connect(binding, scope);
     }
-  }
-}
-
-export class Unparser {
-  constructor(buffer) {
-    this.buffer = buffer;
-  }
-
-  static unparse(expression) {
-    var buffer = [],
-        visitor = new Unparser(buffer);
-
-    expression.accept(visitor);
-
-    return buffer.join('');
-  }
-
-  write(text){
-    this.buffer.push(text);
-  }
-
-  writeArgs(args) {
-    var i, length;
-
-    this.write('(');
-
-    for (i = 0, length = args.length; i < length; ++i) {
-      if (i !== 0) {
-        this.write(',');
-      }
-
-      args[i].accept(this);
-    }
-
-    this.write(')');
-  }
-
-  visitChain(chain) {
-    var expressions = chain.expressions,
-        length = expressions.length,
-        i;
-
-    for (i = 0; i < length; ++i) {
-      if (i !== 0) {
-        this.write(';');
-      }
-
-      expressions[i].accept(this);
-    }
-  }
-
-  visitBindingBehavior(behavior) {
-    var args = behavior.args,
-        length = args.length,
-        i;
-
-    this.write('(');
-    behavior.expression.accept(this);
-    this.write(`&${behavior.name}`);
-
-    for (i = 0; i < length; ++i) {
-      this.write(' :');
-      args[i].accept(this);
-    }
-
-    this.write(')');
-  }
-
-  visitValueConverter(converter) {
-    var args = converter.args,
-        length = args.length,
-        i;
-
-    this.write('(');
-    converter.expression.accept(this);
-    this.write(`|${converter.name}`);
-
-    for (i = 0; i < length; ++i) {
-      this.write(' :');
-      args[i].accept(this);
-    }
-
-    this.write(')');
-  }
-
-  visitAssign(assign) {
-    assign.target.accept(this);
-    this.write('=');
-    assign.value.accept(this);
-  }
-
-  visitConditional(conditional) {
-    conditional.condition.accept(this);
-    this.write('?');
-    conditional.yes.accept(this);
-    this.write(':');
-    conditional.no.accept(this);
-  }
-
-  visitAccessThis(access) {
-    if (access.ancestor === 0) {
-      this.write('$this');
-      return;
-    }
-    this.write('$parent');
-    let i = access.ancestor - 1;
-    while(i--) {
-      this.write('.$parent');
-    }
-  }
-
-  visitAccessScope(access) {
-    let i = access.ancestor;
-    while (i--) {
-      this.write('$parent.');
-    }
-    this.write(access.name);
-  }
-
-  visitAccessMember(access) {
-    access.object.accept(this);
-    this.write(`.${access.name}`);
-  }
-
-  visitAccessKeyed(access) {
-    access.object.accept(this);
-    this.write('[');
-    access.key.accept(this);
-    this.write(']');
-  }
-
-  visitCallScope(call) {
-    let i = call.ancestor;
-    while (i--) {
-      this.write('$parent.');
-    }
-    this.write(call.name);
-    this.writeArgs(call.args);
-  }
-
-  visitCallFunction(call) {
-    call.func.accept(this);
-    this.writeArgs(call.args);
-  }
-
-  visitCallMember(call) {
-    call.object.accept(this);
-    this.write(`.${call.name}`);
-    this.writeArgs(call.args);
-  }
-
-  visitPrefix(prefix) {
-    this.write(`(${prefix.operation}`);
-    prefix.expression.accept(this);
-    this.write(')');
-  }
-
-  visitBinary(binary) {
-    this.write('(');
-    binary.left.accept(this);
-    this.write(binary.operation);
-    binary.right.accept(this);
-    this.write(')');
-  }
-
-  visitLiteralPrimitive(literal) {
-    this.write(`${literal.value}`);
-  }
-
-  visitLiteralArray(literal) {
-    var elements = literal.elements,
-        length = elements.length,
-        i;
-
-    this.write('[');
-
-    for (i = 0; i < length; ++i) {
-      if (i !== 0) {
-        this.write(',');
-      }
-
-      elements[i].accept(this);
-    }
-
-    this.write(']');
-  }
-
-  visitLiteralObject(literal) {
-    var keys = literal.keys,
-        values = literal.values,
-        length = keys.length,
-        i;
-
-    this.write('{');
-
-    for (i = 0; i < length; ++i) {
-      if (i !== 0){
-        this.write(',');
-      }
-
-      this.write(`'${keys[i]}':`);
-      values[i].accept(this);
-    }
-
-    this.write('}');
-  }
-
-  visitLiteralString(literal) {
-    var escaped = literal.value.replace(/'/g, "\'");
-    this.write(`'${escaped}'`);
   }
 }
 
@@ -1969,6 +1812,305 @@ function setKeyed(obj, key, value) {
   }
 
   return value;
+}
+
+export class Unparser {
+  constructor(buffer) {
+    this.buffer = buffer;
+  }
+
+  static unparse(expression) {
+    var buffer = [],
+        visitor = new Unparser(buffer);
+
+    expression.accept(visitor);
+
+    return buffer.join('');
+  }
+
+  write(text){
+    this.buffer.push(text);
+  }
+
+  writeArgs(args) {
+    var i, length;
+
+    this.write('(');
+
+    for (i = 0, length = args.length; i < length; ++i) {
+      if (i !== 0) {
+        this.write(',');
+      }
+
+      args[i].accept(this);
+    }
+
+    this.write(')');
+  }
+
+  visitChain(chain) {
+    var expressions = chain.expressions,
+        length = expressions.length,
+        i;
+
+    for (i = 0; i < length; ++i) {
+      if (i !== 0) {
+        this.write(';');
+      }
+
+      expressions[i].accept(this);
+    }
+  }
+
+  visitBindingBehavior(behavior) {
+    var args = behavior.args,
+        length = args.length,
+        i;
+
+    behavior.expression.accept(this);
+    this.write(`&${behavior.name}`);
+
+    for (i = 0; i < length; ++i) {
+      this.write(':');
+      args[i].accept(this);
+    }
+  }
+
+  visitValueConverter(converter) {
+    var args = converter.args,
+        length = args.length,
+        i;
+
+    converter.expression.accept(this);
+    this.write(`|${converter.name}`);
+
+    for (i = 0; i < length; ++i) {
+      this.write(':');
+      args[i].accept(this);
+    }
+  }
+
+  visitAssign(assign) {
+    assign.target.accept(this);
+    this.write('=');
+    assign.value.accept(this);
+  }
+
+  visitConditional(conditional) {
+    conditional.condition.accept(this);
+    this.write('?');
+    conditional.yes.accept(this);
+    this.write(':');
+    conditional.no.accept(this);
+  }
+
+  visitAccessThis(access) {
+    if (access.ancestor === 0) {
+      this.write('$this');
+      return;
+    }
+    this.write('$parent');
+    let i = access.ancestor - 1;
+    while(i--) {
+      this.write('.$parent');
+    }
+  }
+
+  visitAccessScope(access) {
+    let i = access.ancestor;
+    while (i--) {
+      this.write('$parent.');
+    }
+    this.write(access.name);
+  }
+
+  visitAccessMember(access) {
+    access.object.accept(this);
+    this.write(`.${access.name}`);
+  }
+
+  visitAccessKeyed(access) {
+    access.object.accept(this);
+    this.write('[');
+    access.key.accept(this);
+    this.write(']');
+  }
+
+  visitCallScope(call) {
+    let i = call.ancestor;
+    while (i--) {
+      this.write('$parent.');
+    }
+    this.write(call.name);
+    this.writeArgs(call.args);
+  }
+
+  visitCallFunction(call) {
+    call.func.accept(this);
+    this.writeArgs(call.args);
+  }
+
+  visitCallMember(call) {
+    call.object.accept(this);
+    this.write(`.${call.name}`);
+    this.writeArgs(call.args);
+  }
+
+  visitPrefix(prefix) {
+    this.write(`(${prefix.operation}`);
+    prefix.expression.accept(this);
+    this.write(')');
+  }
+
+  visitBinary(binary) {
+    binary.left.accept(this);
+    this.write(binary.operation);
+    binary.right.accept(this);
+  }
+
+  visitLiteralPrimitive(literal) {
+    this.write(`${literal.value}`);
+  }
+
+  visitLiteralArray(literal) {
+    var elements = literal.elements,
+        length = elements.length,
+        i;
+
+    this.write('[');
+
+    for (i = 0; i < length; ++i) {
+      if (i !== 0) {
+        this.write(',');
+      }
+
+      elements[i].accept(this);
+    }
+
+    this.write(']');
+  }
+
+  visitLiteralObject(literal) {
+    var keys = literal.keys,
+        values = literal.values,
+        length = keys.length,
+        i;
+
+    this.write('{');
+
+    for (i = 0; i < length; ++i) {
+      if (i !== 0){
+        this.write(',');
+      }
+
+      this.write(`'${keys[i]}':`);
+      values[i].accept(this);
+    }
+
+    this.write('}');
+  }
+
+  visitLiteralString(literal) {
+    var escaped = literal.value.replace(/'/g, "\'");
+    this.write(`'${escaped}'`);
+  }
+}
+
+export class ExpressionCloner {
+  cloneExpressionArray(array) {
+    let clonedArray = [];
+    let i = array.length;
+    while (i--) {
+      clonedArray[i] = array[i].accept(this);
+    }
+    return clonedArray;
+  }
+
+  visitChain(chain) {
+    return new Chain(this.cloneExpressionArray(chain.expressions));
+  }
+
+  visitBindingBehavior(behavior) {
+    return new BindingBehavior(
+      behavior.expression.accept(this),
+      behavior.name,
+      this.cloneExpressionArray(behavior.args));
+  }
+
+  visitValueConverter(converter) {
+    return new ValueConverter(
+      converter.expression.accept(this),
+      converter.name,
+      this.cloneExpressionArray(converter.args));
+  }
+
+  visitAssign(assign) {
+    return new Assign(assign.target.accept(this), assign.value.accept(this));
+  }
+
+  visitConditional(conditional) {
+    return new Conditional(
+      conditional.condition.accept(this),
+      conditional.yes.accept(this),
+      conditional.no.accept(this));
+  }
+
+  visitAccessThis(access) {
+    return new AccessThis(access.ancestor);
+  }
+
+  visitAccessScope(access) {
+    return new AccessScope(access.name, access.ancestor);
+  }
+
+  visitAccessMember(access) {
+    return new AccessMember(access.object.accept(this), access.name);
+  }
+
+  visitAccessKeyed(access) {
+    return new AccessKeyed(access.object.accept(this), access.key.accept(this));
+  }
+
+  visitCallScope(call) {
+    return new CallScope(call.name, this.cloneExpressionArray(call.args), call.ancestor);
+  }
+
+  visitCallFunction(call) {
+    return new CallFunction(call.func.accept(this), this.cloneExpressionArray(call.args));
+  }
+
+  visitCallMember(call) {
+    return new CallMember(call.object.accept(this), call.name, this.cloneExpressionArray(call.args));
+  }
+
+  visitPrefix(prefix) {
+    return new PrefixNot(prefix.operation, prefix.expression.accept(this));
+  }
+
+  visitBinary(binary) {
+    return new Binary(binary.operation, binary.left.accept(this), binary.right.accept(this));
+  }
+
+  visitLiteralPrimitive(literal) {
+    return new LiteralPrimitive(literal);
+  }
+
+  visitLiteralArray(literal) {
+    return new LiteralArray(this.cloneExpressionArray(literal.elements));
+  }
+
+  visitLiteralObject(literal) {
+    return new LiteralObject( literal.keys, this.cloneExpressionArray(literal.values));
+  }
+
+  visitLiteralString(literal) {
+    return new LiteralString(literal.value);
+  }
+}
+
+export function cloneExpression(expression) {
+  let visitor = new ExpressionCloner();
+  return expression.accept(visitor);
 }
 
 export const bindingMode = {
@@ -3783,64 +3925,6 @@ export class ClassObserver {
   }
 }
 
-const computedContext = 'ComputedPropertyObserver';
-
-@subscriberCollection()
-export class ComputedPropertyObserver {
-  constructor(obj, propertyName, descriptor, observerLocator) {
-    this.obj = obj;
-    this.propertyName = propertyName;
-    this.descriptor = descriptor;
-    this.observerLocator = observerLocator;
-  }
-
-  getValue(){
-    return this.obj[this.propertyName];
-  }
-
-  setValue(newValue){
-    this.obj[this.propertyName] = newValue;
-  }
-
-  call(context) {
-    let newValue = this.getValue();
-    if (this.oldValue === newValue)
-      return;
-    this.callSubscribers(newValue, this.oldValue);
-    this.oldValue = newValue;
-    return;
-  }
-
-  subscribe(context, callable) {
-    if (!this.hasSubscribers()) {
-      this.oldValue = this.getValue();
-
-      let dependencies = this.descriptor.get.dependencies;
-      this.observers = [];
-      for (let i = 0, ii = dependencies.length; i < ii; i++) {
-        let observer = this.observerLocator.getObserver(this.obj, dependencies[i]);
-        // todo:  consider throwing when a dependency's observer is an instance of DirtyCheckProperty.
-        this.observers.push(observer);
-        observer.subscribe(computedContext, this);
-      }
-    }
-
-    this.addSubscriber(context, callable);
-  }
-
-  unsubscribe(context, callable) {
-    if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
-      this.oldValue = undefined;
-
-      let i = this.observers.length;
-      while(i--) {
-        this.observers[i].unsubscribe(computedContext, this);
-      }
-      this.observers = null;
-    }
-  }
-}
-
 export function hasDeclaredDependencies(descriptor) {
   return descriptor && descriptor.get && descriptor.get.dependencies && descriptor.get.dependencies.length > 0;
 }
@@ -3855,6 +3939,50 @@ export function computedFrom(...rest){
     descriptor.get.dependencies = rest;
     return descriptor;
   }
+}
+
+export class ComputedExpression extends Expression {
+  constructor(name, dependencies) {
+    super();
+
+    this.name = name;
+    this.dependencies = dependencies;
+    this.isAssignable = true;
+  }
+
+  evaluate(scope, lookupFunctions) {
+    return scope.bindingContext[this.name];
+  }
+
+  assign(scope, value) {
+    scope.bindingContext[this.name] = value;
+  }
+
+  accept(visitor) {
+    throw new Error('not implemented');
+  }
+
+  connect(binding, scope) {
+    let dependencies = this.dependencies;
+    let i = dependencies.length;
+    while (i--) {
+      dependencies[i].connect(binding, scope);
+    }
+  }
+}
+
+export function createComputedObserver(obj, propertyName, descriptor, observerLocator) {
+  let dependencies = descriptor.get.dependencies;
+  if (!(dependencies instanceof ComputedExpression)) {
+    let i = dependencies.length;
+    while (i--) {
+      dependencies[i] = observerLocator.parser.parse(dependencies[i]);
+    }
+    dependencies = descriptor.get.dependencies = new ComputedExpression(propertyName, dependencies);
+  }
+
+  let scope = { bindingContext: obj, overrideContext: createOverrideContext(obj) };
+  return new ExpressionObserver(scope, dependencies, observerLocator);
 }
 
 export const elements = {
@@ -4085,13 +4213,14 @@ export class SVGAnalyzer {
 }
 
 export class ObserverLocator {
-  static inject = [TaskQueue, EventManager, DirtyChecker, SVGAnalyzer];
+  static inject = [TaskQueue, EventManager, DirtyChecker, SVGAnalyzer, Parser];
 
-  constructor(taskQueue, eventManager, dirtyChecker, svgAnalyzer) {
+  constructor(taskQueue, eventManager, dirtyChecker, svgAnalyzer, parser) {
     this.taskQueue = taskQueue;
     this.eventManager = eventManager;
     this.dirtyChecker = dirtyChecker;
     this.svgAnalyzer = svgAnalyzer;
+    this.parser = parser;
     this.adapters = [];
   }
 
@@ -4190,7 +4319,7 @@ export class ObserverLocator {
     descriptor = Object.getPropertyDescriptor(obj, propertyName);
 
     if (hasDeclaredDependencies(descriptor)) {
-      return new ComputedPropertyObserver(obj, propertyName, descriptor, this)
+      return createComputedObserver(obj, propertyName, descriptor, this);
     }
 
     let existingGetterOrSetter;
@@ -4347,9 +4476,8 @@ export class Binding {
     this.isBound = true;
     this.source = source;
 
-    let sourceExpression = this.sourceExpression;
-    if (sourceExpression.bind) {
-      sourceExpression.bind(this, source, this.lookupFunctions);
+    if (this.sourceExpression.bind) {
+      this.sourceExpression.bind(this, source, this.lookupFunctions);
     }
 
     let mode = this.mode;
@@ -4361,13 +4489,13 @@ export class Binding {
     if ('bind' in this.targetObserver) {
       this.targetObserver.bind();
     }
-    let value = sourceExpression.evaluate(source, this.lookupFunctions);
+    let value = this.sourceExpression.evaluate(source, this.lookupFunctions);
     this.updateTarget(value);
 
     if (mode === bindingMode.oneWay) {
       enqueueBindingConnect(this);
     } else if (mode === bindingMode.twoWay) {
-      sourceExpression.connect(this, source);
+      this.sourceExpression.connect(this, source);
       this.targetObserver.subscribe(targetContext, this);
     }
   }
@@ -4452,9 +4580,8 @@ export class Call {
     this.isBound = true;
     this.source = source;
 
-    let sourceExpression = this.sourceExpression;
-    if (sourceExpression.bind) {
-      sourceExpression.bind(this, source, this.lookupFunctions);
+    if (this.sourceExpression.bind) {
+      this.sourceExpression.bind(this, source, this.lookupFunctions);
     }
     this.targetProperty.setValue($event => this.callSource($event));
   }
@@ -4593,9 +4720,8 @@ export class Listener {
     this.isBound = true;
     this.source = source;
 
-    let sourceExpression = this.sourceExpression;
-    if (sourceExpression.bind) {
-      sourceExpression.bind(this, source, this.lookupFunctions);
+    if (this.sourceExpression.bind) {
+      this.sourceExpression.bind(this, source, this.lookupFunctions);
     }
     this._disposeListener = this.eventManager.addEventListener(
       this.target,
@@ -4629,14 +4755,15 @@ function getAU(element) {
 }
 
 export class NameExpression {
-  constructor(sourceExpression, apiName) {
+  constructor(sourceExpression, apiName, lookupFunctions) {
     this.sourceExpression = sourceExpression;
     this.apiName = apiName;
+    this.lookupFunctions = lookupFunctions;
     this.discrete = true;
   }
 
   createBinding(target) {
-    return new NameBinder(this.sourceExpression, NameExpression.locateAPI(target, this.apiName));
+    return new NameBinder(this.sourceExpression, NameExpression.locateAPI(target, this.apiName), this.lookupFunctions);
   }
 
   static locateAPI(element: Element, apiName: string): Object {
@@ -4662,9 +4789,10 @@ export class NameExpression {
 }
 
 class NameBinder {
-  constructor(sourceExpression, target) {
+  constructor(sourceExpression, target, lookupFunctions) {
     this.sourceExpression = sourceExpression;
     this.target = target;
+    this.lookupFunctions = lookupFunctions;
   }
 
   bind(source) {
@@ -4676,7 +4804,10 @@ class NameBinder {
     }
     this.isBound = true;
     this.source = source;
-    this.sourceExpression.assign(this.source, this.target);
+    if (this.sourceExpression.bind) {
+      this.sourceExpression.bind(this, source, this.lookupFunctions);
+    }
+    this.sourceExpression.assign(this.source, this.target, this.lookupFunctions);
   }
 
   unbind() {
@@ -4684,26 +4815,12 @@ class NameBinder {
       return;
     }
     this.isBound = false;
-    this.sourceExpression.assign(this.source, null);
+    this.sourceExpression.assign(this.source, null, this.lookupFunctions);
+    if (this.sourceExpression.unbind) {
+      this.sourceExpression.unbind(this, this.source);
+    }
     this.source = null;
   }
-}
-
-interface Disposable {
-  dispose(): void;
-}
-
-interface PropertyObserver {
-  subscribe(callback: (newValue: any, oldValue: any) => void): Disposable;
-}
-
-interface CollectionObserver {
-  subscribe(callback: (changeRecords: any) => void): Disposable;
-}
-
-interface LookupFunctions {
-  bindingBehaviors(name: string): any;
-  valueConverters(name: string): any;
 }
 
 const lookupFunctions = {
@@ -4719,7 +4836,7 @@ export class BindingEngine {
     this.parser = parser;
   }
 
-  createBindingExpression(targetProperty: string, sourceExpression: string, mode = bindingMode.oneWay, lookupFunctions?: LookupFunctions = lookupFunctions): BindingExpression {
+  createBindingExpression(targetProperty, sourceExpression, mode = bindingMode.oneWay, lookupFunctions = lookupFunctions) {
     return new BindingExpression(
       this.observerLocator,
       targetProperty,
@@ -4728,7 +4845,7 @@ export class BindingEngine {
       lookupFunctions);
   }
 
-  propertyObserver(obj: Object, propertyName: string): PropertyObserver {
+  propertyObserver(obj, propertyName) {
     return {
       subscribe: callback => {
         let observer = this.observerLocator.getObserver(obj, propertyName);
@@ -4740,7 +4857,7 @@ export class BindingEngine {
     };
   }
 
-  collectionObserver(collection: Array<any>|Map<any, any>): CollectionObserver {
+  collectionObserver(collection) {
     return {
       subscribe: callback => {
         let observer;
@@ -4761,54 +4878,17 @@ export class BindingEngine {
     };
   }
 
-  expressionObserver(bindingContext: any, expression: string): PropertyObserver {
+  expressionObserver(bindingContext, expression) {
     let scope = { bindingContext, overrideContext: createOverrideContext(bindingContext) };
-    return new ExpressionObserver(scope, this.parser.parse(expression), this.observerLocator);
+    return new ExpressionObserver(scope, this.parser.parse(expression), this.observerLocator, lookupFunctions);
   }
 
-  parseExpression(expression: string): Expression {
+  parseExpression(expression) {
     return this.parser.parse(expression);
   }
 
-  registerAdapter(adapter: ObjectObservationAdapter): void {
+  registerAdapter(adapter) {
     this.observerLocator.addAdapter(adapter);
-  }
-}
-
-@connectable()
-@subscriberCollection()
-class ExpressionObserver {
-  constructor(scope, expression, observerLocator) {
-    this.scope = scope;
-    this.expression = expression;
-    this.observerLocator = observerLocator;
-  }
-
-  subscribe(callback) {
-    if (!this.hasSubscribers()) {
-      this.oldValue = this.expression.evaluate(this.scope, lookupFunctions);
-      this.expression.connect(this, this.scope);
-    }
-    this.addSubscriber(callback);
-    return {
-      dispose: () => {
-        if (this.removeSubscriber(callback) && !this.hasSubscribers()) {
-          this.unobserve(true);
-        }
-      }
-    }
-  }
-
-  call() {
-    let newValue = this.expression.evaluate(this.scope, lookupFunctions);
-    let oldValue = this.oldValue;
-    if (newValue !== oldValue) {
-      this.oldValue = newValue;
-      this.callSubscribers(newValue, oldValue);
-    }
-    this._version++;
-    this.expression.connect(this, this.scope);
-    this.unobserve(false);
   }
 }
 

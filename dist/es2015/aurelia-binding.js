@@ -1,34 +1,24 @@
-import {PLATFORM,DOM} from 'aurelia-pal';
-import {TaskQueue} from 'aurelia-task-queue';
-import {metadata} from 'aurelia-metadata';
+var _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class5, _dec6, _class7, _dec7, _class8, _dec8, _class9, _dec9, _class10, _class11, _temp, _dec10, _class12, _class13, _temp2;
+
+import { PLATFORM, DOM } from 'aurelia-pal';
+import { TaskQueue } from 'aurelia-task-queue';
+import { metadata } from 'aurelia-metadata';
 
 export function camelCase(name) {
   return name.charAt(0).toLowerCase() + name.slice(1);
 }
 
-interface OverrideContext {
-  parentOverrideContext: OverrideContext;
-  bindingContext: any;
-}
-
-// view instances implement this interface
-interface Scope {
-  bindingContext: any;
-  overrideContext: OverrideContext;
-}
-
-export function createOverrideContext(bindingContext?: any, parentOverrideContext?: OverrideContext): OverrideContext {
+export function createOverrideContext(bindingContext, parentOverrideContext) {
   return {
     bindingContext: bindingContext,
     parentOverrideContext: parentOverrideContext || null
   };
 }
 
-export function getContextFor(name: string, scope: Scope, ancestor: number): any {
+export function getContextFor(name, scope, ancestor) {
   let oc = scope.overrideContext;
 
   if (ancestor) {
-    // jump up the required number of ancestor contexts (eg $parent.$parent requires two jumps)
     while (ancestor && oc) {
       ancestor--;
       oc = oc.parentOverrideContext;
@@ -39,24 +29,22 @@ export function getContextFor(name: string, scope: Scope, ancestor: number): any
     return name in oc ? oc : oc.bindingContext;
   }
 
-  // traverse the context and it's ancestors, searching for a context that has the name.
   while (oc && !(name in oc) && !(oc.bindingContext && name in oc.bindingContext)) {
     oc = oc.parentOverrideContext;
   }
   if (oc) {
-    // we located a context with the property.  return it.
     return name in oc ? oc : oc.bindingContext;
   }
-  // the name wasn't found.  return the root binding context.
+
   return scope.bindingContext || scope.overrideContext;
 }
 
-export function createScopeForTest(bindingContext: any, parentBindingContext?: any): Scope {
+export function createScopeForTest(bindingContext, parentBindingContext) {
   if (parentBindingContext) {
     return {
       bindingContext,
       overrideContext: createOverrideContext(bindingContext, createOverrideContext(parentBindingContext))
-    }
+    };
   }
   return {
     bindingContext,
@@ -69,17 +57,15 @@ const slotNames = [];
 const versionSlotNames = [];
 
 for (let i = 0; i < 100; i++) {
-  slotNames.push(`_observer${i}`);
-  versionSlotNames.push(`_observerVersion${i}`);
+  slotNames.push(`_observer${ i }`);
+  versionSlotNames.push(`_observerVersion${ i }`);
 }
 
 function addObserver(observer) {
-  // find the observer.
   let observerSlots = this._observerSlots === undefined ? 0 : this._observerSlots;
   let i = observerSlots;
   while (i-- && this[slotNames[i]] !== observer) {}
 
-  // if we are not already observing, put the observer in an open slot and subscribe.
   if (i === -1) {
     i = 0;
     while (this[slotNames[i]]) {
@@ -87,12 +73,12 @@ function addObserver(observer) {
     }
     this[slotNames[i]] = observer;
     observer.subscribe(sourceContext, this);
-    // increment the slot count.
+
     if (i === observerSlots) {
       this._observerSlots = i + 1;
     }
   }
-  // set the "version" when the observer was used.
+
   if (this._version === undefined) {
     this._version = 0;
   }
@@ -123,20 +109,20 @@ function unobserve(all) {
 }
 
 export function connectable() {
-  return function(target) {
+  return function (target) {
     target.prototype.observeProperty = observeProperty;
     target.prototype.observeArray = observeArray;
     target.prototype.unobserve = unobserve;
     target.prototype.addObserver = addObserver;
-  }
+  };
 }
 
-const bindings = new Map();    // the connect queue
-const minimumImmediate = 100;  // number of bindings we should connect immediately before resorting to queueing
-const frameBudget = 15;        // milliseconds allotted to each frame for flushing queue
+const bindings = new Map();
+const minimumImmediate = 100;
+const frameBudget = 15;
 
-let isFlushRequested = false;  // whether a flush of the connect queue has been requested
-let immediate = 0;             // count of bindings that have been immediately connected
+let isFlushRequested = false;
+let immediate = 0;
 
 function flush(animationFrameStart) {
   let i = 0;
@@ -147,13 +133,12 @@ function flush(animationFrameStart) {
     if (item.done) {
       break;
     }
-    
+
     let binding = item.value;
     bindings.delete(binding);
     binding.connect(true);
     i++;
-    // periodically check whether the frame budget has been hit.
-    // this ensures we don't call performance.now a lot and prevents starving the connect queue.
+
     if (i % 100 === 0 && PLATFORM.performance.now() - animationFrameStart > frameBudget) {
       break;
     }
@@ -252,9 +237,8 @@ function callSubscribers(newValue, oldValue) {
   let poolIndex;
   let i;
   if (length) {
-    // grab temp arrays from the pool.
     poolIndex = poolUtilization.length;
-    while (poolIndex-- && poolUtilization[poolIndex]) { }
+    while (poolIndex-- && poolUtilization[poolIndex]) {}
     if (poolIndex < 0) {
       poolIndex = poolUtilization.length;
       contextsRest = [];
@@ -267,9 +251,9 @@ function callSubscribers(newValue, oldValue) {
       contextsRest = arrayPool1[poolIndex];
       callablesRest = arrayPool2[poolIndex];
     }
-    // copy the contents of the "rest" arrays.
+
     i = length;
-    while(i--) {
+    while (i--) {
       contextsRest[i] = this._contextsRest[i];
       callablesRest[i] = this._callablesRest[i];
     }
@@ -299,7 +283,7 @@ function callSubscribers(newValue, oldValue) {
   if (length) {
     for (i = 0; i < length; i++) {
       let callable = callablesRest[i];
-      let context = contextsRest[i]
+      let context = contextsRest[i];
       if (callable) {
         callable.call(context, newValue, oldValue);
       } else {
@@ -313,17 +297,11 @@ function callSubscribers(newValue, oldValue) {
 }
 
 function hasSubscribers() {
-  return !!(
-    this._context0
-    || this._context1
-    || this._context2
-    || this._contextsRest && this._contextsRest.length);
+  return !!(this._context0 || this._context1 || this._context2 || this._contextsRest && this._contextsRest.length);
 }
 
 function hasSubscriber(context, callable) {
-  let has = this._context0 === context && this._callable0 === callable
-    || this._context1 === context && this._callable1 === callable
-    || this._context2 === context && this._callable2 === callable;
+  let has = this._context0 === context && this._callable0 === callable || this._context1 === context && this._callable1 === callable || this._context2 === context && this._callable2 === callable;
   if (has) {
     return true;
   }
@@ -342,14 +320,65 @@ function hasSubscriber(context, callable) {
 }
 
 export function subscriberCollection() {
-  return function(target) {
+  return function (target) {
     target.prototype.addSubscriber = addSubscriber;
     target.prototype.removeSubscriber = removeSubscriber;
     target.prototype.callSubscribers = callSubscribers;
     target.prototype.hasSubscribers = hasSubscribers;
     target.prototype.hasSubscriber = hasSubscriber;
-  }
+  };
 }
+
+export let ExpressionObserver = (_dec = connectable(), _dec2 = subscriberCollection(), _dec(_class = _dec2(_class = class ExpressionObserver {
+  constructor(scope, expression, observerLocator, lookupFunctions) {
+    this.scope = scope;
+    this.expression = expression;
+    this.observerLocator = observerLocator;
+    this.lookupFunctions = lookupFunctions;
+  }
+
+  getValue() {
+    return this.expression.evaluate(this.scope, this.lookupFunctions);
+  }
+
+  setValue(newValue) {
+    this.expression.assign(this.scope, newValue);
+  }
+
+  subscribe(context, callable) {
+    if (!this.hasSubscribers()) {
+      this.oldValue = this.expression.evaluate(this.scope, this.lookupFunctions);
+      this.expression.connect(this, this.scope);
+    }
+    this.addSubscriber(context, callable);
+    if (arguments.length === 1 && context instanceof Function) {
+      return {
+        dispose: () => {
+          this.unsubscribe(context, callable);
+        }
+      };
+    }
+  }
+
+  unsubscribe(context, callable) {
+    if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
+      this.unobserve(true);
+      this.oldValue = undefined;
+    }
+  }
+
+  call() {
+    let newValue = this.expression.evaluate(this.scope, this.lookupFunctions);
+    let oldValue = this.oldValue;
+    if (newValue !== oldValue) {
+      this.oldValue = newValue;
+      this.callSubscribers(newValue, oldValue);
+    }
+    this._version++;
+    this.expression.connect(this, this.scope);
+    this.unobserve(false);
+  }
+}) || _class) || _class);
 
 function isIndex(s) {
   return +s === s >>> 0;
@@ -375,40 +404,24 @@ const EDIT_DELETE = 3;
 function ArraySplice() {}
 
 ArraySplice.prototype = {
-  // Note: This function is *based* on the computation of the Levenshtein
-  // "edit" distance. The one change is that "updates" are treated as two
-  // edits - not one. With Array splices, an update is really a delete
-  // followed by an add. By retaining this, we optimize for "keeping" the
-  // maximum array items in the original array. For example:
-  //
-  //   'xxxx123' -> '123yyyy'
-  //
-  // With 1-edit updates, the shortest path would be just to update all seven
-  // characters. With 2-edit updates, we delete 4, leave 3, and add 4. This
-  // leaves the substring '123' intact.
-  calcEditDistances: function(current, currentStart, currentEnd, old, oldStart, oldEnd) {
-    // "Deletion" columns
+  calcEditDistances: function (current, currentStart, currentEnd, old, oldStart, oldEnd) {
     var rowCount = oldEnd - oldStart + 1;
     var columnCount = currentEnd - currentStart + 1;
     var distances = new Array(rowCount);
     var i, j, north, west;
 
-    // "Addition" rows. Initialize null column.
     for (i = 0; i < rowCount; ++i) {
       distances[i] = new Array(columnCount);
       distances[i][0] = i;
     }
 
-    // Initialize null row
-    for (j = 0; j < columnCount; ++j){
+    for (j = 0; j < columnCount; ++j) {
       distances[0][j] = j;
     }
 
     for (i = 1; i < rowCount; ++i) {
       for (j = 1; j < columnCount; ++j) {
-        if (this.equals(current[currentStart + j - 1], old[oldStart + i - 1]))
-          distances[i][j] = distances[i - 1][j - 1];
-        else {
+        if (this.equals(current[currentStart + j - 1], old[oldStart + i - 1])) distances[i][j] = distances[i - 1][j - 1];else {
           north = distances[i - 1][j] + 1;
           west = distances[i][j - 1] + 1;
           distances[i][j] = north < west ? north : west;
@@ -419,10 +432,7 @@ ArraySplice.prototype = {
     return distances;
   },
 
-  // This starts at the final weight, and walks "backward" by finding
-  // the minimum previous weight recursively until the origin of the weight
-  // matrix.
-  spliceOperationsFromEditDistances: function(distances) {
+  spliceOperationsFromEditDistances: function (distances) {
     var i = distances.length - 1;
     var j = distances[0].length - 1;
     var current = distances[i][j];
@@ -443,10 +453,7 @@ ArraySplice.prototype = {
       var north = distances[i][j - 1];
 
       var min;
-      if (west < north)
-        min = west < northWest ? west : northWest;
-      else
-        min = north < northWest ? north : northWest;
+      if (west < north) min = west < northWest ? west : northWest;else min = north < northWest ? north : northWest;
 
       if (min == northWest) {
         if (northWest == current) {
@@ -472,68 +479,37 @@ ArraySplice.prototype = {
     return edits;
   },
 
-  /**
-   * Splice Projection functions:
-   *
-   * A splice map is a representation of how a previous array of items
-   * was transformed into a new array of items. Conceptually it is a list of
-   * tuples of
-   *
-   *   <index, removed, addedCount>
-   *
-   * which are kept in ascending index order of. The tuple represents that at
-   * the |index|, |removed| sequence of items were removed, and counting forward
-   * from |index|, |addedCount| items were added.
-   */
-
-  /**
-   * Lacking individual splice mutation information, the minimal set of
-   * splices can be synthesized given the previous state and final state of an
-   * array. The basic approach is to calculate the edit distance matrix and
-   * choose the shortest path through it.
-   *
-   * Complexity: O(l * p)
-   *   l: The length of the current array
-   *   p: The length of the old array
-   */
-  calcSplices: function(current, currentStart, currentEnd, old, oldStart, oldEnd) {
+  calcSplices: function (current, currentStart, currentEnd, old, oldStart, oldEnd) {
     var prefixCount = 0;
     var suffixCount = 0;
 
     var minLength = Math.min(currentEnd - currentStart, oldEnd - oldStart);
-    if (currentStart == 0 && oldStart == 0)
-      prefixCount = this.sharedPrefix(current, old, minLength);
+    if (currentStart == 0 && oldStart == 0) prefixCount = this.sharedPrefix(current, old, minLength);
 
-    if (currentEnd == current.length && oldEnd == old.length)
-      suffixCount = this.sharedSuffix(current, old, minLength - prefixCount);
+    if (currentEnd == current.length && oldEnd == old.length) suffixCount = this.sharedSuffix(current, old, minLength - prefixCount);
 
     currentStart += prefixCount;
     oldStart += prefixCount;
     currentEnd -= suffixCount;
     oldEnd -= suffixCount;
 
-    if (currentEnd - currentStart == 0 && oldEnd - oldStart == 0)
-      return [];
+    if (currentEnd - currentStart == 0 && oldEnd - oldStart == 0) return [];
 
     if (currentStart == currentEnd) {
       var splice = newSplice(currentStart, [], 0);
-      while (oldStart < oldEnd)
-        splice.removed.push(old[oldStart++]);
+      while (oldStart < oldEnd) splice.removed.push(old[oldStart++]);
 
-      return [ splice ];
-    } else if (oldStart == oldEnd)
-      return [ newSplice(currentStart, [], currentEnd - currentStart) ];
+      return [splice];
+    } else if (oldStart == oldEnd) return [newSplice(currentStart, [], currentEnd - currentStart)];
 
-    var ops = this.spliceOperationsFromEditDistances(
-        this.calcEditDistances(current, currentStart, currentEnd,
-                               old, oldStart, oldEnd));
+    var ops = this.spliceOperationsFromEditDistances(this.calcEditDistances(current, currentStart, currentEnd, old, oldStart, oldEnd));
 
     var splice = undefined;
     var splices = [];
     var index = currentStart;
     var oldIndex = oldStart;
     for (var i = 0; i < ops.length; ++i) {
-      switch(ops[i]) {
+      switch (ops[i]) {
         case EDIT_LEAVE:
           if (splice) {
             splices.push(splice);
@@ -544,8 +520,7 @@ ArraySplice.prototype = {
           oldIndex++;
           break;
         case EDIT_UPDATE:
-          if (!splice)
-            splice = newSplice(index, [], 0);
+          if (!splice) splice = newSplice(index, [], 0);
 
           splice.addedCount++;
           index++;
@@ -554,15 +529,13 @@ ArraySplice.prototype = {
           oldIndex++;
           break;
         case EDIT_ADD:
-          if (!splice)
-            splice = newSplice(index, [], 0);
+          if (!splice) splice = newSplice(index, [], 0);
 
           splice.addedCount++;
           index++;
           break;
         case EDIT_DELETE:
-          if (!splice)
-            splice = newSplice(index, [], 0);
+          if (!splice) splice = newSplice(index, [], 0);
 
           splice.removed.push(old[oldIndex]);
           oldIndex++;
@@ -576,29 +549,25 @@ ArraySplice.prototype = {
     return splices;
   },
 
-  sharedPrefix: function(current, old, searchLength) {
-    for (var i = 0; i < searchLength; ++i)
-      if (!this.equals(current[i], old[i]))
-        return i;
+  sharedPrefix: function (current, old, searchLength) {
+    for (var i = 0; i < searchLength; ++i) if (!this.equals(current[i], old[i])) return i;
     return searchLength;
   },
 
-  sharedSuffix: function(current, old, searchLength) {
+  sharedSuffix: function (current, old, searchLength) {
     var index1 = current.length;
     var index2 = old.length;
     var count = 0;
-    while (count < searchLength && this.equals(current[--index1], old[--index2]))
-      count++;
+    while (count < searchLength && this.equals(current[--index1], old[--index2])) count++;
 
     return count;
   },
 
-  calculateSplices: function(current, previous) {
-    return this.calcSplices(current, 0, current.length, previous, 0,
-                            previous.length);
+  calculateSplices: function (current, previous) {
+    return this.calcSplices(current, 0, current.length, previous, 0, previous.length);
   },
 
-  equals: function(currentValue, previousValue) {
+  equals: function (currentValue, previousValue) {
     return currentValue === previousValue;
   }
 };
@@ -610,27 +579,15 @@ export function calcSplices(current, currentStart, currentEnd, old, oldStart, ol
 }
 
 function intersect(start1, end1, start2, end2) {
-  // Disjoint
-  if (end1 < start2 || end2 < start1)
-    return -1;
+  if (end1 < start2 || end2 < start1) return -1;
 
-  // Adjacent
-  if (end1 == start2 || end2 == start1)
-    return 0;
+  if (end1 == start2 || end2 == start1) return 0;
 
-  // Non-zero intersect, span1 first
   if (start1 < start2) {
-    if (end1 < end2)
-      return end1 - start2; // Overlap
-    else
-      return end2 - start2; // Contained
+    if (end1 < end2) return end1 - start2;else return end2 - start2;
   } else {
-    // Non-zero intersect, span2 first
-    if (end2 < end1)
-      return end2 - start1; // Overlap
-    else
-      return end1 - start1; // Contained
-  }
+      if (end2 < end1) return end2 - start1;else return end1 - start1;
+    }
 }
 
 export function mergeSplice(splices, index, removed, addedCount) {
@@ -643,16 +600,11 @@ export function mergeSplice(splices, index, removed, addedCount) {
     var current = splices[i];
     current.index += insertionOffset;
 
-    if (inserted)
-      continue;
+    if (inserted) continue;
 
-    var intersectCount = intersect(splice.index,
-                                   splice.index + splice.removed.length,
-                                   current.index,
-                                   current.index + current.addedCount);
+    var intersectCount = intersect(splice.index, splice.index + splice.removed.length, current.index, current.index + current.addedCount);
 
     if (intersectCount >= 0) {
-      // Merge the two splices
 
       splices.splice(i, 1);
       i--;
@@ -660,24 +612,20 @@ export function mergeSplice(splices, index, removed, addedCount) {
       insertionOffset -= current.addedCount - current.removed.length;
 
       splice.addedCount += current.addedCount - intersectCount;
-      var deleteCount = splice.removed.length +
-                        current.removed.length - intersectCount;
+      var deleteCount = splice.removed.length + current.removed.length - intersectCount;
 
       if (!splice.addedCount && !deleteCount) {
-        // merged splice is a noop. discard.
         inserted = true;
       } else {
         var removed = current.removed;
 
         if (splice.index < current.index) {
-          // some prefix of splice.removed is prepended to current.removed.
           var prepend = splice.removed.slice(0, current.index - splice.index);
           Array.prototype.push.apply(prepend, removed);
           removed = prepend;
         }
 
         if (splice.index + splice.removed.length > current.index + current.addedCount) {
-          // some suffix of splice.removed is appended to current.removed.
           var append = splice.removed.slice(current.index + current.addedCount - splice.index);
           Array.prototype.push.apply(removed, append);
         }
@@ -688,21 +636,19 @@ export function mergeSplice(splices, index, removed, addedCount) {
         }
       }
     } else if (splice.index < current.index) {
-      // Insert splice here.
 
       inserted = true;
 
       splices.splice(i, 0, splice);
       i++;
 
-      var offset = splice.addedCount - splice.removed.length
+      var offset = splice.addedCount - splice.removed.length;
       current.index += offset;
       insertionOffset += offset;
     }
   }
 
-  if (!inserted)
-    splices.push(splice);
+  if (!inserted) splices.push(splice);
 }
 
 function createInitialSplices(array, changeRecords) {
@@ -710,18 +656,16 @@ function createInitialSplices(array, changeRecords) {
 
   for (var i = 0; i < changeRecords.length; i++) {
     var record = changeRecords[i];
-    switch(record.type) {
+    switch (record.type) {
       case 'splice':
         mergeSplice(splices, record.index, record.removed.slice(), record.addedCount);
         break;
       case 'add':
       case 'update':
       case 'delete':
-        if (!isIndex(record.name))
-          continue;
+        if (!isIndex(record.name)) continue;
         var index = toNumber(record.name);
-        if (index < 0)
-          continue;
+        if (index < 0) continue;
         mergeSplice(splices, index, [record.oldValue], record.type === 'delete' ? 0 : 1);
         break;
       default:
@@ -736,22 +680,20 @@ function createInitialSplices(array, changeRecords) {
 export function projectArraySplices(array, changeRecords) {
   var splices = [];
 
-  createInitialSplices(array, changeRecords).forEach(function(splice) {
+  createInitialSplices(array, changeRecords).forEach(function (splice) {
     if (splice.addedCount == 1 && splice.removed.length == 1) {
-      if (splice.removed[0] !== array[splice.index])
-        splices.push(splice);
+      if (splice.removed[0] !== array[splice.index]) splices.push(splice);
 
-      return
+      return;
     };
 
-    splices = splices.concat(calcSplices(array, splice.index, splice.index + splice.addedCount,
-                                         splice.removed, 0, splice.removed.length));
+    splices = splices.concat(calcSplices(array, splice.index, splice.index + splice.addedCount, splice.removed, 0, splice.removed.length));
   });
 
   return splices;
 }
 
-function newRecord(type, object, key, oldValue){
+function newRecord(type, object, key, oldValue) {
   return {
     type: type,
     object: object,
@@ -760,7 +702,7 @@ function newRecord(type, object, key, oldValue){
   };
 }
 
-export function getChangeRecords(map){
+export function getChangeRecords(map) {
   let entries = new Array(map.size);
   let keys = map.keys();
   let i = 0;
@@ -770,16 +712,15 @@ export function getChangeRecords(map){
     if (item.done) {
       break;
     }
-    
+
     entries[i] = newRecord('added', map, item.value);
     i++;
   }
-  
+
   return entries;
 }
 
-@subscriberCollection()
-export class ModifyCollectionObserver {
+export let ModifyCollectionObserver = (_dec3 = subscriberCollection(), _dec3(_class2 = class ModifyCollectionObserver {
   constructor(taskQueue, collection) {
     this.taskQueue = taskQueue;
     this.queued = false;
@@ -797,7 +738,7 @@ export class ModifyCollectionObserver {
     this.removeSubscriber(context, callable);
   }
 
-  addChangeRecord(changeRecord){
+  addChangeRecord(changeRecord) {
     if (!this.hasSubscribers() && !this.lengthObserver) {
       return;
     }
@@ -810,7 +751,7 @@ export class ModifyCollectionObserver {
       } else if (index < 0) {
         index = arrayLength + changeRecord.removed.length + index - changeRecord.addedCount;
       }
-      if(index < 0){
+      if (index < 0) {
         index = 0;
       }
       changeRecord.index = index;
@@ -829,7 +770,7 @@ export class ModifyCollectionObserver {
   }
 
   flushChangeRecords() {
-    if ((this.changeRecords && this.changeRecords.length) || this.oldCollection) {
+    if (this.changeRecords && this.changeRecords.length || this.oldCollection) {
       this.call();
     }
   }
@@ -857,12 +798,10 @@ export class ModifyCollectionObserver {
     this.oldCollection = null;
 
     if (this.hasSubscribers()) {
-      if (oldCollection){
-        // TODO (martingust) we might want to refactor this to a common, independent of collection type, way of getting the records
+      if (oldCollection) {
         if (this.collection instanceof Map || this.collection instanceof Set) {
           records = getChangeRecords(oldCollection);
         } else {
-          //we might need to combine this with existing change records....
           records = calcSplices(this.collection, 0, this.collection.length, oldCollection, 0, oldCollection.length);
         }
       } else {
@@ -880,10 +819,9 @@ export class ModifyCollectionObserver {
       this.lengthObserver.call(this.collection[this.lengthPropertyName]);
     }
   }
-}
+}) || _class2);
 
-@subscriberCollection()
-export class CollectionLengthObserver {
+export let CollectionLengthObserver = (_dec4 = subscriberCollection(), _dec4(_class3 = class CollectionLengthObserver {
   constructor(collection) {
     this.collection = collection;
     this.lengthPropertyName = collection instanceof Map || collection instanceof Set ? 'size' : 'length';
@@ -906,12 +844,12 @@ export class CollectionLengthObserver {
     this.removeSubscriber(context, callable);
   }
 
-  call(newValue){
+  call(newValue) {
     let oldValue = this.currentValue;
     this.callSubscribers(newValue, oldValue);
     this.currentValue = newValue;
   }
-}
+}) || _class3);
 
 let pop = Array.prototype.pop;
 let push = Array.prototype.push;
@@ -921,7 +859,7 @@ let sort = Array.prototype.sort;
 let splice = Array.prototype.splice;
 let unshift = Array.prototype.unshift;
 
-Array.prototype.pop = function() {
+Array.prototype.pop = function () {
   let methodCallResult = pop.apply(this, arguments);
   if (this.__array_observer__ !== undefined) {
     this.__array_observer__.addChangeRecord({
@@ -934,7 +872,7 @@ Array.prototype.pop = function() {
   return methodCallResult;
 };
 
-Array.prototype.push = function() {
+Array.prototype.push = function () {
   let methodCallResult = push.apply(this, arguments);
   if (this.__array_observer__ !== undefined) {
     this.__array_observer__.addChangeRecord({
@@ -948,7 +886,7 @@ Array.prototype.push = function() {
   return methodCallResult;
 };
 
-Array.prototype.reverse = function() {
+Array.prototype.reverse = function () {
   let oldArray;
   if (this.__array_observer__ !== undefined) {
     this.__array_observer__.flushChangeRecords();
@@ -961,7 +899,7 @@ Array.prototype.reverse = function() {
   return methodCallResult;
 };
 
-Array.prototype.shift = function() {
+Array.prototype.shift = function () {
   let methodCallResult = shift.apply(this, arguments);
   if (this.__array_observer__ !== undefined) {
     this.__array_observer__.addChangeRecord({
@@ -971,10 +909,10 @@ Array.prototype.shift = function() {
       oldValue: methodCallResult
     });
   }
-  return methodCallResult
+  return methodCallResult;
 };
 
-Array.prototype.sort = function() {
+Array.prototype.sort = function () {
   let oldArray;
   if (this.__array_observer__ !== undefined) {
     this.__array_observer__.flushChangeRecords();
@@ -987,7 +925,7 @@ Array.prototype.sort = function() {
   return methodCallResult;
 };
 
-Array.prototype.splice = function() {
+Array.prototype.splice = function () {
   let methodCallResult = splice.apply(this, arguments);
   if (this.__array_observer__ !== undefined) {
     this.__array_observer__.addChangeRecord({
@@ -1001,7 +939,7 @@ Array.prototype.splice = function() {
   return methodCallResult;
 };
 
-Array.prototype.unshift = function() {
+Array.prototype.unshift = function () {
   let methodCallResult = unshift.apply(this, arguments);
   if (this.__array_observer__ !== undefined) {
     this.__array_observer__.addChangeRecord({
@@ -1019,24 +957,15 @@ export function getArrayObserver(taskQueue, array) {
   return ModifyArrayObserver.for(taskQueue, array);
 }
 
-class ModifyArrayObserver extends ModifyCollectionObserver {
+let ModifyArrayObserver = class ModifyArrayObserver extends ModifyCollectionObserver {
   constructor(taskQueue, array) {
     super(taskQueue, array);
   }
 
-  /**
-   * Searches for observer or creates a new one associated with given array instance
-   * @param taskQueue
-   * @param array instance for which observer is searched
-   * @returns ModifyArrayObserver always the same instance for any given array instance
-   */
   static for(taskQueue, array) {
     if (!('__array_observer__' in array)) {
       let observer = ModifyArrayObserver.create(taskQueue, array);
-      Object.defineProperty(
-        array,
-        '__array_observer__',
-        { value: observer, enumerable: false, configurable: false });
+      Object.defineProperty(array, '__array_observer__', { value: observer, enumerable: false, configurable: false });
     }
     return array.__array_observer__;
   }
@@ -1045,29 +974,30 @@ class ModifyArrayObserver extends ModifyCollectionObserver {
     let observer = new ModifyArrayObserver(taskQueue, array);
     return observer;
   }
-}
+};
 
-export class Expression {
-  constructor(){
+
+export let Expression = class Expression {
+  constructor() {
     this.isChain = false;
     this.isAssignable = false;
   }
 
-  evaluate(scope: Scope, lookupFunctions: any, args?: any): any {
-    throw new Error(`Binding expression "${this}" cannot be evaluated.`);
+  evaluate(scope, lookupFunctions, args) {
+    throw new Error(`Binding expression "${ this }" cannot be evaluated.`);
   }
 
-  assign(scope: Scope, value: any, lookupFunctions: any): any {
-    throw new Error(`Binding expression "${this}" cannot be assigned to.`);
+  assign(scope, value, lookupFunctions) {
+    throw new Error(`Binding expression "${ this }" cannot be assigned to.`);
   }
 
-  toString(){
+  toString() {
     return Unparser.unparse(this);
   }
-}
+};
 
-export class Chain extends Expression {
-  constructor(expressions){
+export let Chain = class Chain extends Expression {
+  constructor(expressions) {
     super();
 
     this.expressions = expressions;
@@ -1078,7 +1008,8 @@ export class Chain extends Expression {
     var result,
         expressions = this.expressions,
         length = expressions.length,
-        i, last;
+        i,
+        last;
 
     for (i = 0; i < length; ++i) {
       last = expressions[i].evaluate(scope, lookupFunctions);
@@ -1091,12 +1022,12 @@ export class Chain extends Expression {
     return result;
   }
 
-  accept(visitor){
-    visitor.visitChain(this);
+  accept(visitor) {
+    return visitor.visitChain(this);
   }
-}
+};
 
-export class BindingBehavior extends Expression {
+export let BindingBehavior = class BindingBehavior extends Expression {
   constructor(expression, name, args) {
     super();
 
@@ -1114,7 +1045,7 @@ export class BindingBehavior extends Expression {
   }
 
   accept(visitor) {
-    visitor.visitBindingBehavior(this);
+    return visitor.visitBindingBehavior(this);
   }
 
   connect(binding, scope) {
@@ -1127,28 +1058,28 @@ export class BindingBehavior extends Expression {
     }
     let behavior = lookupFunctions.bindingBehaviors(this.name);
     if (!behavior) {
-      throw new Error(`No BindingBehavior named "${this.name}" was found!`);
+      throw new Error(`No BindingBehavior named "${ this.name }" was found!`);
     }
-    let behaviorKey = `behavior-${this.name}`;
+    let behaviorKey = `behavior-${ this.name }`;
     if (binding[behaviorKey]) {
-      throw new Error(`A binding behavior named "${this.name}" has already been applied to "${this.expression}"`);
+      throw new Error(`A binding behavior named "${ this.name }" has already been applied to "${ this.expression }"`);
     }
     binding[behaviorKey] = behavior;
     behavior.bind.apply(behavior, [binding, scope].concat(evalList(scope, this.args, binding.lookupFunctions)));
   }
 
   unbind(binding, scope) {
-    let behaviorKey = `behavior-${this.name}`;
+    let behaviorKey = `behavior-${ this.name }`;
     binding[behaviorKey].unbind(binding, scope);
     binding[behaviorKey] = null;
     if (this.expression.expression && this.expression.unbind) {
       this.expression.unbind(binding, scope);
     }
   }
-}
+};
 
-export class ValueConverter extends Expression {
-  constructor(expression, name, args, allArgs){
+export let ValueConverter = class ValueConverter extends Expression {
+  constructor(expression, name, args, allArgs) {
     super();
 
     this.expression = expression;
@@ -1159,32 +1090,32 @@ export class ValueConverter extends Expression {
 
   evaluate(scope, lookupFunctions) {
     var converter = lookupFunctions.valueConverters(this.name);
-    if(!converter){
-      throw new Error(`No ValueConverter named "${this.name}" was found!`);
+    if (!converter) {
+      throw new Error(`No ValueConverter named "${ this.name }" was found!`);
     }
 
-    if('toView' in converter){
+    if ('toView' in converter) {
       return converter.toView.apply(converter, evalList(scope, this.allArgs, lookupFunctions));
     }
 
     return this.allArgs[0].evaluate(scope, lookupFunctions);
   }
 
-  assign(scope, value, lookupFunctions){
+  assign(scope, value, lookupFunctions) {
     var converter = lookupFunctions.valueConverters(this.name);
-    if(!converter){
-      throw new Error(`No ValueConverter named "${this.name}" was found!`);
+    if (!converter) {
+      throw new Error(`No ValueConverter named "${ this.name }" was found!`);
     }
 
-    if('fromView' in converter){
+    if ('fromView' in converter) {
       value = converter.fromView.apply(converter, [value].concat(evalList(scope, this.args, lookupFunctions)));
     }
 
     return this.allArgs[0].assign(scope, value, lookupFunctions);
   }
 
-  accept(visitor){
-    visitor.visitValueConverter(this);
+  accept(visitor) {
+    return visitor.visitValueConverter(this);
   }
 
   connect(binding, scope) {
@@ -1194,30 +1125,29 @@ export class ValueConverter extends Expression {
       expressions[i].connect(binding, scope);
     }
   }
-}
+};
 
-export class Assign extends Expression {
-  constructor(target, value){
+export let Assign = class Assign extends Expression {
+  constructor(target, value) {
     super();
 
     this.target = target;
     this.value = value;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     return this.target.assign(scope, this.value.evaluate(scope, lookupFunctions));
   }
 
-  accept(vistor){
+  accept(vistor) {
     vistor.visitAssign(this);
   }
 
-  connect(binding, scope) {
-  }
-}
+  connect(binding, scope) {}
+};
 
-export class Conditional extends Expression {
-  constructor(condition, yes, no){
+export let Conditional = class Conditional extends Expression {
+  constructor(condition, yes, no) {
     super();
 
     this.condition = condition;
@@ -1225,12 +1155,12 @@ export class Conditional extends Expression {
     this.no = no;
   }
 
-  evaluate(scope, lookupFunctions){
-    return (!!this.condition.evaluate(scope)) ? this.yes.evaluate(scope) : this.no.evaluate(scope);
+  evaluate(scope, lookupFunctions) {
+    return !!this.condition.evaluate(scope) ? this.yes.evaluate(scope) : this.no.evaluate(scope);
   }
 
-  accept(visitor){
-    visitor.visitConditional(this);
+  accept(visitor) {
+    return visitor.visitConditional(this);
   }
 
   connect(binding, scope) {
@@ -1241,9 +1171,9 @@ export class Conditional extends Expression {
       this.no.connect(binding, scope);
     }
   }
-}
+};
 
-export class AccessThis extends Expression {
+export let AccessThis = class AccessThis extends Expression {
   constructor(ancestor) {
     super();
     this.ancestor = ancestor;
@@ -1259,14 +1189,13 @@ export class AccessThis extends Expression {
   }
 
   accept(visitor) {
-    visitor.visitAccessThis(this);
+    return visitor.visitAccessThis(this);
   }
 
-  connect(binding, scope) {
-  }
-}
+  connect(binding, scope) {}
+};
 
-export class AccessScope extends Expression {
+export let AccessScope = class AccessScope extends Expression {
   constructor(name, ancestor) {
     super();
 
@@ -1280,23 +1209,23 @@ export class AccessScope extends Expression {
     return context[this.name];
   }
 
-  assign(scope, value){
+  assign(scope, value) {
     let context = getContextFor(this.name, scope, this.ancestor);
-    return context ? (context[this.name] = value) : undefined;
+    return context ? context[this.name] = value : undefined;
   }
 
-  accept(visitor){
-    visitor.visitAccessScope(this);
+  accept(visitor) {
+    return visitor.visitAccessScope(this);
   }
 
   connect(binding, scope) {
     let context = getContextFor(this.name, scope, this.ancestor);
     binding.observeProperty(context, this.name);
   }
-}
+};
 
-export class AccessMember extends Expression {
-  constructor(object, name){
+export let AccessMember = class AccessMember extends Expression {
+  constructor(object, name) {
     super();
 
     this.object = object;
@@ -1304,15 +1233,15 @@ export class AccessMember extends Expression {
     this.isAssignable = true;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     var instance = this.object.evaluate(scope, lookupFunctions);
     return instance === null || instance === undefined ? instance : instance[this.name];
   }
 
-  assign(scope, value){
+  assign(scope, value) {
     var instance = this.object.evaluate(scope);
 
-    if(instance === null || instance === undefined){
+    if (instance === null || instance === undefined) {
       instance = {};
       this.object.assign(scope, instance);
     }
@@ -1320,8 +1249,8 @@ export class AccessMember extends Expression {
     return instance[this.name] = value;
   }
 
-  accept(visitor){
-    visitor.visitAccessMember(this);
+  accept(visitor) {
+    return visitor.visitAccessMember(this);
   }
 
   connect(binding, scope) {
@@ -1331,10 +1260,10 @@ export class AccessMember extends Expression {
       binding.observeProperty(obj, this.name);
     }
   }
-}
+};
 
-export class AccessKeyed extends Expression {
-  constructor(object, key){
+export let AccessKeyed = class AccessKeyed extends Expression {
+  constructor(object, key) {
     super();
 
     this.object = object;
@@ -1342,20 +1271,20 @@ export class AccessKeyed extends Expression {
     this.isAssignable = true;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     var instance = this.object.evaluate(scope, lookupFunctions);
     var lookup = this.key.evaluate(scope, lookupFunctions);
     return getKeyed(instance, lookup);
   }
 
-  assign(scope, value){
+  assign(scope, value) {
     var instance = this.object.evaluate(scope);
     var lookup = this.key.evaluate(scope);
     return setKeyed(instance, lookup, value);
   }
 
-  accept(visitor){
-    visitor.visitAccessKeyed(this);
+  accept(visitor) {
+    return visitor.visitAccessKeyed(this);
   }
 
   connect(binding, scope) {
@@ -1364,17 +1293,15 @@ export class AccessKeyed extends Expression {
     if (obj instanceof Object) {
       this.key.connect(binding, scope);
       let key = this.key.evaluate(scope);
-      // observe the property represented by the key as long as it's not an array
-      // being accessed by an integer key which would require dirty-checking.
-      if (key !== null && key !== undefined
-        && !(Array.isArray(obj) && typeof(key) === 'number')) {
+
+      if (key !== null && key !== undefined && !(Array.isArray(obj) && typeof key === 'number')) {
         binding.observeProperty(obj, key);
       }
     }
   }
-}
+};
 
-export class CallScope extends Expression {
+export let CallScope = class CallScope extends Expression {
   constructor(name, args, ancestor) {
     super();
 
@@ -1393,8 +1320,8 @@ export class CallScope extends Expression {
     return undefined;
   }
 
-  accept(visitor){
-    visitor.visitCallScope(this);
+  accept(visitor) {
+    return visitor.visitCallScope(this);
   }
 
   connect(binding, scope) {
@@ -1403,12 +1330,11 @@ export class CallScope extends Expression {
     while (i--) {
       args[i].connect(binding, scope);
     }
-    // todo: consider adding `binding.observeProperty(scope, this.name);`
   }
-}
+};
 
-export class CallMember extends Expression {
-  constructor(object, name, args){
+export let CallMember = class CallMember extends Expression {
+  constructor(object, name, args) {
     super();
 
     this.object = object;
@@ -1426,8 +1352,8 @@ export class CallMember extends Expression {
     return undefined;
   }
 
-  accept(visitor){
-    visitor.visitCallMember(this);
+  accept(visitor) {
+    return visitor.visitCallMember(this);
   }
 
   connect(binding, scope) {
@@ -1441,9 +1367,9 @@ export class CallMember extends Expression {
       }
     }
   }
-}
+};
 
-export class CallFunction extends Expression {
+export let CallFunction = class CallFunction extends Expression {
   constructor(func, args) {
     super();
 
@@ -1459,11 +1385,11 @@ export class CallFunction extends Expression {
     if (!mustEvaluate && (func === null || func === undefined)) {
       return undefined;
     }
-    throw new Error(`${this.func} is not a function`);
+    throw new Error(`${ this.func } is not a function`);
   }
 
-  accept(visitor){
-    visitor.visitCallFunction(this);
+  accept(visitor) {
+    return visitor.visitCallFunction(this);
   }
 
   connect(binding, scope) {
@@ -1477,10 +1403,10 @@ export class CallFunction extends Expression {
       }
     }
   }
-}
+};
 
-export class Binary extends Expression {
-  constructor(operation, left, right){
+export let Binary = class Binary extends Expression {
+  constructor(operation, left, right) {
     super();
 
     this.operation = operation;
@@ -1488,24 +1414,29 @@ export class Binary extends Expression {
     this.right = right;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     var left = this.left.evaluate(scope);
 
     switch (this.operation) {
-      case '&&': return left && this.right.evaluate(scope);
-      case '||': return left || this.right.evaluate(scope);
+      case '&&':
+        return left && this.right.evaluate(scope);
+      case '||':
+        return left || this.right.evaluate(scope);
     }
 
     var right = this.right.evaluate(scope);
 
     switch (this.operation) {
-      case '==' : return left == right;
-      case '===': return left === right;
-      case '!=' : return left != right;
-      case '!==': return left !== right;
+      case '==':
+        return left == right;
+      case '===':
+        return left === right;
+      case '!=':
+        return left != right;
+      case '!==':
+        return left !== right;
     }
 
-    // Null check for the operations.
     if (left === null || right === null) {
       switch (this.operation) {
         case '+':
@@ -1522,23 +1453,33 @@ export class Binary extends Expression {
     }
 
     switch (this.operation) {
-      case '+'  : return autoConvertAdd(left, right);
-      case '-'  : return left - right;
-      case '*'  : return left * right;
-      case '/'  : return left / right;
-      case '%'  : return left % right;
-      case '<'  : return left < right;
-      case '>'  : return left > right;
-      case '<=' : return left <= right;
-      case '>=' : return left >= right;
-      case '^'  : return left ^ right;
+      case '+':
+        return autoConvertAdd(left, right);
+      case '-':
+        return left - right;
+      case '*':
+        return left * right;
+      case '/':
+        return left / right;
+      case '%':
+        return left % right;
+      case '<':
+        return left < right;
+      case '>':
+        return left > right;
+      case '<=':
+        return left <= right;
+      case '>=':
+        return left >= right;
+      case '^':
+        return left ^ right;
     }
 
-    throw new Error(`Internal error [${this.operation}] not handled`);
+    throw new Error(`Internal error [${ this.operation }] not handled`);
   }
 
-  accept(visitor){
-    visitor.visitBinary(this);
+  accept(visitor) {
+    return visitor.visitBinary(this);
   }
 
   connect(binding, scope) {
@@ -1549,89 +1490,87 @@ export class Binary extends Expression {
     }
     this.right.connect(binding, scope);
   }
-}
+};
 
-export class PrefixNot extends Expression {
-  constructor(operation, expression){
+export let PrefixNot = class PrefixNot extends Expression {
+  constructor(operation, expression) {
     super();
 
     this.operation = operation;
     this.expression = expression;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     return !this.expression.evaluate(scope);
   }
 
-  accept(visitor){
-    visitor.visitPrefix(this);
+  accept(visitor) {
+    return visitor.visitPrefix(this);
   }
 
   connect(binding, scope) {
     this.expression.connect(binding, scope);
   }
-}
+};
 
-export class LiteralPrimitive extends Expression {
-  constructor(value){
+export let LiteralPrimitive = class LiteralPrimitive extends Expression {
+  constructor(value) {
     super();
 
     this.value = value;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     return this.value;
   }
 
-  accept(visitor){
-    visitor.visitLiteralPrimitive(this);
+  accept(visitor) {
+    return visitor.visitLiteralPrimitive(this);
   }
 
-  connect(binding, scope) {
-  }
-}
+  connect(binding, scope) {}
+};
 
-export class LiteralString extends Expression {
-  constructor(value){
+export let LiteralString = class LiteralString extends Expression {
+  constructor(value) {
     super();
 
     this.value = value;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     return this.value;
   }
 
-  accept(visitor){
-    visitor.visitLiteralString(this);
+  accept(visitor) {
+    return visitor.visitLiteralString(this);
   }
 
-  connect(binding, scope) {
-  }
-}
+  connect(binding, scope) {}
+};
 
-export class LiteralArray extends Expression {
-  constructor(elements){
+export let LiteralArray = class LiteralArray extends Expression {
+  constructor(elements) {
     super();
 
     this.elements = elements;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     var elements = this.elements,
         length = elements.length,
         result = [],
         i;
 
-    for(i = 0; i < length; ++i){
+    for (i = 0; i < length; ++i) {
       result[i] = elements[i].evaluate(scope, lookupFunctions);
     }
 
     return result;
   }
 
-  accept(visitor){
-    visitor.visitLiteralArray(this);
+  accept(visitor) {
+    return visitor.visitLiteralArray(this);
   }
 
   connect(binding, scope) {
@@ -1640,43 +1579,126 @@ export class LiteralArray extends Expression {
       this.elements[i].connect(binding, scope);
     }
   }
-}
+};
 
-export class LiteralObject extends Expression {
-  constructor(keys, values){
+export let LiteralObject = class LiteralObject extends Expression {
+  constructor(keys, values) {
     super();
 
     this.keys = keys;
     this.values = values;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     var instance = {},
         keys = this.keys,
         values = this.values,
         length = keys.length,
         i;
 
-    for(i = 0; i < length; ++i){
+    for (i = 0; i < length; ++i) {
       instance[keys[i]] = values[i].evaluate(scope, lookupFunctions);
     }
 
     return instance;
   }
 
-  accept(visitor){
-    visitor.visitLiteralObject(this);
+  accept(visitor) {
+    return visitor.visitLiteralObject(this);
   }
 
-  connect(binding, scope){
+  connect(binding, scope) {
     let length = this.keys.length;
     for (let i = 0; i < length; i++) {
       this.values[i].connect(binding, scope);
     }
   }
+};
+
+var evalListCache = [[], [0], [0, 0], [0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0]];
+
+function evalList(scope, list, lookupFunctions) {
+  var length = list.length,
+      cacheLength,
+      i;
+
+  for (cacheLength = evalListCache.length; cacheLength <= length; ++cacheLength) {
+    evalListCache.push([]);
+  }
+
+  var result = evalListCache[length];
+
+  for (i = 0; i < length; ++i) {
+    result[i] = list[i].evaluate(scope, lookupFunctions);
+  }
+
+  return result;
 }
 
-export class Unparser {
+function autoConvertAdd(a, b) {
+  if (a != null && b != null) {
+    if (typeof a == 'string' && typeof b != 'string') {
+      return a + b.toString();
+    }
+
+    if (typeof a != 'string' && typeof b == 'string') {
+      return a.toString() + b;
+    }
+
+    return a + b;
+  }
+
+  if (a != null) {
+    return a;
+  }
+
+  if (b != null) {
+    return b;
+  }
+
+  return 0;
+}
+
+function getFunction(obj, name, mustExist) {
+  let func = obj === null || obj === undefined ? null : obj[name];
+  if (typeof func === 'function') {
+    return func;
+  }
+  if (!mustExist && (func === null || func === undefined)) {
+    return null;
+  }
+  throw new Error(`${ name } is not a function`);
+}
+
+function getKeyed(obj, key) {
+  if (Array.isArray(obj)) {
+    return obj[parseInt(key)];
+  } else if (obj) {
+    return obj[key];
+  } else if (obj === null || obj === undefined) {
+    return undefined;
+  } else {
+    return obj[key];
+  }
+}
+
+function setKeyed(obj, key, value) {
+  if (Array.isArray(obj)) {
+    var index = parseInt(key);
+
+    if (obj.length <= index) {
+      obj.length = index + 1;
+    }
+
+    obj[index] = value;
+  } else {
+    obj[key] = value;
+  }
+
+  return value;
+}
+
+export let Unparser = class Unparser {
   constructor(buffer) {
     this.buffer = buffer;
   }
@@ -1690,7 +1712,7 @@ export class Unparser {
     return buffer.join('');
   }
 
-  write(text){
+  write(text) {
     this.buffer.push(text);
   }
 
@@ -1729,16 +1751,13 @@ export class Unparser {
         length = args.length,
         i;
 
-    this.write('(');
     behavior.expression.accept(this);
-    this.write(`&${behavior.name}`);
+    this.write(`&${ behavior.name }`);
 
     for (i = 0; i < length; ++i) {
-      this.write(' :');
+      this.write(':');
       args[i].accept(this);
     }
-
-    this.write(')');
   }
 
   visitValueConverter(converter) {
@@ -1746,16 +1765,13 @@ export class Unparser {
         length = args.length,
         i;
 
-    this.write('(');
     converter.expression.accept(this);
-    this.write(`|${converter.name}`);
+    this.write(`|${ converter.name }`);
 
     for (i = 0; i < length; ++i) {
-      this.write(' :');
+      this.write(':');
       args[i].accept(this);
     }
-
-    this.write(')');
   }
 
   visitAssign(assign) {
@@ -1779,7 +1795,7 @@ export class Unparser {
     }
     this.write('$parent');
     let i = access.ancestor - 1;
-    while(i--) {
+    while (i--) {
       this.write('.$parent');
     }
   }
@@ -1794,7 +1810,7 @@ export class Unparser {
 
   visitAccessMember(access) {
     access.object.accept(this);
-    this.write(`.${access.name}`);
+    this.write(`.${ access.name }`);
   }
 
   visitAccessKeyed(access) {
@@ -1820,26 +1836,24 @@ export class Unparser {
 
   visitCallMember(call) {
     call.object.accept(this);
-    this.write(`.${call.name}`);
+    this.write(`.${ call.name }`);
     this.writeArgs(call.args);
   }
 
   visitPrefix(prefix) {
-    this.write(`(${prefix.operation}`);
+    this.write(`(${ prefix.operation }`);
     prefix.expression.accept(this);
     this.write(')');
   }
 
   visitBinary(binary) {
-    this.write('(');
     binary.left.accept(this);
     this.write(binary.operation);
     binary.right.accept(this);
-    this.write(')');
   }
 
   visitLiteralPrimitive(literal) {
-    this.write(`${literal.value}`);
+    this.write(`${ literal.value }`);
   }
 
   visitLiteralArray(literal) {
@@ -1869,11 +1883,11 @@ export class Unparser {
     this.write('{');
 
     for (i = 0; i < length; ++i) {
-      if (i !== 0){
+      if (i !== 0) {
         this.write(',');
       }
 
-      this.write(`'${keys[i]}':`);
+      this.write(`'${ keys[i] }':`);
       values[i].accept(this);
     }
 
@@ -1882,93 +1896,96 @@ export class Unparser {
 
   visitLiteralString(literal) {
     var escaped = literal.value.replace(/'/g, "\'");
-    this.write(`'${escaped}'`);
+    this.write(`'${ escaped }'`);
   }
-}
+};
 
-var evalListCache = [[],[0],[0,0],[0,0,0],[0,0,0,0],[0,0,0,0,0]];
-
-/// Evaluate the [list] in context of the [scope].
-function evalList(scope, list, lookupFunctions) {
-  var length = list.length,
-      cacheLength, i;
-
-  for (cacheLength = evalListCache.length; cacheLength <= length; ++cacheLength) {
-    evalListCache.push([]);
-  }
-
-  var result = evalListCache[length];
-
-  for (i = 0; i < length; ++i) {
-    result[i] = list[i].evaluate(scope, lookupFunctions);
-  }
-
-  return result;
-}
-
-/// Add the two arguments with automatic type conversion.
-function autoConvertAdd(a, b) {
-  if (a != null && b != null) {
-    // TODO(deboer): Support others.
-    if (typeof a == 'string' && typeof b != 'string') {
-      return a + b.toString();
+export let ExpressionCloner = class ExpressionCloner {
+  cloneExpressionArray(array) {
+    let clonedArray = [];
+    let i = array.length;
+    while (i--) {
+      clonedArray[i] = array[i].accept(this);
     }
-
-    if (typeof a != 'string' && typeof b == 'string') {
-      return a.toString() + b;
-    }
-
-    return a + b;
+    return clonedArray;
   }
 
-  if (a != null) {
-    return a;
+  visitChain(chain) {
+    return new Chain(this.cloneExpressionArray(chain.expressions));
   }
 
-  if (b != null) {
-    return b;
+  visitBindingBehavior(behavior) {
+    return new BindingBehavior(behavior.expression.accept(this), behavior.name, this.cloneExpressionArray(behavior.args));
   }
 
-  return 0;
-}
-
-function getFunction(obj, name, mustExist) {
-  let func = obj === null || obj === undefined ? null : obj[name];
-  if (typeof func === 'function') {
-    return func;
-  }
-  if (!mustExist && (func === null || func === undefined)) {
-    return null;
-  }
-  throw new Error(`${name} is not a function`);
-}
-
-function getKeyed(obj, key) {
-  if (Array.isArray(obj)) {
-    return obj[parseInt(key)];
-  } else if (obj) {
-    return obj[key];
-  } else if (obj === null || obj === undefined) {
-    return undefined;
-  } else {
-    return obj[key];
-  }
-}
-
-function setKeyed(obj, key, value) {
-  if (Array.isArray(obj)) {
-    var index = parseInt(key);
-
-    if (obj.length <= index) {
-      obj.length = index + 1;
-    }
-
-    obj[index] = value;
-  } else {
-    obj[key] = value;
+  visitValueConverter(converter) {
+    return new ValueConverter(converter.expression.accept(this), converter.name, this.cloneExpressionArray(converter.args));
   }
 
-  return value;
+  visitAssign(assign) {
+    return new Assign(assign.target.accept(this), assign.value.accept(this));
+  }
+
+  visitConditional(conditional) {
+    return new Conditional(conditional.condition.accept(this), conditional.yes.accept(this), conditional.no.accept(this));
+  }
+
+  visitAccessThis(access) {
+    return new AccessThis(access.ancestor);
+  }
+
+  visitAccessScope(access) {
+    return new AccessScope(access.name, access.ancestor);
+  }
+
+  visitAccessMember(access) {
+    return new AccessMember(access.object.accept(this), access.name);
+  }
+
+  visitAccessKeyed(access) {
+    return new AccessKeyed(access.object.accept(this), access.key.accept(this));
+  }
+
+  visitCallScope(call) {
+    return new CallScope(call.name, this.cloneExpressionArray(call.args), call.ancestor);
+  }
+
+  visitCallFunction(call) {
+    return new CallFunction(call.func.accept(this), this.cloneExpressionArray(call.args));
+  }
+
+  visitCallMember(call) {
+    return new CallMember(call.object.accept(this), call.name, this.cloneExpressionArray(call.args));
+  }
+
+  visitPrefix(prefix) {
+    return new PrefixNot(prefix.operation, prefix.expression.accept(this));
+  }
+
+  visitBinary(binary) {
+    return new Binary(binary.operation, binary.left.accept(this), binary.right.accept(this));
+  }
+
+  visitLiteralPrimitive(literal) {
+    return new LiteralPrimitive(literal);
+  }
+
+  visitLiteralArray(literal) {
+    return new LiteralArray(this.cloneExpressionArray(literal.elements));
+  }
+
+  visitLiteralObject(literal) {
+    return new LiteralObject(literal.keys, this.cloneExpressionArray(literal.values));
+  }
+
+  visitLiteralString(literal) {
+    return new LiteralString(literal.value);
+  }
+};
+
+export function cloneExpression(expression) {
+  let visitor = new ExpressionCloner();
+  return expression.accept(visitor);
 }
 
 export const bindingMode = {
@@ -1977,8 +1994,8 @@ export const bindingMode = {
   twoWay: 2
 };
 
-export class Token {
-  constructor(index, text){
+export let Token = class Token {
+  constructor(index, text) {
     this.index = index;
     this.text = text;
   }
@@ -1999,11 +2016,11 @@ export class Token {
   }
 
   toString() {
-    return `Token(${this.text})`;
+    return `Token(${ this.text })`;
   }
-}
+};
 
-export class Lexer {
+export let Lexer = class Lexer {
   lex(text) {
     let scanner = new Scanner(text);
     let tokens = [];
@@ -2016,9 +2033,9 @@ export class Lexer {
 
     return tokens;
   }
-}
+};
 
-export class Scanner {
+export let Scanner = class Scanner {
   constructor(input) {
     this.input = input;
     this.length = input.length;
@@ -2029,7 +2046,6 @@ export class Scanner {
   }
 
   scanToken() {
-    // Skip whitespace.
     while (this.peek <= $SPACE) {
       if (++this.index >= this.length) {
         this.peek = $EOF;
@@ -2039,7 +2055,6 @@ export class Scanner {
       }
     }
 
-    // Handle identifiers and numbers.
     if (isIdentifierStart(this.peek)) {
       return this.scanIdentifier();
     }
@@ -2085,7 +2100,7 @@ export class Scanner {
       case $BAR:
         return this.scanComplexOperator(start, $BAR, '|', '|');
       case $NBSP:
-        while (isWhitespace(this.peek)){
+        while (isWhitespace(this.peek)) {
           this.advance();
         }
 
@@ -2093,7 +2108,7 @@ export class Scanner {
     }
 
     let character = String.fromCharCode(this.peek);
-    this.error(`Unexpected character [${character}]`);
+    this.error(`Unexpected character [${ character }]`);
     return null;
   }
 
@@ -2144,8 +2159,6 @@ export class Scanner {
     let text = this.input.substring(start, this.index);
     let result = new Token(start, text);
 
-    // TODO(kasperl): Deal with null, undefined, true, and false in
-    // a cleaner and faster way.
     if (OPERATORS.indexOf(text) !== -1) {
       result.withOp(text);
     } else {
@@ -2157,29 +2170,27 @@ export class Scanner {
 
   scanNumber(start) {
     assert(isDigit(this.peek));
-    let simple = (this.index === start);
-    this.advance();  // Skip initial digit.
+    let simple = this.index === start;
+    this.advance();
 
     while (true) {
-      if (isDigit(this.peek)) {
-        // Do nothing.
-      } else if (this.peek === $PERIOD) {
-        simple = false;
-      } else if (isExponentStart(this.peek)) {
-        this.advance();
-
-        if (isExponentSign(this.peek)){
+      if (isDigit(this.peek)) {} else if (this.peek === $PERIOD) {
+          simple = false;
+        } else if (isExponentStart(this.peek)) {
           this.advance();
-        }
 
-        if (!isDigit(this.peek)){
-          this.error('Invalid exponent', -1);
-        }
+          if (isExponentSign(this.peek)) {
+            this.advance();
+          }
 
-        simple = false;
-      } else {
-        break;
-      }
+          if (!isDigit(this.peek)) {
+            this.error('Invalid exponent', -1);
+          }
+
+          simple = false;
+        } else {
+          break;
+        }
 
       this.advance();
     }
@@ -2195,7 +2206,7 @@ export class Scanner {
     let start = this.index;
     let quote = this.peek;
 
-    this.advance();  // Skip initial quote.
+    this.advance();
 
     let buffer;
     let marker = this.index;
@@ -2212,12 +2223,10 @@ export class Scanner {
         let unescaped;
 
         if (this.peek === $u) {
-          // TODO(kasperl): Check bounds? Make sure we have test
-          // coverage for this.
           let hex = this.input.substring(this.index + 1, this.index + 5);
 
-          if(!/[A-Z0-9]{4}/.test(hex)){
-            this.error(`Invalid unicode escape [\\u${hex}]`);
+          if (!/[A-Z0-9]{4}/.test(hex)) {
+            this.error(`Invalid unicode escape [\\u${ hex }]`);
           }
 
           unescaped = parseInt(hex, 16);
@@ -2240,10 +2249,9 @@ export class Scanner {
     }
 
     let last = this.input.substring(marker, this.index);
-    this.advance();  // Skip terminating quote.
+    this.advance();
     let text = this.input.substring(start, this.index);
 
-    // Compute the unescaped string value.
     let unescaped = last;
 
     if (buffer != null) {
@@ -2263,40 +2271,12 @@ export class Scanner {
   }
 
   error(message, offset = 0) {
-    // TODO(kasperl): Try to get rid of the offset. It is only used to match
-    // the error expectations in the lexer tests for numbers with exponents.
     let position = this.index + offset;
-    throw new Error(`Lexer Error: ${message} at column ${position} in expression [${this.input}]`);
+    throw new Error(`Lexer Error: ${ message } at column ${ position } in expression [${ this.input }]`);
   }
-}
+};
 
-const OPERATORS = [
-  'undefined',
-  'null',
-  'true',
-  'false',
-  '+',
-  '-',
-  '*',
-  '/',
-  '%',
-  '^',
-  '=',
-  '==',
-  '===',
-  '!=',
-  '!==',
-  '<',
-  '>',
-  '<=',
-  '>=',
-  '&&',
-  '||',
-  '&',
-  '|',
-  '!',
-  '?',
-];
+const OPERATORS = ['undefined', 'null', 'true', 'false', '+', '-', '*', '/', '%', '^', '=', '==', '===', '!=', '!==', '<', '>', '<=', '>=', '&&', '||', '&', '|', '!', '?'];
 
 const $EOF = 0;
 const $TAB = 9;
@@ -2355,44 +2335,43 @@ const $RBRACE = 125;
 const $NBSP = 160;
 
 function isWhitespace(code) {
-  return (code >= $TAB && code <= $SPACE) || (code === $NBSP);
+  return code >= $TAB && code <= $SPACE || code === $NBSP;
 }
 
 function isIdentifierStart(code) {
-  return ($a <= code && code <= $z)
-      || ($A <= code && code <= $Z)
-      || (code === $_)
-      || (code === $$);
+  return $a <= code && code <= $z || $A <= code && code <= $Z || code === $_ || code === $$;
 }
 
 function isIdentifierPart(code) {
-  return ($a <= code && code <= $z)
-      || ($A <= code && code <= $Z)
-      || ($0 <= code && code <= $9)
-      || (code === $_)
-      || (code === $$);
+  return $a <= code && code <= $z || $A <= code && code <= $Z || $0 <= code && code <= $9 || code === $_ || code === $$;
 }
 
 function isDigit(code) {
-  return ($0 <= code && code <= $9);
+  return $0 <= code && code <= $9;
 }
 
 function isExponentStart(code) {
-  return (code === $e || code === $E);
+  return code === $e || code === $E;
 }
 
 function isExponentSign(code) {
-  return (code === $MINUS || code === $PLUS);
+  return code === $MINUS || code === $PLUS;
 }
 
 function unescape(code) {
-  switch(code) {
-    case $n: return $LF;
-    case $f: return $FF;
-    case $r: return $CR;
-    case $t: return $TAB;
-    case $v: return $VTAB;
-    default: return code;
+  switch (code) {
+    case $n:
+      return $LF;
+    case $f:
+      return $FF;
+    case $r:
+      return $CR;
+    case $t:
+      return $TAB;
+    case $v:
+      return $VTAB;
+    default:
+      return code;
   }
 }
 
@@ -2404,7 +2383,7 @@ function assert(condition, message) {
 
 let EOF = new Token(-1, null);
 
-export class Parser {
+export let Parser = class Parser {
   constructor() {
     this.cache = {};
     this.lexer = new Lexer();
@@ -2413,12 +2392,11 @@ export class Parser {
   parse(input) {
     input = input || '';
 
-    return this.cache[input]
-      || (this.cache[input] = new ParserImplementation(this.lexer, input).parseChain());
+    return this.cache[input] || (this.cache[input] = new ParserImplementation(this.lexer, input).parseChain());
   }
-}
+};
 
-export class ParserImplementation {
+export let ParserImplementation = class ParserImplementation {
   constructor(lexer, input) {
     this.index = 0;
     this.input = input;
@@ -2426,7 +2404,7 @@ export class ParserImplementation {
   }
 
   get peek() {
-    return (this.index < this.tokens.length) ? this.tokens[this.index] : EOF;
+    return this.index < this.tokens.length ? this.tokens[this.index] : EOF;
   }
 
   parseChain() {
@@ -2439,7 +2417,7 @@ export class ParserImplementation {
 
     while (this.index < this.tokens.length) {
       if (this.peek.text === ')' || this.peek.text === '}' || this.peek.text === ']') {
-        this.error(`Unconsumed token ${this.peek.text}`);
+        this.error(`Unconsumed token ${ this.peek.text }`);
       }
 
       let expr = this.parseBindingBehavior();
@@ -2454,7 +2432,7 @@ export class ParserImplementation {
       }
     }
 
-    return (expressions.length === 1) ? expressions[0] : new Chain(expressions);
+    return expressions.length === 1 ? expressions[0] : new Chain(expressions);
   }
 
   parseBindingBehavior() {
@@ -2480,13 +2458,12 @@ export class ParserImplementation {
     let result = this.parseExpression();
 
     while (this.optional('|')) {
-      let name = this.peek.text; // TODO(kasperl): Restrict to identifier?
+      let name = this.peek.text;
       let args = [];
 
       this.advance();
 
       while (this.optional(':')) {
-        // TODO(kasperl): Is this really supposed to be expressions?
         args.push(this.parseExpression());
       }
 
@@ -2502,10 +2479,10 @@ export class ParserImplementation {
 
     while (this.peek.text === '=') {
       if (!result.isAssignable) {
-        let end = (this.index < this.tokens.length) ? this.peek.index : this.input.length;
+        let end = this.index < this.tokens.length ? this.peek.index : this.input.length;
         let expression = this.input.substring(start, end);
 
-        this.error(`Expression ${expression} is not assignable`);
+        this.error(`Expression ${ expression } is not assignable`);
       }
 
       this.expect('=');
@@ -2523,10 +2500,10 @@ export class ParserImplementation {
       let yes = this.parseExpression();
 
       if (!this.optional(':')) {
-        let end = (this.index < this.tokens.length) ? this.peek.index : this.input.length;
+        let end = this.index < this.tokens.length ? this.peek.index : this.input.length;
         let expression = this.input.substring(start, end);
 
-        this.error(`Conditional expression ${expression} requires all 3 expressions`);
+        this.error(`Conditional expression ${ expression } requires all 3 expressions`);
       }
 
       let no = this.parseExpression();
@@ -2624,14 +2601,14 @@ export class ParserImplementation {
 
   parsePrefix() {
     if (this.optional('+')) {
-      return this.parsePrefix(); // TODO(kasperl): This is different than the original parser.
+      return this.parsePrefix();
     } else if (this.optional('-')) {
-      return new Binary('-', new LiteralPrimitive(0), this.parsePrefix());
-    } else if (this.optional('!')) {
-      return new PrefixNot('!', this.parsePrefix());
-    } else {
-      return this.parseAccessOrCallMember();
-    }
+        return new Binary('-', new LiteralPrimitive(0), this.parsePrefix());
+      } else if (this.optional('!')) {
+        return new PrefixNot('!', this.parsePrefix());
+      } else {
+        return this.parseAccessOrCallMember();
+      }
   }
 
   parseAccessOrCallMember() {
@@ -2639,7 +2616,7 @@ export class ParserImplementation {
 
     while (true) {
       if (this.optional('.')) {
-        let name = this.peek.text; // TODO(kasperl): Check that this is an identifier. Are keywords okay?
+        let name = this.peek.text;
 
         this.advance();
 
@@ -2698,13 +2675,13 @@ export class ParserImplementation {
       this.advance();
       return value instanceof String || typeof value === 'string' ? new LiteralString(value) : new LiteralPrimitive(value);
     } else if (this.index >= this.tokens.length) {
-      throw new Error(`Unexpected end of expression: ${this.input}`);
+      throw new Error(`Unexpected end of expression: ${ this.input }`);
     } else {
-      this.error(`Unexpected token ${this.peek.text}`);
+      this.error(`Unexpected token ${ this.peek.text }`);
     }
   }
 
-  parseAccessOrCallScope()  {
+  parseAccessOrCallScope() {
     let name = this.peek.key;
 
     this.advance();
@@ -2722,7 +2699,7 @@ export class ParserImplementation {
       } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === '[' || this.peek.text === '}') {
         return new AccessThis(ancestor);
       } else {
-        this.error(`Unexpected token ${this.peek.text}`);
+        this.error(`Unexpected token ${ this.peek.text }`);
       }
     }
 
@@ -2743,23 +2720,18 @@ export class ParserImplementation {
 
     if (this.peek.text !== '}') {
       do {
-        // TODO(kasperl): Stricter checking. Only allow identifiers
-        // and strings as keys. Maybe also keywords?
         let peek = this.peek;
         let value = peek.value;
         keys.push(typeof value === 'string' ? value : peek.text);
 
         this.advance();
-        if ( peek.key && (this.peek.text === ',' || this.peek.text === '}') )
-        {
-            --this.index;
-            values.push(this.parseAccessOrCallScope());
+        if (peek.key && (this.peek.text === ',' || this.peek.text === '}')) {
+          --this.index;
+          values.push(this.parseAccessOrCallScope());
+        } else {
+          this.expect(':');
+          values.push(this.parseExpression());
         }
-        else {
-            this.expect(':');
-            values.push(this.parseExpression());
-        }
-
       } while (this.optional(','));
     }
 
@@ -2774,7 +2746,7 @@ export class ParserImplementation {
     if (this.peek.text != terminator) {
       do {
         result.push(this.parseExpression());
-       } while (this.optional(','));
+      } while (this.optional(','));
     }
 
     return result;
@@ -2793,47 +2765,36 @@ export class ParserImplementation {
     if (this.peek.text === text) {
       this.advance();
     } else {
-      this.error(`Missing expected ${text}`);
+      this.error(`Missing expected ${ text }`);
     }
   }
 
-  advance(){
+  advance() {
     this.index++;
   }
 
   error(message) {
-    let location = (this.index < this.tokens.length)
-        ? `at column ${this.tokens[this.index].index + 1} in`
-        : `at the end of the expression`;
+    let location = this.index < this.tokens.length ? `at column ${ this.tokens[this.index].index + 1 } in` : `at the end of the expression`;
 
-    throw new Error(`Parser Error: ${message} ${location} [${this.input}]`);
+    throw new Error(`Parser Error: ${ message } ${ location } [${ this.input }]`);
   }
-}
+};
 
 let mapProto = Map.prototype;
 
-export function getMapObserver(taskQueue, map){
+export function getMapObserver(taskQueue, map) {
   return ModifyMapObserver.for(taskQueue, map);
 }
 
-class ModifyMapObserver extends ModifyCollectionObserver {
-  constructor(taskQueue, map){
+let ModifyMapObserver = class ModifyMapObserver extends ModifyCollectionObserver {
+  constructor(taskQueue, map) {
     super(taskQueue, map);
   }
 
-  /**
-   * Searches for observer or creates a new one associated with given map instance
-   * @param taskQueue
-   * @param map instance for which observer is searched
-   * @returns ModifyMapObserver always the same instance for any given map instance
-   */
   static for(taskQueue, map) {
     if (!('__map_observer__' in map)) {
       let observer = ModifyMapObserver.create(taskQueue, map);
-      Object.defineProperty(
-        map,
-        '__map_observer__',
-        { value: observer, enumerable: false, configurable: false });
+      Object.defineProperty(map, '__map_observer__', { value: observer, enumerable: false, configurable: false });
     }
     return map.__map_observer__;
   }
@@ -2892,11 +2853,10 @@ class ModifyMapObserver extends ModifyCollectionObserver {
 
     return observer;
   }
-}
+};
 
-//Note: path and deepPath are designed to handle v0 and v1 shadow dom specs respectively
 function findOriginalEventTarget(event) {
-  return (event.path && event.path[0]) || (event.deepPath && event.deepPath[0]) || event.target;
+  return event.path && event.path[0] || event.deepPath && event.deepPath[0] || event.target;
 }
 
 function handleDelegatedEvent(event) {
@@ -2918,7 +2878,7 @@ function handleDelegatedEvent(event) {
   }
 }
 
-class DelegateHandlerEntry {
+let DelegateHandlerEntry = class DelegateHandlerEntry {
   constructor(eventName) {
     this.eventName = eventName;
     this.count = 0;
@@ -2939,10 +2899,11 @@ class DelegateHandlerEntry {
       DOM.removeEventListener(this.eventName, handleDelegatedEvent);
     }
   }
-}
-
-class DefaultEventStrategy {
-  delegatedHandlers = [];
+};
+let DefaultEventStrategy = class DefaultEventStrategy {
+  constructor() {
+    this.delegatedHandlers = [];
+  }
 
   subscribe(target, targetEvent, callback, delegate) {
     if (delegate) {
@@ -2953,60 +2914,61 @@ class DefaultEventStrategy {
       handlerEntry.increment();
       delegatedCallbacks[targetEvent] = callback;
 
-      return function() {
+      return function () {
         handlerEntry.decrement();
         delegatedCallbacks[targetEvent] = null;
       };
     } else {
       target.addEventListener(targetEvent, callback, false);
 
-      return function() {
+      return function () {
         target.removeEventListener(targetEvent, callback);
       };
     }
   }
-}
+};
 
-export class EventManager {
+
+export let EventManager = class EventManager {
   constructor() {
     this.elementHandlerLookup = {};
     this.eventStrategyLookup = {};
 
     this.registerElementConfig({
-      tagName:'input',
+      tagName: 'input',
       properties: {
-        value:['change','input'],
-        checked:['change','input'],
-        files:['change','input']
+        value: ['change', 'input'],
+        checked: ['change', 'input'],
+        files: ['change', 'input']
       }
     });
 
     this.registerElementConfig({
-      tagName:'textarea',
-      properties:{
-        value:['change','input']
-      }
-    });
-
-    this.registerElementConfig({
-      tagName:'select',
-      properties:{
-        value:['change']
-      }
-    });
-
-    this.registerElementConfig({
-      tagName:'content editable',
+      tagName: 'textarea',
       properties: {
-        value:['change','input','blur','keyup','paste'],
+        value: ['change', 'input']
       }
     });
 
     this.registerElementConfig({
-      tagName:'scrollable element',
+      tagName: 'select',
       properties: {
-        scrollTop:['scroll'],
-        scrollLeft:['scroll']
+        value: ['change']
+      }
+    });
+
+    this.registerElementConfig({
+      tagName: 'content editable',
+      properties: {
+        value: ['change', 'input', 'blur', 'keyup', 'paste']
+      }
+    });
+
+    this.registerElementConfig({
+      tagName: 'scrollable element',
+      properties: {
+        scrollTop: ['scroll'],
+        scrollLeft: ['scroll']
       }
     });
 
@@ -3038,11 +3000,11 @@ export class EventManager {
           target.addEventListener(changeEvent, callback, false);
         });
 
-        return function() {
+        return function () {
           events.forEach(changeEvent => {
             target.removeEventListener(changeEvent, callback);
           });
-        }
+        };
       }
     };
   }
@@ -3059,10 +3021,10 @@ export class EventManager {
     let tagName;
     let lookup = this.elementHandlerLookup;
 
-    if(target.tagName) {
+    if (target.tagName) {
       tagName = target.tagName.toLowerCase();
 
-      if(lookup[tagName] && lookup[tagName][propertyName]) {
+      if (lookup[tagName] && lookup[tagName][propertyName]) {
         return lookup[tagName][propertyName];
       }
 
@@ -3079,33 +3041,32 @@ export class EventManager {
   }
 
   addEventListener(target, targetEvent, callback, delegate) {
-    return (this.eventStrategyLookup[targetEvent] || this.defaultEventStrategy)
-      .subscribe(target, targetEvent, callback, delegate);
+    return (this.eventStrategyLookup[targetEvent] || this.defaultEventStrategy).subscribe(target, targetEvent, callback, delegate);
   }
-}
+};
 
-export class DirtyChecker {
-  constructor(){
+export let DirtyChecker = class DirtyChecker {
+  constructor() {
     this.tracked = [];
     this.checkDelay = 120;
   }
 
-  addProperty(property){
+  addProperty(property) {
     var tracked = this.tracked;
 
     tracked.push(property);
 
-    if(tracked.length === 1) {
+    if (tracked.length === 1) {
       this.scheduleDirtyCheck();
     }
   }
 
-  removeProperty(property){
+  removeProperty(property) {
     var tracked = this.tracked;
     tracked.splice(tracked.indexOf(property), 1);
   }
 
-  scheduleDirtyCheck(){
+  scheduleDirtyCheck() {
     setTimeout(() => this.check(), this.checkDelay);
   }
 
@@ -3113,22 +3074,21 @@ export class DirtyChecker {
     var tracked = this.tracked,
         i = tracked.length;
 
-    while(i--) {
+    while (i--) {
       var current = tracked[i];
 
-      if(current.isDirty()){
+      if (current.isDirty()) {
         current.call();
       }
     }
 
-    if(tracked.length) {
+    if (tracked.length) {
       this.scheduleDirtyCheck();
     }
   }
-}
+};
 
-@subscriberCollection()
-export class DirtyCheckProperty {
+export let DirtyCheckProperty = (_dec5 = subscriberCollection(), _dec5(_class5 = class DirtyCheckProperty {
   constructor(dirtyChecker, obj, propertyName) {
     this.dirtyChecker = dirtyChecker;
     this.obj = obj;
@@ -3169,17 +3129,18 @@ export class DirtyCheckProperty {
       this.dirtyChecker.removeProperty(this);
     }
   }
-}
+}) || _class5);
 
 export const propertyAccessor = {
   getValue: (obj, propertyName) => obj[propertyName],
   setValue: (value, obj, propertyName) => obj[propertyName] = value
 };
 
-export class PrimitiveObserver {
-  doNotCache = true;
+export let PrimitiveObserver = class PrimitiveObserver {
 
   constructor(primitive, propertyName) {
+    this.doNotCache = true;
+
     this.primitive = primitive;
     this.propertyName = propertyName;
   }
@@ -3190,19 +3151,16 @@ export class PrimitiveObserver {
 
   setValue() {
     let type = typeof this.primitive;
-    throw new Error(`The ${this.propertyName} property of a ${type} (${this.primitive}) cannot be assigned.`);
+    throw new Error(`The ${ this.propertyName } property of a ${ type } (${ this.primitive }) cannot be assigned.`);
   }
 
-  subscribe() {
-  }
+  subscribe() {}
 
-  unsubscribe() {
-  }
-}
+  unsubscribe() {}
+};
 
-@subscriberCollection()
-export class SetterObserver {
-  constructor(taskQueue, obj, propertyName){
+export let SetterObserver = (_dec6 = subscriberCollection(), _dec6(_class7 = class SetterObserver {
+  constructor(taskQueue, obj, propertyName) {
     this.taskQueue = taskQueue;
     this.obj = obj;
     this.propertyName = propertyName;
@@ -3225,8 +3183,8 @@ export class SetterObserver {
   setterValue(newValue) {
     let oldValue = this.currentValue;
 
-    if(oldValue !== newValue){
-      if(!this.queued){
+    if (oldValue !== newValue) {
+      if (!this.queued) {
         this.oldValue = oldValue;
         this.queued = true;
         this.taskQueue.queueMicroTask(this);
@@ -3246,7 +3204,7 @@ export class SetterObserver {
   }
 
   subscribe(context, callable) {
-    if(!this.observing) {
+    if (!this.observing) {
       this.convertProperty();
     }
     this.addSubscriber(context, callable);
@@ -3262,21 +3220,18 @@ export class SetterObserver {
     this.setValue = this.setterValue;
     this.getValue = this.getterValue;
 
-    try{
+    try {
       Object.defineProperty(this.obj, this.propertyName, {
         configurable: true,
         enumerable: true,
         get: this.getValue.bind(this),
         set: this.setValue.bind(this)
       });
-    }catch(_){}
+    } catch (_) {}
   }
-}
+}) || _class7);
 
-export class XLinkAttributeObserver {
-  // xlink namespaced attributes require getAttributeNS/setAttributeNS
-  // (even though the NS version doesn't work for other namespaces
-  // in html5 documents)
+export let XLinkAttributeObserver = class XLinkAttributeObserver {
   constructor(element, propertyName, attributeName) {
     this.element = element;
     this.propertyName = propertyName;
@@ -3292,16 +3247,16 @@ export class XLinkAttributeObserver {
   }
 
   subscribe() {
-    throw new Error(`Observation of a "${this.element.nodeName}" element\'s "${this.propertyName}" property is not supported.`);
+    throw new Error(`Observation of a "${ this.element.nodeName }" element\'s "${ this.propertyName }" property is not supported.`);
   }
-}
+};
 
 export const dataAttributeAccessor = {
   getValue: (obj, propertyName) => obj.getAttribute(propertyName),
   setValue: (value, obj, propertyName) => obj.setAttribute(propertyName, value)
 };
 
-export class DataAttributeObserver {
+export let DataAttributeObserver = class DataAttributeObserver {
   constructor(element, propertyName) {
     this.element = element;
     this.propertyName = propertyName;
@@ -3316,55 +3271,51 @@ export class DataAttributeObserver {
   }
 
   subscribe() {
-    throw new Error(`Observation of a "${this.element.nodeName}" element\'s "${this.propertyName}" property is not supported.`);
+    throw new Error(`Observation of a "${ this.element.nodeName }" element\'s "${ this.propertyName }" property is not supported.`);
   }
-}
+};
 
-export class StyleObserver {
+export let StyleObserver = class StyleObserver {
   constructor(element, propertyName) {
     this.element = element;
     this.propertyName = propertyName;
-    
+
     this.styles = null;
     this.version = 0;
   }
-  
+
   getValue() {
     return this.element.style.cssText;
   }
-  
+
   setValue(newValue) {
     let styles = this.styles || {},
         style,
         version = this.version;
-        
-    if ( newValue !== null && newValue !== undefined )
-    {
-      if ( newValue instanceof Object )
-      {
-        for( style in newValue ) 
-        {
-          if ( newValue.hasOwnProperty(style) )
-          {
+
+    if (newValue !== null && newValue !== undefined) {
+      if (newValue instanceof Object) {
+        for (style in newValue) {
+          if (newValue.hasOwnProperty(style)) {
             styles[style] = version;
             this.element.style[style] = newValue[style];
           }
         }
-      }
-      else if ( newValue.length ) {
+      } else if (newValue.length) {
         let pairs = newValue.split(/(?:;|:(?!\/))\s*/);
-        for( let i = 0, length = pairs.length; i < length; i++ )
-        {
+        for (let i = 0, length = pairs.length; i < length; i++) {
           style = pairs[i].trim();
-          if ( !style ) { continue; }
-            
+          if (!style) {
+            continue;
+          }
+
           styles[style] = version;
-          
+
           this.element.style[style] = pairs[++i];
         }
       }
     }
-      
+
     this.styles = styles;
     this.version += 1;
 
@@ -3373,29 +3324,27 @@ export class StyleObserver {
     }
 
     version -= 1;
-    for(style in styles) {
+    for (style in styles) {
       if (!styles.hasOwnProperty(style) || styles[style] !== version) {
         continue;
       }
-      
+
       this.element.style[style] = '';
     }
   }
 
   subscribe() {
-    throw new Error(`Observation of a "${this.element.nodeName}" element\'s "${this.propertyName}" property is not supported.`);
+    throw new Error(`Observation of a "${ this.element.nodeName }" element\'s "${ this.propertyName }" property is not supported.`);
   }
 
-}
+};
 
-@subscriberCollection()
-export class ValueAttributeObserver {
+export let ValueAttributeObserver = (_dec7 = subscriberCollection(), _dec7(_class8 = class ValueAttributeObserver {
   constructor(element, propertyName, handler) {
     this.element = element;
     this.propertyName = propertyName;
     this.handler = handler;
     if (propertyName === 'files') {
-      // input.files cannot be assigned.
       this.setValue = () => {};
     }
   }
@@ -3436,13 +3385,12 @@ export class ValueAttributeObserver {
       this.disposeHandler = null;
     }
   }
-}
+}) || _class8);
 
 const checkedArrayContext = 'CheckedObserver:array';
 
-@subscriberCollection()
-export class CheckedObserver {
-  constructor(element, handler, observerLocator){
+export let CheckedObserver = (_dec8 = subscriberCollection(), _dec8(_class9 = class CheckedObserver {
+  constructor(element, handler, observerLocator) {
     this.element = element;
     this.handler = handler;
     this.observerLocator = observerLocator;
@@ -3457,22 +3405,21 @@ export class CheckedObserver {
       return;
     }
 
-    // unsubscribe from old array.
     if (this.arrayObserver) {
       this.arrayObserver.unsubscribe(checkedArrayContext, this);
       this.arrayObserver = null;
     }
-    // subscribe to new array.
+
     if (this.element.type === 'checkbox' && Array.isArray(newValue)) {
       this.arrayObserver = this.observerLocator.getArrayObserver(newValue);
       this.arrayObserver.subscribe(checkedArrayContext, this);
     }
-    // assign and sync element.
+
     this.oldValue = this.value;
     this.value = newValue;
     this.synchronizeElement();
     this.notify();
-    // queue up an initial sync after the bindings have been evaluated.
+
     if (!this.initialSync) {
       this.initialSync = true;
       this.observerLocator.taskQueue.queueMicroTask(this);
@@ -3480,7 +3427,6 @@ export class CheckedObserver {
   }
 
   call(context, splices) {
-    // called by task queue and array observer.
     this.synchronizeElement();
   }
 
@@ -3491,13 +3437,10 @@ export class CheckedObserver {
         isRadio = element.type === 'radio',
         matcher = element.matcher || ((a, b) => a === b);
 
-    element.checked =
-      isRadio && !!matcher(value, elementValue)
-      || !isRadio && value === true
-      || !isRadio && Array.isArray(value) && !!value.find(item => !!matcher(item, elementValue));
+    element.checked = isRadio && !!matcher(value, elementValue) || !isRadio && value === true || !isRadio && Array.isArray(value) && !!value.find(item => !!matcher(item, elementValue));
   }
 
-  synchronizeValue(){
+  synchronizeValue() {
     let value = this.value,
         element = this.element,
         elementValue = element.hasOwnProperty('model') ? element.model : element.value,
@@ -3512,7 +3455,7 @@ export class CheckedObserver {
         } else if (!element.checked && index !== -1) {
           value.splice(index, 1);
         }
-        // don't invoke callbacks.
+
         return;
       } else {
         value = element.checked;
@@ -3520,7 +3463,6 @@ export class CheckedObserver {
     } else if (element.checked) {
       value = elementValue;
     } else {
-      // don't invoke callbacks.
       return;
     }
 
@@ -3537,14 +3479,14 @@ export class CheckedObserver {
   }
 
   subscribe(context, callable) {
-    if(!this.hasSubscribers()) {
+    if (!this.hasSubscribers()) {
       this.disposeHandler = this.handler.subscribe(this.element, this.synchronizeValue.bind(this, false));
     }
     this.addSubscriber(context, callable);
   }
 
   unsubscribe(context, callable) {
-    if(this.removeSubscriber(context, callable) && !this.hasSubscribers()){
+    if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
       this.disposeHandler();
       this.disposeHandler = null;
     }
@@ -3556,13 +3498,12 @@ export class CheckedObserver {
       this.arrayObserver = null;
     }
   }
-}
+}) || _class9);
 
-const selectArrayContext = 'SelectValueObserver:array'
+const selectArrayContext = 'SelectValueObserver:array';
 
-@subscriberCollection()
-export class SelectValueObserver {
-  constructor(element, handler, observerLocator){
+export let SelectValueObserver = (_dec9 = subscriberCollection(), _dec9(_class10 = class SelectValueObserver {
+  constructor(element, handler, observerLocator) {
     this.element = element;
     this.handler = handler;
     this.observerLocator = observerLocator;
@@ -3574,27 +3515,27 @@ export class SelectValueObserver {
 
   setValue(newValue) {
     if (newValue !== null && newValue !== undefined && this.element.multiple && !Array.isArray(newValue)) {
-      throw new Error('Only null or Array instances can be bound to a multi-select.')
+      throw new Error('Only null or Array instances can be bound to a multi-select.');
     }
     if (this.value === newValue) {
       return;
     }
-    // unsubscribe from old array.
+
     if (this.arrayObserver) {
       this.arrayObserver.unsubscribe(selectArrayContext, this);
       this.arrayObserver = null;
     }
-    // subscribe to new array.
+
     if (Array.isArray(newValue)) {
       this.arrayObserver = this.observerLocator.getArrayObserver(newValue);
       this.arrayObserver.subscribe(selectArrayContext, this);
     }
-    // assign and sync element.
+
     this.oldValue = this.value;
     this.value = newValue;
     this.synchronizeOptions();
     this.notify();
-    // queue up an initial sync after the bindings have been evaluated.
+
     if (!this.initialSync) {
       this.initialSync = true;
       this.observerLocator.taskQueue.queueMicroTask(this);
@@ -3602,12 +3543,13 @@ export class SelectValueObserver {
   }
 
   call(context, splices) {
-    // called by task queue and array observer.
     this.synchronizeOptions();
   }
 
   synchronizeOptions() {
-    let value = this.value, clear, isArray;
+    let value = this.value,
+        clear,
+        isArray;
 
     if (value === null || value === undefined) {
       clear = true;
@@ -3618,7 +3560,7 @@ export class SelectValueObserver {
     let options = this.element.options;
     let i = options.length;
     let matcher = this.element.matcher || ((a, b) => a === b);
-    while(i--) {
+    while (i--) {
       let option = options.item(i);
       if (clear) {
         option.selected = false;
@@ -3648,10 +3590,9 @@ export class SelectValueObserver {
     }
 
     if (this.element.multiple) {
-      // multi-select
       if (Array.isArray(this.value)) {
         let matcher = this.element.matcher || ((a, b) => a === b);
-        // remove items that are no longer selected.
+
         let i = 0;
         while (i < this.value.length) {
           let a = this.value[i];
@@ -3661,7 +3602,7 @@ export class SelectValueObserver {
             i++;
           }
         }
-        // add items that have been selected.
+
         i = 0;
         while (i < value.length) {
           let a = value[i];
@@ -3670,16 +3611,15 @@ export class SelectValueObserver {
           }
           i++;
         }
-        return; // don't notify.
+        return;
       }
     } else {
-      // single-select
-      if (count === 0) {
-        value = null;
-      } else {
-        value = value[0];
+        if (count === 0) {
+          value = null;
+        } else {
+          value = value[0];
+        }
       }
-    }
 
     if (value !== this.value) {
       this.oldValue = this.value;
@@ -3726,9 +3666,9 @@ export class SelectValueObserver {
       this.arrayObserver = null;
     }
   }
-}
+}) || _class10);
 
-export class ClassObserver {
+export let ClassObserver = class ClassObserver {
   constructor(element) {
     this.element = element;
     this.doNotCache = true;
@@ -3743,12 +3683,12 @@ export class ClassObserver {
   setValue(newValue) {
     var nameIndex = this.nameIndex || {},
         version = this.version,
-        names, name;
+        names,
+        name;
 
-    // Add the classes, tracking the version at which they were added.
     if (newValue !== null && newValue !== undefined && newValue.length) {
       names = newValue.split(/\s+/);
-      for(let i = 0, length = names.length; i < length; i++) {
+      for (let i = 0, length = names.length; i < length; i++) {
         name = names[i];
         if (name === '') {
           continue;
@@ -3758,19 +3698,16 @@ export class ClassObserver {
       }
     }
 
-    // Update state variables.
     this.value = newValue;
     this.nameIndex = nameIndex;
     this.version += 1;
 
-    // First call to setValue?  We're done.
     if (version === 0) {
       return;
     }
 
-    // Remove classes from previous version.
     version -= 1;
-    for(name in nameIndex) {
+    for (name in nameIndex) {
       if (!nameIndex.hasOwnProperty(name) || nameIndex[name] !== version) {
         continue;
       }
@@ -3779,67 +3716,9 @@ export class ClassObserver {
   }
 
   subscribe() {
-    throw new Error(`Observation of a "${this.element.nodeName}" element\'s "class" property is not supported.`);
+    throw new Error(`Observation of a "${ this.element.nodeName }" element\'s "class" property is not supported.`);
   }
-}
-
-const computedContext = 'ComputedPropertyObserver';
-
-@subscriberCollection()
-export class ComputedPropertyObserver {
-  constructor(obj, propertyName, descriptor, observerLocator) {
-    this.obj = obj;
-    this.propertyName = propertyName;
-    this.descriptor = descriptor;
-    this.observerLocator = observerLocator;
-  }
-
-  getValue(){
-    return this.obj[this.propertyName];
-  }
-
-  setValue(newValue){
-    this.obj[this.propertyName] = newValue;
-  }
-
-  call(context) {
-    let newValue = this.getValue();
-    if (this.oldValue === newValue)
-      return;
-    this.callSubscribers(newValue, this.oldValue);
-    this.oldValue = newValue;
-    return;
-  }
-
-  subscribe(context, callable) {
-    if (!this.hasSubscribers()) {
-      this.oldValue = this.getValue();
-
-      let dependencies = this.descriptor.get.dependencies;
-      this.observers = [];
-      for (let i = 0, ii = dependencies.length; i < ii; i++) {
-        let observer = this.observerLocator.getObserver(this.obj, dependencies[i]);
-        // todo:  consider throwing when a dependency's observer is an instance of DirtyCheckProperty.
-        this.observers.push(observer);
-        observer.subscribe(computedContext, this);
-      }
-    }
-
-    this.addSubscriber(context, callable);
-  }
-
-  unsubscribe(context, callable) {
-    if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
-      this.oldValue = undefined;
-
-      let i = this.observers.length;
-      while(i--) {
-        this.observers[i].unsubscribe(computedContext, this);
-      }
-      this.observers = null;
-    }
-  }
-}
+};
 
 export function hasDeclaredDependencies(descriptor) {
   return descriptor && descriptor.get && descriptor.get.dependencies && descriptor.get.dependencies.length > 0;
@@ -3850,94 +3729,138 @@ export function declarePropertyDependencies(ctor, propertyName, dependencies) {
   descriptor.get.dependencies = dependencies;
 }
 
-export function computedFrom(...rest){
-  return function(target, key, descriptor){
+export function computedFrom(...rest) {
+  return function (target, key, descriptor) {
     descriptor.get.dependencies = rest;
     return descriptor;
+  };
+}
+
+export let ComputedExpression = class ComputedExpression extends Expression {
+  constructor(name, dependencies) {
+    super();
+
+    this.name = name;
+    this.dependencies = dependencies;
+    this.isAssignable = true;
   }
+
+  evaluate(scope, lookupFunctions) {
+    return scope.bindingContext[this.name];
+  }
+
+  assign(scope, value) {
+    scope.bindingContext[this.name] = value;
+  }
+
+  accept(visitor) {
+    throw new Error('not implemented');
+  }
+
+  connect(binding, scope) {
+    let dependencies = this.dependencies;
+    let i = dependencies.length;
+    while (i--) {
+      dependencies[i].connect(binding, scope);
+    }
+  }
+};
+
+export function createComputedObserver(obj, propertyName, descriptor, observerLocator) {
+  let dependencies = descriptor.get.dependencies;
+  if (!(dependencies instanceof ComputedExpression)) {
+    let i = dependencies.length;
+    while (i--) {
+      dependencies[i] = observerLocator.parser.parse(dependencies[i]);
+    }
+    dependencies = descriptor.get.dependencies = new ComputedExpression(propertyName, dependencies);
+  }
+
+  let scope = { bindingContext: obj, overrideContext: createOverrideContext(obj) };
+  return new ExpressionObserver(scope, dependencies, observerLocator);
 }
 
 export const elements = {
-  a: ['class','externalResourcesRequired','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','style','systemLanguage','target','transform','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space'],
-  altGlyph: ['class','dx','dy','externalResourcesRequired','format','glyphRef','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','rotate','style','systemLanguage','x','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space','y'],
-  altGlyphDef: ['id','xml:base','xml:lang','xml:space'],
-  altGlyphItem: ['id','xml:base','xml:lang','xml:space'],
-  animate: ['accumulate','additive','attributeName','attributeType','begin','by','calcMode','dur','end','externalResourcesRequired','fill','from','id','keySplines','keyTimes','max','min','onbegin','onend','onload','onrepeat','repeatCount','repeatDur','requiredExtensions','requiredFeatures','restart','systemLanguage','to','values','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space'],
-  animateColor: ['accumulate','additive','attributeName','attributeType','begin','by','calcMode','dur','end','externalResourcesRequired','fill','from','id','keySplines','keyTimes','max','min','onbegin','onend','onload','onrepeat','repeatCount','repeatDur','requiredExtensions','requiredFeatures','restart','systemLanguage','to','values','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space'],
-  animateMotion: ['accumulate','additive','begin','by','calcMode','dur','end','externalResourcesRequired','fill','from','id','keyPoints','keySplines','keyTimes','max','min','onbegin','onend','onload','onrepeat','origin','path','repeatCount','repeatDur','requiredExtensions','requiredFeatures','restart','rotate','systemLanguage','to','values','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space'],
-  animateTransform: ['accumulate','additive','attributeName','attributeType','begin','by','calcMode','dur','end','externalResourcesRequired','fill','from','id','keySplines','keyTimes','max','min','onbegin','onend','onload','onrepeat','repeatCount','repeatDur','requiredExtensions','requiredFeatures','restart','systemLanguage','to','type','values','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space'],
-  circle: ['class','cx','cy','externalResourcesRequired','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','r','requiredExtensions','requiredFeatures','style','systemLanguage','transform','xml:base','xml:lang','xml:space'],
-  clipPath: ['class','clipPathUnits','externalResourcesRequired','id','requiredExtensions','requiredFeatures','style','systemLanguage','transform','xml:base','xml:lang','xml:space'],
-  'color-profile': ['id','local','name','rendering-intent','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space'],
-  cursor: ['externalResourcesRequired','id','requiredExtensions','requiredFeatures','systemLanguage','x','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space','y'],
-  defs: ['class','externalResourcesRequired','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','style','systemLanguage','transform','xml:base','xml:lang','xml:space'],
-  desc: ['class','id','style','xml:base','xml:lang','xml:space'],
-  ellipse: ['class','cx','cy','externalResourcesRequired','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','rx','ry','style','systemLanguage','transform','xml:base','xml:lang','xml:space'],
-  feBlend: ['class','height','id','in','in2','mode','result','style','width','x','xml:base','xml:lang','xml:space','y'],
-  feColorMatrix: ['class','height','id','in','result','style','type','values','width','x','xml:base','xml:lang','xml:space','y'],
-  feComponentTransfer: ['class','height','id','in','result','style','width','x','xml:base','xml:lang','xml:space','y'],
-  feComposite: ['class','height','id','in','in2','k1','k2','k3','k4','operator','result','style','width','x','xml:base','xml:lang','xml:space','y'],
-  feConvolveMatrix: ['bias','class','divisor','edgeMode','height','id','in','kernelMatrix','kernelUnitLength','order','preserveAlpha','result','style','targetX','targetY','width','x','xml:base','xml:lang','xml:space','y'],
-  feDiffuseLighting: ['class','diffuseConstant','height','id','in','kernelUnitLength','result','style','surfaceScale','width','x','xml:base','xml:lang','xml:space','y'],
-  feDisplacementMap: ['class','height','id','in','in2','result','scale','style','width','x','xChannelSelector','xml:base','xml:lang','xml:space','y','yChannelSelector'],
-  feDistantLight: ['azimuth','elevation','id','xml:base','xml:lang','xml:space'],
-  feFlood: ['class','height','id','result','style','width','x','xml:base','xml:lang','xml:space','y'],
-  feFuncA: ['amplitude','exponent','id','intercept','offset','slope','tableValues','type','xml:base','xml:lang','xml:space'],
-  feFuncB: ['amplitude','exponent','id','intercept','offset','slope','tableValues','type','xml:base','xml:lang','xml:space'],
-  feFuncG: ['amplitude','exponent','id','intercept','offset','slope','tableValues','type','xml:base','xml:lang','xml:space'],
-  feFuncR: ['amplitude','exponent','id','intercept','offset','slope','tableValues','type','xml:base','xml:lang','xml:space'],
-  feGaussianBlur: ['class','height','id','in','result','stdDeviation','style','width','x','xml:base','xml:lang','xml:space','y'],
-  feImage: ['class','externalResourcesRequired','height','id','preserveAspectRatio','result','style','width','x','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space','y'],
-  feMerge: ['class','height','id','result','style','width','x','xml:base','xml:lang','xml:space','y'],
-  feMergeNode: ['id','xml:base','xml:lang','xml:space'],
-  feMorphology: ['class','height','id','in','operator','radius','result','style','width','x','xml:base','xml:lang','xml:space','y'],
-  feOffset: ['class','dx','dy','height','id','in','result','style','width','x','xml:base','xml:lang','xml:space','y'],
-  fePointLight: ['id','x','xml:base','xml:lang','xml:space','y','z'],
-  feSpecularLighting: ['class','height','id','in','kernelUnitLength','result','specularConstant','specularExponent','style','surfaceScale','width','x','xml:base','xml:lang','xml:space','y'],
-  feSpotLight: ['id','limitingConeAngle','pointsAtX','pointsAtY','pointsAtZ','specularExponent','x','xml:base','xml:lang','xml:space','y','z'],
-  feTile: ['class','height','id','in','result','style','width','x','xml:base','xml:lang','xml:space','y'],
-  feTurbulence: ['baseFrequency','class','height','id','numOctaves','result','seed','stitchTiles','style','type','width','x','xml:base','xml:lang','xml:space','y'],
-  filter: ['class','externalResourcesRequired','filterRes','filterUnits','height','id','primitiveUnits','style','width','x','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space','y'],
-  font: ['class','externalResourcesRequired','horiz-adv-x','horiz-origin-x','horiz-origin-y','id','style','vert-adv-y','vert-origin-x','vert-origin-y','xml:base','xml:lang','xml:space'],
-  'font-face': ['accent-height','alphabetic','ascent','bbox','cap-height','descent','font-family','font-size','font-stretch','font-style','font-variant','font-weight','hanging','id','ideographic','mathematical','overline-position','overline-thickness','panose-1','slope','stemh','stemv','strikethrough-position','strikethrough-thickness','underline-position','underline-thickness','unicode-range','units-per-em','v-alphabetic','v-hanging','v-ideographic','v-mathematical','widths','x-height','xml:base','xml:lang','xml:space'],
-  'font-face-format': ['id','string','xml:base','xml:lang','xml:space'],
-  'font-face-name': ['id','name','xml:base','xml:lang','xml:space'],
-  'font-face-src': ['id','xml:base','xml:lang','xml:space'],
-  'font-face-uri': ['id','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space'],
-  foreignObject: ['class','externalResourcesRequired','height','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','style','systemLanguage','transform','width','x','xml:base','xml:lang','xml:space','y'],
-  g: ['class','externalResourcesRequired','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','style','systemLanguage','transform','xml:base','xml:lang','xml:space'],
-  glyph: ['arabic-form','class','d','glyph-name','horiz-adv-x','id','lang','orientation','style','unicode','vert-adv-y','vert-origin-x','vert-origin-y','xml:base','xml:lang','xml:space'],
-  glyphRef: ['class','dx','dy','format','glyphRef','id','style','x','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space','y'],
-  hkern: ['g1','g2','id','k','u1','u2','xml:base','xml:lang','xml:space'],
-  image: ['class','externalResourcesRequired','height','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','preserveAspectRatio','requiredExtensions','requiredFeatures','style','systemLanguage','transform','width','x','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space','y'],
-  line: ['class','externalResourcesRequired','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','style','systemLanguage','transform','x1','x2','xml:base','xml:lang','xml:space','y1','y2'],
-  linearGradient: ['class','externalResourcesRequired','gradientTransform','gradientUnits','id','spreadMethod','style','x1','x2','xlink:arcrole','xlink:href','xlink:role','xlink:title','xlink:type','xml:base','xml:lang','xml:space','y1','y2'],
-  marker: ['class','externalResourcesRequired','id','markerHeight','markerUnits','markerWidth','orient','preserveAspectRatio','refX','refY','style','viewBox','xml:base','xml:lang','xml:space'],
-  mask: ['class','externalResourcesRequired','height','id','maskContentUnits','maskUnits','requiredExtensions','requiredFeatures','style','systemLanguage','width','x','xml:base','xml:lang','xml:space','y'],
-  metadata: ['id','xml:base','xml:lang','xml:space'],
-  'missing-glyph': ['class','d','horiz-adv-x','id','style','vert-adv-y','vert-origin-x','vert-origin-y','xml:base','xml:lang','xml:space'],
-  mpath: ['externalResourcesRequired','id','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space'],
-  path: ['class','d','externalResourcesRequired','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','pathLength','requiredExtensions','requiredFeatures','style','systemLanguage','transform','xml:base','xml:lang','xml:space'],
-  pattern: ['class','externalResourcesRequired','height','id','patternContentUnits','patternTransform','patternUnits','preserveAspectRatio','requiredExtensions','requiredFeatures','style','systemLanguage','viewBox','width','x','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space','y'],
-  polygon: ['class','externalResourcesRequired','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','points','requiredExtensions','requiredFeatures','style','systemLanguage','transform','xml:base','xml:lang','xml:space'],
-  polyline: ['class','externalResourcesRequired','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','points','requiredExtensions','requiredFeatures','style','systemLanguage','transform','xml:base','xml:lang','xml:space'],
-  radialGradient: ['class','cx','cy','externalResourcesRequired','fx','fy','gradientTransform','gradientUnits','id','r','spreadMethod','style','xlink:arcrole','xlink:href','xlink:role','xlink:title','xlink:type','xml:base','xml:lang','xml:space'],
-  rect: ['class','externalResourcesRequired','height','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','rx','ry','style','systemLanguage','transform','width','x','xml:base','xml:lang','xml:space','y'],
-  script: ['externalResourcesRequired','id','type','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space'],
-  set: ['attributeName','attributeType','begin','dur','end','externalResourcesRequired','fill','id','max','min','onbegin','onend','onload','onrepeat','repeatCount','repeatDur','requiredExtensions','requiredFeatures','restart','systemLanguage','to','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space'],
-  stop: ['class','id','offset','style','xml:base','xml:lang','xml:space'],
-  style: ['id','media','title','type','xml:base','xml:lang','xml:space'],
-  svg: ['baseProfile','class','contentScriptType','contentStyleType','externalResourcesRequired','height','id','onabort','onactivate','onclick','onerror','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','onresize','onscroll','onunload','onzoom','preserveAspectRatio','requiredExtensions','requiredFeatures','style','systemLanguage','version','viewBox','width','x','xml:base','xml:lang','xml:space','y','zoomAndPan'],
-  switch: ['class','externalResourcesRequired','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','style','systemLanguage','transform','xml:base','xml:lang','xml:space'],
-  symbol: ['class','externalResourcesRequired','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','preserveAspectRatio','style','viewBox','xml:base','xml:lang','xml:space'],
-  text: ['class','dx','dy','externalResourcesRequired','id','lengthAdjust','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','rotate','style','systemLanguage','textLength','transform','x','xml:base','xml:lang','xml:space','y'],
-  textPath: ['class','externalResourcesRequired','id','lengthAdjust','method','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','spacing','startOffset','style','systemLanguage','textLength','xlink:arcrole','xlink:href','xlink:role','xlink:title','xlink:type','xml:base','xml:lang','xml:space'],
-  title: ['class','id','style','xml:base','xml:lang','xml:space'],
-  tref: ['class','dx','dy','externalResourcesRequired','id','lengthAdjust','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','rotate','style','systemLanguage','textLength','x','xlink:arcrole','xlink:href','xlink:role','xlink:title','xlink:type','xml:base','xml:lang','xml:space','y'],
-  tspan: ['class','dx','dy','externalResourcesRequired','id','lengthAdjust','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','rotate','style','systemLanguage','textLength','x','xml:base','xml:lang','xml:space','y'],
-  use: ['class','externalResourcesRequired','height','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','style','systemLanguage','transform','width','x','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space','y'],
-  view: ['externalResourcesRequired','id','preserveAspectRatio','viewBox','viewTarget','xml:base','xml:lang','xml:space','zoomAndPan'],
-  vkern: ['g1','g2','id','k','u1','u2','xml:base','xml:lang','xml:space'],
+  a: ['class', 'externalResourcesRequired', 'id', 'onactivate', 'onclick', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'requiredExtensions', 'requiredFeatures', 'style', 'systemLanguage', 'target', 'transform', 'xlink:actuate', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space'],
+  altGlyph: ['class', 'dx', 'dy', 'externalResourcesRequired', 'format', 'glyphRef', 'id', 'onactivate', 'onclick', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'requiredExtensions', 'requiredFeatures', 'rotate', 'style', 'systemLanguage', 'x', 'xlink:actuate', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  altGlyphDef: ['id', 'xml:base', 'xml:lang', 'xml:space'],
+  altGlyphItem: ['id', 'xml:base', 'xml:lang', 'xml:space'],
+  animate: ['accumulate', 'additive', 'attributeName', 'attributeType', 'begin', 'by', 'calcMode', 'dur', 'end', 'externalResourcesRequired', 'fill', 'from', 'id', 'keySplines', 'keyTimes', 'max', 'min', 'onbegin', 'onend', 'onload', 'onrepeat', 'repeatCount', 'repeatDur', 'requiredExtensions', 'requiredFeatures', 'restart', 'systemLanguage', 'to', 'values', 'xlink:actuate', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space'],
+  animateColor: ['accumulate', 'additive', 'attributeName', 'attributeType', 'begin', 'by', 'calcMode', 'dur', 'end', 'externalResourcesRequired', 'fill', 'from', 'id', 'keySplines', 'keyTimes', 'max', 'min', 'onbegin', 'onend', 'onload', 'onrepeat', 'repeatCount', 'repeatDur', 'requiredExtensions', 'requiredFeatures', 'restart', 'systemLanguage', 'to', 'values', 'xlink:actuate', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space'],
+  animateMotion: ['accumulate', 'additive', 'begin', 'by', 'calcMode', 'dur', 'end', 'externalResourcesRequired', 'fill', 'from', 'id', 'keyPoints', 'keySplines', 'keyTimes', 'max', 'min', 'onbegin', 'onend', 'onload', 'onrepeat', 'origin', 'path', 'repeatCount', 'repeatDur', 'requiredExtensions', 'requiredFeatures', 'restart', 'rotate', 'systemLanguage', 'to', 'values', 'xlink:actuate', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space'],
+  animateTransform: ['accumulate', 'additive', 'attributeName', 'attributeType', 'begin', 'by', 'calcMode', 'dur', 'end', 'externalResourcesRequired', 'fill', 'from', 'id', 'keySplines', 'keyTimes', 'max', 'min', 'onbegin', 'onend', 'onload', 'onrepeat', 'repeatCount', 'repeatDur', 'requiredExtensions', 'requiredFeatures', 'restart', 'systemLanguage', 'to', 'type', 'values', 'xlink:actuate', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space'],
+  circle: ['class', 'cx', 'cy', 'externalResourcesRequired', 'id', 'onactivate', 'onclick', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'r', 'requiredExtensions', 'requiredFeatures', 'style', 'systemLanguage', 'transform', 'xml:base', 'xml:lang', 'xml:space'],
+  clipPath: ['class', 'clipPathUnits', 'externalResourcesRequired', 'id', 'requiredExtensions', 'requiredFeatures', 'style', 'systemLanguage', 'transform', 'xml:base', 'xml:lang', 'xml:space'],
+  'color-profile': ['id', 'local', 'name', 'rendering-intent', 'xlink:actuate', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space'],
+  cursor: ['externalResourcesRequired', 'id', 'requiredExtensions', 'requiredFeatures', 'systemLanguage', 'x', 'xlink:actuate', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  defs: ['class', 'externalResourcesRequired', 'id', 'onactivate', 'onclick', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'requiredExtensions', 'requiredFeatures', 'style', 'systemLanguage', 'transform', 'xml:base', 'xml:lang', 'xml:space'],
+  desc: ['class', 'id', 'style', 'xml:base', 'xml:lang', 'xml:space'],
+  ellipse: ['class', 'cx', 'cy', 'externalResourcesRequired', 'id', 'onactivate', 'onclick', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'requiredExtensions', 'requiredFeatures', 'rx', 'ry', 'style', 'systemLanguage', 'transform', 'xml:base', 'xml:lang', 'xml:space'],
+  feBlend: ['class', 'height', 'id', 'in', 'in2', 'mode', 'result', 'style', 'width', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  feColorMatrix: ['class', 'height', 'id', 'in', 'result', 'style', 'type', 'values', 'width', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  feComponentTransfer: ['class', 'height', 'id', 'in', 'result', 'style', 'width', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  feComposite: ['class', 'height', 'id', 'in', 'in2', 'k1', 'k2', 'k3', 'k4', 'operator', 'result', 'style', 'width', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  feConvolveMatrix: ['bias', 'class', 'divisor', 'edgeMode', 'height', 'id', 'in', 'kernelMatrix', 'kernelUnitLength', 'order', 'preserveAlpha', 'result', 'style', 'targetX', 'targetY', 'width', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  feDiffuseLighting: ['class', 'diffuseConstant', 'height', 'id', 'in', 'kernelUnitLength', 'result', 'style', 'surfaceScale', 'width', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  feDisplacementMap: ['class', 'height', 'id', 'in', 'in2', 'result', 'scale', 'style', 'width', 'x', 'xChannelSelector', 'xml:base', 'xml:lang', 'xml:space', 'y', 'yChannelSelector'],
+  feDistantLight: ['azimuth', 'elevation', 'id', 'xml:base', 'xml:lang', 'xml:space'],
+  feFlood: ['class', 'height', 'id', 'result', 'style', 'width', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  feFuncA: ['amplitude', 'exponent', 'id', 'intercept', 'offset', 'slope', 'tableValues', 'type', 'xml:base', 'xml:lang', 'xml:space'],
+  feFuncB: ['amplitude', 'exponent', 'id', 'intercept', 'offset', 'slope', 'tableValues', 'type', 'xml:base', 'xml:lang', 'xml:space'],
+  feFuncG: ['amplitude', 'exponent', 'id', 'intercept', 'offset', 'slope', 'tableValues', 'type', 'xml:base', 'xml:lang', 'xml:space'],
+  feFuncR: ['amplitude', 'exponent', 'id', 'intercept', 'offset', 'slope', 'tableValues', 'type', 'xml:base', 'xml:lang', 'xml:space'],
+  feGaussianBlur: ['class', 'height', 'id', 'in', 'result', 'stdDeviation', 'style', 'width', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  feImage: ['class', 'externalResourcesRequired', 'height', 'id', 'preserveAspectRatio', 'result', 'style', 'width', 'x', 'xlink:actuate', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  feMerge: ['class', 'height', 'id', 'result', 'style', 'width', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  feMergeNode: ['id', 'xml:base', 'xml:lang', 'xml:space'],
+  feMorphology: ['class', 'height', 'id', 'in', 'operator', 'radius', 'result', 'style', 'width', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  feOffset: ['class', 'dx', 'dy', 'height', 'id', 'in', 'result', 'style', 'width', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  fePointLight: ['id', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y', 'z'],
+  feSpecularLighting: ['class', 'height', 'id', 'in', 'kernelUnitLength', 'result', 'specularConstant', 'specularExponent', 'style', 'surfaceScale', 'width', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  feSpotLight: ['id', 'limitingConeAngle', 'pointsAtX', 'pointsAtY', 'pointsAtZ', 'specularExponent', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y', 'z'],
+  feTile: ['class', 'height', 'id', 'in', 'result', 'style', 'width', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  feTurbulence: ['baseFrequency', 'class', 'height', 'id', 'numOctaves', 'result', 'seed', 'stitchTiles', 'style', 'type', 'width', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  filter: ['class', 'externalResourcesRequired', 'filterRes', 'filterUnits', 'height', 'id', 'primitiveUnits', 'style', 'width', 'x', 'xlink:actuate', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  font: ['class', 'externalResourcesRequired', 'horiz-adv-x', 'horiz-origin-x', 'horiz-origin-y', 'id', 'style', 'vert-adv-y', 'vert-origin-x', 'vert-origin-y', 'xml:base', 'xml:lang', 'xml:space'],
+  'font-face': ['accent-height', 'alphabetic', 'ascent', 'bbox', 'cap-height', 'descent', 'font-family', 'font-size', 'font-stretch', 'font-style', 'font-variant', 'font-weight', 'hanging', 'id', 'ideographic', 'mathematical', 'overline-position', 'overline-thickness', 'panose-1', 'slope', 'stemh', 'stemv', 'strikethrough-position', 'strikethrough-thickness', 'underline-position', 'underline-thickness', 'unicode-range', 'units-per-em', 'v-alphabetic', 'v-hanging', 'v-ideographic', 'v-mathematical', 'widths', 'x-height', 'xml:base', 'xml:lang', 'xml:space'],
+  'font-face-format': ['id', 'string', 'xml:base', 'xml:lang', 'xml:space'],
+  'font-face-name': ['id', 'name', 'xml:base', 'xml:lang', 'xml:space'],
+  'font-face-src': ['id', 'xml:base', 'xml:lang', 'xml:space'],
+  'font-face-uri': ['id', 'xlink:actuate', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space'],
+  foreignObject: ['class', 'externalResourcesRequired', 'height', 'id', 'onactivate', 'onclick', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'requiredExtensions', 'requiredFeatures', 'style', 'systemLanguage', 'transform', 'width', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  g: ['class', 'externalResourcesRequired', 'id', 'onactivate', 'onclick', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'requiredExtensions', 'requiredFeatures', 'style', 'systemLanguage', 'transform', 'xml:base', 'xml:lang', 'xml:space'],
+  glyph: ['arabic-form', 'class', 'd', 'glyph-name', 'horiz-adv-x', 'id', 'lang', 'orientation', 'style', 'unicode', 'vert-adv-y', 'vert-origin-x', 'vert-origin-y', 'xml:base', 'xml:lang', 'xml:space'],
+  glyphRef: ['class', 'dx', 'dy', 'format', 'glyphRef', 'id', 'style', 'x', 'xlink:actuate', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  hkern: ['g1', 'g2', 'id', 'k', 'u1', 'u2', 'xml:base', 'xml:lang', 'xml:space'],
+  image: ['class', 'externalResourcesRequired', 'height', 'id', 'onactivate', 'onclick', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'preserveAspectRatio', 'requiredExtensions', 'requiredFeatures', 'style', 'systemLanguage', 'transform', 'width', 'x', 'xlink:actuate', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  line: ['class', 'externalResourcesRequired', 'id', 'onactivate', 'onclick', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'requiredExtensions', 'requiredFeatures', 'style', 'systemLanguage', 'transform', 'x1', 'x2', 'xml:base', 'xml:lang', 'xml:space', 'y1', 'y2'],
+  linearGradient: ['class', 'externalResourcesRequired', 'gradientTransform', 'gradientUnits', 'id', 'spreadMethod', 'style', 'x1', 'x2', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space', 'y1', 'y2'],
+  marker: ['class', 'externalResourcesRequired', 'id', 'markerHeight', 'markerUnits', 'markerWidth', 'orient', 'preserveAspectRatio', 'refX', 'refY', 'style', 'viewBox', 'xml:base', 'xml:lang', 'xml:space'],
+  mask: ['class', 'externalResourcesRequired', 'height', 'id', 'maskContentUnits', 'maskUnits', 'requiredExtensions', 'requiredFeatures', 'style', 'systemLanguage', 'width', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  metadata: ['id', 'xml:base', 'xml:lang', 'xml:space'],
+  'missing-glyph': ['class', 'd', 'horiz-adv-x', 'id', 'style', 'vert-adv-y', 'vert-origin-x', 'vert-origin-y', 'xml:base', 'xml:lang', 'xml:space'],
+  mpath: ['externalResourcesRequired', 'id', 'xlink:actuate', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space'],
+  path: ['class', 'd', 'externalResourcesRequired', 'id', 'onactivate', 'onclick', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'pathLength', 'requiredExtensions', 'requiredFeatures', 'style', 'systemLanguage', 'transform', 'xml:base', 'xml:lang', 'xml:space'],
+  pattern: ['class', 'externalResourcesRequired', 'height', 'id', 'patternContentUnits', 'patternTransform', 'patternUnits', 'preserveAspectRatio', 'requiredExtensions', 'requiredFeatures', 'style', 'systemLanguage', 'viewBox', 'width', 'x', 'xlink:actuate', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  polygon: ['class', 'externalResourcesRequired', 'id', 'onactivate', 'onclick', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'points', 'requiredExtensions', 'requiredFeatures', 'style', 'systemLanguage', 'transform', 'xml:base', 'xml:lang', 'xml:space'],
+  polyline: ['class', 'externalResourcesRequired', 'id', 'onactivate', 'onclick', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'points', 'requiredExtensions', 'requiredFeatures', 'style', 'systemLanguage', 'transform', 'xml:base', 'xml:lang', 'xml:space'],
+  radialGradient: ['class', 'cx', 'cy', 'externalResourcesRequired', 'fx', 'fy', 'gradientTransform', 'gradientUnits', 'id', 'r', 'spreadMethod', 'style', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space'],
+  rect: ['class', 'externalResourcesRequired', 'height', 'id', 'onactivate', 'onclick', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'requiredExtensions', 'requiredFeatures', 'rx', 'ry', 'style', 'systemLanguage', 'transform', 'width', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  script: ['externalResourcesRequired', 'id', 'type', 'xlink:actuate', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space'],
+  set: ['attributeName', 'attributeType', 'begin', 'dur', 'end', 'externalResourcesRequired', 'fill', 'id', 'max', 'min', 'onbegin', 'onend', 'onload', 'onrepeat', 'repeatCount', 'repeatDur', 'requiredExtensions', 'requiredFeatures', 'restart', 'systemLanguage', 'to', 'xlink:actuate', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space'],
+  stop: ['class', 'id', 'offset', 'style', 'xml:base', 'xml:lang', 'xml:space'],
+  style: ['id', 'media', 'title', 'type', 'xml:base', 'xml:lang', 'xml:space'],
+  svg: ['baseProfile', 'class', 'contentScriptType', 'contentStyleType', 'externalResourcesRequired', 'height', 'id', 'onabort', 'onactivate', 'onclick', 'onerror', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'onresize', 'onscroll', 'onunload', 'onzoom', 'preserveAspectRatio', 'requiredExtensions', 'requiredFeatures', 'style', 'systemLanguage', 'version', 'viewBox', 'width', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y', 'zoomAndPan'],
+  switch: ['class', 'externalResourcesRequired', 'id', 'onactivate', 'onclick', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'requiredExtensions', 'requiredFeatures', 'style', 'systemLanguage', 'transform', 'xml:base', 'xml:lang', 'xml:space'],
+  symbol: ['class', 'externalResourcesRequired', 'id', 'onactivate', 'onclick', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'preserveAspectRatio', 'style', 'viewBox', 'xml:base', 'xml:lang', 'xml:space'],
+  text: ['class', 'dx', 'dy', 'externalResourcesRequired', 'id', 'lengthAdjust', 'onactivate', 'onclick', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'requiredExtensions', 'requiredFeatures', 'rotate', 'style', 'systemLanguage', 'textLength', 'transform', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  textPath: ['class', 'externalResourcesRequired', 'id', 'lengthAdjust', 'method', 'onactivate', 'onclick', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'requiredExtensions', 'requiredFeatures', 'spacing', 'startOffset', 'style', 'systemLanguage', 'textLength', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space'],
+  title: ['class', 'id', 'style', 'xml:base', 'xml:lang', 'xml:space'],
+  tref: ['class', 'dx', 'dy', 'externalResourcesRequired', 'id', 'lengthAdjust', 'onactivate', 'onclick', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'requiredExtensions', 'requiredFeatures', 'rotate', 'style', 'systemLanguage', 'textLength', 'x', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  tspan: ['class', 'dx', 'dy', 'externalResourcesRequired', 'id', 'lengthAdjust', 'onactivate', 'onclick', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'requiredExtensions', 'requiredFeatures', 'rotate', 'style', 'systemLanguage', 'textLength', 'x', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  use: ['class', 'externalResourcesRequired', 'height', 'id', 'onactivate', 'onclick', 'onfocusin', 'onfocusout', 'onload', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'requiredExtensions', 'requiredFeatures', 'style', 'systemLanguage', 'transform', 'width', 'x', 'xlink:actuate', 'xlink:arcrole', 'xlink:href', 'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang', 'xml:space', 'y'],
+  view: ['externalResourcesRequired', 'id', 'preserveAspectRatio', 'viewBox', 'viewTarget', 'xml:base', 'xml:lang', 'xml:space', 'zoomAndPan'],
+  vkern: ['g1', 'g2', 'id', 'k', 'u1', 'u2', 'xml:base', 'xml:lang', 'xml:space']
 };
 
 export const presentationElements = {
@@ -3991,7 +3914,7 @@ export const presentationElements = {
   'textPath': true,
   'tref': true,
   'tspan': true,
-  'use': true,
+  'use': true
 };
 
 export const presentationAttributes = {
@@ -4053,20 +3976,18 @@ export const presentationAttributes = {
   'unicode-bidi': true,
   'visibility': true,
   'word-spacing': true,
-  'writing-mode': true,
+  'writing-mode': true
 };
 
-// SVG elements/attributes are case-sensitive.  Not all browsers use the same casing for all attributes.
 function createElement(html) {
   let div = DOM.createElement('div');
   div.innerHTML = html;
   return div.firstChild;
 }
 
-export class SVGAnalyzer {
+export let SVGAnalyzer = class SVGAnalyzer {
   constructor() {
     if (createElement('<svg><altGlyph /></svg>').firstElementChild.nodeName === 'altglyph' && elements.altGlyph) {
-      // handle chrome casing inconsistencies.
       elements.altglyph = elements.altGlyph;
       delete elements.altGlyph;
       elements.altglyphdef = elements.altGlyphDef;
@@ -4079,19 +4000,18 @@ export class SVGAnalyzer {
   }
 
   isStandardSvgAttribute(nodeName, attributeName) {
-    return presentationElements[nodeName] && presentationAttributes[attributeName]
-      || elements[nodeName] && elements[nodeName].indexOf(attributeName) !== -1;
+    return presentationElements[nodeName] && presentationAttributes[attributeName] || elements[nodeName] && elements[nodeName].indexOf(attributeName) !== -1;
   }
-}
+};
 
-export class ObserverLocator {
-  static inject = [TaskQueue, EventManager, DirtyChecker, SVGAnalyzer];
+export let ObserverLocator = (_temp = _class11 = class ObserverLocator {
 
-  constructor(taskQueue, eventManager, dirtyChecker, svgAnalyzer) {
+  constructor(taskQueue, eventManager, dirtyChecker, svgAnalyzer, parser) {
     this.taskQueue = taskQueue;
     this.eventManager = eventManager;
     this.dirtyChecker = dirtyChecker;
     this.svgAnalyzer = svgAnalyzer;
+    this.parser = parser;
     this.adapters = [];
   }
 
@@ -4106,7 +4026,7 @@ export class ObserverLocator {
     observer = this.createPropertyObserver(obj, propertyName);
 
     if (!observer.doNotCache) {
-      if (observersLookup === undefined){
+      if (observersLookup === undefined) {
         observersLookup = this.getOrCreateObserversLookup(obj);
       }
 
@@ -4123,19 +4043,19 @@ export class ObserverLocator {
   createObserversLookup(obj) {
     let value = {};
 
-    try{
+    try {
       Object.defineProperty(obj, "__observers__", {
         enumerable: false,
         configurable: false,
         writable: false,
         value: value
       });
-    }catch(_){}
+    } catch (_) {}
 
     return value;
   }
 
-  addAdapter(adapter: ObjectObservationAdapter) {
+  addAdapter(adapter) {
     this.adapters.push(adapter);
   }
 
@@ -4171,7 +4091,7 @@ export class ObserverLocator {
       if (propertyName === 'value' && obj.tagName.toLowerCase() === 'select') {
         return new SelectValueObserver(obj, handler, this);
       }
-      if (propertyName ==='checked' && obj.tagName.toLowerCase() === 'input') {
+      if (propertyName === 'checked' && obj.tagName.toLowerCase() === 'input') {
         return new CheckedObserver(obj, handler, this);
       }
       if (handler) {
@@ -4181,8 +4101,7 @@ export class ObserverLocator {
       if (xlinkResult) {
         return new XLinkAttributeObserver(obj, propertyName, xlinkResult[1]);
       }
-      if (/^\w+:|^data-|^aria-/.test(propertyName)
-        || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
+      if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
         return new DataAttributeObserver(obj, propertyName);
       }
     }
@@ -4190,7 +4109,7 @@ export class ObserverLocator {
     descriptor = Object.getPropertyDescriptor(obj, propertyName);
 
     if (hasDeclaredDependencies(descriptor)) {
-      return new ComputedPropertyObserver(obj, propertyName, descriptor, this)
+      return createComputedObserver(obj, propertyName, descriptor, this);
     }
 
     let existingGetterOrSetter;
@@ -4199,7 +4118,6 @@ export class ObserverLocator {
         return existingGetterOrSetter.getObserver(obj);
       }
 
-      // attempt to use an adapter before resorting to dirty checking.
       let adapterObserver = this.getAdapterObserver(obj, propertyName, descriptor);
       if (adapterObserver) {
         return adapterObserver;
@@ -4232,43 +4150,37 @@ export class ObserverLocator {
 
   getAccessor(obj, propertyName) {
     if (obj instanceof DOM.Element) {
-      if (propertyName === 'class'
-        || propertyName === 'style' || propertyName === 'css'
-        || propertyName === 'value' && (obj.tagName.toLowerCase() === 'input' || obj.tagName.toLowerCase() === 'select')
-        || propertyName === 'checked' && obj.tagName.toLowerCase() === 'input'
-        || /^xlink:.+$/.exec(propertyName)) {
+      if (propertyName === 'class' || propertyName === 'style' || propertyName === 'css' || propertyName === 'value' && (obj.tagName.toLowerCase() === 'input' || obj.tagName.toLowerCase() === 'select') || propertyName === 'checked' && obj.tagName.toLowerCase() === 'input' || /^xlink:.+$/.exec(propertyName)) {
         return this.getObserver(obj, propertyName);
       }
-      if (/^\w+:|^data-|^aria-/.test(propertyName)
-        || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
+      if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
         return dataAttributeAccessor;
       }
     }
     return propertyAccessor;
   }
 
-  getArrayObserver(array){
+  getArrayObserver(array) {
     return getArrayObserver(this.taskQueue, array);
   }
 
-  getMapObserver(map){
+  getMapObserver(map) {
     return getMapObserver(this.taskQueue, map);
   }
 
-  getSetObserver(set){
+  getSetObserver(set) {
     return getSetObserver(this.taskQueue, set);
   }
-}
+}, _class11.inject = [TaskQueue, EventManager, DirtyChecker, SVGAnalyzer, Parser], _temp);
 
-export class ObjectObservationAdapter {
+export let ObjectObservationAdapter = class ObjectObservationAdapter {
   getObserver(object, propertyName, descriptor) {
     throw new Error('BindingAdapters must implement getObserver(object, propertyName).');
   }
-}
+};
 
-export class BindingExpression {
-  constructor(observerLocator, targetProperty, sourceExpression,
-    mode, lookupFunctions, attribute){
+export let BindingExpression = class BindingExpression {
+  constructor(observerLocator, targetProperty, sourceExpression, mode, lookupFunctions, attribute) {
     this.observerLocator = observerLocator;
     this.targetProperty = targetProperty;
     this.sourceExpression = sourceExpression;
@@ -4279,21 +4191,13 @@ export class BindingExpression {
   }
 
   createBinding(target) {
-    return new Binding(
-      this.observerLocator,
-      this.sourceExpression,
-      target,
-      this.targetProperty,
-      this.mode,
-      this.lookupFunctions
-      );
+    return new Binding(this.observerLocator, this.sourceExpression, target, this.targetProperty, this.mode, this.lookupFunctions);
   }
-}
+};
 
 const targetContext = 'Binding:target';
 
-@connectable()
-export class Binding {
+export let Binding = (_dec10 = connectable(), _dec10(_class12 = class Binding {
   constructor(observerLocator, sourceExpression, target, targetProperty, mode, lookupFunctions) {
     this.observerLocator = observerLocator;
     this.sourceExpression = sourceExpression;
@@ -4334,7 +4238,7 @@ export class Binding {
       }
       return;
     }
-    throw new Error(`Unexpected call context ${context}`);
+    throw new Error(`Unexpected call context ${ context }`);
   }
 
   bind(source) {
@@ -4347,9 +4251,8 @@ export class Binding {
     this.isBound = true;
     this.source = source;
 
-    let sourceExpression = this.sourceExpression;
-    if (sourceExpression.bind) {
-      sourceExpression.bind(this, source, this.lookupFunctions);
+    if (this.sourceExpression.bind) {
+      this.sourceExpression.bind(this, source, this.lookupFunctions);
     }
 
     let mode = this.mode;
@@ -4361,13 +4264,13 @@ export class Binding {
     if ('bind' in this.targetObserver) {
       this.targetObserver.bind();
     }
-    let value = sourceExpression.evaluate(source, this.lookupFunctions);
+    let value = this.sourceExpression.evaluate(source, this.lookupFunctions);
     this.updateTarget(value);
 
     if (mode === bindingMode.oneWay) {
       enqueueBindingConnect(this);
     } else if (mode === bindingMode.twoWay) {
-      sourceExpression.connect(this, source);
+      this.sourceExpression.connect(this, source);
       this.targetObserver.subscribe(targetContext, this);
     }
   }
@@ -4400,9 +4303,9 @@ export class Binding {
     }
     this.sourceExpression.connect(this, this.source);
   }
-}
+}) || _class12);
 
-export class CallExpression {
+export let CallExpression = class CallExpression {
   constructor(observerLocator, targetProperty, sourceExpression, lookupFunctions) {
     this.observerLocator = observerLocator;
     this.targetProperty = targetProperty;
@@ -4411,19 +4314,13 @@ export class CallExpression {
   }
 
   createBinding(target) {
-    return new Call(
-      this.observerLocator,
-      this.sourceExpression,
-      target,
-      this.targetProperty,
-      this.lookupFunctions
-      );
+    return new Call(this.observerLocator, this.sourceExpression, target, this.targetProperty, this.lookupFunctions);
   }
-}
+};
 
-export class Call {
+export let Call = class Call {
   constructor(observerLocator, sourceExpression, target, targetProperty, lookupFunctions) {
-    this.sourceExpression = sourceExpression
+    this.sourceExpression = sourceExpression;
     this.target = target;
     this.targetProperty = observerLocator.getObserver(target, targetProperty);
     this.lookupFunctions = lookupFunctions;
@@ -4432,7 +4329,7 @@ export class Call {
   callSource($event) {
     let overrideContext = this.source.overrideContext;
     Object.assign(overrideContext, $event);
-    overrideContext.$event = $event; // deprecate this?
+    overrideContext.$event = $event;
     let mustEvaluate = true;
     let result = this.sourceExpression.evaluate(this.source, this.lookupFunctions, mustEvaluate);
     delete overrideContext.$event;
@@ -4452,9 +4349,8 @@ export class Call {
     this.isBound = true;
     this.source = source;
 
-    let sourceExpression = this.sourceExpression;
-    if (sourceExpression.bind) {
-      sourceExpression.bind(this, source, this.lookupFunctions);
+    if (this.sourceExpression.bind) {
+      this.sourceExpression.bind(this, source, this.lookupFunctions);
     }
     this.targetProperty.setValue($event => this.callSource($event));
   }
@@ -4470,10 +4366,10 @@ export class Call {
     this.source = null;
     this.targetProperty.setValue(null);
   }
-}
+};
 
-export class ValueConverterResource {
-  constructor(name){
+export let ValueConverterResource = class ValueConverterResource {
+  constructor(name) {
     this.name = name;
   }
 
@@ -4492,19 +4388,19 @@ export class ValueConverterResource {
   }
 
   load(container, target) {}
-}
+};
 
-export function valueConverter(nameOrTarget){
-  if(nameOrTarget === undefined || typeof nameOrTarget === 'string'){
-    return function(target){
+export function valueConverter(nameOrTarget) {
+  if (nameOrTarget === undefined || typeof nameOrTarget === 'string') {
+    return function (target) {
       metadata.define(metadata.resource, new ValueConverterResource(nameOrTarget), target);
-    }
+    };
   }
 
   metadata.define(metadata.resource, new ValueConverterResource(), nameOrTarget);
 }
 
-export class BindingBehaviorResource {
+export let BindingBehaviorResource = class BindingBehaviorResource {
   constructor(name) {
     this.name = name;
   }
@@ -4524,19 +4420,19 @@ export class BindingBehaviorResource {
   }
 
   load(container, target) {}
-}
+};
 
-export function bindingBehavior(nameOrTarget){
-  if(nameOrTarget === undefined || typeof nameOrTarget === 'string'){
-    return function(target){
+export function bindingBehavior(nameOrTarget) {
+  if (nameOrTarget === undefined || typeof nameOrTarget === 'string') {
+    return function (target) {
       metadata.define(metadata.resource, new BindingBehaviorResource(nameOrTarget), target);
-    }
+    };
   }
 
   metadata.define(metadata.resource, new BindingBehaviorResource(), nameOrTarget);
 }
 
-export class ListenerExpression {
+export let ListenerExpression = class ListenerExpression {
   constructor(eventManager, targetEvent, sourceExpression, delegate, preventDefault, lookupFunctions) {
     this.eventManager = eventManager;
     this.targetEvent = targetEvent;
@@ -4548,19 +4444,11 @@ export class ListenerExpression {
   }
 
   createBinding(target) {
-    return new Listener(
-      this.eventManager,
-      this.targetEvent,
-      this.delegate,
-      this.sourceExpression,
-      target,
-      this.preventDefault,
-      this.lookupFunctions
-      );
+    return new Listener(this.eventManager, this.targetEvent, this.delegate, this.sourceExpression, target, this.preventDefault, this.lookupFunctions);
   }
-}
+};
 
-export class Listener {
+export let Listener = class Listener {
   constructor(eventManager, targetEvent, delegate, sourceExpression, target, preventDefault, lookupFunctions) {
     this.eventManager = eventManager;
     this.targetEvent = targetEvent;
@@ -4593,15 +4481,10 @@ export class Listener {
     this.isBound = true;
     this.source = source;
 
-    let sourceExpression = this.sourceExpression;
-    if (sourceExpression.bind) {
-      sourceExpression.bind(this, source, this.lookupFunctions);
+    if (this.sourceExpression.bind) {
+      this.sourceExpression.bind(this, source, this.lookupFunctions);
     }
-    this._disposeListener = this.eventManager.addEventListener(
-      this.target,
-      this.targetEvent,
-      event => this.callSource(event),
-      this.delegate);
+    this._disposeListener = this.eventManager.addEventListener(this.target, this.targetEvent, event => this.callSource(event), this.delegate);
   }
 
   unbind() {
@@ -4616,7 +4499,7 @@ export class Listener {
     this._disposeListener();
     this._disposeListener = null;
   }
-}
+};
 
 function getAU(element) {
   let au = element.au;
@@ -4628,18 +4511,19 @@ function getAU(element) {
   return au;
 }
 
-export class NameExpression {
-  constructor(sourceExpression, apiName) {
+export let NameExpression = class NameExpression {
+  constructor(sourceExpression, apiName, lookupFunctions) {
     this.sourceExpression = sourceExpression;
     this.apiName = apiName;
+    this.lookupFunctions = lookupFunctions;
     this.discrete = true;
   }
 
   createBinding(target) {
-    return new NameBinder(this.sourceExpression, NameExpression.locateAPI(target, this.apiName));
+    return new NameBinder(this.sourceExpression, NameExpression.locateAPI(target, this.apiName), this.lookupFunctions);
   }
 
-  static locateAPI(element: Element, apiName: string): Object {
+  static locateAPI(element, apiName) {
     switch (apiName) {
       case 'element':
         return element;
@@ -4653,18 +4537,19 @@ export class NameExpression {
         let target = getAU(element)[apiName];
 
         if (target === undefined) {
-          throw new Error(`Attempted to reference "${apiName}", but it was not found amongst the target's API.`)
+          throw new Error(`Attempted to reference "${ apiName }", but it was not found amongst the target's API.`);
         }
 
         return target.viewModel;
     }
   }
-}
+};
 
-class NameBinder {
-  constructor(sourceExpression, target) {
+let NameBinder = class NameBinder {
+  constructor(sourceExpression, target, lookupFunctions) {
     this.sourceExpression = sourceExpression;
     this.target = target;
+    this.lookupFunctions = lookupFunctions;
   }
 
   bind(source) {
@@ -4676,7 +4561,10 @@ class NameBinder {
     }
     this.isBound = true;
     this.source = source;
-    this.sourceExpression.assign(this.source, this.target);
+    if (this.sourceExpression.bind) {
+      this.sourceExpression.bind(this, source, this.lookupFunctions);
+    }
+    this.sourceExpression.assign(this.source, this.target, this.lookupFunctions);
   }
 
   unbind() {
@@ -4684,51 +4572,32 @@ class NameBinder {
       return;
     }
     this.isBound = false;
-    this.sourceExpression.assign(this.source, null);
+    this.sourceExpression.assign(this.source, null, this.lookupFunctions);
+    if (this.sourceExpression.unbind) {
+      this.sourceExpression.unbind(this, this.source);
+    }
     this.source = null;
   }
-}
+};
 
-interface Disposable {
-  dispose(): void;
-}
-
-interface PropertyObserver {
-  subscribe(callback: (newValue: any, oldValue: any) => void): Disposable;
-}
-
-interface CollectionObserver {
-  subscribe(callback: (changeRecords: any) => void): Disposable;
-}
-
-interface LookupFunctions {
-  bindingBehaviors(name: string): any;
-  valueConverters(name: string): any;
-}
 
 const lookupFunctions = {
   bindingBehaviors: name => null,
   valueConverters: name => null
 };
 
-export class BindingEngine {
-  static inject = [ObserverLocator, Parser];
+export let BindingEngine = (_temp2 = _class13 = class BindingEngine {
 
   constructor(observerLocator, parser) {
     this.observerLocator = observerLocator;
     this.parser = parser;
   }
 
-  createBindingExpression(targetProperty: string, sourceExpression: string, mode = bindingMode.oneWay, lookupFunctions?: LookupFunctions = lookupFunctions): BindingExpression {
-    return new BindingExpression(
-      this.observerLocator,
-      targetProperty,
-      this.parser.parse(sourceExpression),
-      mode,
-      lookupFunctions);
+  createBindingExpression(targetProperty, sourceExpression, mode = bindingMode.oneWay, lookupFunctions = lookupFunctions) {
+    return new BindingExpression(this.observerLocator, targetProperty, this.parser.parse(sourceExpression), mode, lookupFunctions);
   }
 
-  propertyObserver(obj: Object, propertyName: string): PropertyObserver {
+  propertyObserver(obj, propertyName) {
     return {
       subscribe: callback => {
         let observer = this.observerLocator.getObserver(obj, propertyName);
@@ -4740,7 +4609,7 @@ export class BindingEngine {
     };
   }
 
-  collectionObserver(collection: Array<any>|Map<any, any>): CollectionObserver {
+  collectionObserver(collection) {
     return {
       subscribe: callback => {
         let observer;
@@ -4750,7 +4619,7 @@ export class BindingEngine {
           observer = this.observerLocator.getMapObserver(collection);
         } else if (collection instanceof Set) {
           observer = this.observerLocator.getSetObserver(collection);
-        }  else {
+        } else {
           throw new Error('collection must be an instance of Array, Map or Set.');
         }
         observer.subscribe(callback);
@@ -4761,81 +4630,35 @@ export class BindingEngine {
     };
   }
 
-  expressionObserver(bindingContext: any, expression: string): PropertyObserver {
+  expressionObserver(bindingContext, expression) {
     let scope = { bindingContext, overrideContext: createOverrideContext(bindingContext) };
-    return new ExpressionObserver(scope, this.parser.parse(expression), this.observerLocator);
+    return new ExpressionObserver(scope, this.parser.parse(expression), this.observerLocator, lookupFunctions);
   }
 
-  parseExpression(expression: string): Expression {
+  parseExpression(expression) {
     return this.parser.parse(expression);
   }
 
-  registerAdapter(adapter: ObjectObservationAdapter): void {
+  registerAdapter(adapter) {
     this.observerLocator.addAdapter(adapter);
   }
-}
-
-@connectable()
-@subscriberCollection()
-class ExpressionObserver {
-  constructor(scope, expression, observerLocator) {
-    this.scope = scope;
-    this.expression = expression;
-    this.observerLocator = observerLocator;
-  }
-
-  subscribe(callback) {
-    if (!this.hasSubscribers()) {
-      this.oldValue = this.expression.evaluate(this.scope, lookupFunctions);
-      this.expression.connect(this, this.scope);
-    }
-    this.addSubscriber(callback);
-    return {
-      dispose: () => {
-        if (this.removeSubscriber(callback) && !this.hasSubscribers()) {
-          this.unobserve(true);
-        }
-      }
-    }
-  }
-
-  call() {
-    let newValue = this.expression.evaluate(this.scope, lookupFunctions);
-    let oldValue = this.oldValue;
-    if (newValue !== oldValue) {
-      this.oldValue = newValue;
-      this.callSubscribers(newValue, oldValue);
-    }
-    this._version++;
-    this.expression.connect(this, this.scope);
-    this.unobserve(false);
-  }
-}
+}, _class13.inject = [ObserverLocator, Parser], _temp2);
 
 let setProto = Set.prototype;
 
-export function getSetObserver(taskQueue, set){
+export function getSetObserver(taskQueue, set) {
   return ModifySetObserver.for(taskQueue, set);
 }
 
-class ModifySetObserver extends ModifyCollectionObserver {
-  constructor(taskQueue, set){
+let ModifySetObserver = class ModifySetObserver extends ModifyCollectionObserver {
+  constructor(taskQueue, set) {
     super(taskQueue, set);
   }
 
-  /**
-   * Searches for observer or creates a new one associated with given set instance
-   * @param taskQueue
-   * @param set instance for which observer is searched
-   * @returns ModifySetObserver always the same instance for any given set instance
-   */
   static for(taskQueue, set) {
     if (!('__set_observer__' in set)) {
       let observer = ModifySetObserver.create(taskQueue, set);
-      Object.defineProperty(
-        set,
-        '__set_observer__',
-        { value: observer, enumerable: false, configurable: false });
+      Object.defineProperty(set, '__set_observer__', { value: observer, enumerable: false, configurable: false });
     }
     return set.__set_observer__;
   }
@@ -4891,36 +4714,30 @@ class ModifySetObserver extends ModifyCollectionObserver {
 
     return observer;
   }
-}
+};
+
 
 export function observable(targetOrConfig, key, descriptor) {
   let deco = function (target, key2, descriptor2) {
-    // use a convention to compute the inner property name and the callback 
-    // function name.
-    let innerPropertyName = `_${key2}`;
-    let callbackName = (targetOrConfig && targetOrConfig.changeHandler) || `${key2}Changed`;
+    let innerPropertyName = `_${ key2 }`;
+    let callbackName = targetOrConfig && targetOrConfig.changeHandler || `${ key2 }Changed`;
 
-    // typescript or babel?
     let babel = descriptor2 !== undefined;
 
     if (babel) {
-      // babel passes in the property descriptor with a method to get the initial value.
-
-      // set the initial value of the property if it is defined.
       if (typeof descriptor2.initializer === 'function') {
         target[innerPropertyName] = descriptor2.initializer();
       }
     } else {
       descriptor2 = {};
     }
-		
-    // we're adding a getter and setter which means the property descriptor
-    // cannot have a "value" or "writable" attribute
+
     delete descriptor2.writable;
     delete descriptor2.initializer;
 
-    // add the getter and setter to the property descriptor.
-    descriptor2.get = function () { return this[innerPropertyName]; };
+    descriptor2.get = function () {
+      return this[innerPropertyName];
+    };
     descriptor2.set = function (newValue) {
       let oldValue = this[innerPropertyName];
       this[innerPropertyName] = newValue;
@@ -4929,14 +4746,12 @@ export function observable(targetOrConfig, key, descriptor) {
       }
     };
 
-    // make sure Aurelia doesn't use dirty-checking by declaring the property's
-    // dependencies. This is the equivalent of "@computedFrom(...)".
     descriptor2.get.dependencies = [innerPropertyName];
 
     if (!babel) {
       Object.defineProperty(target, key2, descriptor2);
     }
-  }
+  };
 
   if (key) {
     let target = targetOrConfig;

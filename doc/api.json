@@ -369,7 +369,7 @@
                   "type": {
                     "type": "reference",
                     "name": "Container",
-                    "id": 427,
+                    "id": 437,
                     "moduleName": "\"aurelia-dependency-injection\""
                   }
                 },
@@ -1710,7 +1710,7 @@
                   "type": {
                     "type": "reference",
                     "name": "Container",
-                    "id": 427,
+                    "id": 437,
                     "moduleName": "\"aurelia-dependency-injection\""
                   }
                 },

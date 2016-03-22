@@ -1,3 +1,18 @@
+### 1.0.0-beta.1.3.0 (2016-03-22)
+
+
+#### Bug Fixes
+
+* **parser:** remove unnecessary spaces from unparser output ([e776287e](http://github.com/aurelia/binding/commit/e776287e7c51a09464bff123430e6407ef79f049))
+
+
+#### Features
+
+* **Expression:** enable cloning and rebasing ([d3e52957](http://github.com/aurelia/binding/commit/d3e52957b0cefa70ac7ae6dcfd07dfae73f30ada))
+* **NameExpression:** enable binding behaviors ([f698c27a](http://github.com/aurelia/binding/commit/f698c27a4ab871bc9adeafe080d7692957a93b6a))
+* **computedFrom:** support expressions ([461a3d56](http://github.com/aurelia/binding/commit/461a3d56ced2a51f705e6c069ac59e97771e93c6), closes [#149](http://github.com/aurelia/binding/issues/149))
+
+
 ### 1.0.0-beta.1.2.2 (2016-03-02)
 
 
