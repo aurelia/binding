@@ -3,7 +3,7 @@ import {createOverrideContext} from './scope';
 import {ExpressionObserver} from './expression-observer';
 
 export function hasDeclaredDependencies(descriptor) {
-  return descriptor && descriptor.get && descriptor.get.dependencies && descriptor.get.dependencies.length > 0;
+  return !!(descriptor && descriptor.get && descriptor.get.dependencies);
 }
 
 export function declarePropertyDependencies(ctor, propertyName, dependencies) {

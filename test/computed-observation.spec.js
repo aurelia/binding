@@ -1,5 +1,9 @@
 import './setup';
-import {declarePropertyDependencies, computedFrom} from '../src/computed-observation';
+import {
+  declarePropertyDependencies,
+  computedFrom,
+  hasDeclaredDependencies
+} from '../src/computed-observation';
 import {ExpressionObserver} from '../src/expression-observer';
 import {createObserverLocator, Person, Foo} from './shared';
 
@@ -20,6 +24,7 @@ describe('declarePropertyDependencies', () => {
     declarePropertyDependencies(Person, 'fullName', dependencies);
     expect(Object.getOwnPropertyDescriptor(person.constructor.prototype, 'fullName').get.dependencies)
       .toBe(dependencies);
+    expect(hasDeclaredDependencies(Object.getPropertyDescriptor(person, 'fullName'))).toBe(true);
   });
 
   it('should declare dependencies for properties with a setter', () => {
@@ -73,6 +78,10 @@ describe('createComputedObserver', () => {
     locator = createObserverLocator();
     person = new Person();
     observer = locator.getObserver(person, 'fullName');
+  });
+
+  it('should have declared dependencies after observer is created', () => {
+    expect(hasDeclaredDependencies(Object.getPropertyDescriptor(person, 'fullName'))).toBe(true);
   });
 
   it('should be an ExpressionObserver', () => {
