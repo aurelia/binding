@@ -4079,7 +4079,7 @@ var ClassObserver = exports.ClassObserver = function () {
 }();
 
 function hasDeclaredDependencies(descriptor) {
-  return descriptor && descriptor.get && descriptor.get.dependencies && descriptor.get.dependencies.length > 0;
+  return !!(descriptor && descriptor.get && descriptor.get.dependencies);
 }
 
 function declarePropertyDependencies(ctor, propertyName, dependencies) {

@@ -4220,7 +4220,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
       _export('ClassObserver', ClassObserver);
 
       function hasDeclaredDependencies(descriptor) {
-        return descriptor && descriptor.get && descriptor.get.dependencies && descriptor.get.dependencies.length > 0;
+        return !!(descriptor && descriptor.get && descriptor.get.dependencies);
       }
 
       _export('hasDeclaredDependencies', hasDeclaredDependencies);

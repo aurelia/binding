@@ -1,3 +1,11 @@
+### 1.0.0-beta.1.3.1 (2016-03-29)
+
+
+#### Bug Fixes
+
+* **hasDeclaredDependencies:** handle deps already converted to ComputedExpression ([7160248a](http://github.com/aurelia/binding/commit/7160248ac50fe5e385384a9196c9602ffd315693), closes [#359](http://github.com/aurelia/binding/issues/359))
+
+
 ### 1.0.0-beta.1.3.0 (2016-03-22)
 
 
