@@ -1,4 +1,4 @@
-function newRecord(type, object, key, oldValue){
+function newRecord(type, object, key, oldValue) {
   return {
     type: type,
     object: object,
@@ -7,20 +7,20 @@ function newRecord(type, object, key, oldValue){
   };
 }
 
-export function getChangeRecords(map){
+export function getChangeRecords(map) {
   let entries = new Array(map.size);
   let keys = map.keys();
   let i = 0;
   let item;
 
-  while (item = keys.next()) {
+  while (item = keys.next()) {  // eslint-disable-line
     if (item.done) {
       break;
     }
-    
+
     entries[i] = newRecord('added', map, item.value);
     i++;
   }
-  
+
   return entries;
 }

@@ -48,7 +48,7 @@ export function createScopeForTest(bindingContext: any, parentBindingContext?: a
     return {
       bindingContext,
       overrideContext: createOverrideContext(bindingContext, createOverrideContext(parentBindingContext))
-    }
+    };
   }
   return {
     bindingContext,

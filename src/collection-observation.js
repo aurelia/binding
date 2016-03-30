@@ -21,20 +21,20 @@ export class ModifyCollectionObserver {
     this.removeSubscriber(context, callable);
   }
 
-  addChangeRecord(changeRecord){
+  addChangeRecord(changeRecord) {
     if (!this.hasSubscribers() && !this.lengthObserver) {
       return;
     }
 
     if (changeRecord.type === 'splice') {
-      var index = changeRecord.index;
-      var arrayLength = changeRecord.object.length;
+      let index = changeRecord.index;
+      let arrayLength = changeRecord.object.length;
       if (index > arrayLength) {
         index = arrayLength - changeRecord.addedCount;
       } else if (index < 0) {
         index = arrayLength + changeRecord.removed.length + index - changeRecord.addedCount;
       }
-      if(index < 0){
+      if (index < 0) {
         index = 0;
       }
       changeRecord.index = index;
@@ -81,7 +81,7 @@ export class ModifyCollectionObserver {
     this.oldCollection = null;
 
     if (this.hasSubscribers()) {
-      if (oldCollection){
+      if (oldCollection) {
         // TODO (martingust) we might want to refactor this to a common, independent of collection type, way of getting the records
         if (this.collection instanceof Map || this.collection instanceof Set) {
           records = getChangeRecords(oldCollection);
@@ -130,7 +130,7 @@ export class CollectionLengthObserver {
     this.removeSubscriber(context, callable);
   }
 
-  call(newValue){
+  call(newValue) {
     let oldValue = this.currentValue;
     this.callSubscribers(newValue, oldValue);
     this.currentValue = newValue;

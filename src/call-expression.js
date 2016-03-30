@@ -19,7 +19,7 @@ export class CallExpression {
 
 export class Call {
   constructor(observerLocator, sourceExpression, target, targetProperty, lookupFunctions) {
-    this.sourceExpression = sourceExpression
+    this.sourceExpression = sourceExpression;
     this.target = target;
     this.targetProperty = observerLocator.getObserver(target, targetProperty);
     this.lookupFunctions = lookupFunctions;

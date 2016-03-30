@@ -4,7 +4,7 @@ const checkedArrayContext = 'CheckedObserver:array';
 
 @subscriberCollection()
 export class CheckedObserver {
-  constructor(element, handler, observerLocator){
+  constructor(element, handler, observerLocator) {
     this.element = element;
     this.handler = handler;
     this.observerLocator = observerLocator;
@@ -47,11 +47,11 @@ export class CheckedObserver {
   }
 
   synchronizeElement() {
-    let value = this.value,
-        element = this.element,
-        elementValue = element.hasOwnProperty('model') ? element.model : element.value,
-        isRadio = element.type === 'radio',
-        matcher = element.matcher || ((a, b) => a === b);
+    let value = this.value;
+    let element = this.element;
+    let elementValue = element.hasOwnProperty('model') ? element.model : element.value;
+    let isRadio = element.type === 'radio';
+    let matcher = element.matcher || ((a, b) => a === b);
 
     element.checked =
       isRadio && !!matcher(value, elementValue)
@@ -59,12 +59,12 @@ export class CheckedObserver {
       || !isRadio && Array.isArray(value) && !!value.find(item => !!matcher(item, elementValue));
   }
 
-  synchronizeValue(){
-    let value = this.value,
-        element = this.element,
-        elementValue = element.hasOwnProperty('model') ? element.model : element.value,
-        index,
-        matcher = element.matcher || ((a, b) => a === b);
+  synchronizeValue() {
+    let value = this.value;
+    let element = this.element;
+    let elementValue = element.hasOwnProperty('model') ? element.model : element.value;
+    let index;
+    let matcher = element.matcher || ((a, b) => a === b);
 
     if (element.type === 'checkbox') {
       if (Array.isArray(value)) {
@@ -76,9 +76,9 @@ export class CheckedObserver {
         }
         // don't invoke callbacks.
         return;
-      } else {
-        value = element.checked;
       }
+
+      value = element.checked;
     } else if (element.checked) {
       value = elementValue;
     } else {
@@ -99,14 +99,14 @@ export class CheckedObserver {
   }
 
   subscribe(context, callable) {
-    if(!this.hasSubscribers()) {
+    if (!this.hasSubscribers()) {
       this.disposeHandler = this.handler.subscribe(this.element, this.synchronizeValue.bind(this, false));
     }
     this.addSubscriber(context, callable);
   }
 
   unsubscribe(context, callable) {
-    if(this.removeSubscriber(context, callable) && !this.hasSubscribers()){
+    if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
       this.disposeHandler();
       this.disposeHandler = null;
     }

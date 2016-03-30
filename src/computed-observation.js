@@ -11,11 +11,11 @@ export function declarePropertyDependencies(ctor, propertyName, dependencies) {
   descriptor.get.dependencies = dependencies;
 }
 
-export function computedFrom(...rest){
-  return function(target, key, descriptor){
+export function computedFrom(...rest) {
+  return function(target, key, descriptor) {
     descriptor.get.dependencies = rest;
     return descriptor;
-  }
+  };
 }
 
 export class ComputedExpression extends Expression {

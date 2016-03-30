@@ -12,11 +12,11 @@ function flush(animationFrameStart) {
   let keys = bindings.keys();
   let item;
 
-  while (item = keys.next()) {
+  while (item = keys.next()) {  // eslint-disable-line
     if (item.done) {
       break;
     }
-    
+
     let binding = item.value;
     bindings.delete(binding);
     binding.connect(true);

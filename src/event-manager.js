@@ -63,13 +63,13 @@ class DefaultEventStrategy {
         handlerEntry.decrement();
         delegatedCallbacks[targetEvent] = null;
       };
-    } else {
-      target.addEventListener(targetEvent, callback, false);
-
-      return function() {
-        target.removeEventListener(targetEvent, callback);
-      };
     }
+
+    target.addEventListener(targetEvent, callback, false);
+
+    return function() {
+      target.removeEventListener(targetEvent, callback);
+    };
   }
 }
 
@@ -79,40 +79,40 @@ export class EventManager {
     this.eventStrategyLookup = {};
 
     this.registerElementConfig({
-      tagName:'input',
+      tagName: 'input',
       properties: {
-        value:['change','input'],
-        checked:['change','input'],
-        files:['change','input']
+        value: ['change', 'input'],
+        checked: ['change', 'input'],
+        files: ['change', 'input']
       }
     });
 
     this.registerElementConfig({
-      tagName:'textarea',
-      properties:{
-        value:['change','input']
-      }
-    });
-
-    this.registerElementConfig({
-      tagName:'select',
-      properties:{
-        value:['change']
-      }
-    });
-
-    this.registerElementConfig({
-      tagName:'content editable',
+      tagName: 'textarea',
       properties: {
-        value:['change','input','blur','keyup','paste'],
+        value: ['change', 'input']
       }
     });
 
     this.registerElementConfig({
-      tagName:'scrollable element',
+      tagName: 'select',
       properties: {
-        scrollTop:['scroll'],
-        scrollLeft:['scroll']
+        value: ['change']
+      }
+    });
+
+    this.registerElementConfig({
+      tagName: 'content editable',
+      properties: {
+        value: ['change', 'input', 'blur', 'keyup', 'paste']
+      }
+    });
+
+    this.registerElementConfig({
+      tagName: 'scrollable element',
+      properties: {
+        scrollTop: ['scroll'],
+        scrollLeft: ['scroll']
       }
     });
 
@@ -148,7 +148,7 @@ export class EventManager {
           events.forEach(changeEvent => {
             target.removeEventListener(changeEvent, callback);
           });
-        }
+        };
       }
     };
   }
@@ -165,15 +165,15 @@ export class EventManager {
     let tagName;
     let lookup = this.elementHandlerLookup;
 
-    if(target.tagName) {
+    if (target.tagName) {
       tagName = target.tagName.toLowerCase();
 
-      if(lookup[tagName] && lookup[tagName][propertyName]) {
+      if (lookup[tagName] && lookup[tagName][propertyName]) {
         return lookup[tagName][propertyName];
       }
 
       if (propertyName === 'textContent' || propertyName === 'innerHTML') {
-        return lookup['content editable']['value'];
+        return lookup['content editable'].value;
       }
 
       if (propertyName === 'scrollTop' || propertyName === 'scrollLeft') {

@@ -11,14 +11,15 @@ export class ClassObserver {
   }
 
   setValue(newValue) {
-    var nameIndex = this.nameIndex || {},
-        version = this.version,
-        names, name;
+    let nameIndex = this.nameIndex || {};
+    let version = this.version;
+    let names;
+    let name;
 
     // Add the classes, tracking the version at which they were added.
     if (newValue !== null && newValue !== undefined && newValue.length) {
       names = newValue.split(/\s+/);
-      for(let i = 0, length = names.length; i < length; i++) {
+      for (let i = 0, length = names.length; i < length; i++) {
         name = names[i];
         if (name === '') {
           continue;
@@ -40,7 +41,7 @@ export class ClassObserver {
 
     // Remove classes from previous version.
     version -= 1;
-    for(name in nameIndex) {
+    for (name in nameIndex) {
       if (!nameIndex.hasOwnProperty(name) || nameIndex[name] !== version) {
         continue;
       }

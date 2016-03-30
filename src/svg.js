@@ -1,5 +1,6 @@
 import {DOM} from 'aurelia-pal';
 
+/* eslint-disable */
 export const elements = {
   a: ['class','externalResourcesRequired','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','style','systemLanguage','target','transform','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space'],
   altGlyph: ['class','dx','dy','externalResourcesRequired','format','glyphRef','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','rotate','style','systemLanguage','x','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space','y'],
@@ -82,6 +83,7 @@ export const elements = {
   view: ['externalResourcesRequired','id','preserveAspectRatio','viewBox','viewTarget','xml:base','xml:lang','xml:space','zoomAndPan'],
   vkern: ['g1','g2','id','k','u1','u2','xml:base','xml:lang','xml:space'],
 };
+/* eslint-enable */
 
 export const presentationElements = {
   'a': true,
@@ -134,7 +136,7 @@ export const presentationElements = {
   'textPath': true,
   'tref': true,
   'tspan': true,
-  'use': true,
+  'use': true
 };
 
 export const presentationAttributes = {
@@ -196,7 +198,7 @@ export const presentationAttributes = {
   'unicode-bidi': true,
   'visibility': true,
   'word-spacing': true,
-  'writing-mode': true,
+  'writing-mode': true
 };
 
 // SVG elements/attributes are case-sensitive.  Not all browsers use the same casing for all attributes.

@@ -45,7 +45,7 @@ function removeSubscriber(context, callable) {
   }
   let rest = this._contextsRest;
   let index;
-  if (!rest || !rest.length || (index = rest.indexOf(context)) === -1 || this._callablesRest[index] !== callable) {
+  if (!rest || !rest.length || (index = rest.indexOf(context)) === -1 || this._callablesRest[index] !== callable) { // eslint-disable-line
     return false;
   }
   rest.splice(index, 1);
@@ -72,7 +72,7 @@ function callSubscribers(newValue, oldValue) {
   if (length) {
     // grab temp arrays from the pool.
     poolIndex = poolUtilization.length;
-    while (poolIndex-- && poolUtilization[poolIndex]) { }
+    while (poolIndex-- && poolUtilization[poolIndex]) { } // eslint-disable-line
     if (poolIndex < 0) {
       poolIndex = poolUtilization.length;
       contextsRest = [];
@@ -87,7 +87,7 @@ function callSubscribers(newValue, oldValue) {
     }
     // copy the contents of the "rest" arrays.
     i = length;
-    while(i--) {
+    while (i--) {
       contextsRest[i] = this._contextsRest[i];
       callablesRest[i] = this._callablesRest[i];
     }
@@ -117,7 +117,7 @@ function callSubscribers(newValue, oldValue) {
   if (length) {
     for (i = 0; i < length; i++) {
       let callable = callablesRest[i];
-      let context = contextsRest[i]
+      let context = contextsRest[i];
       if (callable) {
         callable.call(context, newValue, oldValue);
       } else {
@@ -147,7 +147,7 @@ function hasSubscriber(context, callable) {
   }
   let index;
   let contexts = this._contextsRest;
-  if (!contexts || (index = contexts.length) === 0) {
+  if (!contexts || (index = contexts.length) === 0) { // eslint-disable-line
     return false;
   }
   let callables = this._callablesRest;
@@ -166,5 +166,5 @@ export function subscriberCollection() {
     target.prototype.callSubscribers = callSubscribers;
     target.prototype.hasSubscribers = hasSubscribers;
     target.prototype.hasSubscriber = hasSubscriber;
-  }
+  };
 }

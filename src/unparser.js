@@ -1,35 +1,25 @@
-import {
-  Expression, Chain, ValueConverter, Assign, Conditional,
-  AccessThis, AccessScope, AccessMember, AccessKeyed,
-  CallScope, CallFunction, CallMember,
-  PrefixNot, BindingBehavior, Binary,
-  LiteralPrimitive, LiteralArray, LiteralObject, LiteralString
-} from './ast';
-
 export class Unparser {
   constructor(buffer) {
     this.buffer = buffer;
   }
 
   static unparse(expression) {
-    var buffer = [],
-        visitor = new Unparser(buffer);
+    let buffer = [];
+    let visitor = new Unparser(buffer);
 
     expression.accept(visitor);
 
     return buffer.join('');
   }
 
-  write(text){
+  write(text) {
     this.buffer.push(text);
   }
 
   writeArgs(args) {
-    var i, length;
-
     this.write('(');
 
-    for (i = 0, length = args.length; i < length; ++i) {
+    for (let i = 0, length = args.length; i < length; ++i) {
       if (i !== 0) {
         this.write(',');
       }
@@ -41,11 +31,9 @@ export class Unparser {
   }
 
   visitChain(chain) {
-    var expressions = chain.expressions,
-        length = expressions.length,
-        i;
+    let expressions = chain.expressions;
 
-    for (i = 0; i < length; ++i) {
+    for (let i = 0, length = expression.length; i < length; ++i) {
       if (i !== 0) {
         this.write(';');
       }
@@ -55,28 +43,24 @@ export class Unparser {
   }
 
   visitBindingBehavior(behavior) {
-    var args = behavior.args,
-        length = args.length,
-        i;
+    let args = behavior.args;
 
     behavior.expression.accept(this);
     this.write(`&${behavior.name}`);
 
-    for (i = 0; i < length; ++i) {
+    for (let i = 0, length = args.length; i < length; ++i) {
       this.write(':');
       args[i].accept(this);
     }
   }
 
   visitValueConverter(converter) {
-    var args = converter.args,
-        length = args.length,
-        i;
+    let args = converter.args;
 
     converter.expression.accept(this);
     this.write(`|${converter.name}`);
 
-    for (i = 0; i < length; ++i) {
+    for (let i = 0, length = args.length; i < length; ++i) {
       this.write(':');
       args[i].accept(this);
     }
@@ -103,7 +87,7 @@ export class Unparser {
     }
     this.write('$parent');
     let i = access.ancestor - 1;
-    while(i--) {
+    while (i--) {
       this.write('.$parent');
     }
   }
@@ -165,13 +149,11 @@ export class Unparser {
   }
 
   visitLiteralArray(literal) {
-    var elements = literal.elements,
-        length = elements.length,
-        i;
+    let elements = literal.elements;
 
     this.write('[');
 
-    for (i = 0; i < length; ++i) {
+    for (let i = 0, length = elements.length; i < length; ++i) {
       if (i !== 0) {
         this.write(',');
       }
@@ -183,15 +165,13 @@ export class Unparser {
   }
 
   visitLiteralObject(literal) {
-    var keys = literal.keys,
-        values = literal.values,
-        length = keys.length,
-        i;
+    let keys = literal.keys;
+    let values = literal.values;
 
     this.write('{');
 
-    for (i = 0; i < length; ++i) {
-      if (i !== 0){
+    for (let i = 0, length = keys.length; i < length; ++i) {
+      if (i !== 0) {
         this.write(',');
       }
 
@@ -203,7 +183,7 @@ export class Unparser {
   }
 
   visitLiteralString(literal) {
-    var escaped = literal.value.replace(/'/g, "\'");
+    let escaped = literal.value.replace(/'/g, "\'");
     this.write(`'${escaped}'`);
   }
 }

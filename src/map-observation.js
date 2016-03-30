@@ -1,14 +1,13 @@
-import {getChangeRecords} from './map-change-records';
 import {ModifyCollectionObserver} from './collection-observation';
 
 let mapProto = Map.prototype;
 
-export function getMapObserver(taskQueue, map){
+export function getMapObserver(taskQueue, map) {
   return ModifyMapObserver.for(taskQueue, map);
 }
 
 class ModifyMapObserver extends ModifyCollectionObserver {
-  constructor(taskQueue, map){
+  constructor(taskQueue, map) {
     super(taskQueue, map);
   }
 
@@ -41,11 +40,11 @@ class ModifyMapObserver extends ModifyCollectionObserver {
       };
     }
 
-    map['set'] = function () {
+    map.set = function() {
       let hasValue = map.has(arguments[0]);
       let type = hasValue ? 'update' : 'add';
       let oldValue = map.get(arguments[0]);
-      let methodCallResult = proto['set'].apply(map, arguments);
+      let methodCallResult = proto.set.apply(map, arguments);
       if (!hasValue || oldValue !== map.get(arguments[0])) {
         observer.addChangeRecord({
           type: type,
@@ -57,10 +56,10 @@ class ModifyMapObserver extends ModifyCollectionObserver {
       return methodCallResult;
     };
 
-    map['delete'] = function () {
+    map.delete = function() {
       let hasValue = map.has(arguments[0]);
       let oldValue = map.get(arguments[0]);
-      let methodCallResult = proto['delete'].apply(map, arguments);
+      let methodCallResult = proto.delete.apply(map, arguments);
       if (hasValue) {
         observer.addChangeRecord({
           type: 'delete',
@@ -72,8 +71,8 @@ class ModifyMapObserver extends ModifyCollectionObserver {
       return methodCallResult;
     };
 
-    map['clear'] = function () {
-      let methodCallResult = proto['clear'].apply(map, arguments);
+    map.clear = function() {
+      let methodCallResult = proto.clear.apply(map, arguments);
       observer.addChangeRecord({
         type: 'clear',
         object: map

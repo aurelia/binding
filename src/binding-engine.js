@@ -5,7 +5,7 @@ import {BindingExpression} from './binding-expression';
 import {createOverrideContext} from './scope';
 import {ExpressionObserver} from './expression-observer';
 
-const lookupFunctions = {
+const LookupFunctions = {
   bindingBehaviors: name => null,
   valueConverters: name => null
 };
@@ -18,7 +18,7 @@ export class BindingEngine {
     this.parser = parser;
   }
 
-  createBindingExpression(targetProperty, sourceExpression, mode = bindingMode.oneWay, lookupFunctions = lookupFunctions) {
+  createBindingExpression(targetProperty, sourceExpression, mode = bindingMode.oneWay, lookupFunctions = LookupFunctions) {
     return new BindingExpression(
       this.observerLocator,
       targetProperty,
@@ -62,7 +62,7 @@ export class BindingEngine {
 
   expressionObserver(bindingContext, expression) {
     let scope = { bindingContext, overrideContext: createOverrideContext(bindingContext) };
-    return new ExpressionObserver(scope, this.parser.parse(expression), this.observerLocator, lookupFunctions);
+    return new ExpressionObserver(scope, this.parser.parse(expression), this.observerLocator, LookupFunctions);
   }
 
   parseExpression(expression) {

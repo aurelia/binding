@@ -22,22 +22,22 @@ export class NameExpression {
 
   static locateAPI(element: Element, apiName: string): Object {
     switch (apiName) {
-      case 'element':
-        return element;
-      case 'controller':
-        return getAU(element).controller;
-      case 'view-model':
-        return getAU(element).controller.viewModel;
-      case 'view':
-        return getAU(element).controller.view;
-      default:
-        let target = getAU(element)[apiName];
+    case 'element':
+      return element;
+    case 'controller':
+      return getAU(element).controller;
+    case 'view-model':
+      return getAU(element).controller.viewModel;
+    case 'view':
+      return getAU(element).controller.view;
+    default:
+      let target = getAU(element)[apiName];
 
-        if (target === undefined) {
-          throw new Error(`Attempted to reference "${apiName}", but it was not found amongst the target's API.`)
-        }
+      if (target === undefined) {
+        throw new Error(`Attempted to reference "${apiName}", but it was not found amongst the target's API.`);
+      }
 
-        return target.viewModel;
+      return target.viewModel;
     }
   }
 }
