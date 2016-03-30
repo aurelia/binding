@@ -64,7 +64,7 @@ export class SelectValueObserver {
     while(i--) {
       let option = options.item(i);
       if (clear) {
-        option.selected = false;
+        option.selected = option.defaultSelected;
         continue;
       }
       let optionValue = option.hasOwnProperty('model') ? option.model : option.value;

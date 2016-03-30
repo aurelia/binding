@@ -38,6 +38,25 @@ describe('SelectValueObserver', () => {
     return value;
   }
 
+  describe('default selection', () => {
+    var obj, el, binding;
+    beforeAll(() => {
+        obj = { selectedItem: null };
+        el = createElement(
+            `<select>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option selected value="C">C</option>
+            </select>`);
+        document.body.appendChild(el);
+        binding = getBinding(observerLocator, obj, 'selectedItem', el, 'value', bindingMode.twoWay).binding;
+    });
+      
+    it('selects default', () => {
+        expect(el.value).toBe('C');
+    });
+  });
+
   describe('single-select strings', () => {
     var obj, el, binding;
 
