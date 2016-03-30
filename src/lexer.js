@@ -1,5 +1,5 @@
 export class Token {
-  constructor(index, text){
+  constructor(index, text) {
     this.index = index;
     this.text = text;
   }
@@ -55,9 +55,9 @@ export class Scanner {
       if (++this.index >= this.length) {
         this.peek = $EOF;
         return null;
-      } else {
-        this.peek = this.input.charCodeAt(this.index);
       }
+
+      this.peek = this.input.charCodeAt(this.index);
     }
 
     // Handle identifiers and numbers.
@@ -71,46 +71,46 @@ export class Scanner {
 
     let start = this.index;
 
-    switch (this.peek) {
-      case $PERIOD:
+    switch (this.peek) {  // eslint-disable-line
+    case $PERIOD:
+      this.advance();
+      return isDigit(this.peek) ? this.scanNumber(start) : new Token(start, '.');
+    case $LPAREN:
+    case $RPAREN:
+    case $LBRACE:
+    case $RBRACE:
+    case $LBRACKET:
+    case $RBRACKET:
+    case $COMMA:
+    case $COLON:
+    case $SEMICOLON:
+      return this.scanCharacter(start, String.fromCharCode(this.peek));
+    case $SQ:
+    case $DQ:
+      return this.scanString();
+    case $PLUS:
+    case $MINUS:
+    case $STAR:
+    case $SLASH:
+    case $PERCENT:
+    case $CARET:
+    case $QUESTION:
+      return this.scanOperator(start, String.fromCharCode(this.peek));
+    case $LT:
+    case $GT:
+    case $BANG:
+    case $EQ:
+      return this.scanComplexOperator(start, $EQ, String.fromCharCode(this.peek), '=');
+    case $AMPERSAND:
+      return this.scanComplexOperator(start, $AMPERSAND, '&', '&');
+    case $BAR:
+      return this.scanComplexOperator(start, $BAR, '|', '|');
+    case $NBSP:
+      while (isWhitespace(this.peek)) {
         this.advance();
-        return isDigit(this.peek) ? this.scanNumber(start) : new Token(start, '.');
-      case $LPAREN:
-      case $RPAREN:
-      case $LBRACE:
-      case $RBRACE:
-      case $LBRACKET:
-      case $RBRACKET:
-      case $COMMA:
-      case $COLON:
-      case $SEMICOLON:
-        return this.scanCharacter(start, String.fromCharCode(this.peek));
-      case $SQ:
-      case $DQ:
-        return this.scanString();
-      case $PLUS:
-      case $MINUS:
-      case $STAR:
-      case $SLASH:
-      case $PERCENT:
-      case $CARET:
-      case $QUESTION:
-        return this.scanOperator(start, String.fromCharCode(this.peek));
-      case $LT:
-      case $GT:
-      case $BANG:
-      case $EQ:
-        return this.scanComplexOperator(start, $EQ, String.fromCharCode(this.peek), '=');
-      case $AMPERSAND:
-        return this.scanComplexOperator(start, $AMPERSAND, '&', '&');
-      case $BAR:
-        return this.scanComplexOperator(start, $BAR, '|', '|');
-      case $NBSP:
-        while (isWhitespace(this.peek)){
-          this.advance();
-        }
+      }
 
-        return this.scanToken();
+      return this.scanToken();
     }
 
     let character = String.fromCharCode(this.peek);
@@ -147,7 +147,7 @@ export class Scanner {
       text += two;
     }
 
-    assert(OPERATORS.indexOf(text) != -1);
+    assert(OPERATORS.indexOf(text) !== -1);
 
     return new Token(start, text).withOp(text);
   }
@@ -181,7 +181,7 @@ export class Scanner {
     let simple = (this.index === start);
     this.advance();  // Skip initial digit.
 
-    while (true) {
+    while (true) {  // eslint-disable-line
       if (isDigit(this.peek)) {
         // Do nothing.
       } else if (this.peek === $PERIOD) {
@@ -189,11 +189,11 @@ export class Scanner {
       } else if (isExponentStart(this.peek)) {
         this.advance();
 
-        if (isExponentSign(this.peek)){
+        if (isExponentSign(this.peek)) {
           this.advance();
         }
 
-        if (!isDigit(this.peek)){
+        if (!isDigit(this.peek)) {
           this.error('Invalid exponent', -1);
         }
 
@@ -206,7 +206,7 @@ export class Scanner {
     }
 
     let text = this.input.substring(start, this.index);
-    let value = simple ? parseInt(text) : parseFloat(text);
+    let value = simple ? parseInt(text, 10) : parseFloat(text);
     return new Token(start, text).withValue(value);
   }
 
@@ -237,7 +237,7 @@ export class Scanner {
           // coverage for this.
           let hex = this.input.substring(this.index + 1, this.index + 5);
 
-          if(!/[A-Z0-9]{4}/.test(hex)){
+          if (!/[A-Z0-9]{4}/.test(hex)) {
             this.error(`Invalid unicode escape [\\u${hex}]`);
           }
 
@@ -267,7 +267,7 @@ export class Scanner {
     // Compute the unescaped string value.
     let unescaped = last;
 
-    if (buffer != null) {
+    if (buffer !== null && buffer !== undefined) {
       buffer.push(last);
       unescaped = buffer.join('');
     }
@@ -316,7 +316,7 @@ const OPERATORS = [
   '&',
   '|',
   '!',
-  '?',
+  '?'
 ];
 
 const $EOF = 0;
@@ -407,18 +407,18 @@ function isExponentSign(code) {
 }
 
 function unescape(code) {
-  switch(code) {
-    case $n: return $LF;
-    case $f: return $FF;
-    case $r: return $CR;
-    case $t: return $TAB;
-    case $v: return $VTAB;
-    default: return code;
+  switch (code) {
+  case $n: return $LF;
+  case $f: return $FF;
+  case $r: return $CR;
+  case $t: return $TAB;
+  case $v: return $VTAB;
+  default: return code;
   }
 }
 
 function assert(condition, message) {
   if (!condition) {
-    throw message || "Assertion failed";
+    throw message || 'Assertion failed';
   }
 }

@@ -2,7 +2,7 @@ import {subscriberCollection} from './subscriber-collection';
 
 export const propertyAccessor = {
   getValue: (obj, propertyName) => obj[propertyName],
-  setValue: (value, obj, propertyName) => obj[propertyName] = value
+  setValue: (value, obj, propertyName) => { obj[propertyName] = value; }
 };
 
 export class PrimitiveObserver {
@@ -31,7 +31,7 @@ export class PrimitiveObserver {
 
 @subscriberCollection()
 export class SetterObserver {
-  constructor(taskQueue, obj, propertyName){
+  constructor(taskQueue, obj, propertyName) {
     this.taskQueue = taskQueue;
     this.obj = obj;
     this.propertyName = propertyName;
@@ -54,8 +54,8 @@ export class SetterObserver {
   setterValue(newValue) {
     let oldValue = this.currentValue;
 
-    if(oldValue !== newValue){
-      if(!this.queued){
+    if (oldValue !== newValue) {
+      if (!this.queued) {
         this.oldValue = oldValue;
         this.queued = true;
         this.taskQueue.queueMicroTask(this);
@@ -75,7 +75,7 @@ export class SetterObserver {
   }
 
   subscribe(context, callable) {
-    if(!this.observing) {
+    if (!this.observing) {
       this.convertProperty();
     }
     this.addSubscriber(context, callable);
@@ -91,13 +91,13 @@ export class SetterObserver {
     this.setValue = this.setterValue;
     this.getValue = this.getterValue;
 
-    try{
+    try {
       Object.defineProperty(this.obj, this.propertyName, {
         configurable: true,
         enumerable: true,
         get: this.getValue.bind(this),
         set: this.setValue.bind(this)
       });
-    }catch(_){}
+    } catch(_) {} // eslint-disable-line
   }
 }

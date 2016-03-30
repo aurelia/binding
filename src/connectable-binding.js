@@ -11,7 +11,7 @@ function addObserver(observer) {
   // find the observer.
   let observerSlots = this._observerSlots === undefined ? 0 : this._observerSlots;
   let i = observerSlots;
-  while (i-- && this[slotNames[i]] !== observer) {}
+  while (i-- && this[slotNames[i]] !== observer) {} // eslint-disable-line
 
   // if we are not already observing, put the observer in an open slot and subscribe.
   if (i === -1) {
@@ -62,5 +62,5 @@ export function connectable() {
     target.prototype.observeArray = observeArray;
     target.prototype.unobserve = unobserve;
     target.prototype.addObserver = addObserver;
-  }
+  };
 }

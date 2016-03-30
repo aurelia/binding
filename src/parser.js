@@ -1,6 +1,6 @@
-import {Lexer,Token} from './lexer';
+import {Lexer, Token} from './lexer';
 import {
-  Expression, Chain, ValueConverter, Assign, Conditional,
+  Chain, ValueConverter, Assign, Conditional,
   AccessThis, AccessScope, AccessMember, AccessKeyed,
   CallScope, CallFunction, CallMember,
   PrefixNot, BindingBehavior, Binary,
@@ -164,7 +164,7 @@ export class ParserImplementation {
   parseEquality() {
     let result = this.parseRelational();
 
-    while (true) {
+    while (true) {  // eslint-disable-line
       if (this.optional('==')) {
         result = new Binary('==', result, this.parseRelational());
       } else if (this.optional('!=')) {
@@ -182,7 +182,7 @@ export class ParserImplementation {
   parseRelational() {
     let result = this.parseAdditive();
 
-    while (true) {
+    while (true) {  // eslint-disable-line
       if (this.optional('<')) {
         result = new Binary('<', result, this.parseAdditive());
       } else if (this.optional('>')) {
@@ -200,7 +200,7 @@ export class ParserImplementation {
   parseAdditive() {
     let result = this.parseMultiplicative();
 
-    while (true) {
+    while (true) {  // eslint-disable-line
       if (this.optional('+')) {
         result = new Binary('+', result, this.parseMultiplicative());
       } else if (this.optional('-')) {
@@ -214,7 +214,7 @@ export class ParserImplementation {
   parseMultiplicative() {
     let result = this.parsePrefix();
 
-    while (true) {
+    while (true) {  // eslint-disable-line
       if (this.optional('*')) {
         result = new Binary('*', result, this.parsePrefix());
       } else if (this.optional('%')) {
@@ -234,15 +234,15 @@ export class ParserImplementation {
       return new Binary('-', new LiteralPrimitive(0), this.parsePrefix());
     } else if (this.optional('!')) {
       return new PrefixNot('!', this.parsePrefix());
-    } else {
-      return this.parseAccessOrCallMember();
     }
+
+    return this.parseAccessOrCallMember();
   }
 
   parseAccessOrCallMember() {
     let result = this.parsePrimary();
 
-    while (true) {
+    while (true) {  // eslint-disable-line
       if (this.optional('.')) {
         let name = this.peek.text; // TODO(kasperl): Check that this is an identifier. Are keywords okay?
 
@@ -277,7 +277,7 @@ export class ParserImplementation {
     }
   }
 
-  parsePrimary() {
+  parsePrimary() {  // eslint-disable-line
     if (this.optional('(')) {
       let result = this.parseExpression();
       this.expect(')');
@@ -294,11 +294,11 @@ export class ParserImplementation {
       let elements = this.parseExpressionList(']');
       this.expect(']');
       return new LiteralArray(elements);
-    } else if (this.peek.text == '{') {
+    } else if (this.peek.text === '{') {
       return this.parseObject();
-    } else if (this.peek.key != null) {
+    } else if (this.peek.key !== null && this.peek.key !== undefined) {
       return this.parseAccessOrCallScope();
-    } else if (this.peek.value != null) {
+    } else if (this.peek.value !== null && this.peek.value !== undefined) {
       let value = this.peek.value;
       this.advance();
       return value instanceof String || typeof value === 'string' ? new LiteralString(value) : new LiteralPrimitive(value);
@@ -355,16 +355,13 @@ export class ParserImplementation {
         keys.push(typeof value === 'string' ? value : peek.text);
 
         this.advance();
-        if ( peek.key && (this.peek.text === ',' || this.peek.text === '}') )
-        {
-            --this.index;
-            values.push(this.parseAccessOrCallScope());
+        if (peek.key && (this.peek.text === ',' || this.peek.text === '}')) {
+          --this.index;
+          values.push(this.parseAccessOrCallScope());
+        } else {
+          this.expect(':');
+          values.push(this.parseExpression());
         }
-        else {
-            this.expect(':');
-            values.push(this.parseExpression());
-        }
-
       } while (this.optional(','));
     }
 
@@ -376,10 +373,10 @@ export class ParserImplementation {
   parseExpressionList(terminator) {
     let result = [];
 
-    if (this.peek.text != terminator) {
+    if (this.peek.text !== terminator) {
       do {
         result.push(this.parseExpression());
-       } while (this.optional(','));
+      } while (this.optional(','));
     }
 
     return result;
@@ -402,14 +399,14 @@ export class ParserImplementation {
     }
   }
 
-  advance(){
+  advance() {
     this.index++;
   }
 
   error(message) {
     let location = (this.index < this.tokens.length)
         ? `at column ${this.tokens[this.index].index + 1} in`
-        : `at the end of the expression`;
+        : 'at the end of the expression';
 
     throw new Error(`Parser Error: ${message} ${location} [${this.input}]`);
   }

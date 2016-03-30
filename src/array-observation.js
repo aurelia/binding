@@ -1,6 +1,5 @@
-import {projectArraySplices} from './array-change-records';
-import {ModifyCollectionObserver, CollectionLengthObserver} from './collection-observation';
-import {subscriberCollection} from './subscriber-collection';
+/* eslint-disable no-extend-native */
+import {ModifyCollectionObserver} from './collection-observation';
 
 let pop = Array.prototype.pop;
 let push = Array.prototype.push;
@@ -60,7 +59,7 @@ Array.prototype.shift = function() {
       oldValue: methodCallResult
     });
   }
-  return methodCallResult
+  return methodCallResult;
 };
 
 Array.prototype.sort = function() {

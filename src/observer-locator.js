@@ -50,7 +50,7 @@ export class ObserverLocator {
     observer = this.createPropertyObserver(obj, propertyName);
 
     if (!observer.doNotCache) {
-      if (observersLookup === undefined){
+      if (observersLookup === undefined) {
         observersLookup = this.getOrCreateObserversLookup(obj);
       }
 
@@ -67,14 +67,14 @@ export class ObserverLocator {
   createObserversLookup(obj) {
     let value = {};
 
-    try{
-      Object.defineProperty(obj, "__observers__", {
+    try {
+      Object.defineProperty(obj, '__observers__', {
         enumerable: false,
         configurable: false,
         writable: false,
         value: value
       });
-    }catch(_){}
+    } catch(_) {} // eslint-disable-line
 
     return value;
   }
@@ -95,7 +95,6 @@ export class ObserverLocator {
   }
 
   createPropertyObserver(obj, propertyName) {
-    let observerLookup;
     let descriptor;
     let handler;
     let xlinkResult;
@@ -115,7 +114,7 @@ export class ObserverLocator {
       if (propertyName === 'value' && obj.tagName.toLowerCase() === 'select') {
         return new SelectValueObserver(obj, handler, this);
       }
-      if (propertyName ==='checked' && obj.tagName.toLowerCase() === 'input') {
+      if (propertyName === 'checked' && obj.tagName.toLowerCase() === 'input') {
         return new CheckedObserver(obj, handler, this);
       }
       if (handler) {
@@ -138,7 +137,7 @@ export class ObserverLocator {
     }
 
     let existingGetterOrSetter;
-    if (descriptor && (existingGetterOrSetter = descriptor.get || descriptor.set)) {
+    if (descriptor && (existingGetterOrSetter = descriptor.get || descriptor.set)) {  // eslint-disable-line
       if (existingGetterOrSetter.getObserver) {
         return existingGetterOrSetter.getObserver(obj);
       }
@@ -154,21 +153,21 @@ export class ObserverLocator {
     if (obj instanceof Array) {
       if (propertyName === 'length') {
         return this.getArrayObserver(obj).getLengthObserver();
-      } else {
-        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
+
+      return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     } else if (obj instanceof Map) {
       if (propertyName === 'size') {
         return this.getMapObserver(obj).getLengthObserver();
-      } else {
-        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
+
+      return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     } else if (obj instanceof Set) {
       if (propertyName === 'size') {
         return this.getSetObserver(obj).getLengthObserver();
-      } else {
-        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
+
+      return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     }
 
     return new SetterObserver(this.taskQueue, obj, propertyName);
@@ -191,15 +190,15 @@ export class ObserverLocator {
     return propertyAccessor;
   }
 
-  getArrayObserver(array){
+  getArrayObserver(array) {
     return getArrayObserver(this.taskQueue, array);
   }
 
-  getMapObserver(map){
+  getMapObserver(map) {
     return getMapObserver(this.taskQueue, map);
   }
 
-  getSetObserver(set){
+  getSetObserver(set) {
     return getSetObserver(this.taskQueue, set);
   }
 }

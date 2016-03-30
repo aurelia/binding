@@ -1,11 +1,11 @@
 import {subscriberCollection} from './subscriber-collection';
 import {DOM} from 'aurelia-pal';
 
-const selectArrayContext = 'SelectValueObserver:array'
+const selectArrayContext = 'SelectValueObserver:array';
 
 @subscriberCollection()
 export class SelectValueObserver {
-  constructor(element, handler, observerLocator){
+  constructor(element, handler, observerLocator) {
     this.element = element;
     this.handler = handler;
     this.observerLocator = observerLocator;
@@ -17,7 +17,7 @@ export class SelectValueObserver {
 
   setValue(newValue) {
     if (newValue !== null && newValue !== undefined && this.element.multiple && !Array.isArray(newValue)) {
-      throw new Error('Only null or Array instances can be bound to a multi-select.')
+      throw new Error('Only null or Array instances can be bound to a multi-select.');
     }
     if (this.value === newValue) {
       return;
@@ -50,7 +50,9 @@ export class SelectValueObserver {
   }
 
   synchronizeOptions() {
-    let value = this.value, clear, isArray;
+    let value = this.value;
+    let clear;
+    let isArray;
 
     if (value === null || value === undefined) {
       clear = true;
@@ -61,7 +63,7 @@ export class SelectValueObserver {
     let options = this.element.options;
     let i = options.length;
     let matcher = this.element.matcher || ((a, b) => a === b);
-    while(i--) {
+    while (i--) {
       let option = options.item(i);
       if (clear) {
         option.selected = false;
@@ -69,7 +71,7 @@ export class SelectValueObserver {
       }
       let optionValue = option.hasOwnProperty('model') ? option.model : option.value;
       if (isArray) {
-        option.selected = !!value.find(item => !!matcher(optionValue, item));
+        option.selected = !!value.find(item => !!matcher(optionValue, item)); // eslint-disable-line
         continue;
       }
       option.selected = !!matcher(optionValue, value);
@@ -77,9 +79,9 @@ export class SelectValueObserver {
   }
 
   synchronizeValue() {
-    let options = this.element.options,
-        count = 0,
-        value = [];
+    let options = this.element.options;
+    let count = 0;
+    let value = [];
 
     for (let i = 0, ii = options.length; i < ii; i++) {
       let option = options.item(i);
@@ -98,7 +100,7 @@ export class SelectValueObserver {
         let i = 0;
         while (i < this.value.length) {
           let a = this.value[i];
-          if (value.findIndex(b => matcher(a, b)) === -1) {
+          if (value.findIndex(b => matcher(a, b)) === -1) { // eslint-disable-line
             this.value.splice(i, 1);
           } else {
             i++;
@@ -108,7 +110,7 @@ export class SelectValueObserver {
         i = 0;
         while (i < value.length) {
           let a = value[i];
-          if (this.value.findIndex(b => matcher(a, b)) === -1) {
+          if (this.value.findIndex(b => matcher(a, b)) === -1) {  // eslint-disable-line
             this.value.push(a);
           }
           i++;

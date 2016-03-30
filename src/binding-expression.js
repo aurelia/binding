@@ -4,7 +4,7 @@ import {enqueueBindingConnect} from './connect-queue';
 
 export class BindingExpression {
   constructor(observerLocator, targetProperty, sourceExpression,
-    mode, lookupFunctions, attribute){
+    mode, lookupFunctions, attribute) {
     this.observerLocator = observerLocator;
     this.targetProperty = targetProperty;
     this.sourceExpression = sourceExpression;

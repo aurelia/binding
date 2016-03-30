@@ -51,47 +51,41 @@ export class StyleObserver {
   constructor(element, propertyName) {
     this.element = element;
     this.propertyName = propertyName;
-    
+
     this.styles = null;
     this.version = 0;
   }
-  
+
   getValue() {
     return this.element.style.cssText;
   }
-  
+
   setValue(newValue) {
-    let styles = this.styles || {},
-        style,
-        version = this.version;
-        
-    if ( newValue !== null && newValue !== undefined )
-    {
-      if ( newValue instanceof Object )
-      {
-        for( style in newValue ) 
-        {
-          if ( newValue.hasOwnProperty(style) )
-          {
+    let styles = this.styles || {};
+    let style;
+    let version = this.version;
+
+    if (newValue !== null && newValue !== undefined) {
+      if (newValue instanceof Object) {
+        for (style in newValue) {
+          if (newValue.hasOwnProperty(style)) {
             styles[style] = version;
             this.element.style[style] = newValue[style];
           }
         }
-      }
-      else if ( newValue.length ) {
+      } else if (newValue.length) {
         let pairs = newValue.split(/(?:;|:(?!\/))\s*/);
-        for( let i = 0, length = pairs.length; i < length; i++ )
-        {
+        for (let i = 0, length = pairs.length; i < length; i++) {
           style = pairs[i].trim();
           if ( !style ) { continue; }
-            
+
           styles[style] = version;
-          
+
           this.element.style[style] = pairs[++i];
         }
       }
     }
-      
+
     this.styles = styles;
     this.version += 1;
 
@@ -100,11 +94,11 @@ export class StyleObserver {
     }
 
     version -= 1;
-    for(style in styles) {
+    for (style in styles) {
       if (!styles.hasOwnProperty(style) || styles[style] !== version) {
         continue;
       }
-      
+
       this.element.style[style] = '';
     }
   }
@@ -112,7 +106,6 @@ export class StyleObserver {
   subscribe() {
     throw new Error(`Observation of a "${this.element.nodeName}" element\'s "${this.propertyName}" property is not supported.`);
   }
-
 }
 
 @subscriberCollection()

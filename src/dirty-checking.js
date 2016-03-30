@@ -1,43 +1,43 @@
 import {subscriberCollection} from './subscriber-collection';
 
 export class DirtyChecker {
-  constructor(){
+  constructor() {
     this.tracked = [];
     this.checkDelay = 120;
   }
 
-  addProperty(property){
-    var tracked = this.tracked;
+  addProperty(property) {
+    let tracked = this.tracked;
 
     tracked.push(property);
 
-    if(tracked.length === 1) {
+    if (tracked.length === 1) {
       this.scheduleDirtyCheck();
     }
   }
 
-  removeProperty(property){
-    var tracked = this.tracked;
+  removeProperty(property) {
+    let tracked = this.tracked;
     tracked.splice(tracked.indexOf(property), 1);
   }
 
-  scheduleDirtyCheck(){
+  scheduleDirtyCheck() {
     setTimeout(() => this.check(), this.checkDelay);
   }
 
   check() {
-    var tracked = this.tracked,
-        i = tracked.length;
+    let tracked = this.tracked;
+    let i = tracked.length;
 
-    while(i--) {
-      var current = tracked[i];
+    while (i--) {
+      let current = tracked[i];
 
-      if(current.isDirty()){
+      if (current.isDirty()) {
         current.call();
       }
     }
 
-    if(tracked.length) {
+    if (tracked.length) {
       this.scheduleDirtyCheck();
     }
   }

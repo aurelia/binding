@@ -2,7 +2,7 @@ import {Unparser} from './unparser';
 import {getContextFor} from './scope';
 
 export class Expression {
-  constructor(){
+  constructor() {
     this.isChain = false;
     this.isAssignable = false;
   }
@@ -15,13 +15,13 @@ export class Expression {
     throw new Error(`Binding expression "${this}" cannot be assigned to.`);
   }
 
-  toString(){
+  toString() {
     return Unparser.unparse(this);
   }
 }
 
 export class Chain extends Expression {
-  constructor(expressions){
+  constructor(expressions) {
     super();
 
     this.expressions = expressions;
@@ -29,12 +29,11 @@ export class Chain extends Expression {
   }
 
   evaluate(scope, lookupFunctions) {
-    var result,
-        expressions = this.expressions,
-        length = expressions.length,
-        i, last;
+    let result;
+    let expressions = this.expressions;
+    let last;
 
-    for (i = 0; i < length; ++i) {
+    for (let i = 0, length = expressions.length; i < length; ++i) {
       last = expressions[i].evaluate(scope, lookupFunctions);
 
       if (last !== null) {
@@ -102,7 +101,7 @@ export class BindingBehavior extends Expression {
 }
 
 export class ValueConverter extends Expression {
-  constructor(expression, name, args, allArgs){
+  constructor(expression, name, args, allArgs) {
     super();
 
     this.expression = expression;
@@ -112,32 +111,32 @@ export class ValueConverter extends Expression {
   }
 
   evaluate(scope, lookupFunctions) {
-    var converter = lookupFunctions.valueConverters(this.name);
-    if(!converter){
+    let converter = lookupFunctions.valueConverters(this.name);
+    if (!converter) {
       throw new Error(`No ValueConverter named "${this.name}" was found!`);
     }
 
-    if('toView' in converter){
+    if ('toView' in converter) {
       return converter.toView.apply(converter, evalList(scope, this.allArgs, lookupFunctions));
     }
 
     return this.allArgs[0].evaluate(scope, lookupFunctions);
   }
 
-  assign(scope, value, lookupFunctions){
-    var converter = lookupFunctions.valueConverters(this.name);
-    if(!converter){
+  assign(scope, value, lookupFunctions) {
+    let converter = lookupFunctions.valueConverters(this.name);
+    if (!converter) {
       throw new Error(`No ValueConverter named "${this.name}" was found!`);
     }
 
-    if('fromView' in converter){
+    if ('fromView' in converter) {
       value = converter.fromView.apply(converter, [value].concat(evalList(scope, this.args, lookupFunctions)));
     }
 
     return this.allArgs[0].assign(scope, value, lookupFunctions);
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitValueConverter(this);
   }
 
@@ -151,18 +150,18 @@ export class ValueConverter extends Expression {
 }
 
 export class Assign extends Expression {
-  constructor(target, value){
+  constructor(target, value) {
     super();
 
     this.target = target;
     this.value = value;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     return this.target.assign(scope, this.value.evaluate(scope, lookupFunctions));
   }
 
-  accept(vistor){
+  accept(vistor) {
     vistor.visitAssign(this);
   }
 
@@ -171,7 +170,7 @@ export class Assign extends Expression {
 }
 
 export class Conditional extends Expression {
-  constructor(condition, yes, no){
+  constructor(condition, yes, no) {
     super();
 
     this.condition = condition;
@@ -179,11 +178,11 @@ export class Conditional extends Expression {
     this.no = no;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     return (!!this.condition.evaluate(scope)) ? this.yes.evaluate(scope) : this.no.evaluate(scope);
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitConditional(this);
   }
 
@@ -234,12 +233,12 @@ export class AccessScope extends Expression {
     return context[this.name];
   }
 
-  assign(scope, value){
+  assign(scope, value) {
     let context = getContextFor(this.name, scope, this.ancestor);
     return context ? (context[this.name] = value) : undefined;
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitAccessScope(this);
   }
 
@@ -250,7 +249,7 @@ export class AccessScope extends Expression {
 }
 
 export class AccessMember extends Expression {
-  constructor(object, name){
+  constructor(object, name) {
     super();
 
     this.object = object;
@@ -258,23 +257,23 @@ export class AccessMember extends Expression {
     this.isAssignable = true;
   }
 
-  evaluate(scope, lookupFunctions){
-    var instance = this.object.evaluate(scope, lookupFunctions);
+  evaluate(scope, lookupFunctions) {
+    let instance = this.object.evaluate(scope, lookupFunctions);
     return instance === null || instance === undefined ? instance : instance[this.name];
   }
 
-  assign(scope, value){
-    var instance = this.object.evaluate(scope);
+  assign(scope, value) {
+    let instance = this.object.evaluate(scope);
 
-    if(instance === null || instance === undefined){
+    if (instance === null || instance === undefined) {
       instance = {};
       this.object.assign(scope, instance);
     }
 
-    return instance[this.name] = value;
+    return instance[this.name] = value; // eslint-disable-line
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitAccessMember(this);
   }
 
@@ -288,7 +287,7 @@ export class AccessMember extends Expression {
 }
 
 export class AccessKeyed extends Expression {
-  constructor(object, key){
+  constructor(object, key) {
     super();
 
     this.object = object;
@@ -296,19 +295,19 @@ export class AccessKeyed extends Expression {
     this.isAssignable = true;
   }
 
-  evaluate(scope, lookupFunctions){
-    var instance = this.object.evaluate(scope, lookupFunctions);
-    var lookup = this.key.evaluate(scope, lookupFunctions);
+  evaluate(scope, lookupFunctions) {
+    let instance = this.object.evaluate(scope, lookupFunctions);
+    let lookup = this.key.evaluate(scope, lookupFunctions);
     return getKeyed(instance, lookup);
   }
 
-  assign(scope, value){
-    var instance = this.object.evaluate(scope);
-    var lookup = this.key.evaluate(scope);
+  assign(scope, value) {
+    let instance = this.object.evaluate(scope);
+    let lookup = this.key.evaluate(scope);
     return setKeyed(instance, lookup, value);
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitAccessKeyed(this);
   }
 
@@ -347,7 +346,7 @@ export class CallScope extends Expression {
     return undefined;
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitCallScope(this);
   }
 
@@ -362,7 +361,7 @@ export class CallScope extends Expression {
 }
 
 export class CallMember extends Expression {
-  constructor(object, name, args){
+  constructor(object, name, args) {
     super();
 
     this.object = object;
@@ -371,7 +370,7 @@ export class CallMember extends Expression {
   }
 
   evaluate(scope, lookupFunctions, mustEvaluate) {
-    var instance = this.object.evaluate(scope, lookupFunctions);
+    let instance = this.object.evaluate(scope, lookupFunctions);
     let args = evalList(scope, this.args, lookupFunctions);
     let func = getFunction(instance, this.name, mustEvaluate);
     if (func) {
@@ -380,7 +379,7 @@ export class CallMember extends Expression {
     return undefined;
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitCallMember(this);
   }
 
@@ -416,7 +415,7 @@ export class CallFunction extends Expression {
     throw new Error(`${this.func} is not a function`);
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitCallFunction(this);
   }
 
@@ -434,7 +433,7 @@ export class CallFunction extends Expression {
 }
 
 export class Binary extends Expression {
-  constructor(operation, left, right){
+  constructor(operation, left, right) {
     super();
 
     this.operation = operation;
@@ -442,56 +441,56 @@ export class Binary extends Expression {
     this.right = right;
   }
 
-  evaluate(scope, lookupFunctions){
-    var left = this.left.evaluate(scope);
+  evaluate(scope, lookupFunctions) {
+    let left = this.left.evaluate(scope);
 
-    switch (this.operation) {
-      case '&&': return left && this.right.evaluate(scope);
-      case '||': return left || this.right.evaluate(scope);
+    switch (this.operation) { // eslint-disable-line
+    case '&&': return left && this.right.evaluate(scope);
+    case '||': return left || this.right.evaluate(scope);
     }
 
-    var right = this.right.evaluate(scope);
+    let right = this.right.evaluate(scope);
 
-    switch (this.operation) {
-      case '==' : return left == right;
-      case '===': return left === right;
-      case '!=' : return left != right;
-      case '!==': return left !== right;
+    switch (this.operation) { // eslint-disable-line
+    case '==' : return left == right; // eslint-disable-line
+    case '===': return left === right;
+    case '!=' : return left != right; // eslint-disable-line
+    case '!==': return left !== right;
     }
 
     // Null check for the operations.
     if (left === null || right === null) {
-      switch (this.operation) {
-        case '+':
-          if (left != null) return left;
-          if (right != null) return right;
-          return 0;
-        case '-':
-          if (left != null) return left;
-          if (right != null) return 0 - right;
-          return 0;
+      switch (this.operation) { // eslint-disable-line
+      case '+':
+        if (left !== null) return left;
+        if (right !== null) return right;
+        return 0;
+      case '-':
+        if (left !== null) return left;
+        if (right !== null) return 0 - right;
+        return 0;
       }
 
       return null;
     }
 
-    switch (this.operation) {
-      case '+'  : return autoConvertAdd(left, right);
-      case '-'  : return left - right;
-      case '*'  : return left * right;
-      case '/'  : return left / right;
-      case '%'  : return left % right;
-      case '<'  : return left < right;
-      case '>'  : return left > right;
-      case '<=' : return left <= right;
-      case '>=' : return left >= right;
-      case '^'  : return left ^ right;
+    switch (this.operation) { // eslint-disable-line
+    case '+'  : return autoConvertAdd(left, right);
+    case '-'  : return left - right;
+    case '*'  : return left * right;
+    case '/'  : return left / right;
+    case '%'  : return left % right;
+    case '<'  : return left < right;
+    case '>'  : return left > right;
+    case '<=' : return left <= right;
+    case '>=' : return left >= right;
+    case '^'  : return left ^ right;
     }
 
     throw new Error(`Internal error [${this.operation}] not handled`);
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitBinary(this);
   }
 
@@ -506,18 +505,18 @@ export class Binary extends Expression {
 }
 
 export class PrefixNot extends Expression {
-  constructor(operation, expression){
+  constructor(operation, expression) {
     super();
 
     this.operation = operation;
     this.expression = expression;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     return !this.expression.evaluate(scope);
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitPrefix(this);
   }
 
@@ -527,17 +526,17 @@ export class PrefixNot extends Expression {
 }
 
 export class LiteralPrimitive extends Expression {
-  constructor(value){
+  constructor(value) {
     super();
 
     this.value = value;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     return this.value;
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitLiteralPrimitive(this);
   }
 
@@ -546,17 +545,17 @@ export class LiteralPrimitive extends Expression {
 }
 
 export class LiteralString extends Expression {
-  constructor(value){
+  constructor(value) {
     super();
 
     this.value = value;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     return this.value;
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitLiteralString(this);
   }
 
@@ -565,26 +564,24 @@ export class LiteralString extends Expression {
 }
 
 export class LiteralArray extends Expression {
-  constructor(elements){
+  constructor(elements) {
     super();
 
     this.elements = elements;
   }
 
-  evaluate(scope, lookupFunctions){
-    var elements = this.elements,
-        length = elements.length,
-        result = [],
-        i;
+  evaluate(scope, lookupFunctions) {
+    let elements = this.elements;
+    let result = [];
 
-    for(i = 0; i < length; ++i){
+    for (let i = 0, length = elements.length; i < length; ++i) {
       result[i] = elements[i].evaluate(scope, lookupFunctions);
     }
 
     return result;
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitLiteralArray(this);
   }
 
@@ -597,32 +594,30 @@ export class LiteralArray extends Expression {
 }
 
 export class LiteralObject extends Expression {
-  constructor(keys, values){
+  constructor(keys, values) {
     super();
 
     this.keys = keys;
     this.values = values;
   }
 
-  evaluate(scope, lookupFunctions){
-    var instance = {},
-        keys = this.keys,
-        values = this.values,
-        length = keys.length,
-        i;
+  evaluate(scope, lookupFunctions) {
+    let instance = {};
+    let keys = this.keys;
+    let values = this.values;
 
-    for(i = 0; i < length; ++i){
+    for (let i = 0, length = keys.length; i < length; ++i) {
       instance[keys[i]] = values[i].evaluate(scope, lookupFunctions);
     }
 
     return instance;
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitLiteralObject(this);
   }
 
-  connect(binding, scope){
+  connect(binding, scope) {
     let length = this.keys.length;
     for (let i = 0; i < length; i++) {
       this.values[i].connect(binding, scope);
@@ -630,20 +625,19 @@ export class LiteralObject extends Expression {
   }
 }
 
-var evalListCache = [[],[0],[0,0],[0,0,0],[0,0,0,0],[0,0,0,0,0]];
+let evalListCache = [[], [0], [0, 0], [0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0]];
 
 /// Evaluate the [list] in context of the [scope].
 function evalList(scope, list, lookupFunctions) {
-  var length = list.length,
-      cacheLength, i;
+  let length = list.length;
 
-  for (cacheLength = evalListCache.length; cacheLength <= length; ++cacheLength) {
+  for (let cacheLength = evalListCache.length; cacheLength <= length; ++cacheLength) {
     evalListCache.push([]);
   }
 
-  var result = evalListCache[length];
+  let result = evalListCache[length];
 
-  for (i = 0; i < length; ++i) {
+  for (let i = 0; i < length; ++i) {
     result[i] = list[i].evaluate(scope, lookupFunctions);
   }
 
@@ -652,24 +646,24 @@ function evalList(scope, list, lookupFunctions) {
 
 /// Add the two arguments with automatic type conversion.
 function autoConvertAdd(a, b) {
-  if (a != null && b != null) {
+  if (a !== null && b !== null) {
     // TODO(deboer): Support others.
-    if (typeof a == 'string' && typeof b != 'string') {
+    if (typeof a === 'string' && typeof b !== 'string') {
       return a + b.toString();
     }
 
-    if (typeof a != 'string' && typeof b == 'string') {
+    if (typeof a !== 'string' && typeof b === 'string') {
       return a.toString() + b;
     }
 
     return a + b;
   }
 
-  if (a != null) {
+  if (a !== null) {
     return a;
   }
 
-  if (b != null) {
+  if (b !== null) {
     return b;
   }
 
@@ -689,19 +683,19 @@ function getFunction(obj, name, mustExist) {
 
 function getKeyed(obj, key) {
   if (Array.isArray(obj)) {
-    return obj[parseInt(key)];
+    return obj[parseInt(key, 10)];
   } else if (obj) {
     return obj[key];
   } else if (obj === null || obj === undefined) {
     return undefined;
-  } else {
-    return obj[key];
   }
+
+  return obj[key];
 }
 
 function setKeyed(obj, key, value) {
   if (Array.isArray(obj)) {
-    var index = parseInt(key);
+    let index = parseInt(key, 10);
 
     if (obj.length <= index) {
       obj.length = index + 1;
