@@ -56,7 +56,7 @@ export function createScopeForTest(bindingContext: any, parentBindingContext?: a
     return {
       bindingContext,
       overrideContext: createOverrideContext(bindingContext, createOverrideContext(parentBindingContext))
-    }
+    };
   }
   return {
     bindingContext,
@@ -77,7 +77,7 @@ function addObserver(observer) {
   // find the observer.
   let observerSlots = this._observerSlots === undefined ? 0 : this._observerSlots;
   let i = observerSlots;
-  while (i-- && this[slotNames[i]] !== observer) {}
+  while (i-- && this[slotNames[i]] !== observer) {} // eslint-disable-line
 
   // if we are not already observing, put the observer in an open slot and subscribe.
   if (i === -1) {
@@ -128,7 +128,7 @@ export function connectable() {
     target.prototype.observeArray = observeArray;
     target.prototype.unobserve = unobserve;
     target.prototype.addObserver = addObserver;
-  }
+  };
 }
 
 const bindings = new Map();    // the connect queue
@@ -143,11 +143,11 @@ function flush(animationFrameStart) {
   let keys = bindings.keys();
   let item;
 
-  while (item = keys.next()) {
+  while (item = keys.next()) {  // eslint-disable-line
     if (item.done) {
       break;
     }
-    
+
     let binding = item.value;
     bindings.delete(binding);
     binding.connect(true);
@@ -227,7 +227,7 @@ function removeSubscriber(context, callable) {
   }
   let rest = this._contextsRest;
   let index;
-  if (!rest || !rest.length || (index = rest.indexOf(context)) === -1 || this._callablesRest[index] !== callable) {
+  if (!rest || !rest.length || (index = rest.indexOf(context)) === -1 || this._callablesRest[index] !== callable) { // eslint-disable-line
     return false;
   }
   rest.splice(index, 1);
@@ -254,7 +254,7 @@ function callSubscribers(newValue, oldValue) {
   if (length) {
     // grab temp arrays from the pool.
     poolIndex = poolUtilization.length;
-    while (poolIndex-- && poolUtilization[poolIndex]) { }
+    while (poolIndex-- && poolUtilization[poolIndex]) { } // eslint-disable-line
     if (poolIndex < 0) {
       poolIndex = poolUtilization.length;
       contextsRest = [];
@@ -269,7 +269,7 @@ function callSubscribers(newValue, oldValue) {
     }
     // copy the contents of the "rest" arrays.
     i = length;
-    while(i--) {
+    while (i--) {
       contextsRest[i] = this._contextsRest[i];
       callablesRest[i] = this._callablesRest[i];
     }
@@ -299,7 +299,7 @@ function callSubscribers(newValue, oldValue) {
   if (length) {
     for (i = 0; i < length; i++) {
       let callable = callablesRest[i];
-      let context = contextsRest[i]
+      let context = contextsRest[i];
       if (callable) {
         callable.call(context, newValue, oldValue);
       } else {
@@ -329,7 +329,7 @@ function hasSubscriber(context, callable) {
   }
   let index;
   let contexts = this._contextsRest;
-  if (!contexts || (index = contexts.length) === 0) {
+  if (!contexts || (index = contexts.length) === 0) { // eslint-disable-line
     return false;
   }
   let callables = this._callablesRest;
@@ -348,7 +348,7 @@ export function subscriberCollection() {
     target.prototype.callSubscribers = callSubscribers;
     target.prototype.hasSubscribers = hasSubscribers;
     target.prototype.hasSubscriber = hasSubscriber;
-  }
+  };
 }
 
 @connectable()
@@ -369,7 +369,7 @@ export class ExpressionObserver {
     this.expression.assign(this.scope, newValue);
   }
 
-  subscribe(context, callable) {
+  subscribe(context, callable) {  // eslint-disable-line
     if (!this.hasSubscribers()) {
       this.oldValue = this.expression.evaluate(this.scope, this.lookupFunctions);
       this.expression.connect(this, this.scope);
@@ -380,7 +380,7 @@ export class ExpressionObserver {
         dispose: () => {
           this.unsubscribe(context, callable);
         }
-      }
+      };
     }
   }
 
@@ -441,27 +441,28 @@ ArraySplice.prototype = {
   // leaves the substring '123' intact.
   calcEditDistances: function(current, currentStart, currentEnd, old, oldStart, oldEnd) {
     // "Deletion" columns
-    var rowCount = oldEnd - oldStart + 1;
-    var columnCount = currentEnd - currentStart + 1;
-    var distances = new Array(rowCount);
-    var i, j, north, west;
+    let rowCount = oldEnd - oldStart + 1;
+    let columnCount = currentEnd - currentStart + 1;
+    let distances = new Array(rowCount);
+    let north;
+    let west;
 
     // "Addition" rows. Initialize null column.
-    for (i = 0; i < rowCount; ++i) {
+    for (let i = 0; i < rowCount; ++i) {
       distances[i] = new Array(columnCount);
       distances[i][0] = i;
     }
 
     // Initialize null row
-    for (j = 0; j < columnCount; ++j){
+    for (let j = 0; j < columnCount; ++j) {
       distances[0][j] = j;
     }
 
-    for (i = 1; i < rowCount; ++i) {
-      for (j = 1; j < columnCount; ++j) {
-        if (this.equals(current[currentStart + j - 1], old[oldStart + i - 1]))
+    for (let i = 1; i < rowCount; ++i) {
+      for (let j = 1; j < columnCount; ++j) {
+        if (this.equals(current[currentStart + j - 1], old[oldStart + i - 1])) {
           distances[i][j] = distances[i - 1][j - 1];
-        else {
+        } else {
           north = distances[i - 1][j] + 1;
           west = distances[i][j - 1] + 1;
           distances[i][j] = north < west ? north : west;
@@ -476,33 +477,34 @@ ArraySplice.prototype = {
   // the minimum previous weight recursively until the origin of the weight
   // matrix.
   spliceOperationsFromEditDistances: function(distances) {
-    var i = distances.length - 1;
-    var j = distances[0].length - 1;
-    var current = distances[i][j];
-    var edits = [];
+    let i = distances.length - 1;
+    let j = distances[0].length - 1;
+    let current = distances[i][j];
+    let edits = [];
     while (i > 0 || j > 0) {
-      if (i == 0) {
+      if (i === 0) {
         edits.push(EDIT_ADD);
         j--;
         continue;
       }
-      if (j == 0) {
+      if (j === 0) {
         edits.push(EDIT_DELETE);
         i--;
         continue;
       }
-      var northWest = distances[i - 1][j - 1];
-      var west = distances[i - 1][j];
-      var north = distances[i][j - 1];
+      let northWest = distances[i - 1][j - 1];
+      let west = distances[i - 1][j];
+      let north = distances[i][j - 1];
 
-      var min;
-      if (west < north)
+      let min;
+      if (west < north) {
         min = west < northWest ? west : northWest;
-      else
+      } else {
         min = north < northWest ? north : northWest;
+      }
 
-      if (min == northWest) {
-        if (northWest == current) {
+      if (min === northWest) {
+        if (northWest === current) {
           edits.push(EDIT_LEAVE);
         } else {
           edits.push(EDIT_UPDATE);
@@ -510,7 +512,7 @@ ArraySplice.prototype = {
         }
         i--;
         j--;
-      } else if (min == west) {
+      } else if (min === west) {
         edits.push(EDIT_DELETE);
         i--;
         current = west;
@@ -550,76 +552,84 @@ ArraySplice.prototype = {
    *   p: The length of the old array
    */
   calcSplices: function(current, currentStart, currentEnd, old, oldStart, oldEnd) {
-    var prefixCount = 0;
-    var suffixCount = 0;
+    let prefixCount = 0;
+    let suffixCount = 0;
 
-    var minLength = Math.min(currentEnd - currentStart, oldEnd - oldStart);
-    if (currentStart == 0 && oldStart == 0)
+    let minLength = Math.min(currentEnd - currentStart, oldEnd - oldStart);
+    if (currentStart === 0 && oldStart === 0) {
       prefixCount = this.sharedPrefix(current, old, minLength);
+    }
 
-    if (currentEnd == current.length && oldEnd == old.length)
+    if (currentEnd === current.length && oldEnd === old.length) {
       suffixCount = this.sharedSuffix(current, old, minLength - prefixCount);
+    }
 
     currentStart += prefixCount;
     oldStart += prefixCount;
     currentEnd -= suffixCount;
     oldEnd -= suffixCount;
 
-    if (currentEnd - currentStart == 0 && oldEnd - oldStart == 0)
+    if ((currentEnd - currentStart) === 0 && (oldEnd - oldStart) === 0) {
       return [];
+    }
 
-    if (currentStart == currentEnd) {
-      var splice = newSplice(currentStart, [], 0);
-      while (oldStart < oldEnd)
+    if (currentStart === currentEnd) {
+      let splice = newSplice(currentStart, [], 0);
+      while (oldStart < oldEnd) {
         splice.removed.push(old[oldStart++]);
+      }
 
       return [ splice ];
-    } else if (oldStart == oldEnd)
+    } else if (oldStart === oldEnd) {
       return [ newSplice(currentStart, [], currentEnd - currentStart) ];
+    }
 
-    var ops = this.spliceOperationsFromEditDistances(
+    let ops = this.spliceOperationsFromEditDistances(
         this.calcEditDistances(current, currentStart, currentEnd,
                                old, oldStart, oldEnd));
 
-    var splice = undefined;
-    var splices = [];
-    var index = currentStart;
-    var oldIndex = oldStart;
-    for (var i = 0; i < ops.length; ++i) {
-      switch(ops[i]) {
-        case EDIT_LEAVE:
-          if (splice) {
-            splices.push(splice);
-            splice = undefined;
-          }
+    let splice = undefined;
+    let splices = [];
+    let index = currentStart;
+    let oldIndex = oldStart;
+    for (let i = 0; i < ops.length; ++i) {
+      switch (ops[i]) { // eslint-disable-line
+      case EDIT_LEAVE:
+        if (splice) {
+          splices.push(splice);
+          splice = undefined;
+        }
 
-          index++;
-          oldIndex++;
-          break;
-        case EDIT_UPDATE:
-          if (!splice)
-            splice = newSplice(index, [], 0);
+        index++;
+        oldIndex++;
+        break;
+      case EDIT_UPDATE:
+        if (!splice) {
+          splice = newSplice(index, [], 0);
+        }
 
-          splice.addedCount++;
-          index++;
+        splice.addedCount++;
+        index++;
 
-          splice.removed.push(old[oldIndex]);
-          oldIndex++;
-          break;
-        case EDIT_ADD:
-          if (!splice)
-            splice = newSplice(index, [], 0);
+        splice.removed.push(old[oldIndex]);
+        oldIndex++;
+        break;
+      case EDIT_ADD:
+        if (!splice) {
+          splice = newSplice(index, [], 0);
+        }
 
-          splice.addedCount++;
-          index++;
-          break;
-        case EDIT_DELETE:
-          if (!splice)
-            splice = newSplice(index, [], 0);
+        splice.addedCount++;
+        index++;
+        break;
+      case EDIT_DELETE:
+        if (!splice) {
+          splice = newSplice(index, [], 0);
+        }
 
-          splice.removed.push(old[oldIndex]);
-          oldIndex++;
-          break;
+        splice.removed.push(old[oldIndex]);
+        oldIndex++;
+        break;
       }
     }
 
@@ -630,18 +640,22 @@ ArraySplice.prototype = {
   },
 
   sharedPrefix: function(current, old, searchLength) {
-    for (var i = 0; i < searchLength; ++i)
-      if (!this.equals(current[i], old[i]))
+    for (let i = 0; i < searchLength; ++i) {
+      if (!this.equals(current[i], old[i])) {
         return i;
+      }
+    }
+
     return searchLength;
   },
 
   sharedSuffix: function(current, old, searchLength) {
-    var index1 = current.length;
-    var index2 = old.length;
-    var count = 0;
-    while (count < searchLength && this.equals(current[--index1], old[--index2]))
+    let index1 = current.length;
+    let index2 = old.length;
+    let count = 0;
+    while (count < searchLength && this.equals(current[--index1], old[--index2])) {
       count++;
+    }
 
     return count;
   },
@@ -656,7 +670,7 @@ ArraySplice.prototype = {
   }
 };
 
-var arraySplice = new ArraySplice();
+let arraySplice = new ArraySplice();
 
 export function calcSplices(current, currentStart, currentEnd, old, oldStart, oldEnd) {
   return arraySplice.calcSplices(current, currentStart, currentEnd, old, oldStart, oldEnd);
@@ -664,42 +678,47 @@ export function calcSplices(current, currentStart, currentEnd, old, oldStart, ol
 
 function intersect(start1, end1, start2, end2) {
   // Disjoint
-  if (end1 < start2 || end2 < start1)
+  if (end1 < start2 || end2 < start1) {
     return -1;
+  }
 
   // Adjacent
-  if (end1 == start2 || end2 == start1)
+  if (end1 === start2 || end2 === start1) {
     return 0;
+  }
 
   // Non-zero intersect, span1 first
   if (start1 < start2) {
-    if (end1 < end2)
+    if (end1 < end2) {
       return end1 - start2; // Overlap
-    else
-      return end2 - start2; // Contained
-  } else {
-    // Non-zero intersect, span2 first
-    if (end2 < end1)
-      return end2 - start1; // Overlap
-    else
-      return end1 - start1; // Contained
+    }
+
+    return end2 - start2; // Contained
   }
+
+  // Non-zero intersect, span2 first
+  if (end2 < end1) {
+    return end2 - start1; // Overlap
+  }
+
+  return end1 - start1; // Contained
 }
 
 export function mergeSplice(splices, index, removed, addedCount) {
-  var splice = newSplice(index, removed, addedCount);
+  let splice = newSplice(index, removed, addedCount);
 
-  var inserted = false;
-  var insertionOffset = 0;
+  let inserted = false;
+  let insertionOffset = 0;
 
-  for (var i = 0; i < splices.length; i++) {
-    var current = splices[i];
+  for (let i = 0; i < splices.length; i++) {
+    let current = splices[i];
     current.index += insertionOffset;
 
-    if (inserted)
+    if (inserted) {
       continue;
+    }
 
-    var intersectCount = intersect(splice.index,
+    let intersectCount = intersect(splice.index,
                                    splice.index + splice.removed.length,
                                    current.index,
                                    current.index + current.addedCount);
@@ -713,29 +732,29 @@ export function mergeSplice(splices, index, removed, addedCount) {
       insertionOffset -= current.addedCount - current.removed.length;
 
       splice.addedCount += current.addedCount - intersectCount;
-      var deleteCount = splice.removed.length +
+      let deleteCount = splice.removed.length +
                         current.removed.length - intersectCount;
 
       if (!splice.addedCount && !deleteCount) {
         // merged splice is a noop. discard.
         inserted = true;
       } else {
-        var removed = current.removed;
+        let currentRemoved = current.removed;
 
         if (splice.index < current.index) {
           // some prefix of splice.removed is prepended to current.removed.
-          var prepend = splice.removed.slice(0, current.index - splice.index);
-          Array.prototype.push.apply(prepend, removed);
-          removed = prepend;
+          let prepend = splice.removed.slice(0, current.index - splice.index);
+          Array.prototype.push.apply(prepend, currentRemoved);
+          currentRemoved = prepend;
         }
 
         if (splice.index + splice.removed.length > current.index + current.addedCount) {
           // some suffix of splice.removed is appended to current.removed.
-          var append = splice.removed.slice(current.index + current.addedCount - splice.index);
-          Array.prototype.push.apply(removed, append);
+          let append = splice.removed.slice(current.index + current.addedCount - splice.index);
+          Array.prototype.push.apply(currentRemoved, append);
         }
 
-        splice.removed = removed;
+        splice.removed = currentRemoved;
         if (current.index < splice.index) {
           splice.index = current.index;
         }
@@ -748,38 +767,43 @@ export function mergeSplice(splices, index, removed, addedCount) {
       splices.splice(i, 0, splice);
       i++;
 
-      var offset = splice.addedCount - splice.removed.length
+      let offset = splice.addedCount - splice.removed.length;
       current.index += offset;
       insertionOffset += offset;
     }
   }
 
-  if (!inserted)
+  if (!inserted) {
     splices.push(splice);
+  }
 }
 
 function createInitialSplices(array, changeRecords) {
-  var splices = [];
+  let splices = [];
 
-  for (var i = 0; i < changeRecords.length; i++) {
-    var record = changeRecords[i];
-    switch(record.type) {
-      case 'splice':
-        mergeSplice(splices, record.index, record.removed.slice(), record.addedCount);
-        break;
-      case 'add':
-      case 'update':
-      case 'delete':
-        if (!isIndex(record.name))
-          continue;
-        var index = toNumber(record.name);
-        if (index < 0)
-          continue;
-        mergeSplice(splices, index, [record.oldValue], record.type === 'delete' ? 0 : 1);
-        break;
-      default:
-        console.error('Unexpected record type: ' + JSON.stringify(record));
-        break;
+  for (let i = 0; i < changeRecords.length; i++) {
+    let record = changeRecords[i];
+    switch (record.type) {
+    case 'splice':
+      mergeSplice(splices, record.index, record.removed.slice(), record.addedCount);
+      break;
+    case 'add':
+    case 'update':
+    case 'delete':
+      if (!isIndex(record.name)) {
+        continue;
+      }
+
+      let index = toNumber(record.name);
+      if (index < 0) {
+        continue;
+      }
+
+      mergeSplice(splices, index, [record.oldValue], record.type === 'delete' ? 0 : 1);
+      break;
+    default:
+      console.error('Unexpected record type: ' + JSON.stringify(record)); // eslint-disable-line
+      break;
     }
   }
 
@@ -787,15 +811,16 @@ function createInitialSplices(array, changeRecords) {
 }
 
 export function projectArraySplices(array, changeRecords) {
-  var splices = [];
+  let splices = [];
 
   createInitialSplices(array, changeRecords).forEach(function(splice) {
-    if (splice.addedCount == 1 && splice.removed.length == 1) {
-      if (splice.removed[0] !== array[splice.index])
+    if (splice.addedCount === 1 && splice.removed.length === 1) {
+      if (splice.removed[0] !== array[splice.index]) {
         splices.push(splice);
+      }
 
-      return
-    };
+      return;
+    }
 
     splices = splices.concat(calcSplices(array, splice.index, splice.index + splice.addedCount,
                                          splice.removed, 0, splice.removed.length));
@@ -804,7 +829,7 @@ export function projectArraySplices(array, changeRecords) {
   return splices;
 }
 
-function newRecord(type, object, key, oldValue){
+function newRecord(type, object, key, oldValue) {
   return {
     type: type,
     object: object,
@@ -813,21 +838,21 @@ function newRecord(type, object, key, oldValue){
   };
 }
 
-export function getChangeRecords(map){
+export function getChangeRecords(map) {
   let entries = new Array(map.size);
   let keys = map.keys();
   let i = 0;
   let item;
 
-  while (item = keys.next()) {
+  while (item = keys.next()) {  // eslint-disable-line
     if (item.done) {
       break;
     }
-    
+
     entries[i] = newRecord('added', map, item.value);
     i++;
   }
-  
+
   return entries;
 }
 
@@ -850,20 +875,20 @@ export class ModifyCollectionObserver {
     this.removeSubscriber(context, callable);
   }
 
-  addChangeRecord(changeRecord){
+  addChangeRecord(changeRecord) {
     if (!this.hasSubscribers() && !this.lengthObserver) {
       return;
     }
 
     if (changeRecord.type === 'splice') {
-      var index = changeRecord.index;
-      var arrayLength = changeRecord.object.length;
+      let index = changeRecord.index;
+      let arrayLength = changeRecord.object.length;
       if (index > arrayLength) {
         index = arrayLength - changeRecord.addedCount;
       } else if (index < 0) {
         index = arrayLength + changeRecord.removed.length + index - changeRecord.addedCount;
       }
-      if(index < 0){
+      if (index < 0) {
         index = 0;
       }
       changeRecord.index = index;
@@ -910,7 +935,7 @@ export class ModifyCollectionObserver {
     this.oldCollection = null;
 
     if (this.hasSubscribers()) {
-      if (oldCollection){
+      if (oldCollection) {
         // TODO (martingust) we might want to refactor this to a common, independent of collection type, way of getting the records
         if (this.collection instanceof Map || this.collection instanceof Set) {
           records = getChangeRecords(oldCollection);
@@ -959,13 +984,14 @@ export class CollectionLengthObserver {
     this.removeSubscriber(context, callable);
   }
 
-  call(newValue){
+  call(newValue) {
     let oldValue = this.currentValue;
     this.callSubscribers(newValue, oldValue);
     this.currentValue = newValue;
   }
 }
 
+/* eslint-disable no-extend-native */
 let pop = Array.prototype.pop;
 let push = Array.prototype.push;
 let reverse = Array.prototype.reverse;
@@ -1024,7 +1050,7 @@ Array.prototype.shift = function() {
       oldValue: methodCallResult
     });
   }
-  return methodCallResult
+  return methodCallResult;
 };
 
 Array.prototype.sort = function() {
@@ -1101,7 +1127,7 @@ class ModifyArrayObserver extends ModifyCollectionObserver {
 }
 
 export class Expression {
-  constructor(){
+  constructor() {
     this.isChain = false;
     this.isAssignable = false;
   }
@@ -1114,13 +1140,13 @@ export class Expression {
     throw new Error(`Binding expression "${this}" cannot be assigned to.`);
   }
 
-  toString(){
+  toString() {
     return Unparser.unparse(this);
   }
 }
 
 export class Chain extends Expression {
-  constructor(expressions){
+  constructor(expressions) {
     super();
 
     this.expressions = expressions;
@@ -1128,12 +1154,11 @@ export class Chain extends Expression {
   }
 
   evaluate(scope, lookupFunctions) {
-    var result,
-        expressions = this.expressions,
-        length = expressions.length,
-        i, last;
+    let result;
+    let expressions = this.expressions;
+    let last;
 
-    for (i = 0; i < length; ++i) {
+    for (let i = 0, length = expressions.length; i < length; ++i) {
       last = expressions[i].evaluate(scope, lookupFunctions);
 
       if (last !== null) {
@@ -1201,7 +1226,7 @@ export class BindingBehavior extends Expression {
 }
 
 export class ValueConverter extends Expression {
-  constructor(expression, name, args, allArgs){
+  constructor(expression, name, args, allArgs) {
     super();
 
     this.expression = expression;
@@ -1211,32 +1236,32 @@ export class ValueConverter extends Expression {
   }
 
   evaluate(scope, lookupFunctions) {
-    var converter = lookupFunctions.valueConverters(this.name);
-    if(!converter){
+    let converter = lookupFunctions.valueConverters(this.name);
+    if (!converter) {
       throw new Error(`No ValueConverter named "${this.name}" was found!`);
     }
 
-    if('toView' in converter){
+    if ('toView' in converter) {
       return converter.toView.apply(converter, evalList(scope, this.allArgs, lookupFunctions));
     }
 
     return this.allArgs[0].evaluate(scope, lookupFunctions);
   }
 
-  assign(scope, value, lookupFunctions){
-    var converter = lookupFunctions.valueConverters(this.name);
-    if(!converter){
+  assign(scope, value, lookupFunctions) {
+    let converter = lookupFunctions.valueConverters(this.name);
+    if (!converter) {
       throw new Error(`No ValueConverter named "${this.name}" was found!`);
     }
 
-    if('fromView' in converter){
+    if ('fromView' in converter) {
       value = converter.fromView.apply(converter, [value].concat(evalList(scope, this.args, lookupFunctions)));
     }
 
     return this.allArgs[0].assign(scope, value, lookupFunctions);
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitValueConverter(this);
   }
 
@@ -1250,18 +1275,18 @@ export class ValueConverter extends Expression {
 }
 
 export class Assign extends Expression {
-  constructor(target, value){
+  constructor(target, value) {
     super();
 
     this.target = target;
     this.value = value;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     return this.target.assign(scope, this.value.evaluate(scope, lookupFunctions));
   }
 
-  accept(vistor){
+  accept(vistor) {
     vistor.visitAssign(this);
   }
 
@@ -1270,7 +1295,7 @@ export class Assign extends Expression {
 }
 
 export class Conditional extends Expression {
-  constructor(condition, yes, no){
+  constructor(condition, yes, no) {
     super();
 
     this.condition = condition;
@@ -1278,11 +1303,11 @@ export class Conditional extends Expression {
     this.no = no;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     return (!!this.condition.evaluate(scope)) ? this.yes.evaluate(scope) : this.no.evaluate(scope);
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitConditional(this);
   }
 
@@ -1333,12 +1358,12 @@ export class AccessScope extends Expression {
     return context[this.name];
   }
 
-  assign(scope, value){
+  assign(scope, value) {
     let context = getContextFor(this.name, scope, this.ancestor);
     return context ? (context[this.name] = value) : undefined;
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitAccessScope(this);
   }
 
@@ -1349,7 +1374,7 @@ export class AccessScope extends Expression {
 }
 
 export class AccessMember extends Expression {
-  constructor(object, name){
+  constructor(object, name) {
     super();
 
     this.object = object;
@@ -1357,23 +1382,23 @@ export class AccessMember extends Expression {
     this.isAssignable = true;
   }
 
-  evaluate(scope, lookupFunctions){
-    var instance = this.object.evaluate(scope, lookupFunctions);
+  evaluate(scope, lookupFunctions) {
+    let instance = this.object.evaluate(scope, lookupFunctions);
     return instance === null || instance === undefined ? instance : instance[this.name];
   }
 
-  assign(scope, value){
-    var instance = this.object.evaluate(scope);
+  assign(scope, value) {
+    let instance = this.object.evaluate(scope);
 
-    if(instance === null || instance === undefined){
+    if (instance === null || instance === undefined) {
       instance = {};
       this.object.assign(scope, instance);
     }
 
-    return instance[this.name] = value;
+    return instance[this.name] = value; // eslint-disable-line
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitAccessMember(this);
   }
 
@@ -1387,7 +1412,7 @@ export class AccessMember extends Expression {
 }
 
 export class AccessKeyed extends Expression {
-  constructor(object, key){
+  constructor(object, key) {
     super();
 
     this.object = object;
@@ -1395,19 +1420,19 @@ export class AccessKeyed extends Expression {
     this.isAssignable = true;
   }
 
-  evaluate(scope, lookupFunctions){
-    var instance = this.object.evaluate(scope, lookupFunctions);
-    var lookup = this.key.evaluate(scope, lookupFunctions);
+  evaluate(scope, lookupFunctions) {
+    let instance = this.object.evaluate(scope, lookupFunctions);
+    let lookup = this.key.evaluate(scope, lookupFunctions);
     return getKeyed(instance, lookup);
   }
 
-  assign(scope, value){
-    var instance = this.object.evaluate(scope);
-    var lookup = this.key.evaluate(scope);
+  assign(scope, value) {
+    let instance = this.object.evaluate(scope);
+    let lookup = this.key.evaluate(scope);
     return setKeyed(instance, lookup, value);
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitAccessKeyed(this);
   }
 
@@ -1446,7 +1471,7 @@ export class CallScope extends Expression {
     return undefined;
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitCallScope(this);
   }
 
@@ -1461,7 +1486,7 @@ export class CallScope extends Expression {
 }
 
 export class CallMember extends Expression {
-  constructor(object, name, args){
+  constructor(object, name, args) {
     super();
 
     this.object = object;
@@ -1470,7 +1495,7 @@ export class CallMember extends Expression {
   }
 
   evaluate(scope, lookupFunctions, mustEvaluate) {
-    var instance = this.object.evaluate(scope, lookupFunctions);
+    let instance = this.object.evaluate(scope, lookupFunctions);
     let args = evalList(scope, this.args, lookupFunctions);
     let func = getFunction(instance, this.name, mustEvaluate);
     if (func) {
@@ -1479,7 +1504,7 @@ export class CallMember extends Expression {
     return undefined;
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitCallMember(this);
   }
 
@@ -1515,7 +1540,7 @@ export class CallFunction extends Expression {
     throw new Error(`${this.func} is not a function`);
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitCallFunction(this);
   }
 
@@ -1533,7 +1558,7 @@ export class CallFunction extends Expression {
 }
 
 export class Binary extends Expression {
-  constructor(operation, left, right){
+  constructor(operation, left, right) {
     super();
 
     this.operation = operation;
@@ -1541,56 +1566,56 @@ export class Binary extends Expression {
     this.right = right;
   }
 
-  evaluate(scope, lookupFunctions){
-    var left = this.left.evaluate(scope);
+  evaluate(scope, lookupFunctions) {
+    let left = this.left.evaluate(scope);
 
-    switch (this.operation) {
-      case '&&': return left && this.right.evaluate(scope);
-      case '||': return left || this.right.evaluate(scope);
+    switch (this.operation) { // eslint-disable-line
+    case '&&': return left && this.right.evaluate(scope);
+    case '||': return left || this.right.evaluate(scope);
     }
 
-    var right = this.right.evaluate(scope);
+    let right = this.right.evaluate(scope);
 
-    switch (this.operation) {
-      case '==' : return left == right;
-      case '===': return left === right;
-      case '!=' : return left != right;
-      case '!==': return left !== right;
+    switch (this.operation) { // eslint-disable-line
+    case '==' : return left == right; // eslint-disable-line
+    case '===': return left === right;
+    case '!=' : return left != right; // eslint-disable-line
+    case '!==': return left !== right;
     }
 
     // Null check for the operations.
     if (left === null || right === null) {
-      switch (this.operation) {
-        case '+':
-          if (left != null) return left;
-          if (right != null) return right;
-          return 0;
-        case '-':
-          if (left != null) return left;
-          if (right != null) return 0 - right;
-          return 0;
+      switch (this.operation) { // eslint-disable-line
+      case '+':
+        if (left !== null) return left;
+        if (right !== null) return right;
+        return 0;
+      case '-':
+        if (left !== null) return left;
+        if (right !== null) return 0 - right;
+        return 0;
       }
 
       return null;
     }
 
-    switch (this.operation) {
-      case '+'  : return autoConvertAdd(left, right);
-      case '-'  : return left - right;
-      case '*'  : return left * right;
-      case '/'  : return left / right;
-      case '%'  : return left % right;
-      case '<'  : return left < right;
-      case '>'  : return left > right;
-      case '<=' : return left <= right;
-      case '>=' : return left >= right;
-      case '^'  : return left ^ right;
+    switch (this.operation) { // eslint-disable-line
+    case '+'  : return autoConvertAdd(left, right);
+    case '-'  : return left - right;
+    case '*'  : return left * right;
+    case '/'  : return left / right;
+    case '%'  : return left % right;
+    case '<'  : return left < right;
+    case '>'  : return left > right;
+    case '<=' : return left <= right;
+    case '>=' : return left >= right;
+    case '^'  : return left ^ right;
     }
 
     throw new Error(`Internal error [${this.operation}] not handled`);
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitBinary(this);
   }
 
@@ -1605,18 +1630,18 @@ export class Binary extends Expression {
 }
 
 export class PrefixNot extends Expression {
-  constructor(operation, expression){
+  constructor(operation, expression) {
     super();
 
     this.operation = operation;
     this.expression = expression;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     return !this.expression.evaluate(scope);
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitPrefix(this);
   }
 
@@ -1626,17 +1651,17 @@ export class PrefixNot extends Expression {
 }
 
 export class LiteralPrimitive extends Expression {
-  constructor(value){
+  constructor(value) {
     super();
 
     this.value = value;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     return this.value;
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitLiteralPrimitive(this);
   }
 
@@ -1645,17 +1670,17 @@ export class LiteralPrimitive extends Expression {
 }
 
 export class LiteralString extends Expression {
-  constructor(value){
+  constructor(value) {
     super();
 
     this.value = value;
   }
 
-  evaluate(scope, lookupFunctions){
+  evaluate(scope, lookupFunctions) {
     return this.value;
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitLiteralString(this);
   }
 
@@ -1664,26 +1689,24 @@ export class LiteralString extends Expression {
 }
 
 export class LiteralArray extends Expression {
-  constructor(elements){
+  constructor(elements) {
     super();
 
     this.elements = elements;
   }
 
-  evaluate(scope, lookupFunctions){
-    var elements = this.elements,
-        length = elements.length,
-        result = [],
-        i;
+  evaluate(scope, lookupFunctions) {
+    let elements = this.elements;
+    let result = [];
 
-    for(i = 0; i < length; ++i){
+    for (let i = 0, length = elements.length; i < length; ++i) {
       result[i] = elements[i].evaluate(scope, lookupFunctions);
     }
 
     return result;
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitLiteralArray(this);
   }
 
@@ -1696,32 +1719,30 @@ export class LiteralArray extends Expression {
 }
 
 export class LiteralObject extends Expression {
-  constructor(keys, values){
+  constructor(keys, values) {
     super();
 
     this.keys = keys;
     this.values = values;
   }
 
-  evaluate(scope, lookupFunctions){
-    var instance = {},
-        keys = this.keys,
-        values = this.values,
-        length = keys.length,
-        i;
+  evaluate(scope, lookupFunctions) {
+    let instance = {};
+    let keys = this.keys;
+    let values = this.values;
 
-    for(i = 0; i < length; ++i){
+    for (let i = 0, length = keys.length; i < length; ++i) {
       instance[keys[i]] = values[i].evaluate(scope, lookupFunctions);
     }
 
     return instance;
   }
 
-  accept(visitor){
+  accept(visitor) {
     return visitor.visitLiteralObject(this);
   }
 
-  connect(binding, scope){
+  connect(binding, scope) {
     let length = this.keys.length;
     for (let i = 0; i < length; i++) {
       this.values[i].connect(binding, scope);
@@ -1729,20 +1750,19 @@ export class LiteralObject extends Expression {
   }
 }
 
-var evalListCache = [[],[0],[0,0],[0,0,0],[0,0,0,0],[0,0,0,0,0]];
+let evalListCache = [[], [0], [0, 0], [0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0]];
 
 /// Evaluate the [list] in context of the [scope].
 function evalList(scope, list, lookupFunctions) {
-  var length = list.length,
-      cacheLength, i;
+  let length = list.length;
 
-  for (cacheLength = evalListCache.length; cacheLength <= length; ++cacheLength) {
+  for (let cacheLength = evalListCache.length; cacheLength <= length; ++cacheLength) {
     evalListCache.push([]);
   }
 
-  var result = evalListCache[length];
+  let result = evalListCache[length];
 
-  for (i = 0; i < length; ++i) {
+  for (let i = 0; i < length; ++i) {
     result[i] = list[i].evaluate(scope, lookupFunctions);
   }
 
@@ -1751,24 +1771,24 @@ function evalList(scope, list, lookupFunctions) {
 
 /// Add the two arguments with automatic type conversion.
 function autoConvertAdd(a, b) {
-  if (a != null && b != null) {
+  if (a !== null && b !== null) {
     // TODO(deboer): Support others.
-    if (typeof a == 'string' && typeof b != 'string') {
+    if (typeof a === 'string' && typeof b !== 'string') {
       return a + b.toString();
     }
 
-    if (typeof a != 'string' && typeof b == 'string') {
+    if (typeof a !== 'string' && typeof b === 'string') {
       return a.toString() + b;
     }
 
     return a + b;
   }
 
-  if (a != null) {
+  if (a !== null) {
     return a;
   }
 
-  if (b != null) {
+  if (b !== null) {
     return b;
   }
 
@@ -1788,19 +1808,19 @@ function getFunction(obj, name, mustExist) {
 
 function getKeyed(obj, key) {
   if (Array.isArray(obj)) {
-    return obj[parseInt(key)];
+    return obj[parseInt(key, 10)];
   } else if (obj) {
     return obj[key];
   } else if (obj === null || obj === undefined) {
     return undefined;
-  } else {
-    return obj[key];
   }
+
+  return obj[key];
 }
 
 function setKeyed(obj, key, value) {
   if (Array.isArray(obj)) {
-    var index = parseInt(key);
+    let index = parseInt(key, 10);
 
     if (obj.length <= index) {
       obj.length = index + 1;
@@ -1820,24 +1840,22 @@ export class Unparser {
   }
 
   static unparse(expression) {
-    var buffer = [],
-        visitor = new Unparser(buffer);
+    let buffer = [];
+    let visitor = new Unparser(buffer);
 
     expression.accept(visitor);
 
     return buffer.join('');
   }
 
-  write(text){
+  write(text) {
     this.buffer.push(text);
   }
 
   writeArgs(args) {
-    var i, length;
-
     this.write('(');
 
-    for (i = 0, length = args.length; i < length; ++i) {
+    for (let i = 0, length = args.length; i < length; ++i) {
       if (i !== 0) {
         this.write(',');
       }
@@ -1849,11 +1867,9 @@ export class Unparser {
   }
 
   visitChain(chain) {
-    var expressions = chain.expressions,
-        length = expressions.length,
-        i;
+    let expressions = chain.expressions;
 
-    for (i = 0; i < length; ++i) {
+    for (let i = 0, length = expression.length; i < length; ++i) {
       if (i !== 0) {
         this.write(';');
       }
@@ -1863,28 +1879,24 @@ export class Unparser {
   }
 
   visitBindingBehavior(behavior) {
-    var args = behavior.args,
-        length = args.length,
-        i;
+    let args = behavior.args;
 
     behavior.expression.accept(this);
     this.write(`&${behavior.name}`);
 
-    for (i = 0; i < length; ++i) {
+    for (let i = 0, length = args.length; i < length; ++i) {
       this.write(':');
       args[i].accept(this);
     }
   }
 
   visitValueConverter(converter) {
-    var args = converter.args,
-        length = args.length,
-        i;
+    let args = converter.args;
 
     converter.expression.accept(this);
     this.write(`|${converter.name}`);
 
-    for (i = 0; i < length; ++i) {
+    for (let i = 0, length = args.length; i < length; ++i) {
       this.write(':');
       args[i].accept(this);
     }
@@ -1911,7 +1923,7 @@ export class Unparser {
     }
     this.write('$parent');
     let i = access.ancestor - 1;
-    while(i--) {
+    while (i--) {
       this.write('.$parent');
     }
   }
@@ -1973,13 +1985,11 @@ export class Unparser {
   }
 
   visitLiteralArray(literal) {
-    var elements = literal.elements,
-        length = elements.length,
-        i;
+    let elements = literal.elements;
 
     this.write('[');
 
-    for (i = 0; i < length; ++i) {
+    for (let i = 0, length = elements.length; i < length; ++i) {
       if (i !== 0) {
         this.write(',');
       }
@@ -1991,15 +2001,13 @@ export class Unparser {
   }
 
   visitLiteralObject(literal) {
-    var keys = literal.keys,
-        values = literal.values,
-        length = keys.length,
-        i;
+    let keys = literal.keys;
+    let values = literal.values;
 
     this.write('{');
 
-    for (i = 0; i < length; ++i) {
-      if (i !== 0){
+    for (let i = 0, length = keys.length; i < length; ++i) {
+      if (i !== 0) {
         this.write(',');
       }
 
@@ -2011,7 +2019,7 @@ export class Unparser {
   }
 
   visitLiteralString(literal) {
-    var escaped = literal.value.replace(/'/g, "\'");
+    let escaped = literal.value.replace(/'/g, "\'");
     this.write(`'${escaped}'`);
   }
 }
@@ -2120,7 +2128,7 @@ export const bindingMode = {
 };
 
 export class Token {
-  constructor(index, text){
+  constructor(index, text) {
     this.index = index;
     this.text = text;
   }
@@ -2176,9 +2184,9 @@ export class Scanner {
       if (++this.index >= this.length) {
         this.peek = $EOF;
         return null;
-      } else {
-        this.peek = this.input.charCodeAt(this.index);
       }
+
+      this.peek = this.input.charCodeAt(this.index);
     }
 
     // Handle identifiers and numbers.
@@ -2192,46 +2200,46 @@ export class Scanner {
 
     let start = this.index;
 
-    switch (this.peek) {
-      case $PERIOD:
+    switch (this.peek) {  // eslint-disable-line
+    case $PERIOD:
+      this.advance();
+      return isDigit(this.peek) ? this.scanNumber(start) : new Token(start, '.');
+    case $LPAREN:
+    case $RPAREN:
+    case $LBRACE:
+    case $RBRACE:
+    case $LBRACKET:
+    case $RBRACKET:
+    case $COMMA:
+    case $COLON:
+    case $SEMICOLON:
+      return this.scanCharacter(start, String.fromCharCode(this.peek));
+    case $SQ:
+    case $DQ:
+      return this.scanString();
+    case $PLUS:
+    case $MINUS:
+    case $STAR:
+    case $SLASH:
+    case $PERCENT:
+    case $CARET:
+    case $QUESTION:
+      return this.scanOperator(start, String.fromCharCode(this.peek));
+    case $LT:
+    case $GT:
+    case $BANG:
+    case $EQ:
+      return this.scanComplexOperator(start, $EQ, String.fromCharCode(this.peek), '=');
+    case $AMPERSAND:
+      return this.scanComplexOperator(start, $AMPERSAND, '&', '&');
+    case $BAR:
+      return this.scanComplexOperator(start, $BAR, '|', '|');
+    case $NBSP:
+      while (isWhitespace(this.peek)) {
         this.advance();
-        return isDigit(this.peek) ? this.scanNumber(start) : new Token(start, '.');
-      case $LPAREN:
-      case $RPAREN:
-      case $LBRACE:
-      case $RBRACE:
-      case $LBRACKET:
-      case $RBRACKET:
-      case $COMMA:
-      case $COLON:
-      case $SEMICOLON:
-        return this.scanCharacter(start, String.fromCharCode(this.peek));
-      case $SQ:
-      case $DQ:
-        return this.scanString();
-      case $PLUS:
-      case $MINUS:
-      case $STAR:
-      case $SLASH:
-      case $PERCENT:
-      case $CARET:
-      case $QUESTION:
-        return this.scanOperator(start, String.fromCharCode(this.peek));
-      case $LT:
-      case $GT:
-      case $BANG:
-      case $EQ:
-        return this.scanComplexOperator(start, $EQ, String.fromCharCode(this.peek), '=');
-      case $AMPERSAND:
-        return this.scanComplexOperator(start, $AMPERSAND, '&', '&');
-      case $BAR:
-        return this.scanComplexOperator(start, $BAR, '|', '|');
-      case $NBSP:
-        while (isWhitespace(this.peek)){
-          this.advance();
-        }
+      }
 
-        return this.scanToken();
+      return this.scanToken();
     }
 
     let character = String.fromCharCode(this.peek);
@@ -2268,7 +2276,7 @@ export class Scanner {
       text += two;
     }
 
-    assert(OPERATORS.indexOf(text) != -1);
+    assert(OPERATORS.indexOf(text) !== -1);
 
     return new Token(start, text).withOp(text);
   }
@@ -2302,7 +2310,7 @@ export class Scanner {
     let simple = (this.index === start);
     this.advance();  // Skip initial digit.
 
-    while (true) {
+    while (true) {  // eslint-disable-line
       if (isDigit(this.peek)) {
         // Do nothing.
       } else if (this.peek === $PERIOD) {
@@ -2310,11 +2318,11 @@ export class Scanner {
       } else if (isExponentStart(this.peek)) {
         this.advance();
 
-        if (isExponentSign(this.peek)){
+        if (isExponentSign(this.peek)) {
           this.advance();
         }
 
-        if (!isDigit(this.peek)){
+        if (!isDigit(this.peek)) {
           this.error('Invalid exponent', -1);
         }
 
@@ -2327,7 +2335,7 @@ export class Scanner {
     }
 
     let text = this.input.substring(start, this.index);
-    let value = simple ? parseInt(text) : parseFloat(text);
+    let value = simple ? parseInt(text, 10) : parseFloat(text);
     return new Token(start, text).withValue(value);
   }
 
@@ -2358,7 +2366,7 @@ export class Scanner {
           // coverage for this.
           let hex = this.input.substring(this.index + 1, this.index + 5);
 
-          if(!/[A-Z0-9]{4}/.test(hex)){
+          if (!/[A-Z0-9]{4}/.test(hex)) {
             this.error(`Invalid unicode escape [\\u${hex}]`);
           }
 
@@ -2388,7 +2396,7 @@ export class Scanner {
     // Compute the unescaped string value.
     let unescaped = last;
 
-    if (buffer != null) {
+    if (buffer !== null && buffer !== undefined) {
       buffer.push(last);
       unescaped = buffer.join('');
     }
@@ -2437,7 +2445,7 @@ const OPERATORS = [
   '&',
   '|',
   '!',
-  '?',
+  '?'
 ];
 
 const $EOF = 0;
@@ -2528,19 +2536,19 @@ function isExponentSign(code) {
 }
 
 function unescape(code) {
-  switch(code) {
-    case $n: return $LF;
-    case $f: return $FF;
-    case $r: return $CR;
-    case $t: return $TAB;
-    case $v: return $VTAB;
-    default: return code;
+  switch (code) {
+  case $n: return $LF;
+  case $f: return $FF;
+  case $r: return $CR;
+  case $t: return $TAB;
+  case $v: return $VTAB;
+  default: return code;
   }
 }
 
 function assert(condition, message) {
   if (!condition) {
-    throw message || "Assertion failed";
+    throw message || 'Assertion failed';
   }
 }
 
@@ -2701,7 +2709,7 @@ export class ParserImplementation {
   parseEquality() {
     let result = this.parseRelational();
 
-    while (true) {
+    while (true) {  // eslint-disable-line
       if (this.optional('==')) {
         result = new Binary('==', result, this.parseRelational());
       } else if (this.optional('!=')) {
@@ -2719,7 +2727,7 @@ export class ParserImplementation {
   parseRelational() {
     let result = this.parseAdditive();
 
-    while (true) {
+    while (true) {  // eslint-disable-line
       if (this.optional('<')) {
         result = new Binary('<', result, this.parseAdditive());
       } else if (this.optional('>')) {
@@ -2737,7 +2745,7 @@ export class ParserImplementation {
   parseAdditive() {
     let result = this.parseMultiplicative();
 
-    while (true) {
+    while (true) {  // eslint-disable-line
       if (this.optional('+')) {
         result = new Binary('+', result, this.parseMultiplicative());
       } else if (this.optional('-')) {
@@ -2751,7 +2759,7 @@ export class ParserImplementation {
   parseMultiplicative() {
     let result = this.parsePrefix();
 
-    while (true) {
+    while (true) {  // eslint-disable-line
       if (this.optional('*')) {
         result = new Binary('*', result, this.parsePrefix());
       } else if (this.optional('%')) {
@@ -2771,15 +2779,15 @@ export class ParserImplementation {
       return new Binary('-', new LiteralPrimitive(0), this.parsePrefix());
     } else if (this.optional('!')) {
       return new PrefixNot('!', this.parsePrefix());
-    } else {
-      return this.parseAccessOrCallMember();
     }
+
+    return this.parseAccessOrCallMember();
   }
 
   parseAccessOrCallMember() {
     let result = this.parsePrimary();
 
-    while (true) {
+    while (true) {  // eslint-disable-line
       if (this.optional('.')) {
         let name = this.peek.text; // TODO(kasperl): Check that this is an identifier. Are keywords okay?
 
@@ -2814,7 +2822,7 @@ export class ParserImplementation {
     }
   }
 
-  parsePrimary() {
+  parsePrimary() {  // eslint-disable-line
     if (this.optional('(')) {
       let result = this.parseExpression();
       this.expect(')');
@@ -2831,11 +2839,11 @@ export class ParserImplementation {
       let elements = this.parseExpressionList(']');
       this.expect(']');
       return new LiteralArray(elements);
-    } else if (this.peek.text == '{') {
+    } else if (this.peek.text === '{') {
       return this.parseObject();
-    } else if (this.peek.key != null) {
+    } else if (this.peek.key !== null && this.peek.key !== undefined) {
       return this.parseAccessOrCallScope();
-    } else if (this.peek.value != null) {
+    } else if (this.peek.value !== null && this.peek.value !== undefined) {
       let value = this.peek.value;
       this.advance();
       return value instanceof String || typeof value === 'string' ? new LiteralString(value) : new LiteralPrimitive(value);
@@ -2892,16 +2900,13 @@ export class ParserImplementation {
         keys.push(typeof value === 'string' ? value : peek.text);
 
         this.advance();
-        if ( peek.key && (this.peek.text === ',' || this.peek.text === '}') )
-        {
-            --this.index;
-            values.push(this.parseAccessOrCallScope());
+        if (peek.key && (this.peek.text === ',' || this.peek.text === '}')) {
+          --this.index;
+          values.push(this.parseAccessOrCallScope());
+        } else {
+          this.expect(':');
+          values.push(this.parseExpression());
         }
-        else {
-            this.expect(':');
-            values.push(this.parseExpression());
-        }
-
       } while (this.optional(','));
     }
 
@@ -2913,10 +2918,10 @@ export class ParserImplementation {
   parseExpressionList(terminator) {
     let result = [];
 
-    if (this.peek.text != terminator) {
+    if (this.peek.text !== terminator) {
       do {
         result.push(this.parseExpression());
-       } while (this.optional(','));
+      } while (this.optional(','));
     }
 
     return result;
@@ -2939,14 +2944,14 @@ export class ParserImplementation {
     }
   }
 
-  advance(){
+  advance() {
     this.index++;
   }
 
   error(message) {
     let location = (this.index < this.tokens.length)
         ? `at column ${this.tokens[this.index].index + 1} in`
-        : `at the end of the expression`;
+        : 'at the end of the expression';
 
     throw new Error(`Parser Error: ${message} ${location} [${this.input}]`);
   }
@@ -2954,12 +2959,12 @@ export class ParserImplementation {
 
 let mapProto = Map.prototype;
 
-export function getMapObserver(taskQueue, map){
+export function getMapObserver(taskQueue, map) {
   return ModifyMapObserver.for(taskQueue, map);
 }
 
 class ModifyMapObserver extends ModifyCollectionObserver {
-  constructor(taskQueue, map){
+  constructor(taskQueue, map) {
     super(taskQueue, map);
   }
 
@@ -2992,11 +2997,11 @@ class ModifyMapObserver extends ModifyCollectionObserver {
       };
     }
 
-    map['set'] = function () {
+    map.set = function() {
       let hasValue = map.has(arguments[0]);
       let type = hasValue ? 'update' : 'add';
       let oldValue = map.get(arguments[0]);
-      let methodCallResult = proto['set'].apply(map, arguments);
+      let methodCallResult = proto.set.apply(map, arguments);
       if (!hasValue || oldValue !== map.get(arguments[0])) {
         observer.addChangeRecord({
           type: type,
@@ -3008,10 +3013,10 @@ class ModifyMapObserver extends ModifyCollectionObserver {
       return methodCallResult;
     };
 
-    map['delete'] = function () {
+    map.delete = function() {
       let hasValue = map.has(arguments[0]);
       let oldValue = map.get(arguments[0]);
-      let methodCallResult = proto['delete'].apply(map, arguments);
+      let methodCallResult = proto.delete.apply(map, arguments);
       if (hasValue) {
         observer.addChangeRecord({
           type: 'delete',
@@ -3023,8 +3028,8 @@ class ModifyMapObserver extends ModifyCollectionObserver {
       return methodCallResult;
     };
 
-    map['clear'] = function () {
-      let methodCallResult = proto['clear'].apply(map, arguments);
+    map.clear = function() {
+      let methodCallResult = proto.clear.apply(map, arguments);
       observer.addChangeRecord({
         type: 'clear',
         object: map
@@ -3099,13 +3104,13 @@ class DefaultEventStrategy {
         handlerEntry.decrement();
         delegatedCallbacks[targetEvent] = null;
       };
-    } else {
-      target.addEventListener(targetEvent, callback, false);
-
-      return function() {
-        target.removeEventListener(targetEvent, callback);
-      };
     }
+
+    target.addEventListener(targetEvent, callback, false);
+
+    return function() {
+      target.removeEventListener(targetEvent, callback);
+    };
   }
 }
 
@@ -3115,40 +3120,40 @@ export class EventManager {
     this.eventStrategyLookup = {};
 
     this.registerElementConfig({
-      tagName:'input',
+      tagName: 'input',
       properties: {
-        value:['change','input'],
-        checked:['change','input'],
-        files:['change','input']
+        value: ['change', 'input'],
+        checked: ['change', 'input'],
+        files: ['change', 'input']
       }
     });
 
     this.registerElementConfig({
-      tagName:'textarea',
-      properties:{
-        value:['change','input']
-      }
-    });
-
-    this.registerElementConfig({
-      tagName:'select',
-      properties:{
-        value:['change']
-      }
-    });
-
-    this.registerElementConfig({
-      tagName:'content editable',
+      tagName: 'textarea',
       properties: {
-        value:['change','input','blur','keyup','paste'],
+        value: ['change', 'input']
       }
     });
 
     this.registerElementConfig({
-      tagName:'scrollable element',
+      tagName: 'select',
       properties: {
-        scrollTop:['scroll'],
-        scrollLeft:['scroll']
+        value: ['change']
+      }
+    });
+
+    this.registerElementConfig({
+      tagName: 'content editable',
+      properties: {
+        value: ['change', 'input', 'blur', 'keyup', 'paste']
+      }
+    });
+
+    this.registerElementConfig({
+      tagName: 'scrollable element',
+      properties: {
+        scrollTop: ['scroll'],
+        scrollLeft: ['scroll']
       }
     });
 
@@ -3184,7 +3189,7 @@ export class EventManager {
           events.forEach(changeEvent => {
             target.removeEventListener(changeEvent, callback);
           });
-        }
+        };
       }
     };
   }
@@ -3201,15 +3206,15 @@ export class EventManager {
     let tagName;
     let lookup = this.elementHandlerLookup;
 
-    if(target.tagName) {
+    if (target.tagName) {
       tagName = target.tagName.toLowerCase();
 
-      if(lookup[tagName] && lookup[tagName][propertyName]) {
+      if (lookup[tagName] && lookup[tagName][propertyName]) {
         return lookup[tagName][propertyName];
       }
 
       if (propertyName === 'textContent' || propertyName === 'innerHTML') {
-        return lookup['content editable']['value'];
+        return lookup['content editable'].value;
       }
 
       if (propertyName === 'scrollTop' || propertyName === 'scrollLeft') {
@@ -3227,43 +3232,43 @@ export class EventManager {
 }
 
 export class DirtyChecker {
-  constructor(){
+  constructor() {
     this.tracked = [];
     this.checkDelay = 120;
   }
 
-  addProperty(property){
-    var tracked = this.tracked;
+  addProperty(property) {
+    let tracked = this.tracked;
 
     tracked.push(property);
 
-    if(tracked.length === 1) {
+    if (tracked.length === 1) {
       this.scheduleDirtyCheck();
     }
   }
 
-  removeProperty(property){
-    var tracked = this.tracked;
+  removeProperty(property) {
+    let tracked = this.tracked;
     tracked.splice(tracked.indexOf(property), 1);
   }
 
-  scheduleDirtyCheck(){
+  scheduleDirtyCheck() {
     setTimeout(() => this.check(), this.checkDelay);
   }
 
   check() {
-    var tracked = this.tracked,
-        i = tracked.length;
+    let tracked = this.tracked;
+    let i = tracked.length;
 
-    while(i--) {
-      var current = tracked[i];
+    while (i--) {
+      let current = tracked[i];
 
-      if(current.isDirty()){
+      if (current.isDirty()) {
         current.call();
       }
     }
 
-    if(tracked.length) {
+    if (tracked.length) {
       this.scheduleDirtyCheck();
     }
   }
@@ -3315,7 +3320,7 @@ export class DirtyCheckProperty {
 
 export const propertyAccessor = {
   getValue: (obj, propertyName) => obj[propertyName],
-  setValue: (value, obj, propertyName) => obj[propertyName] = value
+  setValue: (value, obj, propertyName) => { obj[propertyName] = value; }
 };
 
 export class PrimitiveObserver {
@@ -3344,7 +3349,7 @@ export class PrimitiveObserver {
 
 @subscriberCollection()
 export class SetterObserver {
-  constructor(taskQueue, obj, propertyName){
+  constructor(taskQueue, obj, propertyName) {
     this.taskQueue = taskQueue;
     this.obj = obj;
     this.propertyName = propertyName;
@@ -3367,8 +3372,8 @@ export class SetterObserver {
   setterValue(newValue) {
     let oldValue = this.currentValue;
 
-    if(oldValue !== newValue){
-      if(!this.queued){
+    if (oldValue !== newValue) {
+      if (!this.queued) {
         this.oldValue = oldValue;
         this.queued = true;
         this.taskQueue.queueMicroTask(this);
@@ -3388,7 +3393,7 @@ export class SetterObserver {
   }
 
   subscribe(context, callable) {
-    if(!this.observing) {
+    if (!this.observing) {
       this.convertProperty();
     }
     this.addSubscriber(context, callable);
@@ -3404,14 +3409,14 @@ export class SetterObserver {
     this.setValue = this.setterValue;
     this.getValue = this.getterValue;
 
-    try{
+    try {
       Object.defineProperty(this.obj, this.propertyName, {
         configurable: true,
         enumerable: true,
         get: this.getValue.bind(this),
         set: this.setValue.bind(this)
       });
-    }catch(_){}
+    } catch(_) {} // eslint-disable-line
   }
 }
 
@@ -3466,47 +3471,41 @@ export class StyleObserver {
   constructor(element, propertyName) {
     this.element = element;
     this.propertyName = propertyName;
-    
+
     this.styles = null;
     this.version = 0;
   }
-  
+
   getValue() {
     return this.element.style.cssText;
   }
-  
+
   setValue(newValue) {
-    let styles = this.styles || {},
-        style,
-        version = this.version;
-        
-    if ( newValue !== null && newValue !== undefined )
-    {
-      if ( newValue instanceof Object )
-      {
-        for( style in newValue ) 
-        {
-          if ( newValue.hasOwnProperty(style) )
-          {
+    let styles = this.styles || {};
+    let style;
+    let version = this.version;
+
+    if (newValue !== null && newValue !== undefined) {
+      if (newValue instanceof Object) {
+        for (style in newValue) {
+          if (newValue.hasOwnProperty(style)) {
             styles[style] = version;
             this.element.style[style] = newValue[style];
           }
         }
-      }
-      else if ( newValue.length ) {
+      } else if (newValue.length) {
         let pairs = newValue.split(/(?:;|:(?!\/))\s*/);
-        for( let i = 0, length = pairs.length; i < length; i++ )
-        {
+        for (let i = 0, length = pairs.length; i < length; i++) {
           style = pairs[i].trim();
           if ( !style ) { continue; }
-            
+
           styles[style] = version;
-          
+
           this.element.style[style] = pairs[++i];
         }
       }
     }
-      
+
     this.styles = styles;
     this.version += 1;
 
@@ -3515,11 +3514,11 @@ export class StyleObserver {
     }
 
     version -= 1;
-    for(style in styles) {
+    for (style in styles) {
       if (!styles.hasOwnProperty(style) || styles[style] !== version) {
         continue;
       }
-      
+
       this.element.style[style] = '';
     }
   }
@@ -3527,7 +3526,6 @@ export class StyleObserver {
   subscribe() {
     throw new Error(`Observation of a "${this.element.nodeName}" element\'s "${this.propertyName}" property is not supported.`);
   }
-
 }
 
 @subscriberCollection()
@@ -3584,7 +3582,7 @@ const checkedArrayContext = 'CheckedObserver:array';
 
 @subscriberCollection()
 export class CheckedObserver {
-  constructor(element, handler, observerLocator){
+  constructor(element, handler, observerLocator) {
     this.element = element;
     this.handler = handler;
     this.observerLocator = observerLocator;
@@ -3627,11 +3625,11 @@ export class CheckedObserver {
   }
 
   synchronizeElement() {
-    let value = this.value,
-        element = this.element,
-        elementValue = element.hasOwnProperty('model') ? element.model : element.value,
-        isRadio = element.type === 'radio',
-        matcher = element.matcher || ((a, b) => a === b);
+    let value = this.value;
+    let element = this.element;
+    let elementValue = element.hasOwnProperty('model') ? element.model : element.value;
+    let isRadio = element.type === 'radio';
+    let matcher = element.matcher || ((a, b) => a === b);
 
     element.checked =
       isRadio && !!matcher(value, elementValue)
@@ -3639,12 +3637,12 @@ export class CheckedObserver {
       || !isRadio && Array.isArray(value) && !!value.find(item => !!matcher(item, elementValue));
   }
 
-  synchronizeValue(){
-    let value = this.value,
-        element = this.element,
-        elementValue = element.hasOwnProperty('model') ? element.model : element.value,
-        index,
-        matcher = element.matcher || ((a, b) => a === b);
+  synchronizeValue() {
+    let value = this.value;
+    let element = this.element;
+    let elementValue = element.hasOwnProperty('model') ? element.model : element.value;
+    let index;
+    let matcher = element.matcher || ((a, b) => a === b);
 
     if (element.type === 'checkbox') {
       if (Array.isArray(value)) {
@@ -3656,9 +3654,9 @@ export class CheckedObserver {
         }
         // don't invoke callbacks.
         return;
-      } else {
-        value = element.checked;
       }
+
+      value = element.checked;
     } else if (element.checked) {
       value = elementValue;
     } else {
@@ -3679,14 +3677,14 @@ export class CheckedObserver {
   }
 
   subscribe(context, callable) {
-    if(!this.hasSubscribers()) {
+    if (!this.hasSubscribers()) {
       this.disposeHandler = this.handler.subscribe(this.element, this.synchronizeValue.bind(this, false));
     }
     this.addSubscriber(context, callable);
   }
 
   unsubscribe(context, callable) {
-    if(this.removeSubscriber(context, callable) && !this.hasSubscribers()){
+    if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
       this.disposeHandler();
       this.disposeHandler = null;
     }
@@ -3700,11 +3698,11 @@ export class CheckedObserver {
   }
 }
 
-const selectArrayContext = 'SelectValueObserver:array'
+const selectArrayContext = 'SelectValueObserver:array';
 
 @subscriberCollection()
 export class SelectValueObserver {
-  constructor(element, handler, observerLocator){
+  constructor(element, handler, observerLocator) {
     this.element = element;
     this.handler = handler;
     this.observerLocator = observerLocator;
@@ -3716,7 +3714,7 @@ export class SelectValueObserver {
 
   setValue(newValue) {
     if (newValue !== null && newValue !== undefined && this.element.multiple && !Array.isArray(newValue)) {
-      throw new Error('Only null or Array instances can be bound to a multi-select.')
+      throw new Error('Only null or Array instances can be bound to a multi-select.');
     }
     if (this.value === newValue) {
       return;
@@ -3749,7 +3747,9 @@ export class SelectValueObserver {
   }
 
   synchronizeOptions() {
-    let value = this.value, clear, isArray;
+    let value = this.value;
+    let clear;
+    let isArray;
 
     if (value === null || value === undefined) {
       clear = true;
@@ -3760,7 +3760,7 @@ export class SelectValueObserver {
     let options = this.element.options;
     let i = options.length;
     let matcher = this.element.matcher || ((a, b) => a === b);
-    while(i--) {
+    while (i--) {
       let option = options.item(i);
       if (clear) {
         option.selected = false;
@@ -3768,7 +3768,7 @@ export class SelectValueObserver {
       }
       let optionValue = option.hasOwnProperty('model') ? option.model : option.value;
       if (isArray) {
-        option.selected = !!value.find(item => !!matcher(optionValue, item));
+        option.selected = !!value.find(item => !!matcher(optionValue, item)); // eslint-disable-line
         continue;
       }
       option.selected = !!matcher(optionValue, value);
@@ -3776,9 +3776,9 @@ export class SelectValueObserver {
   }
 
   synchronizeValue() {
-    let options = this.element.options,
-        count = 0,
-        value = [];
+    let options = this.element.options;
+    let count = 0;
+    let value = [];
 
     for (let i = 0, ii = options.length; i < ii; i++) {
       let option = options.item(i);
@@ -3797,7 +3797,7 @@ export class SelectValueObserver {
         let i = 0;
         while (i < this.value.length) {
           let a = this.value[i];
-          if (value.findIndex(b => matcher(a, b)) === -1) {
+          if (value.findIndex(b => matcher(a, b)) === -1) { // eslint-disable-line
             this.value.splice(i, 1);
           } else {
             i++;
@@ -3807,7 +3807,7 @@ export class SelectValueObserver {
         i = 0;
         while (i < value.length) {
           let a = value[i];
-          if (this.value.findIndex(b => matcher(a, b)) === -1) {
+          if (this.value.findIndex(b => matcher(a, b)) === -1) {  // eslint-disable-line
             this.value.push(a);
           }
           i++;
@@ -3883,14 +3883,15 @@ export class ClassObserver {
   }
 
   setValue(newValue) {
-    var nameIndex = this.nameIndex || {},
-        version = this.version,
-        names, name;
+    let nameIndex = this.nameIndex || {};
+    let version = this.version;
+    let names;
+    let name;
 
     // Add the classes, tracking the version at which they were added.
     if (newValue !== null && newValue !== undefined && newValue.length) {
       names = newValue.split(/\s+/);
-      for(let i = 0, length = names.length; i < length; i++) {
+      for (let i = 0, length = names.length; i < length; i++) {
         name = names[i];
         if (name === '') {
           continue;
@@ -3912,7 +3913,7 @@ export class ClassObserver {
 
     // Remove classes from previous version.
     version -= 1;
-    for(name in nameIndex) {
+    for (name in nameIndex) {
       if (!nameIndex.hasOwnProperty(name) || nameIndex[name] !== version) {
         continue;
       }
@@ -3934,11 +3935,11 @@ export function declarePropertyDependencies(ctor, propertyName, dependencies) {
   descriptor.get.dependencies = dependencies;
 }
 
-export function computedFrom(...rest){
-  return function(target, key, descriptor){
+export function computedFrom(...rest) {
+  return function(target, key, descriptor) {
     descriptor.get.dependencies = rest;
     return descriptor;
-  }
+  };
 }
 
 export class ComputedExpression extends Expression {
@@ -3985,6 +3986,7 @@ export function createComputedObserver(obj, propertyName, descriptor, observerLo
   return new ExpressionObserver(scope, dependencies, observerLocator);
 }
 
+/* eslint-disable */
 export const elements = {
   a: ['class','externalResourcesRequired','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','style','systemLanguage','target','transform','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space'],
   altGlyph: ['class','dx','dy','externalResourcesRequired','format','glyphRef','id','onactivate','onclick','onfocusin','onfocusout','onload','onmousedown','onmousemove','onmouseout','onmouseover','onmouseup','requiredExtensions','requiredFeatures','rotate','style','systemLanguage','x','xlink:actuate','xlink:arcrole','xlink:href','xlink:role','xlink:show','xlink:title','xlink:type','xml:base','xml:lang','xml:space','y'],
@@ -4067,6 +4069,7 @@ export const elements = {
   view: ['externalResourcesRequired','id','preserveAspectRatio','viewBox','viewTarget','xml:base','xml:lang','xml:space','zoomAndPan'],
   vkern: ['g1','g2','id','k','u1','u2','xml:base','xml:lang','xml:space'],
 };
+/* eslint-enable */
 
 export const presentationElements = {
   'a': true,
@@ -4119,7 +4122,7 @@ export const presentationElements = {
   'textPath': true,
   'tref': true,
   'tspan': true,
-  'use': true,
+  'use': true
 };
 
 export const presentationAttributes = {
@@ -4181,7 +4184,7 @@ export const presentationAttributes = {
   'unicode-bidi': true,
   'visibility': true,
   'word-spacing': true,
-  'writing-mode': true,
+  'writing-mode': true
 };
 
 // SVG elements/attributes are case-sensitive.  Not all browsers use the same casing for all attributes.
@@ -4235,7 +4238,7 @@ export class ObserverLocator {
     observer = this.createPropertyObserver(obj, propertyName);
 
     if (!observer.doNotCache) {
-      if (observersLookup === undefined){
+      if (observersLookup === undefined) {
         observersLookup = this.getOrCreateObserversLookup(obj);
       }
 
@@ -4252,14 +4255,14 @@ export class ObserverLocator {
   createObserversLookup(obj) {
     let value = {};
 
-    try{
-      Object.defineProperty(obj, "__observers__", {
+    try {
+      Object.defineProperty(obj, '__observers__', {
         enumerable: false,
         configurable: false,
         writable: false,
         value: value
       });
-    }catch(_){}
+    } catch(_) {} // eslint-disable-line
 
     return value;
   }
@@ -4280,7 +4283,6 @@ export class ObserverLocator {
   }
 
   createPropertyObserver(obj, propertyName) {
-    let observerLookup;
     let descriptor;
     let handler;
     let xlinkResult;
@@ -4300,7 +4302,7 @@ export class ObserverLocator {
       if (propertyName === 'value' && obj.tagName.toLowerCase() === 'select') {
         return new SelectValueObserver(obj, handler, this);
       }
-      if (propertyName ==='checked' && obj.tagName.toLowerCase() === 'input') {
+      if (propertyName === 'checked' && obj.tagName.toLowerCase() === 'input') {
         return new CheckedObserver(obj, handler, this);
       }
       if (handler) {
@@ -4323,7 +4325,7 @@ export class ObserverLocator {
     }
 
     let existingGetterOrSetter;
-    if (descriptor && (existingGetterOrSetter = descriptor.get || descriptor.set)) {
+    if (descriptor && (existingGetterOrSetter = descriptor.get || descriptor.set)) {  // eslint-disable-line
       if (existingGetterOrSetter.getObserver) {
         return existingGetterOrSetter.getObserver(obj);
       }
@@ -4339,21 +4341,21 @@ export class ObserverLocator {
     if (obj instanceof Array) {
       if (propertyName === 'length') {
         return this.getArrayObserver(obj).getLengthObserver();
-      } else {
-        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
+
+      return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     } else if (obj instanceof Map) {
       if (propertyName === 'size') {
         return this.getMapObserver(obj).getLengthObserver();
-      } else {
-        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
+
+      return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     } else if (obj instanceof Set) {
       if (propertyName === 'size') {
         return this.getSetObserver(obj).getLengthObserver();
-      } else {
-        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
+
+      return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     }
 
     return new SetterObserver(this.taskQueue, obj, propertyName);
@@ -4376,15 +4378,15 @@ export class ObserverLocator {
     return propertyAccessor;
   }
 
-  getArrayObserver(array){
+  getArrayObserver(array) {
     return getArrayObserver(this.taskQueue, array);
   }
 
-  getMapObserver(map){
+  getMapObserver(map) {
     return getMapObserver(this.taskQueue, map);
   }
 
-  getSetObserver(set){
+  getSetObserver(set) {
     return getSetObserver(this.taskQueue, set);
   }
 }
@@ -4397,7 +4399,7 @@ export class ObjectObservationAdapter {
 
 export class BindingExpression {
   constructor(observerLocator, targetProperty, sourceExpression,
-    mode, lookupFunctions, attribute){
+    mode, lookupFunctions, attribute) {
     this.observerLocator = observerLocator;
     this.targetProperty = targetProperty;
     this.sourceExpression = sourceExpression;
@@ -4551,7 +4553,7 @@ export class CallExpression {
 
 export class Call {
   constructor(observerLocator, sourceExpression, target, targetProperty, lookupFunctions) {
-    this.sourceExpression = sourceExpression
+    this.sourceExpression = sourceExpression;
     this.target = target;
     this.targetProperty = observerLocator.getObserver(target, targetProperty);
     this.lookupFunctions = lookupFunctions;
@@ -4600,11 +4602,11 @@ export class Call {
 }
 
 export class ValueConverterResource {
-  constructor(name){
+  constructor(name) {
     this.name = name;
   }
 
-  static convention(name) {
+  static convention(name) { // eslint-disable-line
     if (name.endsWith('ValueConverter')) {
       return new ValueConverterResource(camelCase(name.substring(0, name.length - 14)));
     }
@@ -4621,11 +4623,11 @@ export class ValueConverterResource {
   load(container, target) {}
 }
 
-export function valueConverter(nameOrTarget){
-  if(nameOrTarget === undefined || typeof nameOrTarget === 'string'){
-    return function(target){
+export function valueConverter(nameOrTarget) {  // eslint-disable-line
+  if (nameOrTarget === undefined || typeof nameOrTarget === 'string') {
+    return function(target) {
       metadata.define(metadata.resource, new ValueConverterResource(nameOrTarget), target);
-    }
+    };
   }
 
   metadata.define(metadata.resource, new ValueConverterResource(), nameOrTarget);
@@ -4636,7 +4638,7 @@ export class BindingBehaviorResource {
     this.name = name;
   }
 
-  static convention(name) {
+  static convention(name) { // eslint-disable-line
     if (name.endsWith('BindingBehavior')) {
       return new BindingBehaviorResource(camelCase(name.substring(0, name.length - 15)));
     }
@@ -4653,11 +4655,11 @@ export class BindingBehaviorResource {
   load(container, target) {}
 }
 
-export function bindingBehavior(nameOrTarget){
-  if(nameOrTarget === undefined || typeof nameOrTarget === 'string'){
-    return function(target){
+export function bindingBehavior(nameOrTarget) { // eslint-disable-line
+  if (nameOrTarget === undefined || typeof nameOrTarget === 'string') {
+    return function(target) {
       metadata.define(metadata.resource, new BindingBehaviorResource(nameOrTarget), target);
-    }
+    };
   }
 
   metadata.define(metadata.resource, new BindingBehaviorResource(), nameOrTarget);
@@ -4768,22 +4770,22 @@ export class NameExpression {
 
   static locateAPI(element: Element, apiName: string): Object {
     switch (apiName) {
-      case 'element':
-        return element;
-      case 'controller':
-        return getAU(element).controller;
-      case 'view-model':
-        return getAU(element).controller.viewModel;
-      case 'view':
-        return getAU(element).controller.view;
-      default:
-        let target = getAU(element)[apiName];
+    case 'element':
+      return element;
+    case 'controller':
+      return getAU(element).controller;
+    case 'view-model':
+      return getAU(element).controller.viewModel;
+    case 'view':
+      return getAU(element).controller.view;
+    default:
+      let target = getAU(element)[apiName];
 
-        if (target === undefined) {
-          throw new Error(`Attempted to reference "${apiName}", but it was not found amongst the target's API.`)
-        }
+      if (target === undefined) {
+        throw new Error(`Attempted to reference "${apiName}", but it was not found amongst the target's API.`);
+      }
 
-        return target.viewModel;
+      return target.viewModel;
     }
   }
 }
@@ -4823,7 +4825,7 @@ class NameBinder {
   }
 }
 
-const lookupFunctions = {
+const LookupFunctions = {
   bindingBehaviors: name => null,
   valueConverters: name => null
 };
@@ -4836,7 +4838,7 @@ export class BindingEngine {
     this.parser = parser;
   }
 
-  createBindingExpression(targetProperty, sourceExpression, mode = bindingMode.oneWay, lookupFunctions = lookupFunctions) {
+  createBindingExpression(targetProperty, sourceExpression, mode = bindingMode.oneWay, lookupFunctions = LookupFunctions) {
     return new BindingExpression(
       this.observerLocator,
       targetProperty,
@@ -4880,7 +4882,7 @@ export class BindingEngine {
 
   expressionObserver(bindingContext, expression) {
     let scope = { bindingContext, overrideContext: createOverrideContext(bindingContext) };
-    return new ExpressionObserver(scope, this.parser.parse(expression), this.observerLocator, lookupFunctions);
+    return new ExpressionObserver(scope, this.parser.parse(expression), this.observerLocator, LookupFunctions);
   }
 
   parseExpression(expression) {
@@ -4894,12 +4896,12 @@ export class BindingEngine {
 
 let setProto = Set.prototype;
 
-export function getSetObserver(taskQueue, set){
+export function getSetObserver(taskQueue, set) {
   return ModifySetObserver.for(taskQueue, set);
 }
 
 class ModifySetObserver extends ModifyCollectionObserver {
-  constructor(taskQueue, set){
+  constructor(taskQueue, set) {
     super(taskQueue, set);
   }
 
@@ -4932,10 +4934,10 @@ class ModifySetObserver extends ModifyCollectionObserver {
       };
     }
 
-    set['add'] = function () {
+    set.add = function() {
       let type = 'add';
       let oldSize = set.size;
-      let methodCallResult = proto['add'].apply(set, arguments);
+      let methodCallResult = proto.add.apply(set, arguments);
       let hasValue = set.size === oldSize;
       if (!hasValue) {
         observer.addChangeRecord({
@@ -4947,9 +4949,9 @@ class ModifySetObserver extends ModifyCollectionObserver {
       return methodCallResult;
     };
 
-    set['delete'] = function () {
+    set.delete = function() {
       let hasValue = set.has(arguments[0]);
-      let methodCallResult = proto['delete'].apply(set, arguments);
+      let methodCallResult = proto.delete.apply(set, arguments);
       if (hasValue) {
         observer.addChangeRecord({
           type: 'delete',
@@ -4960,8 +4962,8 @@ class ModifySetObserver extends ModifyCollectionObserver {
       return methodCallResult;
     };
 
-    set['clear'] = function () {
-      let methodCallResult = proto['clear'].apply(set, arguments);
+    set.clear = function() {
+      let methodCallResult = proto.clear.apply(set, arguments);
       observer.addChangeRecord({
         type: 'clear',
         object: set
@@ -4974,8 +4976,8 @@ class ModifySetObserver extends ModifyCollectionObserver {
 }
 
 export function observable(targetOrConfig, key, descriptor) {
-  let deco = function (target, key2, descriptor2) {
-    // use a convention to compute the inner property name and the callback 
+  let deco = function(target, key2, descriptor2) {
+    // use a convention to compute the inner property name and the callback
     // function name.
     let innerPropertyName = `_${key2}`;
     let callbackName = (targetOrConfig && targetOrConfig.changeHandler) || `${key2}Changed`;
@@ -4993,15 +4995,15 @@ export function observable(targetOrConfig, key, descriptor) {
     } else {
       descriptor2 = {};
     }
-		
+
     // we're adding a getter and setter which means the property descriptor
     // cannot have a "value" or "writable" attribute
     delete descriptor2.writable;
     delete descriptor2.initializer;
 
     // add the getter and setter to the property descriptor.
-    descriptor2.get = function () { return this[innerPropertyName]; };
-    descriptor2.set = function (newValue) {
+    descriptor2.get = function() { return this[innerPropertyName]; };
+    descriptor2.set = function(newValue) {
       let oldValue = this[innerPropertyName];
       this[innerPropertyName] = newValue;
       if (this[callbackName]) {
@@ -5016,7 +5018,7 @@ export function observable(targetOrConfig, key, descriptor) {
     if (!babel) {
       Object.defineProperty(target, key2, descriptor2);
     }
-  }
+  };
 
   if (key) {
     let target = targetOrConfig;

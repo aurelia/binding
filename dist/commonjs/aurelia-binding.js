@@ -104,7 +104,6 @@ function addObserver(observer) {
   var observerSlots = this._observerSlots === undefined ? 0 : this._observerSlots;
   var i = observerSlots;
   while (i-- && this[slotNames[i]] !== observer) {}
-
   if (i === -1) {
     i = 0;
     while (this[slotNames[i]]) {
@@ -454,23 +453,26 @@ ArraySplice.prototype = {
     var rowCount = oldEnd - oldStart + 1;
     var columnCount = currentEnd - currentStart + 1;
     var distances = new Array(rowCount);
-    var i, j, north, west;
+    var north = void 0;
+    var west = void 0;
 
-    for (i = 0; i < rowCount; ++i) {
-      distances[i] = new Array(columnCount);
-      distances[i][0] = i;
+    for (var _i = 0; _i < rowCount; ++_i) {
+      distances[_i] = new Array(columnCount);
+      distances[_i][0] = _i;
     }
 
-    for (j = 0; j < columnCount; ++j) {
+    for (var j = 0; j < columnCount; ++j) {
       distances[0][j] = j;
     }
 
-    for (i = 1; i < rowCount; ++i) {
-      for (j = 1; j < columnCount; ++j) {
-        if (this.equals(current[currentStart + j - 1], old[oldStart + i - 1])) distances[i][j] = distances[i - 1][j - 1];else {
-          north = distances[i - 1][j] + 1;
-          west = distances[i][j - 1] + 1;
-          distances[i][j] = north < west ? north : west;
+    for (var _i2 = 1; _i2 < rowCount; ++_i2) {
+      for (var _j = 1; _j < columnCount; ++_j) {
+        if (this.equals(current[currentStart + _j - 1], old[oldStart + _i2 - 1])) {
+          distances[_i2][_j] = distances[_i2 - 1][_j - 1];
+        } else {
+          north = distances[_i2 - 1][_j] + 1;
+          west = distances[_i2][_j - 1] + 1;
+          distances[_i2][_j] = north < west ? north : west;
         }
       }
     }
@@ -484,12 +486,12 @@ ArraySplice.prototype = {
     var current = distances[i][j];
     var edits = [];
     while (i > 0 || j > 0) {
-      if (i == 0) {
+      if (i === 0) {
         edits.push(EDIT_ADD);
         j--;
         continue;
       }
-      if (j == 0) {
+      if (j === 0) {
         edits.push(EDIT_DELETE);
         i--;
         continue;
@@ -498,11 +500,15 @@ ArraySplice.prototype = {
       var west = distances[i - 1][j];
       var north = distances[i][j - 1];
 
-      var min;
-      if (west < north) min = west < northWest ? west : northWest;else min = north < northWest ? north : northWest;
+      var min = void 0;
+      if (west < north) {
+        min = west < northWest ? west : northWest;
+      } else {
+        min = north < northWest ? north : northWest;
+      }
 
-      if (min == northWest) {
-        if (northWest == current) {
+      if (min === northWest) {
+        if (northWest === current) {
           edits.push(EDIT_LEAVE);
         } else {
           edits.push(EDIT_UPDATE);
@@ -510,7 +516,7 @@ ArraySplice.prototype = {
         }
         i--;
         j--;
-      } else if (min == west) {
+      } else if (min === west) {
         edits.push(EDIT_DELETE);
         i--;
         current = west;
@@ -530,23 +536,33 @@ ArraySplice.prototype = {
     var suffixCount = 0;
 
     var minLength = Math.min(currentEnd - currentStart, oldEnd - oldStart);
-    if (currentStart == 0 && oldStart == 0) prefixCount = this.sharedPrefix(current, old, minLength);
+    if (currentStart === 0 && oldStart === 0) {
+      prefixCount = this.sharedPrefix(current, old, minLength);
+    }
 
-    if (currentEnd == current.length && oldEnd == old.length) suffixCount = this.sharedSuffix(current, old, minLength - prefixCount);
+    if (currentEnd === current.length && oldEnd === old.length) {
+      suffixCount = this.sharedSuffix(current, old, minLength - prefixCount);
+    }
 
     currentStart += prefixCount;
     oldStart += prefixCount;
     currentEnd -= suffixCount;
     oldEnd -= suffixCount;
 
-    if (currentEnd - currentStart == 0 && oldEnd - oldStart == 0) return [];
+    if (currentEnd - currentStart === 0 && oldEnd - oldStart === 0) {
+      return [];
+    }
 
-    if (currentStart == currentEnd) {
-      var splice = newSplice(currentStart, [], 0);
+    if (currentStart === currentEnd) {
+      var _splice = newSplice(currentStart, [], 0);
       while (oldStart < oldEnd) {
-        splice.removed.push(old[oldStart++]);
-      }return [splice];
-    } else if (oldStart == oldEnd) return [newSplice(currentStart, [], currentEnd - currentStart)];
+        _splice.removed.push(old[oldStart++]);
+      }
+
+      return [_splice];
+    } else if (oldStart === oldEnd) {
+      return [newSplice(currentStart, [], currentEnd - currentStart)];
+    }
 
     var ops = this.spliceOperationsFromEditDistances(this.calcEditDistances(current, currentStart, currentEnd, old, oldStart, oldEnd));
 
@@ -554,8 +570,8 @@ ArraySplice.prototype = {
     var splices = [];
     var index = currentStart;
     var oldIndex = oldStart;
-    for (var i = 0; i < ops.length; ++i) {
-      switch (ops[i]) {
+    for (var _i3 = 0; _i3 < ops.length; ++_i3) {
+      switch (ops[_i3]) {
         case EDIT_LEAVE:
           if (splice) {
             splices.push(splice);
@@ -566,7 +582,9 @@ ArraySplice.prototype = {
           oldIndex++;
           break;
         case EDIT_UPDATE:
-          if (!splice) splice = newSplice(index, [], 0);
+          if (!splice) {
+            splice = newSplice(index, [], 0);
+          }
 
           splice.addedCount++;
           index++;
@@ -575,13 +593,17 @@ ArraySplice.prototype = {
           oldIndex++;
           break;
         case EDIT_ADD:
-          if (!splice) splice = newSplice(index, [], 0);
+          if (!splice) {
+            splice = newSplice(index, [], 0);
+          }
 
           splice.addedCount++;
           index++;
           break;
         case EDIT_DELETE:
-          if (!splice) splice = newSplice(index, [], 0);
+          if (!splice) {
+            splice = newSplice(index, [], 0);
+          }
 
           splice.removed.push(old[oldIndex]);
           oldIndex++;
@@ -596,9 +618,13 @@ ArraySplice.prototype = {
   },
 
   sharedPrefix: function sharedPrefix(current, old, searchLength) {
-    for (var i = 0; i < searchLength; ++i) {
-      if (!this.equals(current[i], old[i])) return i;
-    }return searchLength;
+    for (var _i4 = 0; _i4 < searchLength; ++_i4) {
+      if (!this.equals(current[_i4], old[_i4])) {
+        return _i4;
+      }
+    }
+
+    return searchLength;
   },
 
   sharedSuffix: function sharedSuffix(current, old, searchLength) {
@@ -607,7 +633,9 @@ ArraySplice.prototype = {
     var count = 0;
     while (count < searchLength && this.equals(current[--index1], old[--index2])) {
       count++;
-    }return count;
+    }
+
+    return count;
   },
 
   calculateSplices: function calculateSplices(current, previous) {
@@ -626,15 +654,27 @@ function calcSplices(current, currentStart, currentEnd, old, oldStart, oldEnd) {
 }
 
 function intersect(start1, end1, start2, end2) {
-  if (end1 < start2 || end2 < start1) return -1;
+  if (end1 < start2 || end2 < start1) {
+    return -1;
+  }
 
-  if (end1 == start2 || end2 == start1) return 0;
+  if (end1 === start2 || end2 === start1) {
+    return 0;
+  }
 
   if (start1 < start2) {
-    if (end1 < end2) return end1 - start2;else return end2 - start2;
-  } else {
-      if (end2 < end1) return end2 - start1;else return end1 - start1;
+    if (end1 < end2) {
+      return end1 - start2;
     }
+
+    return end2 - start2;
+  }
+
+  if (end2 < end1) {
+    return end2 - start1;
+  }
+
+  return end1 - start1;
 }
 
 function mergeSplice(splices, index, removed, addedCount) {
@@ -643,18 +683,20 @@ function mergeSplice(splices, index, removed, addedCount) {
   var inserted = false;
   var insertionOffset = 0;
 
-  for (var i = 0; i < splices.length; i++) {
-    var current = splices[i];
+  for (var _i5 = 0; _i5 < splices.length; _i5++) {
+    var current = splices[_i5];
     current.index += insertionOffset;
 
-    if (inserted) continue;
+    if (inserted) {
+      continue;
+    }
 
     var intersectCount = intersect(splice.index, splice.index + splice.removed.length, current.index, current.index + current.addedCount);
 
     if (intersectCount >= 0) {
 
-      splices.splice(i, 1);
-      i--;
+      splices.splice(_i5, 1);
+      _i5--;
 
       insertionOffset -= current.addedCount - current.removed.length;
 
@@ -664,20 +706,20 @@ function mergeSplice(splices, index, removed, addedCount) {
       if (!splice.addedCount && !deleteCount) {
         inserted = true;
       } else {
-        var removed = current.removed;
+        var currentRemoved = current.removed;
 
         if (splice.index < current.index) {
           var prepend = splice.removed.slice(0, current.index - splice.index);
-          Array.prototype.push.apply(prepend, removed);
-          removed = prepend;
+          Array.prototype.push.apply(prepend, currentRemoved);
+          currentRemoved = prepend;
         }
 
         if (splice.index + splice.removed.length > current.index + current.addedCount) {
           var append = splice.removed.slice(current.index + current.addedCount - splice.index);
-          Array.prototype.push.apply(removed, append);
+          Array.prototype.push.apply(currentRemoved, append);
         }
 
-        splice.removed = removed;
+        splice.removed = currentRemoved;
         if (current.index < splice.index) {
           splice.index = current.index;
         }
@@ -686,8 +728,8 @@ function mergeSplice(splices, index, removed, addedCount) {
 
       inserted = true;
 
-      splices.splice(i, 0, splice);
-      i++;
+      splices.splice(_i5, 0, splice);
+      _i5++;
 
       var offset = splice.addedCount - splice.removed.length;
       current.index += offset;
@@ -695,14 +737,16 @@ function mergeSplice(splices, index, removed, addedCount) {
     }
   }
 
-  if (!inserted) splices.push(splice);
+  if (!inserted) {
+    splices.push(splice);
+  }
 }
 
 function createInitialSplices(array, changeRecords) {
   var splices = [];
 
-  for (var i = 0; i < changeRecords.length; i++) {
-    var record = changeRecords[i];
+  for (var _i6 = 0; _i6 < changeRecords.length; _i6++) {
+    var record = changeRecords[_i6];
     switch (record.type) {
       case 'splice':
         mergeSplice(splices, record.index, record.removed.slice(), record.addedCount);
@@ -710,9 +754,15 @@ function createInitialSplices(array, changeRecords) {
       case 'add':
       case 'update':
       case 'delete':
-        if (!isIndex(record.name)) continue;
+        if (!isIndex(record.name)) {
+          continue;
+        }
+
         var index = toNumber(record.name);
-        if (index < 0) continue;
+        if (index < 0) {
+          continue;
+        }
+
         mergeSplice(splices, index, [record.oldValue], record.type === 'delete' ? 0 : 1);
         break;
       default:
@@ -728,11 +778,13 @@ function projectArraySplices(array, changeRecords) {
   var splices = [];
 
   createInitialSplices(array, changeRecords).forEach(function (splice) {
-    if (splice.addedCount == 1 && splice.removed.length == 1) {
-      if (splice.removed[0] !== array[splice.index]) splices.push(splice);
+    if (splice.addedCount === 1 && splice.removed.length === 1) {
+      if (splice.removed[0] !== array[splice.index]) {
+        splices.push(splice);
+      }
 
       return;
-    };
+    }
 
     splices = splices.concat(calcSplices(array, splice.index, splice.index + splice.addedCount, splice.removed, 0, splice.removed.length));
   });
@@ -905,7 +957,6 @@ var CollectionLengthObserver = exports.CollectionLengthObserver = (_dec4 = subsc
   return CollectionLengthObserver;
 }()) || _class3);
 
-
 var pop = Array.prototype.pop;
 var push = Array.prototype.push;
 var reverse = Array.prototype.reverse;
@@ -1076,14 +1127,12 @@ var Chain = exports.Chain = function (_Expression) {
   }
 
   Chain.prototype.evaluate = function evaluate(scope, lookupFunctions) {
-    var result,
-        expressions = this.expressions,
-        length = expressions.length,
-        i,
-        last;
+    var result = void 0;
+    var expressions = this.expressions;
+    var last = void 0;
 
-    for (i = 0; i < length; ++i) {
-      last = expressions[i].evaluate(scope, lookupFunctions);
+    for (var _i7 = 0, length = expressions.length; _i7 < length; ++_i7) {
+      last = expressions[_i7].evaluate(scope, lookupFunctions);
 
       if (last !== null) {
         result = last;
@@ -1503,9 +1552,9 @@ var CallMember = exports.CallMember = function (_Expression11) {
     var obj = this.object.evaluate(scope);
     if (getFunction(obj, this.name, false)) {
       var args = this.args;
-      var _i = args.length;
-      while (_i--) {
-        args[_i].connect(binding, scope);
+      var _i8 = args.length;
+      while (_i8--) {
+        args[_i8].connect(binding, scope);
       }
     }
   };
@@ -1546,9 +1595,9 @@ var CallFunction = exports.CallFunction = function (_Expression12) {
     var func = this.func.evaluate(scope);
     if (typeof func === 'function') {
       var args = this.args;
-      var _i2 = args.length;
-      while (_i2--) {
-        args[_i2].connect(binding, scope);
+      var _i9 = args.length;
+      while (_i9--) {
+        args[_i9].connect(binding, scope);
       }
     }
   };
@@ -1596,12 +1645,12 @@ var Binary = exports.Binary = function (_Expression13) {
     if (left === null || right === null) {
       switch (this.operation) {
         case '+':
-          if (left != null) return left;
-          if (right != null) return right;
+          if (left !== null) return left;
+          if (right !== null) return right;
           return 0;
         case '-':
-          if (left != null) return left;
-          if (right != null) return 0 - right;
+          if (left !== null) return left;
+          if (right !== null) return 0 - right;
           return 0;
       }
 
@@ -1741,13 +1790,11 @@ var LiteralArray = exports.LiteralArray = function (_Expression17) {
   }
 
   LiteralArray.prototype.evaluate = function evaluate(scope, lookupFunctions) {
-    var elements = this.elements,
-        length = elements.length,
-        result = [],
-        i;
+    var elements = this.elements;
+    var result = [];
 
-    for (i = 0; i < length; ++i) {
-      result[i] = elements[i].evaluate(scope, lookupFunctions);
+    for (var _i10 = 0, length = elements.length; _i10 < length; ++_i10) {
+      result[_i10] = elements[_i10].evaluate(scope, lookupFunctions);
     }
 
     return result;
@@ -1759,8 +1806,8 @@ var LiteralArray = exports.LiteralArray = function (_Expression17) {
 
   LiteralArray.prototype.connect = function connect(binding, scope) {
     var length = this.elements.length;
-    for (var _i3 = 0; _i3 < length; _i3++) {
-      this.elements[_i3].connect(binding, scope);
+    for (var _i11 = 0; _i11 < length; _i11++) {
+      this.elements[_i11].connect(binding, scope);
     }
   };
 
@@ -1781,14 +1828,12 @@ var LiteralObject = exports.LiteralObject = function (_Expression18) {
   }
 
   LiteralObject.prototype.evaluate = function evaluate(scope, lookupFunctions) {
-    var instance = {},
-        keys = this.keys,
-        values = this.values,
-        length = keys.length,
-        i;
+    var instance = {};
+    var keys = this.keys;
+    var values = this.values;
 
-    for (i = 0; i < length; ++i) {
-      instance[keys[i]] = values[i].evaluate(scope, lookupFunctions);
+    for (var _i12 = 0, length = keys.length; _i12 < length; ++_i12) {
+      instance[keys[_i12]] = values[_i12].evaluate(scope, lookupFunctions);
     }
 
     return instance;
@@ -1800,8 +1845,8 @@ var LiteralObject = exports.LiteralObject = function (_Expression18) {
 
   LiteralObject.prototype.connect = function connect(binding, scope) {
     var length = this.keys.length;
-    for (var _i4 = 0; _i4 < length; _i4++) {
-      this.values[_i4].connect(binding, scope);
+    for (var _i13 = 0; _i13 < length; _i13++) {
+      this.values[_i13].connect(binding, scope);
     }
   };
 
@@ -1811,41 +1856,39 @@ var LiteralObject = exports.LiteralObject = function (_Expression18) {
 var evalListCache = [[], [0], [0, 0], [0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0]];
 
 function evalList(scope, list, lookupFunctions) {
-  var length = list.length,
-      cacheLength,
-      i;
+  var length = list.length;
 
-  for (cacheLength = evalListCache.length; cacheLength <= length; ++cacheLength) {
+  for (var cacheLength = evalListCache.length; cacheLength <= length; ++cacheLength) {
     evalListCache.push([]);
   }
 
   var result = evalListCache[length];
 
-  for (i = 0; i < length; ++i) {
-    result[i] = list[i].evaluate(scope, lookupFunctions);
+  for (var _i14 = 0; _i14 < length; ++_i14) {
+    result[_i14] = list[_i14].evaluate(scope, lookupFunctions);
   }
 
   return result;
 }
 
 function autoConvertAdd(a, b) {
-  if (a != null && b != null) {
-    if (typeof a == 'string' && typeof b != 'string') {
+  if (a !== null && b !== null) {
+    if (typeof a === 'string' && typeof b !== 'string') {
       return a + b.toString();
     }
 
-    if (typeof a != 'string' && typeof b == 'string') {
+    if (typeof a !== 'string' && typeof b === 'string') {
       return a.toString() + b;
     }
 
     return a + b;
   }
 
-  if (a != null) {
+  if (a !== null) {
     return a;
   }
 
-  if (b != null) {
+  if (b !== null) {
     return b;
   }
 
@@ -1865,19 +1908,19 @@ function getFunction(obj, name, mustExist) {
 
 function getKeyed(obj, key) {
   if (Array.isArray(obj)) {
-    return obj[parseInt(key)];
+    return obj[parseInt(key, 10)];
   } else if (obj) {
     return obj[key];
   } else if (obj === null || obj === undefined) {
     return undefined;
-  } else {
-    return obj[key];
   }
+
+  return obj[key];
 }
 
 function setKeyed(obj, key, value) {
   if (Array.isArray(obj)) {
-    var index = parseInt(key);
+    var index = parseInt(key, 10);
 
     if (obj.length <= index) {
       obj.length = index + 1;
@@ -1899,8 +1942,8 @@ var Unparser = exports.Unparser = function () {
   }
 
   Unparser.unparse = function unparse(expression) {
-    var buffer = [],
-        visitor = new Unparser(buffer);
+    var buffer = [];
+    var visitor = new Unparser(buffer);
 
     expression.accept(visitor);
 
@@ -1912,60 +1955,52 @@ var Unparser = exports.Unparser = function () {
   };
 
   Unparser.prototype.writeArgs = function writeArgs(args) {
-    var i, length;
-
     this.write('(');
 
-    for (i = 0, length = args.length; i < length; ++i) {
-      if (i !== 0) {
+    for (var _i15 = 0, length = args.length; _i15 < length; ++_i15) {
+      if (_i15 !== 0) {
         this.write(',');
       }
 
-      args[i].accept(this);
+      args[_i15].accept(this);
     }
 
     this.write(')');
   };
 
   Unparser.prototype.visitChain = function visitChain(chain) {
-    var expressions = chain.expressions,
-        length = expressions.length,
-        i;
+    var expressions = chain.expressions;
 
-    for (i = 0; i < length; ++i) {
-      if (i !== 0) {
+    for (var _i16 = 0, length = expression.length; _i16 < length; ++_i16) {
+      if (_i16 !== 0) {
         this.write(';');
       }
 
-      expressions[i].accept(this);
+      expressions[_i16].accept(this);
     }
   };
 
   Unparser.prototype.visitBindingBehavior = function visitBindingBehavior(behavior) {
-    var args = behavior.args,
-        length = args.length,
-        i;
+    var args = behavior.args;
 
     behavior.expression.accept(this);
     this.write('&' + behavior.name);
 
-    for (i = 0; i < length; ++i) {
+    for (var _i17 = 0, length = args.length; _i17 < length; ++_i17) {
       this.write(':');
-      args[i].accept(this);
+      args[_i17].accept(this);
     }
   };
 
   Unparser.prototype.visitValueConverter = function visitValueConverter(converter) {
-    var args = converter.args,
-        length = args.length,
-        i;
+    var args = converter.args;
 
     converter.expression.accept(this);
     this.write('|' + converter.name);
 
-    for (i = 0; i < length; ++i) {
+    for (var _i18 = 0, length = args.length; _i18 < length; ++_i18) {
       this.write(':');
-      args[i].accept(this);
+      args[_i18].accept(this);
     }
   };
 
@@ -2052,38 +2087,34 @@ var Unparser = exports.Unparser = function () {
   };
 
   Unparser.prototype.visitLiteralArray = function visitLiteralArray(literal) {
-    var elements = literal.elements,
-        length = elements.length,
-        i;
+    var elements = literal.elements;
 
     this.write('[');
 
-    for (i = 0; i < length; ++i) {
-      if (i !== 0) {
+    for (var _i19 = 0, length = elements.length; _i19 < length; ++_i19) {
+      if (_i19 !== 0) {
         this.write(',');
       }
 
-      elements[i].accept(this);
+      elements[_i19].accept(this);
     }
 
     this.write(']');
   };
 
   Unparser.prototype.visitLiteralObject = function visitLiteralObject(literal) {
-    var keys = literal.keys,
-        values = literal.values,
-        length = keys.length,
-        i;
+    var keys = literal.keys;
+    var values = literal.values;
 
     this.write('{');
 
-    for (i = 0; i < length; ++i) {
-      if (i !== 0) {
+    for (var _i20 = 0, length = keys.length; _i20 < length; ++_i20) {
+      if (_i20 !== 0) {
         this.write(',');
       }
 
-      this.write('\'' + keys[i] + '\':');
-      values[i].accept(this);
+      this.write('\'' + keys[_i20] + '\':');
+      values[_i20].accept(this);
     }
 
     this.write('}');
@@ -2265,9 +2296,9 @@ var Scanner = exports.Scanner = function () {
       if (++this.index >= this.length) {
         this.peek = $EOF;
         return null;
-      } else {
-        this.peek = this.input.charCodeAt(this.index);
       }
+
+      this.peek = this.input.charCodeAt(this.index);
     }
 
     if (isIdentifierStart(this.peek)) {
@@ -2356,7 +2387,7 @@ var Scanner = exports.Scanner = function () {
       text += two;
     }
 
-    assert(OPERATORS.indexOf(text) != -1);
+    assert(OPERATORS.indexOf(text) !== -1);
 
     return new Token(start, text).withOp(text);
   };
@@ -2411,7 +2442,7 @@ var Scanner = exports.Scanner = function () {
     }
 
     var text = this.input.substring(start, this.index);
-    var value = simple ? parseInt(text) : parseFloat(text);
+    var value = simple ? parseInt(text, 10) : parseFloat(text);
     return new Token(start, text).withValue(value);
   };
 
@@ -2446,7 +2477,7 @@ var Scanner = exports.Scanner = function () {
 
           _unescaped = parseInt(hex, 16);
 
-          for (var _i5 = 0; _i5 < 5; ++_i5) {
+          for (var _i21 = 0; _i21 < 5; ++_i21) {
             this.advance();
           }
         } else {
@@ -2469,7 +2500,7 @@ var Scanner = exports.Scanner = function () {
 
     var unescaped = last;
 
-    if (buffer != null) {
+    if (buffer !== null && buffer !== undefined) {
       buffer.push(last);
       unescaped = buffer.join('');
     }
@@ -2596,7 +2627,7 @@ function unescape(code) {
 
 function assert(condition, message) {
   if (!condition) {
-    throw message || "Assertion failed";
+    throw message || 'Assertion failed';
   }
 }
 
@@ -2701,9 +2732,9 @@ var ParserImplementation = exports.ParserImplementation = function () {
     while (this.peek.text === '=') {
       if (!result.isAssignable) {
         var end = this.index < this.tokens.length ? this.peek.index : this.input.length;
-        var expression = this.input.substring(start, end);
+        var _expression = this.input.substring(start, end);
 
-        this.error('Expression ' + expression + ' is not assignable');
+        this.error('Expression ' + _expression + ' is not assignable');
       }
 
       this.expect('=');
@@ -2722,9 +2753,9 @@ var ParserImplementation = exports.ParserImplementation = function () {
 
       if (!this.optional(':')) {
         var end = this.index < this.tokens.length ? this.peek.index : this.input.length;
-        var expression = this.input.substring(start, end);
+        var _expression2 = this.input.substring(start, end);
 
-        this.error('Conditional expression ' + expression + ' requires all 3 expressions');
+        this.error('Conditional expression ' + _expression2 + ' requires all 3 expressions');
       }
 
       var no = this.parseExpression();
@@ -2827,9 +2858,9 @@ var ParserImplementation = exports.ParserImplementation = function () {
         return new Binary('-', new LiteralPrimitive(0), this.parsePrefix());
       } else if (this.optional('!')) {
         return new PrefixNot('!', this.parsePrefix());
-      } else {
-        return this.parseAccessOrCallMember();
       }
+
+    return this.parseAccessOrCallMember();
   };
 
   ParserImplementation.prototype.parseAccessOrCallMember = function parseAccessOrCallMember() {
@@ -2887,11 +2918,11 @@ var ParserImplementation = exports.ParserImplementation = function () {
       var elements = this.parseExpressionList(']');
       this.expect(']');
       return new LiteralArray(elements);
-    } else if (this.peek.text == '{') {
+    } else if (this.peek.text === '{') {
       return this.parseObject();
-    } else if (this.peek.key != null) {
+    } else if (this.peek.key !== null && this.peek.key !== undefined) {
       return this.parseAccessOrCallScope();
-    } else if (this.peek.value != null) {
+    } else if (this.peek.value !== null && this.peek.value !== undefined) {
       var value = this.peek.value;
       this.advance();
       return value instanceof String || typeof value === 'string' ? new LiteralString(value) : new LiteralPrimitive(value);
@@ -2964,7 +2995,7 @@ var ParserImplementation = exports.ParserImplementation = function () {
   ParserImplementation.prototype.parseExpressionList = function parseExpressionList(terminator) {
     var result = [];
 
-    if (this.peek.text != terminator) {
+    if (this.peek.text !== terminator) {
       do {
         result.push(this.parseExpression());
       } while (this.optional(','));
@@ -3047,11 +3078,11 @@ var ModifyMapObserver = function (_ModifyCollectionObse2) {
       };
     }
 
-    map['set'] = function () {
+    map.set = function () {
       var hasValue = map.has(arguments[0]);
       var type = hasValue ? 'update' : 'add';
       var oldValue = map.get(arguments[0]);
-      var methodCallResult = proto['set'].apply(map, arguments);
+      var methodCallResult = proto.set.apply(map, arguments);
       if (!hasValue || oldValue !== map.get(arguments[0])) {
         observer.addChangeRecord({
           type: type,
@@ -3063,10 +3094,10 @@ var ModifyMapObserver = function (_ModifyCollectionObse2) {
       return methodCallResult;
     };
 
-    map['delete'] = function () {
+    map.delete = function () {
       var hasValue = map.has(arguments[0]);
       var oldValue = map.get(arguments[0]);
-      var methodCallResult = proto['delete'].apply(map, arguments);
+      var methodCallResult = proto.delete.apply(map, arguments);
       if (hasValue) {
         observer.addChangeRecord({
           type: 'delete',
@@ -3078,8 +3109,8 @@ var ModifyMapObserver = function (_ModifyCollectionObse2) {
       return methodCallResult;
     };
 
-    map['clear'] = function () {
-      var methodCallResult = proto['clear'].apply(map, arguments);
+    map.clear = function () {
+      var methodCallResult = proto.clear.apply(map, arguments);
       observer.addChangeRecord({
         type: 'clear',
         object: map
@@ -3171,13 +3202,13 @@ var DefaultEventStrategy = function () {
       }();
 
       if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
-    } else {
-      target.addEventListener(targetEvent, callback, false);
-
-      return function () {
-        target.removeEventListener(targetEvent, callback);
-      };
     }
+
+    target.addEventListener(targetEvent, callback, false);
+
+    return function () {
+      target.removeEventListener(targetEvent, callback);
+    };
   };
 
   return DefaultEventStrategy;
@@ -3285,7 +3316,7 @@ var EventManager = exports.EventManager = function () {
       }
 
       if (propertyName === 'textContent' || propertyName === 'innerHTML') {
-        return lookup['content editable']['value'];
+        return lookup['content editable'].value;
       }
 
       if (propertyName === 'scrollTop' || propertyName === 'scrollLeft') {
@@ -3335,8 +3366,8 @@ var DirtyChecker = exports.DirtyChecker = function () {
   };
 
   DirtyChecker.prototype.check = function check() {
-    var tracked = this.tracked,
-        i = tracked.length;
+    var tracked = this.tracked;
+    var i = tracked.length;
 
     while (i--) {
       var current = tracked[i];
@@ -3405,7 +3436,7 @@ var propertyAccessor = exports.propertyAccessor = {
     return obj[propertyName];
   },
   setValue: function setValue(value, obj, propertyName) {
-    return obj[propertyName] = value;
+    obj[propertyName] = value;
   }
 };
 
@@ -3583,9 +3614,9 @@ var StyleObserver = exports.StyleObserver = function () {
   };
 
   StyleObserver.prototype.setValue = function setValue(newValue) {
-    var styles = this.styles || {},
-        style = void 0,
-        version = this.version;
+    var styles = this.styles || {};
+    var style = void 0;
+    var version = this.version;
 
     if (newValue !== null && newValue !== undefined) {
       if (newValue instanceof Object) {
@@ -3597,15 +3628,15 @@ var StyleObserver = exports.StyleObserver = function () {
         }
       } else if (newValue.length) {
         var pairs = newValue.split(/(?:;|:(?!\/))\s*/);
-        for (var _i6 = 0, length = pairs.length; _i6 < length; _i6++) {
-          style = pairs[_i6].trim();
+        for (var _i22 = 0, length = pairs.length; _i22 < length; _i22++) {
+          style = pairs[_i22].trim();
           if (!style) {
             continue;
           }
 
           styles[style] = version;
 
-          this.element.style[style] = pairs[++_i6];
+          this.element.style[style] = pairs[++_i22];
         }
       }
     }
@@ -3733,11 +3764,11 @@ var CheckedObserver = exports.CheckedObserver = (_dec8 = subscriberCollection(),
   };
 
   CheckedObserver.prototype.synchronizeElement = function synchronizeElement() {
-    var value = this.value,
-        element = this.element,
-        elementValue = element.hasOwnProperty('model') ? element.model : element.value,
-        isRadio = element.type === 'radio',
-        matcher = element.matcher || function (a, b) {
+    var value = this.value;
+    var element = this.element;
+    var elementValue = element.hasOwnProperty('model') ? element.model : element.value;
+    var isRadio = element.type === 'radio';
+    var matcher = element.matcher || function (a, b) {
       return a === b;
     };
 
@@ -3747,11 +3778,11 @@ var CheckedObserver = exports.CheckedObserver = (_dec8 = subscriberCollection(),
   };
 
   CheckedObserver.prototype.synchronizeValue = function synchronizeValue() {
-    var value = this.value,
-        element = this.element,
-        elementValue = element.hasOwnProperty('model') ? element.model : element.value,
-        index = void 0,
-        matcher = element.matcher || function (a, b) {
+    var value = this.value;
+    var element = this.element;
+    var elementValue = element.hasOwnProperty('model') ? element.model : element.value;
+    var index = void 0;
+    var matcher = element.matcher || function (a, b) {
       return a === b;
     };
 
@@ -3767,9 +3798,9 @@ var CheckedObserver = exports.CheckedObserver = (_dec8 = subscriberCollection(),
         }
 
         return;
-      } else {
-        value = element.checked;
       }
+
+      value = element.checked;
     } else if (element.checked) {
       value = elementValue;
     } else {
@@ -3862,9 +3893,9 @@ var SelectValueObserver = exports.SelectValueObserver = (_dec9 = subscriberColle
   };
 
   SelectValueObserver.prototype.synchronizeOptions = function synchronizeOptions() {
-    var value = this.value,
-        clear = void 0,
-        isArray = void 0;
+    var value = this.value;
+    var clear = void 0;
+    var isArray = void 0;
 
     if (value === null || value === undefined) {
       clear = true;
@@ -3904,12 +3935,12 @@ var SelectValueObserver = exports.SelectValueObserver = (_dec9 = subscriberColle
   SelectValueObserver.prototype.synchronizeValue = function synchronizeValue() {
     var _this24 = this;
 
-    var options = this.element.options,
-        count = 0,
-        value = [];
+    var options = this.element.options;
+    var count = 0;
+    var value = [];
 
-    for (var _i7 = 0, ii = options.length; _i7 < ii; _i7++) {
-      var _option = options.item(_i7);
+    for (var _i23 = 0, ii = options.length; _i23 < ii; _i23++) {
+      var _option = options.item(_i23);
       if (!_option.selected) {
         continue;
       }
@@ -4037,15 +4068,15 @@ var ClassObserver = exports.ClassObserver = function () {
   };
 
   ClassObserver.prototype.setValue = function setValue(newValue) {
-    var nameIndex = this.nameIndex || {},
-        version = this.version,
-        names,
-        name;
+    var nameIndex = this.nameIndex || {};
+    var version = this.version;
+    var names = void 0;
+    var name = void 0;
 
     if (newValue !== null && newValue !== undefined && newValue.length) {
       names = newValue.split(/\s+/);
-      for (var _i8 = 0, length = names.length; _i8 < length; _i8++) {
-        name = names[_i8];
+      for (var _i24 = 0, length = names.length; _i24 < length; _i24++) {
+        name = names[_i24];
         if (name === '') {
           continue;
         }
@@ -4138,9 +4169,9 @@ var ComputedExpression = exports.ComputedExpression = function (_Expression19) {
 function createComputedObserver(obj, propertyName, descriptor, observerLocator) {
   var dependencies = descriptor.get.dependencies;
   if (!(dependencies instanceof ComputedExpression)) {
-    var _i9 = dependencies.length;
-    while (_i9--) {
-      dependencies[_i9] = observerLocator.parser.parse(dependencies[_i9]);
+    var _i25 = dependencies.length;
+    while (_i25--) {
+      dependencies[_i25] = observerLocator.parser.parse(dependencies[_i25]);
     }
     dependencies = descriptor.get.dependencies = new ComputedExpression(propertyName, dependencies);
   }
@@ -4231,7 +4262,6 @@ var elements = exports.elements = {
   view: ['externalResourcesRequired', 'id', 'preserveAspectRatio', 'viewBox', 'viewTarget', 'xml:base', 'xml:lang', 'xml:space', 'zoomAndPan'],
   vkern: ['g1', 'g2', 'id', 'k', 'u1', 'u2', 'xml:base', 'xml:lang', 'xml:space']
 };
-
 var presentationElements = exports.presentationElements = {
   'a': true,
   'altGlyph': true,
@@ -4418,7 +4448,7 @@ var ObserverLocator = exports.ObserverLocator = (_temp = _class11 = function () 
     var value = {};
 
     try {
-      Object.defineProperty(obj, "__observers__", {
+      Object.defineProperty(obj, '__observers__', {
         enumerable: false,
         configurable: false,
         writable: false,
@@ -4434,8 +4464,8 @@ var ObserverLocator = exports.ObserverLocator = (_temp = _class11 = function () 
   };
 
   ObserverLocator.prototype.getAdapterObserver = function getAdapterObserver(obj, propertyName, descriptor) {
-    for (var _i10 = 0, ii = this.adapters.length; _i10 < ii; _i10++) {
-      var adapter = this.adapters[_i10];
+    for (var _i26 = 0, ii = this.adapters.length; _i26 < ii; _i26++) {
+      var adapter = this.adapters[_i26];
       var observer = adapter.getObserver(obj, propertyName, descriptor);
       if (observer) {
         return observer;
@@ -4445,7 +4475,6 @@ var ObserverLocator = exports.ObserverLocator = (_temp = _class11 = function () 
   };
 
   ObserverLocator.prototype.createPropertyObserver = function createPropertyObserver(obj, propertyName) {
-    var observerLookup = void 0;
     var descriptor = void 0;
     var handler = void 0;
     var xlinkResult = void 0;
@@ -4502,21 +4531,21 @@ var ObserverLocator = exports.ObserverLocator = (_temp = _class11 = function () 
     if (obj instanceof Array) {
       if (propertyName === 'length') {
         return this.getArrayObserver(obj).getLengthObserver();
-      } else {
-        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
+
+      return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     } else if (obj instanceof Map) {
       if (propertyName === 'size') {
         return this.getMapObserver(obj).getLengthObserver();
-      } else {
-        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
+
+      return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     } else if (obj instanceof Set) {
       if (propertyName === 'size') {
         return this.getSetObserver(obj).getLengthObserver();
-      } else {
-        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
+
+      return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     }
 
     return new SetterObserver(this.taskQueue, obj, propertyName);
@@ -5010,7 +5039,7 @@ var NameBinder = function () {
   return NameBinder;
 }();
 
-var lookupFunctions = {
+var LookupFunctions = {
   bindingBehaviors: function bindingBehaviors(name) {
     return null;
   },
@@ -5029,7 +5058,7 @@ var BindingEngine = exports.BindingEngine = (_temp2 = _class13 = function () {
 
   BindingEngine.prototype.createBindingExpression = function createBindingExpression(targetProperty, sourceExpression) {
     var mode = arguments.length <= 2 || arguments[2] === undefined ? bindingMode.oneWay : arguments[2];
-    var lookupFunctions = arguments.length <= 3 || arguments[3] === undefined ? lookupFunctions : arguments[3];
+    var lookupFunctions = arguments.length <= 3 || arguments[3] === undefined ? LookupFunctions : arguments[3];
 
     return new BindingExpression(this.observerLocator, targetProperty, this.parser.parse(sourceExpression), mode, lookupFunctions);
   };
@@ -5077,7 +5106,7 @@ var BindingEngine = exports.BindingEngine = (_temp2 = _class13 = function () {
 
   BindingEngine.prototype.expressionObserver = function expressionObserver(bindingContext, expression) {
     var scope = { bindingContext: bindingContext, overrideContext: createOverrideContext(bindingContext) };
-    return new ExpressionObserver(scope, this.parser.parse(expression), this.observerLocator, lookupFunctions);
+    return new ExpressionObserver(scope, this.parser.parse(expression), this.observerLocator, LookupFunctions);
   };
 
   BindingEngine.prototype.parseExpression = function parseExpression(expression) {
@@ -5129,10 +5158,10 @@ var ModifySetObserver = function (_ModifyCollectionObse3) {
       };
     }
 
-    set['add'] = function () {
+    set.add = function () {
       var type = 'add';
       var oldSize = set.size;
-      var methodCallResult = proto['add'].apply(set, arguments);
+      var methodCallResult = proto.add.apply(set, arguments);
       var hasValue = set.size === oldSize;
       if (!hasValue) {
         observer.addChangeRecord({
@@ -5144,9 +5173,9 @@ var ModifySetObserver = function (_ModifyCollectionObse3) {
       return methodCallResult;
     };
 
-    set['delete'] = function () {
+    set.delete = function () {
       var hasValue = set.has(arguments[0]);
-      var methodCallResult = proto['delete'].apply(set, arguments);
+      var methodCallResult = proto.delete.apply(set, arguments);
       if (hasValue) {
         observer.addChangeRecord({
           type: 'delete',
@@ -5157,8 +5186,8 @@ var ModifySetObserver = function (_ModifyCollectionObse3) {
       return methodCallResult;
     };
 
-    set['clear'] = function () {
-      var methodCallResult = proto['clear'].apply(set, arguments);
+    set.clear = function () {
+      var methodCallResult = proto.clear.apply(set, arguments);
       observer.addChangeRecord({
         type: 'clear',
         object: set

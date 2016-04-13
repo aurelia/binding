@@ -65,7 +65,6 @@ function addObserver(observer) {
   let observerSlots = this._observerSlots === undefined ? 0 : this._observerSlots;
   let i = observerSlots;
   while (i-- && this[slotNames[i]] !== observer) {}
-
   if (i === -1) {
     i = 0;
     while (this[slotNames[i]]) {
@@ -405,23 +404,26 @@ function ArraySplice() {}
 
 ArraySplice.prototype = {
   calcEditDistances: function (current, currentStart, currentEnd, old, oldStart, oldEnd) {
-    var rowCount = oldEnd - oldStart + 1;
-    var columnCount = currentEnd - currentStart + 1;
-    var distances = new Array(rowCount);
-    var i, j, north, west;
+    let rowCount = oldEnd - oldStart + 1;
+    let columnCount = currentEnd - currentStart + 1;
+    let distances = new Array(rowCount);
+    let north;
+    let west;
 
-    for (i = 0; i < rowCount; ++i) {
+    for (let i = 0; i < rowCount; ++i) {
       distances[i] = new Array(columnCount);
       distances[i][0] = i;
     }
 
-    for (j = 0; j < columnCount; ++j) {
+    for (let j = 0; j < columnCount; ++j) {
       distances[0][j] = j;
     }
 
-    for (i = 1; i < rowCount; ++i) {
-      for (j = 1; j < columnCount; ++j) {
-        if (this.equals(current[currentStart + j - 1], old[oldStart + i - 1])) distances[i][j] = distances[i - 1][j - 1];else {
+    for (let i = 1; i < rowCount; ++i) {
+      for (let j = 1; j < columnCount; ++j) {
+        if (this.equals(current[currentStart + j - 1], old[oldStart + i - 1])) {
+          distances[i][j] = distances[i - 1][j - 1];
+        } else {
           north = distances[i - 1][j] + 1;
           west = distances[i][j - 1] + 1;
           distances[i][j] = north < west ? north : west;
@@ -433,30 +435,34 @@ ArraySplice.prototype = {
   },
 
   spliceOperationsFromEditDistances: function (distances) {
-    var i = distances.length - 1;
-    var j = distances[0].length - 1;
-    var current = distances[i][j];
-    var edits = [];
+    let i = distances.length - 1;
+    let j = distances[0].length - 1;
+    let current = distances[i][j];
+    let edits = [];
     while (i > 0 || j > 0) {
-      if (i == 0) {
+      if (i === 0) {
         edits.push(EDIT_ADD);
         j--;
         continue;
       }
-      if (j == 0) {
+      if (j === 0) {
         edits.push(EDIT_DELETE);
         i--;
         continue;
       }
-      var northWest = distances[i - 1][j - 1];
-      var west = distances[i - 1][j];
-      var north = distances[i][j - 1];
+      let northWest = distances[i - 1][j - 1];
+      let west = distances[i - 1][j];
+      let north = distances[i][j - 1];
 
-      var min;
-      if (west < north) min = west < northWest ? west : northWest;else min = north < northWest ? north : northWest;
+      let min;
+      if (west < north) {
+        min = west < northWest ? west : northWest;
+      } else {
+        min = north < northWest ? north : northWest;
+      }
 
-      if (min == northWest) {
-        if (northWest == current) {
+      if (min === northWest) {
+        if (northWest === current) {
           edits.push(EDIT_LEAVE);
         } else {
           edits.push(EDIT_UPDATE);
@@ -464,7 +470,7 @@ ArraySplice.prototype = {
         }
         i--;
         j--;
-      } else if (min == west) {
+      } else if (min === west) {
         edits.push(EDIT_DELETE);
         i--;
         current = west;
@@ -480,35 +486,45 @@ ArraySplice.prototype = {
   },
 
   calcSplices: function (current, currentStart, currentEnd, old, oldStart, oldEnd) {
-    var prefixCount = 0;
-    var suffixCount = 0;
+    let prefixCount = 0;
+    let suffixCount = 0;
 
-    var minLength = Math.min(currentEnd - currentStart, oldEnd - oldStart);
-    if (currentStart == 0 && oldStart == 0) prefixCount = this.sharedPrefix(current, old, minLength);
+    let minLength = Math.min(currentEnd - currentStart, oldEnd - oldStart);
+    if (currentStart === 0 && oldStart === 0) {
+      prefixCount = this.sharedPrefix(current, old, minLength);
+    }
 
-    if (currentEnd == current.length && oldEnd == old.length) suffixCount = this.sharedSuffix(current, old, minLength - prefixCount);
+    if (currentEnd === current.length && oldEnd === old.length) {
+      suffixCount = this.sharedSuffix(current, old, minLength - prefixCount);
+    }
 
     currentStart += prefixCount;
     oldStart += prefixCount;
     currentEnd -= suffixCount;
     oldEnd -= suffixCount;
 
-    if (currentEnd - currentStart == 0 && oldEnd - oldStart == 0) return [];
+    if (currentEnd - currentStart === 0 && oldEnd - oldStart === 0) {
+      return [];
+    }
 
-    if (currentStart == currentEnd) {
-      var splice = newSplice(currentStart, [], 0);
-      while (oldStart < oldEnd) splice.removed.push(old[oldStart++]);
+    if (currentStart === currentEnd) {
+      let splice = newSplice(currentStart, [], 0);
+      while (oldStart < oldEnd) {
+        splice.removed.push(old[oldStart++]);
+      }
 
       return [splice];
-    } else if (oldStart == oldEnd) return [newSplice(currentStart, [], currentEnd - currentStart)];
+    } else if (oldStart === oldEnd) {
+      return [newSplice(currentStart, [], currentEnd - currentStart)];
+    }
 
-    var ops = this.spliceOperationsFromEditDistances(this.calcEditDistances(current, currentStart, currentEnd, old, oldStart, oldEnd));
+    let ops = this.spliceOperationsFromEditDistances(this.calcEditDistances(current, currentStart, currentEnd, old, oldStart, oldEnd));
 
-    var splice = undefined;
-    var splices = [];
-    var index = currentStart;
-    var oldIndex = oldStart;
-    for (var i = 0; i < ops.length; ++i) {
+    let splice = undefined;
+    let splices = [];
+    let index = currentStart;
+    let oldIndex = oldStart;
+    for (let i = 0; i < ops.length; ++i) {
       switch (ops[i]) {
         case EDIT_LEAVE:
           if (splice) {
@@ -520,7 +536,9 @@ ArraySplice.prototype = {
           oldIndex++;
           break;
         case EDIT_UPDATE:
-          if (!splice) splice = newSplice(index, [], 0);
+          if (!splice) {
+            splice = newSplice(index, [], 0);
+          }
 
           splice.addedCount++;
           index++;
@@ -529,13 +547,17 @@ ArraySplice.prototype = {
           oldIndex++;
           break;
         case EDIT_ADD:
-          if (!splice) splice = newSplice(index, [], 0);
+          if (!splice) {
+            splice = newSplice(index, [], 0);
+          }
 
           splice.addedCount++;
           index++;
           break;
         case EDIT_DELETE:
-          if (!splice) splice = newSplice(index, [], 0);
+          if (!splice) {
+            splice = newSplice(index, [], 0);
+          }
 
           splice.removed.push(old[oldIndex]);
           oldIndex++;
@@ -550,15 +572,22 @@ ArraySplice.prototype = {
   },
 
   sharedPrefix: function (current, old, searchLength) {
-    for (var i = 0; i < searchLength; ++i) if (!this.equals(current[i], old[i])) return i;
+    for (let i = 0; i < searchLength; ++i) {
+      if (!this.equals(current[i], old[i])) {
+        return i;
+      }
+    }
+
     return searchLength;
   },
 
   sharedSuffix: function (current, old, searchLength) {
-    var index1 = current.length;
-    var index2 = old.length;
-    var count = 0;
-    while (count < searchLength && this.equals(current[--index1], old[--index2])) count++;
+    let index1 = current.length;
+    let index2 = old.length;
+    let count = 0;
+    while (count < searchLength && this.equals(current[--index1], old[--index2])) {
+      count++;
+    }
 
     return count;
   },
@@ -572,37 +601,51 @@ ArraySplice.prototype = {
   }
 };
 
-var arraySplice = new ArraySplice();
+let arraySplice = new ArraySplice();
 
 export function calcSplices(current, currentStart, currentEnd, old, oldStart, oldEnd) {
   return arraySplice.calcSplices(current, currentStart, currentEnd, old, oldStart, oldEnd);
 }
 
 function intersect(start1, end1, start2, end2) {
-  if (end1 < start2 || end2 < start1) return -1;
+  if (end1 < start2 || end2 < start1) {
+    return -1;
+  }
 
-  if (end1 == start2 || end2 == start1) return 0;
+  if (end1 === start2 || end2 === start1) {
+    return 0;
+  }
 
   if (start1 < start2) {
-    if (end1 < end2) return end1 - start2;else return end2 - start2;
-  } else {
-      if (end2 < end1) return end2 - start1;else return end1 - start1;
+    if (end1 < end2) {
+      return end1 - start2;
     }
+
+    return end2 - start2;
+  }
+
+  if (end2 < end1) {
+    return end2 - start1;
+  }
+
+  return end1 - start1;
 }
 
 export function mergeSplice(splices, index, removed, addedCount) {
-  var splice = newSplice(index, removed, addedCount);
+  let splice = newSplice(index, removed, addedCount);
 
-  var inserted = false;
-  var insertionOffset = 0;
+  let inserted = false;
+  let insertionOffset = 0;
 
-  for (var i = 0; i < splices.length; i++) {
-    var current = splices[i];
+  for (let i = 0; i < splices.length; i++) {
+    let current = splices[i];
     current.index += insertionOffset;
 
-    if (inserted) continue;
+    if (inserted) {
+      continue;
+    }
 
-    var intersectCount = intersect(splice.index, splice.index + splice.removed.length, current.index, current.index + current.addedCount);
+    let intersectCount = intersect(splice.index, splice.index + splice.removed.length, current.index, current.index + current.addedCount);
 
     if (intersectCount >= 0) {
 
@@ -612,25 +655,25 @@ export function mergeSplice(splices, index, removed, addedCount) {
       insertionOffset -= current.addedCount - current.removed.length;
 
       splice.addedCount += current.addedCount - intersectCount;
-      var deleteCount = splice.removed.length + current.removed.length - intersectCount;
+      let deleteCount = splice.removed.length + current.removed.length - intersectCount;
 
       if (!splice.addedCount && !deleteCount) {
         inserted = true;
       } else {
-        var removed = current.removed;
+        let currentRemoved = current.removed;
 
         if (splice.index < current.index) {
-          var prepend = splice.removed.slice(0, current.index - splice.index);
-          Array.prototype.push.apply(prepend, removed);
-          removed = prepend;
+          let prepend = splice.removed.slice(0, current.index - splice.index);
+          Array.prototype.push.apply(prepend, currentRemoved);
+          currentRemoved = prepend;
         }
 
         if (splice.index + splice.removed.length > current.index + current.addedCount) {
-          var append = splice.removed.slice(current.index + current.addedCount - splice.index);
-          Array.prototype.push.apply(removed, append);
+          let append = splice.removed.slice(current.index + current.addedCount - splice.index);
+          Array.prototype.push.apply(currentRemoved, append);
         }
 
-        splice.removed = removed;
+        splice.removed = currentRemoved;
         if (current.index < splice.index) {
           splice.index = current.index;
         }
@@ -642,20 +685,22 @@ export function mergeSplice(splices, index, removed, addedCount) {
       splices.splice(i, 0, splice);
       i++;
 
-      var offset = splice.addedCount - splice.removed.length;
+      let offset = splice.addedCount - splice.removed.length;
       current.index += offset;
       insertionOffset += offset;
     }
   }
 
-  if (!inserted) splices.push(splice);
+  if (!inserted) {
+    splices.push(splice);
+  }
 }
 
 function createInitialSplices(array, changeRecords) {
-  var splices = [];
+  let splices = [];
 
-  for (var i = 0; i < changeRecords.length; i++) {
-    var record = changeRecords[i];
+  for (let i = 0; i < changeRecords.length; i++) {
+    let record = changeRecords[i];
     switch (record.type) {
       case 'splice':
         mergeSplice(splices, record.index, record.removed.slice(), record.addedCount);
@@ -663,9 +708,15 @@ function createInitialSplices(array, changeRecords) {
       case 'add':
       case 'update':
       case 'delete':
-        if (!isIndex(record.name)) continue;
-        var index = toNumber(record.name);
-        if (index < 0) continue;
+        if (!isIndex(record.name)) {
+          continue;
+        }
+
+        let index = toNumber(record.name);
+        if (index < 0) {
+          continue;
+        }
+
         mergeSplice(splices, index, [record.oldValue], record.type === 'delete' ? 0 : 1);
         break;
       default:
@@ -678,14 +729,16 @@ function createInitialSplices(array, changeRecords) {
 }
 
 export function projectArraySplices(array, changeRecords) {
-  var splices = [];
+  let splices = [];
 
   createInitialSplices(array, changeRecords).forEach(function (splice) {
-    if (splice.addedCount == 1 && splice.removed.length == 1) {
-      if (splice.removed[0] !== array[splice.index]) splices.push(splice);
+    if (splice.addedCount === 1 && splice.removed.length === 1) {
+      if (splice.removed[0] !== array[splice.index]) {
+        splices.push(splice);
+      }
 
       return;
-    };
+    }
 
     splices = splices.concat(calcSplices(array, splice.index, splice.index + splice.addedCount, splice.removed, 0, splice.removed.length));
   });
@@ -744,8 +797,8 @@ export let ModifyCollectionObserver = (_dec3 = subscriberCollection(), _dec3(_cl
     }
 
     if (changeRecord.type === 'splice') {
-      var index = changeRecord.index;
-      var arrayLength = changeRecord.object.length;
+      let index = changeRecord.index;
+      let arrayLength = changeRecord.object.length;
       if (index > arrayLength) {
         index = arrayLength - changeRecord.addedCount;
       } else if (index < 0) {
@@ -1005,13 +1058,11 @@ export let Chain = class Chain extends Expression {
   }
 
   evaluate(scope, lookupFunctions) {
-    var result,
-        expressions = this.expressions,
-        length = expressions.length,
-        i,
-        last;
+    let result;
+    let expressions = this.expressions;
+    let last;
 
-    for (i = 0; i < length; ++i) {
+    for (let i = 0, length = expressions.length; i < length; ++i) {
       last = expressions[i].evaluate(scope, lookupFunctions);
 
       if (last !== null) {
@@ -1089,7 +1140,7 @@ export let ValueConverter = class ValueConverter extends Expression {
   }
 
   evaluate(scope, lookupFunctions) {
-    var converter = lookupFunctions.valueConverters(this.name);
+    let converter = lookupFunctions.valueConverters(this.name);
     if (!converter) {
       throw new Error(`No ValueConverter named "${ this.name }" was found!`);
     }
@@ -1102,7 +1153,7 @@ export let ValueConverter = class ValueConverter extends Expression {
   }
 
   assign(scope, value, lookupFunctions) {
-    var converter = lookupFunctions.valueConverters(this.name);
+    let converter = lookupFunctions.valueConverters(this.name);
     if (!converter) {
       throw new Error(`No ValueConverter named "${ this.name }" was found!`);
     }
@@ -1234,12 +1285,12 @@ export let AccessMember = class AccessMember extends Expression {
   }
 
   evaluate(scope, lookupFunctions) {
-    var instance = this.object.evaluate(scope, lookupFunctions);
+    let instance = this.object.evaluate(scope, lookupFunctions);
     return instance === null || instance === undefined ? instance : instance[this.name];
   }
 
   assign(scope, value) {
-    var instance = this.object.evaluate(scope);
+    let instance = this.object.evaluate(scope);
 
     if (instance === null || instance === undefined) {
       instance = {};
@@ -1272,14 +1323,14 @@ export let AccessKeyed = class AccessKeyed extends Expression {
   }
 
   evaluate(scope, lookupFunctions) {
-    var instance = this.object.evaluate(scope, lookupFunctions);
-    var lookup = this.key.evaluate(scope, lookupFunctions);
+    let instance = this.object.evaluate(scope, lookupFunctions);
+    let lookup = this.key.evaluate(scope, lookupFunctions);
     return getKeyed(instance, lookup);
   }
 
   assign(scope, value) {
-    var instance = this.object.evaluate(scope);
-    var lookup = this.key.evaluate(scope);
+    let instance = this.object.evaluate(scope);
+    let lookup = this.key.evaluate(scope);
     return setKeyed(instance, lookup, value);
   }
 
@@ -1343,7 +1394,7 @@ export let CallMember = class CallMember extends Expression {
   }
 
   evaluate(scope, lookupFunctions, mustEvaluate) {
-    var instance = this.object.evaluate(scope, lookupFunctions);
+    let instance = this.object.evaluate(scope, lookupFunctions);
     let args = evalList(scope, this.args, lookupFunctions);
     let func = getFunction(instance, this.name, mustEvaluate);
     if (func) {
@@ -1415,7 +1466,7 @@ export let Binary = class Binary extends Expression {
   }
 
   evaluate(scope, lookupFunctions) {
-    var left = this.left.evaluate(scope);
+    let left = this.left.evaluate(scope);
 
     switch (this.operation) {
       case '&&':
@@ -1424,7 +1475,7 @@ export let Binary = class Binary extends Expression {
         return left || this.right.evaluate(scope);
     }
 
-    var right = this.right.evaluate(scope);
+    let right = this.right.evaluate(scope);
 
     switch (this.operation) {
       case '==':
@@ -1440,12 +1491,12 @@ export let Binary = class Binary extends Expression {
     if (left === null || right === null) {
       switch (this.operation) {
         case '+':
-          if (left != null) return left;
-          if (right != null) return right;
+          if (left !== null) return left;
+          if (right !== null) return right;
           return 0;
         case '-':
-          if (left != null) return left;
-          if (right != null) return 0 - right;
+          if (left !== null) return left;
+          if (right !== null) return 0 - right;
           return 0;
       }
 
@@ -1557,12 +1608,10 @@ export let LiteralArray = class LiteralArray extends Expression {
   }
 
   evaluate(scope, lookupFunctions) {
-    var elements = this.elements,
-        length = elements.length,
-        result = [],
-        i;
+    let elements = this.elements;
+    let result = [];
 
-    for (i = 0; i < length; ++i) {
+    for (let i = 0, length = elements.length; i < length; ++i) {
       result[i] = elements[i].evaluate(scope, lookupFunctions);
     }
 
@@ -1590,13 +1639,11 @@ export let LiteralObject = class LiteralObject extends Expression {
   }
 
   evaluate(scope, lookupFunctions) {
-    var instance = {},
-        keys = this.keys,
-        values = this.values,
-        length = keys.length,
-        i;
+    let instance = {};
+    let keys = this.keys;
+    let values = this.values;
 
-    for (i = 0; i < length; ++i) {
+    for (let i = 0, length = keys.length; i < length; ++i) {
       instance[keys[i]] = values[i].evaluate(scope, lookupFunctions);
     }
 
@@ -1615,20 +1662,18 @@ export let LiteralObject = class LiteralObject extends Expression {
   }
 };
 
-var evalListCache = [[], [0], [0, 0], [0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0]];
+let evalListCache = [[], [0], [0, 0], [0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0]];
 
 function evalList(scope, list, lookupFunctions) {
-  var length = list.length,
-      cacheLength,
-      i;
+  let length = list.length;
 
-  for (cacheLength = evalListCache.length; cacheLength <= length; ++cacheLength) {
+  for (let cacheLength = evalListCache.length; cacheLength <= length; ++cacheLength) {
     evalListCache.push([]);
   }
 
-  var result = evalListCache[length];
+  let result = evalListCache[length];
 
-  for (i = 0; i < length; ++i) {
+  for (let i = 0; i < length; ++i) {
     result[i] = list[i].evaluate(scope, lookupFunctions);
   }
 
@@ -1636,23 +1681,23 @@ function evalList(scope, list, lookupFunctions) {
 }
 
 function autoConvertAdd(a, b) {
-  if (a != null && b != null) {
-    if (typeof a == 'string' && typeof b != 'string') {
+  if (a !== null && b !== null) {
+    if (typeof a === 'string' && typeof b !== 'string') {
       return a + b.toString();
     }
 
-    if (typeof a != 'string' && typeof b == 'string') {
+    if (typeof a !== 'string' && typeof b === 'string') {
       return a.toString() + b;
     }
 
     return a + b;
   }
 
-  if (a != null) {
+  if (a !== null) {
     return a;
   }
 
-  if (b != null) {
+  if (b !== null) {
     return b;
   }
 
@@ -1672,19 +1717,19 @@ function getFunction(obj, name, mustExist) {
 
 function getKeyed(obj, key) {
   if (Array.isArray(obj)) {
-    return obj[parseInt(key)];
+    return obj[parseInt(key, 10)];
   } else if (obj) {
     return obj[key];
   } else if (obj === null || obj === undefined) {
     return undefined;
-  } else {
-    return obj[key];
   }
+
+  return obj[key];
 }
 
 function setKeyed(obj, key, value) {
   if (Array.isArray(obj)) {
-    var index = parseInt(key);
+    let index = parseInt(key, 10);
 
     if (obj.length <= index) {
       obj.length = index + 1;
@@ -1704,8 +1749,8 @@ export let Unparser = class Unparser {
   }
 
   static unparse(expression) {
-    var buffer = [],
-        visitor = new Unparser(buffer);
+    let buffer = [];
+    let visitor = new Unparser(buffer);
 
     expression.accept(visitor);
 
@@ -1717,11 +1762,9 @@ export let Unparser = class Unparser {
   }
 
   writeArgs(args) {
-    var i, length;
-
     this.write('(');
 
-    for (i = 0, length = args.length; i < length; ++i) {
+    for (let i = 0, length = args.length; i < length; ++i) {
       if (i !== 0) {
         this.write(',');
       }
@@ -1733,11 +1776,9 @@ export let Unparser = class Unparser {
   }
 
   visitChain(chain) {
-    var expressions = chain.expressions,
-        length = expressions.length,
-        i;
+    let expressions = chain.expressions;
 
-    for (i = 0; i < length; ++i) {
+    for (let i = 0, length = expression.length; i < length; ++i) {
       if (i !== 0) {
         this.write(';');
       }
@@ -1747,28 +1788,24 @@ export let Unparser = class Unparser {
   }
 
   visitBindingBehavior(behavior) {
-    var args = behavior.args,
-        length = args.length,
-        i;
+    let args = behavior.args;
 
     behavior.expression.accept(this);
     this.write(`&${ behavior.name }`);
 
-    for (i = 0; i < length; ++i) {
+    for (let i = 0, length = args.length; i < length; ++i) {
       this.write(':');
       args[i].accept(this);
     }
   }
 
   visitValueConverter(converter) {
-    var args = converter.args,
-        length = args.length,
-        i;
+    let args = converter.args;
 
     converter.expression.accept(this);
     this.write(`|${ converter.name }`);
 
-    for (i = 0; i < length; ++i) {
+    for (let i = 0, length = args.length; i < length; ++i) {
       this.write(':');
       args[i].accept(this);
     }
@@ -1857,13 +1894,11 @@ export let Unparser = class Unparser {
   }
 
   visitLiteralArray(literal) {
-    var elements = literal.elements,
-        length = elements.length,
-        i;
+    let elements = literal.elements;
 
     this.write('[');
 
-    for (i = 0; i < length; ++i) {
+    for (let i = 0, length = elements.length; i < length; ++i) {
       if (i !== 0) {
         this.write(',');
       }
@@ -1875,14 +1910,12 @@ export let Unparser = class Unparser {
   }
 
   visitLiteralObject(literal) {
-    var keys = literal.keys,
-        values = literal.values,
-        length = keys.length,
-        i;
+    let keys = literal.keys;
+    let values = literal.values;
 
     this.write('{');
 
-    for (i = 0; i < length; ++i) {
+    for (let i = 0, length = keys.length; i < length; ++i) {
       if (i !== 0) {
         this.write(',');
       }
@@ -1895,7 +1928,7 @@ export let Unparser = class Unparser {
   }
 
   visitLiteralString(literal) {
-    var escaped = literal.value.replace(/'/g, "\'");
+    let escaped = literal.value.replace(/'/g, "\'");
     this.write(`'${ escaped }'`);
   }
 };
@@ -2050,9 +2083,9 @@ export let Scanner = class Scanner {
       if (++this.index >= this.length) {
         this.peek = $EOF;
         return null;
-      } else {
-        this.peek = this.input.charCodeAt(this.index);
       }
+
+      this.peek = this.input.charCodeAt(this.index);
     }
 
     if (isIdentifierStart(this.peek)) {
@@ -2141,7 +2174,7 @@ export let Scanner = class Scanner {
       text += two;
     }
 
-    assert(OPERATORS.indexOf(text) != -1);
+    assert(OPERATORS.indexOf(text) !== -1);
 
     return new Token(start, text).withOp(text);
   }
@@ -2196,7 +2229,7 @@ export let Scanner = class Scanner {
     }
 
     let text = this.input.substring(start, this.index);
-    let value = simple ? parseInt(text) : parseFloat(text);
+    let value = simple ? parseInt(text, 10) : parseFloat(text);
     return new Token(start, text).withValue(value);
   }
 
@@ -2254,7 +2287,7 @@ export let Scanner = class Scanner {
 
     let unescaped = last;
 
-    if (buffer != null) {
+    if (buffer !== null && buffer !== undefined) {
       buffer.push(last);
       unescaped = buffer.join('');
     }
@@ -2377,7 +2410,7 @@ function unescape(code) {
 
 function assert(condition, message) {
   if (!condition) {
-    throw message || "Assertion failed";
+    throw message || 'Assertion failed';
   }
 }
 
@@ -2606,9 +2639,9 @@ export let ParserImplementation = class ParserImplementation {
         return new Binary('-', new LiteralPrimitive(0), this.parsePrefix());
       } else if (this.optional('!')) {
         return new PrefixNot('!', this.parsePrefix());
-      } else {
-        return this.parseAccessOrCallMember();
       }
+
+    return this.parseAccessOrCallMember();
   }
 
   parseAccessOrCallMember() {
@@ -2666,11 +2699,11 @@ export let ParserImplementation = class ParserImplementation {
       let elements = this.parseExpressionList(']');
       this.expect(']');
       return new LiteralArray(elements);
-    } else if (this.peek.text == '{') {
+    } else if (this.peek.text === '{') {
       return this.parseObject();
-    } else if (this.peek.key != null) {
+    } else if (this.peek.key !== null && this.peek.key !== undefined) {
       return this.parseAccessOrCallScope();
-    } else if (this.peek.value != null) {
+    } else if (this.peek.value !== null && this.peek.value !== undefined) {
       let value = this.peek.value;
       this.advance();
       return value instanceof String || typeof value === 'string' ? new LiteralString(value) : new LiteralPrimitive(value);
@@ -2743,7 +2776,7 @@ export let ParserImplementation = class ParserImplementation {
   parseExpressionList(terminator) {
     let result = [];
 
-    if (this.peek.text != terminator) {
+    if (this.peek.text !== terminator) {
       do {
         result.push(this.parseExpression());
       } while (this.optional(','));
@@ -2774,7 +2807,7 @@ export let ParserImplementation = class ParserImplementation {
   }
 
   error(message) {
-    let location = this.index < this.tokens.length ? `at column ${ this.tokens[this.index].index + 1 } in` : `at the end of the expression`;
+    let location = this.index < this.tokens.length ? `at column ${ this.tokens[this.index].index + 1 } in` : 'at the end of the expression';
 
     throw new Error(`Parser Error: ${ message } ${ location } [${ this.input }]`);
   }
@@ -2811,11 +2844,11 @@ let ModifyMapObserver = class ModifyMapObserver extends ModifyCollectionObserver
       };
     }
 
-    map['set'] = function () {
+    map.set = function () {
       let hasValue = map.has(arguments[0]);
       let type = hasValue ? 'update' : 'add';
       let oldValue = map.get(arguments[0]);
-      let methodCallResult = proto['set'].apply(map, arguments);
+      let methodCallResult = proto.set.apply(map, arguments);
       if (!hasValue || oldValue !== map.get(arguments[0])) {
         observer.addChangeRecord({
           type: type,
@@ -2827,10 +2860,10 @@ let ModifyMapObserver = class ModifyMapObserver extends ModifyCollectionObserver
       return methodCallResult;
     };
 
-    map['delete'] = function () {
+    map.delete = function () {
       let hasValue = map.has(arguments[0]);
       let oldValue = map.get(arguments[0]);
-      let methodCallResult = proto['delete'].apply(map, arguments);
+      let methodCallResult = proto.delete.apply(map, arguments);
       if (hasValue) {
         observer.addChangeRecord({
           type: 'delete',
@@ -2842,8 +2875,8 @@ let ModifyMapObserver = class ModifyMapObserver extends ModifyCollectionObserver
       return methodCallResult;
     };
 
-    map['clear'] = function () {
-      let methodCallResult = proto['clear'].apply(map, arguments);
+    map.clear = function () {
+      let methodCallResult = proto.clear.apply(map, arguments);
       observer.addChangeRecord({
         type: 'clear',
         object: map
@@ -2918,13 +2951,13 @@ let DefaultEventStrategy = class DefaultEventStrategy {
         handlerEntry.decrement();
         delegatedCallbacks[targetEvent] = null;
       };
-    } else {
-      target.addEventListener(targetEvent, callback, false);
-
-      return function () {
-        target.removeEventListener(targetEvent, callback);
-      };
     }
+
+    target.addEventListener(targetEvent, callback, false);
+
+    return function () {
+      target.removeEventListener(targetEvent, callback);
+    };
   }
 };
 
@@ -3029,7 +3062,7 @@ export let EventManager = class EventManager {
       }
 
       if (propertyName === 'textContent' || propertyName === 'innerHTML') {
-        return lookup['content editable']['value'];
+        return lookup['content editable'].value;
       }
 
       if (propertyName === 'scrollTop' || propertyName === 'scrollLeft') {
@@ -3052,7 +3085,7 @@ export let DirtyChecker = class DirtyChecker {
   }
 
   addProperty(property) {
-    var tracked = this.tracked;
+    let tracked = this.tracked;
 
     tracked.push(property);
 
@@ -3062,7 +3095,7 @@ export let DirtyChecker = class DirtyChecker {
   }
 
   removeProperty(property) {
-    var tracked = this.tracked;
+    let tracked = this.tracked;
     tracked.splice(tracked.indexOf(property), 1);
   }
 
@@ -3071,11 +3104,11 @@ export let DirtyChecker = class DirtyChecker {
   }
 
   check() {
-    var tracked = this.tracked,
-        i = tracked.length;
+    let tracked = this.tracked;
+    let i = tracked.length;
 
     while (i--) {
-      var current = tracked[i];
+      let current = tracked[i];
 
       if (current.isDirty()) {
         current.call();
@@ -3133,7 +3166,9 @@ export let DirtyCheckProperty = (_dec5 = subscriberCollection(), _dec5(_class5 =
 
 export const propertyAccessor = {
   getValue: (obj, propertyName) => obj[propertyName],
-  setValue: (value, obj, propertyName) => obj[propertyName] = value
+  setValue: (value, obj, propertyName) => {
+    obj[propertyName] = value;
+  }
 };
 
 export let PrimitiveObserver = class PrimitiveObserver {
@@ -3289,9 +3324,9 @@ export let StyleObserver = class StyleObserver {
   }
 
   setValue(newValue) {
-    let styles = this.styles || {},
-        style,
-        version = this.version;
+    let styles = this.styles || {};
+    let style;
+    let version = this.version;
 
     if (newValue !== null && newValue !== undefined) {
       if (newValue instanceof Object) {
@@ -3336,7 +3371,6 @@ export let StyleObserver = class StyleObserver {
   subscribe() {
     throw new Error(`Observation of a "${ this.element.nodeName }" element\'s "${ this.propertyName }" property is not supported.`);
   }
-
 };
 
 export let ValueAttributeObserver = (_dec7 = subscriberCollection(), _dec7(_class8 = class ValueAttributeObserver {
@@ -3431,21 +3465,21 @@ export let CheckedObserver = (_dec8 = subscriberCollection(), _dec8(_class9 = cl
   }
 
   synchronizeElement() {
-    let value = this.value,
-        element = this.element,
-        elementValue = element.hasOwnProperty('model') ? element.model : element.value,
-        isRadio = element.type === 'radio',
-        matcher = element.matcher || ((a, b) => a === b);
+    let value = this.value;
+    let element = this.element;
+    let elementValue = element.hasOwnProperty('model') ? element.model : element.value;
+    let isRadio = element.type === 'radio';
+    let matcher = element.matcher || ((a, b) => a === b);
 
     element.checked = isRadio && !!matcher(value, elementValue) || !isRadio && value === true || !isRadio && Array.isArray(value) && !!value.find(item => !!matcher(item, elementValue));
   }
 
   synchronizeValue() {
-    let value = this.value,
-        element = this.element,
-        elementValue = element.hasOwnProperty('model') ? element.model : element.value,
-        index,
-        matcher = element.matcher || ((a, b) => a === b);
+    let value = this.value;
+    let element = this.element;
+    let elementValue = element.hasOwnProperty('model') ? element.model : element.value;
+    let index;
+    let matcher = element.matcher || ((a, b) => a === b);
 
     if (element.type === 'checkbox') {
       if (Array.isArray(value)) {
@@ -3457,9 +3491,9 @@ export let CheckedObserver = (_dec8 = subscriberCollection(), _dec8(_class9 = cl
         }
 
         return;
-      } else {
-        value = element.checked;
       }
+
+      value = element.checked;
     } else if (element.checked) {
       value = elementValue;
     } else {
@@ -3547,9 +3581,9 @@ export let SelectValueObserver = (_dec9 = subscriberCollection(), _dec9(_class10
   }
 
   synchronizeOptions() {
-    let value = this.value,
-        clear,
-        isArray;
+    let value = this.value;
+    let clear;
+    let isArray;
 
     if (value === null || value === undefined) {
       clear = true;
@@ -3576,9 +3610,9 @@ export let SelectValueObserver = (_dec9 = subscriberCollection(), _dec9(_class10
   }
 
   synchronizeValue() {
-    let options = this.element.options,
-        count = 0,
-        value = [];
+    let options = this.element.options;
+    let count = 0;
+    let value = [];
 
     for (let i = 0, ii = options.length; i < ii; i++) {
       let option = options.item(i);
@@ -3681,10 +3715,10 @@ export let ClassObserver = class ClassObserver {
   }
 
   setValue(newValue) {
-    var nameIndex = this.nameIndex || {},
-        version = this.version,
-        names,
-        name;
+    let nameIndex = this.nameIndex || {};
+    let version = this.version;
+    let names;
+    let name;
 
     if (newValue !== null && newValue !== undefined && newValue.length) {
       names = newValue.split(/\s+/);
@@ -3862,6 +3896,7 @@ export const elements = {
   view: ['externalResourcesRequired', 'id', 'preserveAspectRatio', 'viewBox', 'viewTarget', 'xml:base', 'xml:lang', 'xml:space', 'zoomAndPan'],
   vkern: ['g1', 'g2', 'id', 'k', 'u1', 'u2', 'xml:base', 'xml:lang', 'xml:space']
 };
+
 
 export const presentationElements = {
   'a': true,
@@ -4044,7 +4079,7 @@ export let ObserverLocator = (_temp = _class11 = class ObserverLocator {
     let value = {};
 
     try {
-      Object.defineProperty(obj, "__observers__", {
+      Object.defineProperty(obj, '__observers__', {
         enumerable: false,
         configurable: false,
         writable: false,
@@ -4071,7 +4106,6 @@ export let ObserverLocator = (_temp = _class11 = class ObserverLocator {
   }
 
   createPropertyObserver(obj, propertyName) {
-    let observerLookup;
     let descriptor;
     let handler;
     let xlinkResult;
@@ -4128,21 +4162,21 @@ export let ObserverLocator = (_temp = _class11 = class ObserverLocator {
     if (obj instanceof Array) {
       if (propertyName === 'length') {
         return this.getArrayObserver(obj).getLengthObserver();
-      } else {
-        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
+
+      return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     } else if (obj instanceof Map) {
       if (propertyName === 'size') {
         return this.getMapObserver(obj).getLengthObserver();
-      } else {
-        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
+
+      return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     } else if (obj instanceof Set) {
       if (propertyName === 'size') {
         return this.getSetObserver(obj).getLengthObserver();
-      } else {
-        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
+
+      return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     }
 
     return new SetterObserver(this.taskQueue, obj, propertyName);
@@ -4581,7 +4615,7 @@ let NameBinder = class NameBinder {
 };
 
 
-const lookupFunctions = {
+const LookupFunctions = {
   bindingBehaviors: name => null,
   valueConverters: name => null
 };
@@ -4593,7 +4627,7 @@ export let BindingEngine = (_temp2 = _class13 = class BindingEngine {
     this.parser = parser;
   }
 
-  createBindingExpression(targetProperty, sourceExpression, mode = bindingMode.oneWay, lookupFunctions = lookupFunctions) {
+  createBindingExpression(targetProperty, sourceExpression, mode = bindingMode.oneWay, lookupFunctions = LookupFunctions) {
     return new BindingExpression(this.observerLocator, targetProperty, this.parser.parse(sourceExpression), mode, lookupFunctions);
   }
 
@@ -4632,7 +4666,7 @@ export let BindingEngine = (_temp2 = _class13 = class BindingEngine {
 
   expressionObserver(bindingContext, expression) {
     let scope = { bindingContext, overrideContext: createOverrideContext(bindingContext) };
-    return new ExpressionObserver(scope, this.parser.parse(expression), this.observerLocator, lookupFunctions);
+    return new ExpressionObserver(scope, this.parser.parse(expression), this.observerLocator, LookupFunctions);
   }
 
   parseExpression(expression) {
@@ -4675,10 +4709,10 @@ let ModifySetObserver = class ModifySetObserver extends ModifyCollectionObserver
       };
     }
 
-    set['add'] = function () {
+    set.add = function () {
       let type = 'add';
       let oldSize = set.size;
-      let methodCallResult = proto['add'].apply(set, arguments);
+      let methodCallResult = proto.add.apply(set, arguments);
       let hasValue = set.size === oldSize;
       if (!hasValue) {
         observer.addChangeRecord({
@@ -4690,9 +4724,9 @@ let ModifySetObserver = class ModifySetObserver extends ModifyCollectionObserver
       return methodCallResult;
     };
 
-    set['delete'] = function () {
+    set.delete = function () {
       let hasValue = set.has(arguments[0]);
-      let methodCallResult = proto['delete'].apply(set, arguments);
+      let methodCallResult = proto.delete.apply(set, arguments);
       if (hasValue) {
         observer.addChangeRecord({
           type: 'delete',
@@ -4703,8 +4737,8 @@ let ModifySetObserver = class ModifySetObserver extends ModifyCollectionObserver
       return methodCallResult;
     };
 
-    set['clear'] = function () {
-      let methodCallResult = proto['clear'].apply(set, arguments);
+    set.clear = function () {
+      let methodCallResult = proto.clear.apply(set, arguments);
       observer.addChangeRecord({
         type: 'clear',
         object: set
