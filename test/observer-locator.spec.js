@@ -165,4 +165,8 @@ describe('ObserverLocator', () => {
   it('getAccessor returns ValueAttributeObserver for input.value', () => {
     expect(locator.getAccessor(document.createElement('input'), 'value') instanceof ValueAttributeObserver).toBe(true);
   });
+
+  it('getAccessor returns SetterObserver for input.model', () => {
+    expect(locator.getAccessor(document.createElement('input'), 'model') instanceof SetterObserver).toBe(true);
+  });
 });
