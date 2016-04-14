@@ -10,8 +10,9 @@ let splice = Array.prototype.splice;
 let unshift = Array.prototype.unshift;
 
 Array.prototype.pop = function() {
+  let notEmpty = this.length > 0;
   let methodCallResult = pop.apply(this, arguments);
-  if (this.__array_observer__ !== undefined) {
+  if (notEmpty && this.__array_observer__ !== undefined) {
     this.__array_observer__.addChangeRecord({
       type: 'delete',
       object: this,
@@ -50,8 +51,9 @@ Array.prototype.reverse = function() {
 };
 
 Array.prototype.shift = function() {
+  let notEmpty = this.length > 0;
   let methodCallResult = shift.apply(this, arguments);
-  if (this.__array_observer__ !== undefined) {
+  if (notEmpty && this.__array_observer__ !== undefined) {
     this.__array_observer__.addChangeRecord({
       type: 'delete',
       object: this,

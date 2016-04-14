@@ -38,6 +38,9 @@ describe('array observation', () => {
     Array.prototype.pop.call(array);
     expect(observer.addChangeRecord).toHaveBeenCalled();
     expect(array).toEqual([]);
+    observer.addChangeRecord.calls.reset();
+    array.pop();
+    expect(observer.addChangeRecord).not.toHaveBeenCalled();
   });
 
   it('pushes', () => {
@@ -89,6 +92,9 @@ describe('array observation', () => {
     Array.prototype.shift.call(array);
     expect(observer.addChangeRecord).toHaveBeenCalled();
     expect(array).toEqual([]);
+    observer.addChangeRecord.calls.reset();
+    array.shift();
+    expect(observer.addChangeRecord).not.toHaveBeenCalled();
   });
 
   it('sorts', () => {
