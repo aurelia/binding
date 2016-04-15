@@ -459,15 +459,15 @@ export class Binary extends Expression {
     }
 
     // Null check for the operations.
-    if (left === null || right === null) {
+    if (left === null || right === null || left === undefined || right === undefined) {
       switch (this.operation) { // eslint-disable-line
       case '+':
-        if (left !== null) return left;
-        if (right !== null) return right;
+        if (left !== null && left !== undefined) return left;
+        if (right !== null && right !== undefined) return right;
         return 0;
       case '-':
-        if (left !== null) return left;
-        if (right !== null) return 0 - right;
+        if (left !== null && left !== undefined) return left;
+        if (right !== null && right !== undefined) return 0 - right;
         return 0;
       }
 
