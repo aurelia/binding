@@ -179,6 +179,7 @@ export class ObserverLocator {
         || propertyName === 'style' || propertyName === 'css'
         || propertyName === 'value' && (obj.tagName.toLowerCase() === 'input' || obj.tagName.toLowerCase() === 'select')
         || propertyName === 'checked' && obj.tagName.toLowerCase() === 'input'
+        || propertyName === 'model' && obj.tagName.toLowerCase() === 'input'
         || /^xlink:.+$/.exec(propertyName)) {
         return this.getObserver(obj, propertyName);
       }

@@ -1,6 +1,7 @@
 import {subscriberCollection} from './subscriber-collection';
 
 const checkedArrayContext = 'CheckedObserver:array';
+const checkedValueContext = 'CheckedObserver:value';
 
 @subscriberCollection()
 export class CheckedObserver {
@@ -42,8 +43,14 @@ export class CheckedObserver {
   }
 
   call(context, splices) {
-    // called by task queue and array observer.
+    // called by task queue, array observer, and model/value observer.
     this.synchronizeElement();
+    // if the input's model or value property is data-bound, subscribe to it's
+    // changes to enable synchronizing the element's checked status when a change occurs.
+    if (!this.valueObserver
+      && (this.valueObserver = this.element.__observers__.model || this.element.__observers__.value)) {
+      this.valueObserver.subscribe(checkedValueContext, this);
+    }
   }
 
   synchronizeElement() {
@@ -116,6 +123,9 @@ export class CheckedObserver {
     if (this.arrayObserver) {
       this.arrayObserver.unsubscribe(checkedArrayContext, this);
       this.arrayObserver = null;
+    }
+    if (this.valueObserver) {
+      this.valueObserver.unsubscribe(checkedValueContext, this);
     }
   }
 }

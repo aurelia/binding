@@ -22,6 +22,7 @@ describe('CheckedObserver', () => {
     beforeAll(() => {
       obj = { selectedItems: [] };
       el = createElement('<input type="checkbox" value="A" />');
+      observerLocator.getObserver(el, 'value');
       document.body.appendChild(el);
       binding = getBinding(observerLocator, obj, 'selectedItems', el, 'checked', bindingMode.twoWay).binding;
     });
@@ -36,6 +37,19 @@ describe('CheckedObserver', () => {
       setTimeout(() => {
         expect(el.checked).toBe(true);
         done();
+      }, 0);
+    });
+
+    it('responds to element value change', done => {
+      expect(el.checked).toBe(true);
+      el.__observers__.value.setValue('ZZZZ');
+      setTimeout(() => {
+        expect(el.checked).toBe(false);
+        el.__observers__.value.setValue('A');
+        setTimeout(() => {
+          expect(el.checked).toBe(true);
+          done();
+        });
       }, 0);
     });
 
@@ -77,6 +91,7 @@ describe('CheckedObserver', () => {
       obj = { selectedItems: [], itemA: {} };
       el = createElement('<input type="checkbox" />');
       el.model = obj.itemA;
+      observerLocator.getObserver(el, 'model');
       document.body.appendChild(el);
       binding = getBinding(observerLocator, obj, 'selectedItems', el, 'checked', bindingMode.twoWay).binding;
     });
@@ -91,6 +106,19 @@ describe('CheckedObserver', () => {
       setTimeout(() => {
         expect(el.checked).toBe(true);
         done();
+      }, 0);
+    });
+
+    it('responds to element value change', done => {
+      expect(el.checked).toBe(true);
+      el.__observers__.model.setValue({});
+      setTimeout(() => {
+        expect(el.checked).toBe(false);
+        el.__observers__.model.setValue(obj.itemA);
+        setTimeout(() => {
+          expect(el.checked).toBe(true);
+          done();
+        });
       }, 0);
     });
 
