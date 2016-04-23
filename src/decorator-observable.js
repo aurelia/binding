@@ -39,7 +39,7 @@ export function observable(targetOrConfig, key, descriptor) {
     descriptor2.get.dependencies = [innerPropertyName];
 
     if (!babel) {
-      Object.defineProperty(target, key2, descriptor2);
+      Reflect.defineProperty(target, key2, descriptor2);
     }
   };
 
