@@ -1,3 +1,4 @@
+import * as LogManager from 'aurelia-logging';
 import {DOM} from 'aurelia-pal';
 import {TaskQueue} from 'aurelia-task-queue';
 import {getArrayObserver} from './array-observation';
@@ -26,6 +27,8 @@ import {
   createComputedObserver
 } from './computed-observation';
 import {SVGAnalyzer} from './svg';
+
+const logger = LogManager.getLogger('observer-locator');
 
 export class ObserverLocator {
   static inject = [TaskQueue, EventManager, DirtyChecker, SVGAnalyzer, Parser];
@@ -67,14 +70,14 @@ export class ObserverLocator {
   createObserversLookup(obj) {
     let value = {};
 
-    try {
-      Object.defineProperty(obj, '__observers__', {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: value
-      });
-    } catch(_) {} // eslint-disable-line
+    if (!Reflect.defineProperty(obj, '__observers__', {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: value
+    })) {
+      logger.warn('Cannot add observers to object', obj);
+    }
 
     return value;
   }

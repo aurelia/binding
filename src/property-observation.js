@@ -1,4 +1,7 @@
+import * as LogManager from 'aurelia-logging';
 import {subscriberCollection} from './subscriber-collection';
+
+const logger = LogManager.getLogger('property-observation');
 
 export const propertyAccessor = {
   getValue: (obj, propertyName) => obj[propertyName],
@@ -91,13 +94,13 @@ export class SetterObserver {
     this.setValue = this.setterValue;
     this.getValue = this.getterValue;
 
-    try {
-      Object.defineProperty(this.obj, this.propertyName, {
-        configurable: true,
-        enumerable: true,
-        get: this.getValue.bind(this),
-        set: this.setValue.bind(this)
-      });
-    } catch(_) {} // eslint-disable-line
+    if (!Reflect.defineProperty(this.obj, this.propertyName, {
+      configurable: true,
+      enumerable: true,
+      get: this.getValue.bind(this),
+      set: this.setValue.bind(this)
+    })) {
+      logger.warn(`Cannot observe property '${this.propertyName}' of object`, this.obj);
+    }
   }
 }

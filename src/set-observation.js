@@ -20,7 +20,7 @@ class ModifySetObserver extends ModifyCollectionObserver {
   static for(taskQueue, set) {
     if (!('__set_observer__' in set)) {
       let observer = ModifySetObserver.create(taskQueue, set);
-      Object.defineProperty(
+      Reflect.defineProperty(
         set,
         '__set_observer__',
         { value: observer, enumerable: false, configurable: false });

@@ -12,6 +12,7 @@ import {SelectValueObserver} from '../src/select-value-observer';
 import {CheckedObserver} from '../src/checked-observer';
 import {createElement, createObserverLocator} from './shared';
 import {FEATURE} from 'aurelia-pal';
+import {Logger} from 'aurelia-logging';
 
 describe('ObserverLocator', () => {
   var locator;
@@ -34,6 +35,22 @@ describe('ObserverLocator', () => {
     observer = locator.getObserver(obj, 'foo');
     expect(obj instanceof Element).toBe(true);
     expect(observer instanceof SetterObserver).toBe(true);
+  });
+
+  it('warns when its not able to subscribe to a SetterObserver', () => {
+    spyOn(Logger.prototype, 'warn');
+
+    var obj = {};
+    Object.defineProperties(obj, {
+      'foo': {configurable: true},
+      'bar': {configurable: false}
+    });
+
+    locator.getObserver(obj, 'foo').convertProperty();
+    expect(Logger.prototype.warn).not.toHaveBeenCalled();
+
+    locator.getObserver(obj, 'bar').convertProperty();
+    expect(Logger.prototype.warn).toHaveBeenCalledWith('Cannot observe property \'bar\' of object', obj);
   });
 
   it('uses ValueAttributeObserver for element value attributes', () => {
@@ -140,6 +157,20 @@ describe('ObserverLocator', () => {
 
     expect(observer).toBe(customObserver);
     expect(observer.target).toBe(obj);
+  });
+
+  it('warns when its not able to bind to an object', () => {
+    spyOn(Logger.prototype, 'warn');
+
+    var obj1 = {};
+    locator.createObserversLookup(obj1);
+    expect(Logger.prototype.warn).not.toHaveBeenCalled();
+    expect('__observers__' in obj1).toBeTruthy();
+
+    var obj2 = Object.seal({});
+    locator.createObserversLookup(obj2);
+    expect(Logger.prototype.warn).toHaveBeenCalledWith('Cannot add observers to object', obj2);
+    expect('__observers__' in obj2).toBeFalsy();
   });
 
   it('uses Adapter for for defined, complex properties on pojos that adapter canObserve', () => {
