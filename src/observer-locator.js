@@ -28,8 +28,6 @@ import {
 } from './computed-observation';
 import {SVGAnalyzer} from './svg';
 
-const logger = LogManager.getLogger('observer-locator');
-
 export class ObserverLocator {
   static inject = [TaskQueue, EventManager, DirtyChecker, SVGAnalyzer, Parser];
 
@@ -40,6 +38,7 @@ export class ObserverLocator {
     this.svgAnalyzer = svgAnalyzer;
     this.parser = parser;
     this.adapters = [];
+    this.logger = LogManager.getLogger('observer-locator');
   }
 
   getObserver(obj, propertyName) {
@@ -76,7 +75,7 @@ export class ObserverLocator {
       writable: false,
       value: value
     })) {
-      logger.warn('Cannot add observers to object', obj);
+      this.logger.warn('Cannot add observers to object', obj);
     }
 
     return value;
