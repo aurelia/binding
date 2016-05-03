@@ -31,20 +31,35 @@ exports.valueConverter = valueConverter;
 exports.bindingBehavior = bindingBehavior;
 exports.observable = observable;
 
+var _aureliaLogging = require('aurelia-logging');
+
+var LogManager = _interopRequireWildcard(_aureliaLogging);
+
 var _aureliaPal = require('aurelia-pal');
 
 var _aureliaTaskQueue = require('aurelia-task-queue');
 
 var _aureliaMetadata = require('aurelia-metadata');
 
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+
+var map = Object.create(null);
 
 function camelCase(name) {
-  return name.charAt(0).toLowerCase() + name.slice(1);
+  if (name in map) {
+    return map[name];
+  }
+  var result = name.charAt(0).toLowerCase() + name.slice(1).replace(/[_.-](\w|$)/g, function (_, x) {
+    return x.toUpperCase();
+  });
+  map[name] = result;
+  return result;
 }
 
 function createOverrideContext(bindingContext, parentOverrideContext) {
@@ -369,7 +384,7 @@ function subscriberCollection() {
 
 var ExpressionObserver = exports.ExpressionObserver = (_dec = connectable(), _dec2 = subscriberCollection(), _dec(_class = _dec2(_class = function () {
   function ExpressionObserver(scope, expression, observerLocator, lookupFunctions) {
-    _classCallCheck(this, ExpressionObserver);
+    
 
     this.scope = scope;
     this.expression = expression;
@@ -821,7 +836,7 @@ function getChangeRecords(map) {
 
 var ModifyCollectionObserver = exports.ModifyCollectionObserver = (_dec3 = subscriberCollection(), _dec3(_class2 = function () {
   function ModifyCollectionObserver(taskQueue, collection) {
-    _classCallCheck(this, ModifyCollectionObserver);
+    
 
     this.taskQueue = taskQueue;
     this.queued = false;
@@ -925,7 +940,7 @@ var ModifyCollectionObserver = exports.ModifyCollectionObserver = (_dec3 = subsc
 }()) || _class2);
 var CollectionLengthObserver = exports.CollectionLengthObserver = (_dec4 = subscriberCollection(), _dec4(_class3 = function () {
   function CollectionLengthObserver(collection) {
-    _classCallCheck(this, CollectionLengthObserver);
+    
 
     this.collection = collection;
     this.lengthPropertyName = collection instanceof Map || collection instanceof Set ? 'size' : 'length';
@@ -966,8 +981,9 @@ var splice = Array.prototype.splice;
 var unshift = Array.prototype.unshift;
 
 Array.prototype.pop = function () {
+  var notEmpty = this.length > 0;
   var methodCallResult = pop.apply(this, arguments);
-  if (this.__array_observer__ !== undefined) {
+  if (notEmpty && this.__array_observer__ !== undefined) {
     this.__array_observer__.addChangeRecord({
       type: 'delete',
       object: this,
@@ -1006,8 +1022,9 @@ Array.prototype.reverse = function () {
 };
 
 Array.prototype.shift = function () {
+  var notEmpty = this.length > 0;
   var methodCallResult = shift.apply(this, arguments);
-  if (this.__array_observer__ !== undefined) {
+  if (notEmpty && this.__array_observer__ !== undefined) {
     this.__array_observer__.addChangeRecord({
       type: 'delete',
       object: this,
@@ -1069,7 +1086,7 @@ var ModifyArrayObserver = function (_ModifyCollectionObse) {
   _inherits(ModifyArrayObserver, _ModifyCollectionObse);
 
   function ModifyArrayObserver(taskQueue, array) {
-    _classCallCheck(this, ModifyArrayObserver);
+    
 
     return _possibleConstructorReturn(this, _ModifyCollectionObse.call(this, taskQueue, array));
   }
@@ -1077,7 +1094,7 @@ var ModifyArrayObserver = function (_ModifyCollectionObse) {
   ModifyArrayObserver.for = function _for(taskQueue, array) {
     if (!('__array_observer__' in array)) {
       var observer = ModifyArrayObserver.create(taskQueue, array);
-      Object.defineProperty(array, '__array_observer__', { value: observer, enumerable: false, configurable: false });
+      Reflect.defineProperty(array, '__array_observer__', { value: observer, enumerable: false, configurable: false });
     }
     return array.__array_observer__;
   };
@@ -1092,7 +1109,7 @@ var ModifyArrayObserver = function (_ModifyCollectionObse) {
 
 var Expression = exports.Expression = function () {
   function Expression() {
-    _classCallCheck(this, Expression);
+    
 
     this.isChain = false;
     this.isAssignable = false;
@@ -1117,7 +1134,7 @@ var Chain = exports.Chain = function (_Expression) {
   _inherits(Chain, _Expression);
 
   function Chain(expressions) {
-    _classCallCheck(this, Chain);
+    
 
     var _this3 = _possibleConstructorReturn(this, _Expression.call(this));
 
@@ -1153,7 +1170,7 @@ var BindingBehavior = exports.BindingBehavior = function (_Expression2) {
   _inherits(BindingBehavior, _Expression2);
 
   function BindingBehavior(expression, name, args) {
-    _classCallCheck(this, BindingBehavior);
+    
 
     var _this4 = _possibleConstructorReturn(this, _Expression2.call(this));
 
@@ -1211,7 +1228,7 @@ var ValueConverter = exports.ValueConverter = function (_Expression3) {
   _inherits(ValueConverter, _Expression3);
 
   function ValueConverter(expression, name, args, allArgs) {
-    _classCallCheck(this, ValueConverter);
+    
 
     var _this5 = _possibleConstructorReturn(this, _Expression3.call(this));
 
@@ -1267,7 +1284,7 @@ var Assign = exports.Assign = function (_Expression4) {
   _inherits(Assign, _Expression4);
 
   function Assign(target, value) {
-    _classCallCheck(this, Assign);
+    
 
     var _this6 = _possibleConstructorReturn(this, _Expression4.call(this));
 
@@ -1293,7 +1310,7 @@ var Conditional = exports.Conditional = function (_Expression5) {
   _inherits(Conditional, _Expression5);
 
   function Conditional(condition, yes, no) {
-    _classCallCheck(this, Conditional);
+    
 
     var _this7 = _possibleConstructorReturn(this, _Expression5.call(this));
 
@@ -1327,7 +1344,7 @@ var AccessThis = exports.AccessThis = function (_Expression6) {
   _inherits(AccessThis, _Expression6);
 
   function AccessThis(ancestor) {
-    _classCallCheck(this, AccessThis);
+    
 
     var _this8 = _possibleConstructorReturn(this, _Expression6.call(this));
 
@@ -1357,7 +1374,7 @@ var AccessScope = exports.AccessScope = function (_Expression7) {
   _inherits(AccessScope, _Expression7);
 
   function AccessScope(name, ancestor) {
-    _classCallCheck(this, AccessScope);
+    
 
     var _this9 = _possibleConstructorReturn(this, _Expression7.call(this));
 
@@ -1393,7 +1410,7 @@ var AccessMember = exports.AccessMember = function (_Expression8) {
   _inherits(AccessMember, _Expression8);
 
   function AccessMember(object, name) {
-    _classCallCheck(this, AccessMember);
+    
 
     var _this10 = _possibleConstructorReturn(this, _Expression8.call(this));
 
@@ -1438,7 +1455,7 @@ var AccessKeyed = exports.AccessKeyed = function (_Expression9) {
   _inherits(AccessKeyed, _Expression9);
 
   function AccessKeyed(object, key) {
-    _classCallCheck(this, AccessKeyed);
+    
 
     var _this11 = _possibleConstructorReturn(this, _Expression9.call(this));
 
@@ -1484,7 +1501,7 @@ var CallScope = exports.CallScope = function (_Expression10) {
   _inherits(CallScope, _Expression10);
 
   function CallScope(name, args, ancestor) {
-    _classCallCheck(this, CallScope);
+    
 
     var _this12 = _possibleConstructorReturn(this, _Expression10.call(this));
 
@@ -1523,7 +1540,7 @@ var CallMember = exports.CallMember = function (_Expression11) {
   _inherits(CallMember, _Expression11);
 
   function CallMember(object, name, args) {
-    _classCallCheck(this, CallMember);
+    
 
     var _this13 = _possibleConstructorReturn(this, _Expression11.call(this));
 
@@ -1566,7 +1583,7 @@ var CallFunction = exports.CallFunction = function (_Expression12) {
   _inherits(CallFunction, _Expression12);
 
   function CallFunction(func, args) {
-    _classCallCheck(this, CallFunction);
+    
 
     var _this14 = _possibleConstructorReturn(this, _Expression12.call(this));
 
@@ -1609,7 +1626,7 @@ var Binary = exports.Binary = function (_Expression13) {
   _inherits(Binary, _Expression13);
 
   function Binary(operation, left, right) {
-    _classCallCheck(this, Binary);
+    
 
     var _this15 = _possibleConstructorReturn(this, _Expression13.call(this));
 
@@ -1642,15 +1659,15 @@ var Binary = exports.Binary = function (_Expression13) {
         return left !== right;
     }
 
-    if (left === null || right === null) {
+    if (left === null || right === null || left === undefined || right === undefined) {
       switch (this.operation) {
         case '+':
-          if (left !== null) return left;
-          if (right !== null) return right;
+          if (left !== null && left !== undefined) return left;
+          if (right !== null && right !== undefined) return right;
           return 0;
         case '-':
-          if (left !== null) return left;
-          if (right !== null) return 0 - right;
+          if (left !== null && left !== undefined) return left;
+          if (right !== null && right !== undefined) return 0 - right;
           return 0;
       }
 
@@ -1703,7 +1720,7 @@ var PrefixNot = exports.PrefixNot = function (_Expression14) {
   _inherits(PrefixNot, _Expression14);
 
   function PrefixNot(operation, expression) {
-    _classCallCheck(this, PrefixNot);
+    
 
     var _this16 = _possibleConstructorReturn(this, _Expression14.call(this));
 
@@ -1731,7 +1748,7 @@ var LiteralPrimitive = exports.LiteralPrimitive = function (_Expression15) {
   _inherits(LiteralPrimitive, _Expression15);
 
   function LiteralPrimitive(value) {
-    _classCallCheck(this, LiteralPrimitive);
+    
 
     var _this17 = _possibleConstructorReturn(this, _Expression15.call(this));
 
@@ -1756,7 +1773,7 @@ var LiteralString = exports.LiteralString = function (_Expression16) {
   _inherits(LiteralString, _Expression16);
 
   function LiteralString(value) {
-    _classCallCheck(this, LiteralString);
+    
 
     var _this18 = _possibleConstructorReturn(this, _Expression16.call(this));
 
@@ -1781,7 +1798,7 @@ var LiteralArray = exports.LiteralArray = function (_Expression17) {
   _inherits(LiteralArray, _Expression17);
 
   function LiteralArray(elements) {
-    _classCallCheck(this, LiteralArray);
+    
 
     var _this19 = _possibleConstructorReturn(this, _Expression17.call(this));
 
@@ -1818,7 +1835,7 @@ var LiteralObject = exports.LiteralObject = function (_Expression18) {
   _inherits(LiteralObject, _Expression18);
 
   function LiteralObject(keys, values) {
-    _classCallCheck(this, LiteralObject);
+    
 
     var _this20 = _possibleConstructorReturn(this, _Expression18.call(this));
 
@@ -1936,7 +1953,7 @@ function setKeyed(obj, key, value) {
 
 var Unparser = exports.Unparser = function () {
   function Unparser(buffer) {
-    _classCallCheck(this, Unparser);
+    
 
     this.buffer = buffer;
   }
@@ -2130,7 +2147,7 @@ var Unparser = exports.Unparser = function () {
 
 var ExpressionCloner = exports.ExpressionCloner = function () {
   function ExpressionCloner() {
-    _classCallCheck(this, ExpressionCloner);
+    
   }
 
   ExpressionCloner.prototype.cloneExpressionArray = function cloneExpressionArray(array) {
@@ -2230,7 +2247,7 @@ var bindingMode = exports.bindingMode = {
 
 var Token = exports.Token = function () {
   function Token(index, text) {
-    _classCallCheck(this, Token);
+    
 
     this.index = index;
     this.text = text;
@@ -2260,7 +2277,7 @@ var Token = exports.Token = function () {
 
 var Lexer = exports.Lexer = function () {
   function Lexer() {
-    _classCallCheck(this, Lexer);
+    
   }
 
   Lexer.prototype.lex = function lex(text) {
@@ -2281,7 +2298,7 @@ var Lexer = exports.Lexer = function () {
 
 var Scanner = exports.Scanner = function () {
   function Scanner(input) {
-    _classCallCheck(this, Scanner);
+    
 
     this.input = input;
     this.length = input.length;
@@ -2635,7 +2652,7 @@ var EOF = new Token(-1, null);
 
 var Parser = exports.Parser = function () {
   function Parser() {
-    _classCallCheck(this, Parser);
+    
 
     this.cache = {};
     this.lexer = new Lexer();
@@ -2652,7 +2669,7 @@ var Parser = exports.Parser = function () {
 
 var ParserImplementation = exports.ParserImplementation = function () {
   function ParserImplementation(lexer, input) {
-    _classCallCheck(this, ParserImplementation);
+    
 
     this.index = 0;
     this.input = input;
@@ -3053,7 +3070,7 @@ var ModifyMapObserver = function (_ModifyCollectionObse2) {
   _inherits(ModifyMapObserver, _ModifyCollectionObse2);
 
   function ModifyMapObserver(taskQueue, map) {
-    _classCallCheck(this, ModifyMapObserver);
+    
 
     return _possibleConstructorReturn(this, _ModifyCollectionObse2.call(this, taskQueue, map));
   }
@@ -3061,7 +3078,7 @@ var ModifyMapObserver = function (_ModifyCollectionObse2) {
   ModifyMapObserver.for = function _for(taskQueue, map) {
     if (!('__map_observer__' in map)) {
       var observer = ModifyMapObserver.create(taskQueue, map);
-      Object.defineProperty(map, '__map_observer__', { value: observer, enumerable: false, configurable: false });
+      Reflect.defineProperty(map, '__map_observer__', { value: observer, enumerable: false, configurable: false });
     }
     return map.__map_observer__;
   };
@@ -3149,7 +3166,7 @@ function handleDelegatedEvent(event) {
 
 var DelegateHandlerEntry = function () {
   function DelegateHandlerEntry(eventName) {
-    _classCallCheck(this, DelegateHandlerEntry);
+    
 
     this.eventName = eventName;
     this.count = 0;
@@ -3176,7 +3193,7 @@ var DelegateHandlerEntry = function () {
 
 var DefaultEventStrategy = function () {
   function DefaultEventStrategy() {
-    _classCallCheck(this, DefaultEventStrategy);
+    
 
     this.delegatedHandlers = [];
   }
@@ -3216,7 +3233,7 @@ var DefaultEventStrategy = function () {
 
 var EventManager = exports.EventManager = function () {
   function EventManager() {
-    _classCallCheck(this, EventManager);
+    
 
     this.elementHandlerLookup = {};
     this.eventStrategyLookup = {};
@@ -3336,7 +3353,7 @@ var EventManager = exports.EventManager = function () {
 
 var DirtyChecker = exports.DirtyChecker = function () {
   function DirtyChecker() {
-    _classCallCheck(this, DirtyChecker);
+    
 
     this.tracked = [];
     this.checkDelay = 120;
@@ -3387,7 +3404,7 @@ var DirtyChecker = exports.DirtyChecker = function () {
 
 var DirtyCheckProperty = exports.DirtyCheckProperty = (_dec5 = subscriberCollection(), _dec5(_class5 = function () {
   function DirtyCheckProperty(dirtyChecker, obj, propertyName) {
-    _classCallCheck(this, DirtyCheckProperty);
+    
 
     this.dirtyChecker = dirtyChecker;
     this.obj = obj;
@@ -3431,6 +3448,10 @@ var DirtyCheckProperty = exports.DirtyCheckProperty = (_dec5 = subscriberCollect
 
   return DirtyCheckProperty;
 }()) || _class5);
+
+
+var logger = LogManager.getLogger('property-observation');
+
 var propertyAccessor = exports.propertyAccessor = {
   getValue: function getValue(obj, propertyName) {
     return obj[propertyName];
@@ -3442,7 +3463,7 @@ var propertyAccessor = exports.propertyAccessor = {
 
 var PrimitiveObserver = exports.PrimitiveObserver = function () {
   function PrimitiveObserver(primitive, propertyName) {
-    _classCallCheck(this, PrimitiveObserver);
+    
 
     this.doNotCache = true;
 
@@ -3468,7 +3489,7 @@ var PrimitiveObserver = exports.PrimitiveObserver = function () {
 
 var SetterObserver = exports.SetterObserver = (_dec6 = subscriberCollection(), _dec6(_class7 = function () {
   function SetterObserver(taskQueue, obj, propertyName) {
-    _classCallCheck(this, SetterObserver);
+    
 
     this.taskQueue = taskQueue;
     this.obj = obj;
@@ -3529,14 +3550,14 @@ var SetterObserver = exports.SetterObserver = (_dec6 = subscriberCollection(), _
     this.setValue = this.setterValue;
     this.getValue = this.getterValue;
 
-    try {
-      Object.defineProperty(this.obj, this.propertyName, {
-        configurable: true,
-        enumerable: true,
-        get: this.getValue.bind(this),
-        set: this.setValue.bind(this)
-      });
-    } catch (_) {}
+    if (!Reflect.defineProperty(this.obj, this.propertyName, {
+      configurable: true,
+      enumerable: true,
+      get: this.getValue.bind(this),
+      set: this.setValue.bind(this)
+    })) {
+      logger.warn('Cannot observe property \'' + this.propertyName + '\' of object', this.obj);
+    }
   };
 
   return SetterObserver;
@@ -3544,7 +3565,7 @@ var SetterObserver = exports.SetterObserver = (_dec6 = subscriberCollection(), _
 
 var XLinkAttributeObserver = exports.XLinkAttributeObserver = function () {
   function XLinkAttributeObserver(element, propertyName, attributeName) {
-    _classCallCheck(this, XLinkAttributeObserver);
+    
 
     this.element = element;
     this.propertyName = propertyName;
@@ -3577,7 +3598,7 @@ var dataAttributeAccessor = exports.dataAttributeAccessor = {
 
 var DataAttributeObserver = exports.DataAttributeObserver = function () {
   function DataAttributeObserver(element, propertyName) {
-    _classCallCheck(this, DataAttributeObserver);
+    
 
     this.element = element;
     this.propertyName = propertyName;
@@ -3600,7 +3621,7 @@ var DataAttributeObserver = exports.DataAttributeObserver = function () {
 
 var StyleObserver = exports.StyleObserver = function () {
   function StyleObserver(element, propertyName) {
-    _classCallCheck(this, StyleObserver);
+    
 
     this.element = element;
     this.propertyName = propertyName;
@@ -3667,7 +3688,7 @@ var StyleObserver = exports.StyleObserver = function () {
 
 var ValueAttributeObserver = exports.ValueAttributeObserver = (_dec7 = subscriberCollection(), _dec7(_class8 = function () {
   function ValueAttributeObserver(element, propertyName, handler) {
-    _classCallCheck(this, ValueAttributeObserver);
+    
 
     this.element = element;
     this.propertyName = propertyName;
@@ -3719,10 +3740,11 @@ var ValueAttributeObserver = exports.ValueAttributeObserver = (_dec7 = subscribe
 
 
 var checkedArrayContext = 'CheckedObserver:array';
+var checkedValueContext = 'CheckedObserver:value';
 
 var CheckedObserver = exports.CheckedObserver = (_dec8 = subscriberCollection(), _dec8(_class9 = function () {
   function CheckedObserver(element, handler, observerLocator) {
-    _classCallCheck(this, CheckedObserver);
+    
 
     this.element = element;
     this.handler = handler;
@@ -3761,6 +3783,10 @@ var CheckedObserver = exports.CheckedObserver = (_dec8 = subscriberCollection(),
 
   CheckedObserver.prototype.call = function call(context, splices) {
     this.synchronizeElement();
+
+    if (!this.valueObserver && (this.valueObserver = this.element.__observers__.model || this.element.__observers__.value)) {
+      this.valueObserver.subscribe(checkedValueContext, this);
+    }
   };
 
   CheckedObserver.prototype.synchronizeElement = function synchronizeElement() {
@@ -3838,6 +3864,9 @@ var CheckedObserver = exports.CheckedObserver = (_dec8 = subscriberCollection(),
       this.arrayObserver.unsubscribe(checkedArrayContext, this);
       this.arrayObserver = null;
     }
+    if (this.valueObserver) {
+      this.valueObserver.unsubscribe(checkedValueContext, this);
+    }
   };
 
   return CheckedObserver;
@@ -3848,7 +3877,7 @@ var selectArrayContext = 'SelectValueObserver:array';
 
 var SelectValueObserver = exports.SelectValueObserver = (_dec9 = subscriberCollection(), _dec9(_class10 = function () {
   function SelectValueObserver(element, handler, observerLocator) {
-    _classCallCheck(this, SelectValueObserver);
+    
 
     this.element = element;
     this.handler = handler;
@@ -4055,7 +4084,7 @@ var SelectValueObserver = exports.SelectValueObserver = (_dec9 = subscriberColle
 
 var ClassObserver = exports.ClassObserver = function () {
   function ClassObserver(element) {
-    _classCallCheck(this, ClassObserver);
+    
 
     this.element = element;
     this.doNotCache = true;
@@ -4133,7 +4162,7 @@ var ComputedExpression = exports.ComputedExpression = function (_Expression19) {
   _inherits(ComputedExpression, _Expression19);
 
   function ComputedExpression(name, dependencies) {
-    _classCallCheck(this, ComputedExpression);
+    
 
     var _this26 = _possibleConstructorReturn(this, _Expression19.call(this));
 
@@ -4386,7 +4415,7 @@ function createElement(html) {
 
 var SVGAnalyzer = exports.SVGAnalyzer = function () {
   function SVGAnalyzer() {
-    _classCallCheck(this, SVGAnalyzer);
+    
 
     if (createElement('<svg><altGlyph /></svg>').firstElementChild.nodeName === 'altglyph' && elements.altGlyph) {
       elements.altglyph = elements.altGlyph;
@@ -4409,7 +4438,7 @@ var SVGAnalyzer = exports.SVGAnalyzer = function () {
 
 var ObserverLocator = exports.ObserverLocator = (_temp = _class11 = function () {
   function ObserverLocator(taskQueue, eventManager, dirtyChecker, svgAnalyzer, parser) {
-    _classCallCheck(this, ObserverLocator);
+    
 
     this.taskQueue = taskQueue;
     this.eventManager = eventManager;
@@ -4417,6 +4446,7 @@ var ObserverLocator = exports.ObserverLocator = (_temp = _class11 = function () 
     this.svgAnalyzer = svgAnalyzer;
     this.parser = parser;
     this.adapters = [];
+    this.logger = LogManager.getLogger('observer-locator');
   }
 
   ObserverLocator.prototype.getObserver = function getObserver(obj, propertyName) {
@@ -4447,14 +4477,14 @@ var ObserverLocator = exports.ObserverLocator = (_temp = _class11 = function () 
   ObserverLocator.prototype.createObserversLookup = function createObserversLookup(obj) {
     var value = {};
 
-    try {
-      Object.defineProperty(obj, '__observers__', {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: value
-      });
-    } catch (_) {}
+    if (!Reflect.defineProperty(obj, '__observers__', {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: value
+    })) {
+      this.logger.warn('Cannot add observers to object', obj);
+    }
 
     return value;
   };
@@ -4553,7 +4583,7 @@ var ObserverLocator = exports.ObserverLocator = (_temp = _class11 = function () 
 
   ObserverLocator.prototype.getAccessor = function getAccessor(obj, propertyName) {
     if (obj instanceof _aureliaPal.DOM.Element) {
-      if (propertyName === 'class' || propertyName === 'style' || propertyName === 'css' || propertyName === 'value' && (obj.tagName.toLowerCase() === 'input' || obj.tagName.toLowerCase() === 'select') || propertyName === 'checked' && obj.tagName.toLowerCase() === 'input' || /^xlink:.+$/.exec(propertyName)) {
+      if (propertyName === 'class' || propertyName === 'style' || propertyName === 'css' || propertyName === 'value' && (obj.tagName.toLowerCase() === 'input' || obj.tagName.toLowerCase() === 'select') || propertyName === 'checked' && obj.tagName.toLowerCase() === 'input' || propertyName === 'model' && obj.tagName.toLowerCase() === 'input' || /^xlink:.+$/.exec(propertyName)) {
         return this.getObserver(obj, propertyName);
       }
       if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof _aureliaPal.DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
@@ -4580,7 +4610,7 @@ var ObserverLocator = exports.ObserverLocator = (_temp = _class11 = function () 
 
 var ObjectObservationAdapter = exports.ObjectObservationAdapter = function () {
   function ObjectObservationAdapter() {
-    _classCallCheck(this, ObjectObservationAdapter);
+    
   }
 
   ObjectObservationAdapter.prototype.getObserver = function getObserver(object, propertyName, descriptor) {
@@ -4592,7 +4622,7 @@ var ObjectObservationAdapter = exports.ObjectObservationAdapter = function () {
 
 var BindingExpression = exports.BindingExpression = function () {
   function BindingExpression(observerLocator, targetProperty, sourceExpression, mode, lookupFunctions, attribute) {
-    _classCallCheck(this, BindingExpression);
+    
 
     this.observerLocator = observerLocator;
     this.targetProperty = targetProperty;
@@ -4614,7 +4644,7 @@ var targetContext = 'Binding:target';
 
 var Binding = exports.Binding = (_dec10 = connectable(), _dec10(_class12 = function () {
   function Binding(observerLocator, sourceExpression, target, targetProperty, mode, lookupFunctions) {
-    _classCallCheck(this, Binding);
+    
 
     this.observerLocator = observerLocator;
     this.sourceExpression = sourceExpression;
@@ -4726,7 +4756,7 @@ var Binding = exports.Binding = (_dec10 = connectable(), _dec10(_class12 = funct
 
 var CallExpression = exports.CallExpression = function () {
   function CallExpression(observerLocator, targetProperty, sourceExpression, lookupFunctions) {
-    _classCallCheck(this, CallExpression);
+    
 
     this.observerLocator = observerLocator;
     this.targetProperty = targetProperty;
@@ -4743,7 +4773,7 @@ var CallExpression = exports.CallExpression = function () {
 
 var Call = exports.Call = function () {
   function Call(observerLocator, sourceExpression, target, targetProperty, lookupFunctions) {
-    _classCallCheck(this, Call);
+    
 
     this.sourceExpression = sourceExpression;
     this.target = target;
@@ -4801,7 +4831,7 @@ var Call = exports.Call = function () {
 
 var ValueConverterResource = exports.ValueConverterResource = function () {
   function ValueConverterResource(name) {
-    _classCallCheck(this, ValueConverterResource);
+    
 
     this.name = name;
   }
@@ -4837,7 +4867,7 @@ function valueConverter(nameOrTarget) {
 
 var BindingBehaviorResource = exports.BindingBehaviorResource = function () {
   function BindingBehaviorResource(name) {
-    _classCallCheck(this, BindingBehaviorResource);
+    
 
     this.name = name;
   }
@@ -4873,7 +4903,7 @@ function bindingBehavior(nameOrTarget) {
 
 var ListenerExpression = exports.ListenerExpression = function () {
   function ListenerExpression(eventManager, targetEvent, sourceExpression, delegate, preventDefault, lookupFunctions) {
-    _classCallCheck(this, ListenerExpression);
+    
 
     this.eventManager = eventManager;
     this.targetEvent = targetEvent;
@@ -4893,7 +4923,7 @@ var ListenerExpression = exports.ListenerExpression = function () {
 
 var Listener = exports.Listener = function () {
   function Listener(eventManager, targetEvent, delegate, sourceExpression, target, preventDefault, lookupFunctions) {
-    _classCallCheck(this, Listener);
+    
 
     this.eventManager = eventManager;
     this.targetEvent = targetEvent;
@@ -4964,7 +4994,7 @@ function getAU(element) {
 
 var NameExpression = exports.NameExpression = function () {
   function NameExpression(sourceExpression, apiName, lookupFunctions) {
-    _classCallCheck(this, NameExpression);
+    
 
     this.sourceExpression = sourceExpression;
     this.apiName = apiName;
@@ -5002,7 +5032,7 @@ var NameExpression = exports.NameExpression = function () {
 
 var NameBinder = function () {
   function NameBinder(sourceExpression, target, lookupFunctions) {
-    _classCallCheck(this, NameBinder);
+    
 
     this.sourceExpression = sourceExpression;
     this.target = target;
@@ -5050,7 +5080,7 @@ var LookupFunctions = {
 
 var BindingEngine = exports.BindingEngine = (_temp2 = _class13 = function () {
   function BindingEngine(observerLocator, parser) {
-    _classCallCheck(this, BindingEngine);
+    
 
     this.observerLocator = observerLocator;
     this.parser = parser;
@@ -5133,7 +5163,7 @@ var ModifySetObserver = function (_ModifyCollectionObse3) {
   _inherits(ModifySetObserver, _ModifyCollectionObse3);
 
   function ModifySetObserver(taskQueue, set) {
-    _classCallCheck(this, ModifySetObserver);
+    
 
     return _possibleConstructorReturn(this, _ModifyCollectionObse3.call(this, taskQueue, set));
   }
@@ -5141,7 +5171,7 @@ var ModifySetObserver = function (_ModifyCollectionObse3) {
   ModifySetObserver.for = function _for(taskQueue, set) {
     if (!('__set_observer__' in set)) {
       var observer = ModifySetObserver.create(taskQueue, set);
-      Object.defineProperty(set, '__set_observer__', { value: observer, enumerable: false, configurable: false });
+      Reflect.defineProperty(set, '__set_observer__', { value: observer, enumerable: false, configurable: false });
     }
     return set.__set_observer__;
   };
@@ -5233,7 +5263,7 @@ function observable(targetOrConfig, key, descriptor) {
     descriptor2.get.dependencies = [innerPropertyName];
 
     if (!babel) {
-      Object.defineProperty(target, key2, descriptor2);
+      Reflect.defineProperty(target, key2, descriptor2);
     }
   };
 

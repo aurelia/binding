@@ -1,3 +1,19 @@
+### 1.0.0-beta.1.3.3 (2016-05-03)
+
+
+#### Bug Fixes
+
+* **Binary:** handle adding undefined ([d2a88ddc](http://github.com/aurelia/binding/commit/d2a88ddc79305d761be1b1efba666da007943cb7), closes [#337](http://github.com/aurelia/binding/issues/337))
+* **CheckedObserver:** synchronize on changes to input value ([f3147440](http://github.com/aurelia/binding/commit/f3147440743f5006f4834b63d90d6023a37bb758), closes [#320](http://github.com/aurelia/binding/issues/320))
+* **array-observation:** do not notify on pop/shift of empty array ([d344831b](http://github.com/aurelia/binding/commit/d344831bd96e77870c9354f187cfd387be401dc7))
+
+
+#### Features
+
+* **camelCase:** handle hyphenated names ([315cfaa2](http://github.com/aurelia/binding/commit/315cfaa229c13da8355ee1dec201a09c7df507db))
+* **logging:** warn when property can't be defined ([a6457c09](http://github.com/aurelia/binding/commit/a6457c098e18707ebd4e65448a5d6f984377fac4))
+
+
 ### 1.0.0-beta.1.3.2 (2016-04-13)
 
 

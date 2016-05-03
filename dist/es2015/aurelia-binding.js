@@ -1,11 +1,19 @@
 var _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class5, _dec6, _class7, _dec7, _class8, _dec8, _class9, _dec9, _class10, _class11, _temp, _dec10, _class12, _class13, _temp2;
 
+import * as LogManager from 'aurelia-logging';
 import { PLATFORM, DOM } from 'aurelia-pal';
 import { TaskQueue } from 'aurelia-task-queue';
 import { metadata } from 'aurelia-metadata';
 
+const map = Object.create(null);
+
 export function camelCase(name) {
-  return name.charAt(0).toLowerCase() + name.slice(1);
+  if (name in map) {
+    return map[name];
+  }
+  const result = name.charAt(0).toLowerCase() + name.slice(1).replace(/[_.-](\w|$)/g, (_, x) => x.toUpperCase());
+  map[name] = result;
+  return result;
 }
 
 export function createOverrideContext(bindingContext, parentOverrideContext) {
@@ -913,8 +921,9 @@ let splice = Array.prototype.splice;
 let unshift = Array.prototype.unshift;
 
 Array.prototype.pop = function () {
+  let notEmpty = this.length > 0;
   let methodCallResult = pop.apply(this, arguments);
-  if (this.__array_observer__ !== undefined) {
+  if (notEmpty && this.__array_observer__ !== undefined) {
     this.__array_observer__.addChangeRecord({
       type: 'delete',
       object: this,
@@ -953,8 +962,9 @@ Array.prototype.reverse = function () {
 };
 
 Array.prototype.shift = function () {
+  let notEmpty = this.length > 0;
   let methodCallResult = shift.apply(this, arguments);
-  if (this.__array_observer__ !== undefined) {
+  if (notEmpty && this.__array_observer__ !== undefined) {
     this.__array_observer__.addChangeRecord({
       type: 'delete',
       object: this,
@@ -1018,7 +1028,7 @@ let ModifyArrayObserver = class ModifyArrayObserver extends ModifyCollectionObse
   static for(taskQueue, array) {
     if (!('__array_observer__' in array)) {
       let observer = ModifyArrayObserver.create(taskQueue, array);
-      Object.defineProperty(array, '__array_observer__', { value: observer, enumerable: false, configurable: false });
+      Reflect.defineProperty(array, '__array_observer__', { value: observer, enumerable: false, configurable: false });
     }
     return array.__array_observer__;
   }
@@ -1488,15 +1498,15 @@ export let Binary = class Binary extends Expression {
         return left !== right;
     }
 
-    if (left === null || right === null) {
+    if (left === null || right === null || left === undefined || right === undefined) {
       switch (this.operation) {
         case '+':
-          if (left !== null) return left;
-          if (right !== null) return right;
+          if (left !== null && left !== undefined) return left;
+          if (right !== null && right !== undefined) return right;
           return 0;
         case '-':
-          if (left !== null) return left;
-          if (right !== null) return 0 - right;
+          if (left !== null && left !== undefined) return left;
+          if (right !== null && right !== undefined) return 0 - right;
           return 0;
       }
 
@@ -2827,7 +2837,7 @@ let ModifyMapObserver = class ModifyMapObserver extends ModifyCollectionObserver
   static for(taskQueue, map) {
     if (!('__map_observer__' in map)) {
       let observer = ModifyMapObserver.create(taskQueue, map);
-      Object.defineProperty(map, '__map_observer__', { value: observer, enumerable: false, configurable: false });
+      Reflect.defineProperty(map, '__map_observer__', { value: observer, enumerable: false, configurable: false });
     }
     return map.__map_observer__;
   }
@@ -3164,6 +3174,8 @@ export let DirtyCheckProperty = (_dec5 = subscriberCollection(), _dec5(_class5 =
   }
 }) || _class5);
 
+const logger = LogManager.getLogger('property-observation');
+
 export const propertyAccessor = {
   getValue: (obj, propertyName) => obj[propertyName],
   setValue: (value, obj, propertyName) => {
@@ -3255,14 +3267,14 @@ export let SetterObserver = (_dec6 = subscriberCollection(), _dec6(_class7 = cla
     this.setValue = this.setterValue;
     this.getValue = this.getterValue;
 
-    try {
-      Object.defineProperty(this.obj, this.propertyName, {
-        configurable: true,
-        enumerable: true,
-        get: this.getValue.bind(this),
-        set: this.setValue.bind(this)
-      });
-    } catch (_) {}
+    if (!Reflect.defineProperty(this.obj, this.propertyName, {
+      configurable: true,
+      enumerable: true,
+      get: this.getValue.bind(this),
+      set: this.setValue.bind(this)
+    })) {
+      logger.warn(`Cannot observe property '${ this.propertyName }' of object`, this.obj);
+    }
   }
 }) || _class7);
 
@@ -3422,6 +3434,7 @@ export let ValueAttributeObserver = (_dec7 = subscriberCollection(), _dec7(_clas
 }) || _class8);
 
 const checkedArrayContext = 'CheckedObserver:array';
+const checkedValueContext = 'CheckedObserver:value';
 
 export let CheckedObserver = (_dec8 = subscriberCollection(), _dec8(_class9 = class CheckedObserver {
   constructor(element, handler, observerLocator) {
@@ -3462,6 +3475,10 @@ export let CheckedObserver = (_dec8 = subscriberCollection(), _dec8(_class9 = cl
 
   call(context, splices) {
     this.synchronizeElement();
+
+    if (!this.valueObserver && (this.valueObserver = this.element.__observers__.model || this.element.__observers__.value)) {
+      this.valueObserver.subscribe(checkedValueContext, this);
+    }
   }
 
   synchronizeElement() {
@@ -3530,6 +3547,9 @@ export let CheckedObserver = (_dec8 = subscriberCollection(), _dec8(_class9 = cl
     if (this.arrayObserver) {
       this.arrayObserver.unsubscribe(checkedArrayContext, this);
       this.arrayObserver = null;
+    }
+    if (this.valueObserver) {
+      this.valueObserver.unsubscribe(checkedValueContext, this);
     }
   }
 }) || _class9);
@@ -4048,6 +4068,7 @@ export let ObserverLocator = (_temp = _class11 = class ObserverLocator {
     this.svgAnalyzer = svgAnalyzer;
     this.parser = parser;
     this.adapters = [];
+    this.logger = LogManager.getLogger('observer-locator');
   }
 
   getObserver(obj, propertyName) {
@@ -4078,14 +4099,14 @@ export let ObserverLocator = (_temp = _class11 = class ObserverLocator {
   createObserversLookup(obj) {
     let value = {};
 
-    try {
-      Object.defineProperty(obj, '__observers__', {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: value
-      });
-    } catch (_) {}
+    if (!Reflect.defineProperty(obj, '__observers__', {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: value
+    })) {
+      this.logger.warn('Cannot add observers to object', obj);
+    }
 
     return value;
   }
@@ -4184,7 +4205,7 @@ export let ObserverLocator = (_temp = _class11 = class ObserverLocator {
 
   getAccessor(obj, propertyName) {
     if (obj instanceof DOM.Element) {
-      if (propertyName === 'class' || propertyName === 'style' || propertyName === 'css' || propertyName === 'value' && (obj.tagName.toLowerCase() === 'input' || obj.tagName.toLowerCase() === 'select') || propertyName === 'checked' && obj.tagName.toLowerCase() === 'input' || /^xlink:.+$/.exec(propertyName)) {
+      if (propertyName === 'class' || propertyName === 'style' || propertyName === 'css' || propertyName === 'value' && (obj.tagName.toLowerCase() === 'input' || obj.tagName.toLowerCase() === 'select') || propertyName === 'checked' && obj.tagName.toLowerCase() === 'input' || propertyName === 'model' && obj.tagName.toLowerCase() === 'input' || /^xlink:.+$/.exec(propertyName)) {
         return this.getObserver(obj, propertyName);
       }
       if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
@@ -4692,7 +4713,7 @@ let ModifySetObserver = class ModifySetObserver extends ModifyCollectionObserver
   static for(taskQueue, set) {
     if (!('__set_observer__' in set)) {
       let observer = ModifySetObserver.create(taskQueue, set);
-      Object.defineProperty(set, '__set_observer__', { value: observer, enumerable: false, configurable: false });
+      Reflect.defineProperty(set, '__set_observer__', { value: observer, enumerable: false, configurable: false });
     }
     return set.__set_observer__;
   }
@@ -4783,7 +4804,7 @@ export function observable(targetOrConfig, key, descriptor) {
     descriptor2.get.dependencies = [innerPropertyName];
 
     if (!babel) {
-      Object.defineProperty(target, key2, descriptor2);
+      Reflect.defineProperty(target, key2, descriptor2);
     }
   };
 

@@ -1,7 +1,7 @@
 'use strict';
 
-System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], function (_export, _context) {
-  var PLATFORM, DOM, TaskQueue, metadata, _typeof, _createClass, _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class5, _dec6, _class7, _dec7, _class8, _dec8, _class9, _dec9, _class10, _class11, _temp, _dec10, _class12, _class13, _temp2, sourceContext, slotNames, versionSlotNames, i, bindings, minimumImmediate, frameBudget, isFlushRequested, immediate, arrayPool1, arrayPool2, poolUtilization, ExpressionObserver, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, pop, push, reverse, shift, sort, splice, unshift, ModifyArrayObserver, Expression, Chain, BindingBehavior, ValueConverter, Assign, Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, PrefixNot, LiteralPrimitive, LiteralString, LiteralArray, LiteralObject, evalListCache, Unparser, ExpressionCloner, bindingMode, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP, EOF, Parser, ParserImplementation, mapProto, ModifyMapObserver, DelegateHandlerEntry, DefaultEventStrategy, EventManager, DirtyChecker, DirtyCheckProperty, propertyAccessor, PrimitiveObserver, SetterObserver, XLinkAttributeObserver, dataAttributeAccessor, DataAttributeObserver, StyleObserver, ValueAttributeObserver, checkedArrayContext, CheckedObserver, selectArrayContext, SelectValueObserver, ClassObserver, ComputedExpression, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, targetContext, Binding, CallExpression, Call, ValueConverterResource, BindingBehaviorResource, ListenerExpression, Listener, NameExpression, NameBinder, LookupFunctions, BindingEngine, setProto, ModifySetObserver;
+System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], function (_export, _context) {
+  var LogManager, PLATFORM, DOM, TaskQueue, metadata, _typeof, _createClass, _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class5, _dec6, _class7, _dec7, _class8, _dec8, _class9, _dec9, _class10, _class11, _temp, _dec10, _class12, _class13, _temp2, map, sourceContext, slotNames, versionSlotNames, i, bindings, minimumImmediate, frameBudget, isFlushRequested, immediate, arrayPool1, arrayPool2, poolUtilization, ExpressionObserver, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, pop, push, reverse, shift, sort, splice, unshift, ModifyArrayObserver, Expression, Chain, BindingBehavior, ValueConverter, Assign, Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, PrefixNot, LiteralPrimitive, LiteralString, LiteralArray, LiteralObject, evalListCache, Unparser, ExpressionCloner, bindingMode, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP, EOF, Parser, ParserImplementation, mapProto, ModifyMapObserver, DelegateHandlerEntry, DefaultEventStrategy, EventManager, DirtyChecker, DirtyCheckProperty, logger, propertyAccessor, PrimitiveObserver, SetterObserver, XLinkAttributeObserver, dataAttributeAccessor, DataAttributeObserver, StyleObserver, ValueAttributeObserver, checkedArrayContext, checkedValueContext, CheckedObserver, selectArrayContext, SelectValueObserver, ClassObserver, ComputedExpression, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, targetContext, Binding, CallExpression, Call, ValueConverterResource, BindingBehaviorResource, ListenerExpression, Listener, NameExpression, NameBinder, LookupFunctions, BindingEngine, setProto, ModifySetObserver;
 
   function _possibleConstructorReturn(self, call) {
     if (!self) {
@@ -27,11 +27,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
     if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
   }
 
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
+  
 
   function addObserver(observer) {
     var observerSlots = this._observerSlots === undefined ? 0 : this._observerSlots;
@@ -518,7 +514,9 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
   }
 
   return {
-    setters: [function (_aureliaPal) {
+    setters: [function (_aureliaLogging) {
+      LogManager = _aureliaLogging;
+    }, function (_aureliaPal) {
       PLATFORM = _aureliaPal.PLATFORM;
       DOM = _aureliaPal.DOM;
     }, function (_aureliaTaskQueue) {
@@ -551,8 +549,16 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         };
       }();
 
+      map = Object.create(null);
       function camelCase(name) {
-        return name.charAt(0).toLowerCase() + name.slice(1);
+        if (name in map) {
+          return map[name];
+        }
+        var result = name.charAt(0).toLowerCase() + name.slice(1).replace(/[_.-](\w|$)/g, function (_, x) {
+          return x.toUpperCase();
+        });
+        map[name] = result;
+        return result;
       }
 
       _export('camelCase', camelCase);
@@ -665,7 +671,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('ExpressionObserver', ExpressionObserver = (_dec = connectable(), _dec2 = subscriberCollection(), _dec(_class = _dec2(_class = function () {
         function ExpressionObserver(scope, expression, observerLocator, lookupFunctions) {
-          _classCallCheck(this, ExpressionObserver);
+          
 
           this.scope = scope;
           this.expression = expression;
@@ -1038,7 +1044,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('ModifyCollectionObserver', ModifyCollectionObserver = (_dec3 = subscriberCollection(), _dec3(_class2 = function () {
         function ModifyCollectionObserver(taskQueue, collection) {
-          _classCallCheck(this, ModifyCollectionObserver);
+          
 
           this.taskQueue = taskQueue;
           this.queued = false;
@@ -1145,7 +1151,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('CollectionLengthObserver', CollectionLengthObserver = (_dec4 = subscriberCollection(), _dec4(_class3 = function () {
         function CollectionLengthObserver(collection) {
-          _classCallCheck(this, CollectionLengthObserver);
+          
 
           this.collection = collection;
           this.lengthPropertyName = collection instanceof Map || collection instanceof Set ? 'size' : 'length';
@@ -1189,8 +1195,9 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
 
       Array.prototype.pop = function () {
+        var notEmpty = this.length > 0;
         var methodCallResult = pop.apply(this, arguments);
-        if (this.__array_observer__ !== undefined) {
+        if (notEmpty && this.__array_observer__ !== undefined) {
           this.__array_observer__.addChangeRecord({
             type: 'delete',
             object: this,
@@ -1229,8 +1236,9 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
       };
 
       Array.prototype.shift = function () {
+        var notEmpty = this.length > 0;
         var methodCallResult = shift.apply(this, arguments);
-        if (this.__array_observer__ !== undefined) {
+        if (notEmpty && this.__array_observer__ !== undefined) {
           this.__array_observer__.addChangeRecord({
             type: 'delete',
             object: this,
@@ -1288,7 +1296,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(ModifyArrayObserver, _ModifyCollectionObse);
 
         function ModifyArrayObserver(taskQueue, array) {
-          _classCallCheck(this, ModifyArrayObserver);
+          
 
           return _possibleConstructorReturn(this, _ModifyCollectionObse.call(this, taskQueue, array));
         }
@@ -1296,7 +1304,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         ModifyArrayObserver.for = function _for(taskQueue, array) {
           if (!('__array_observer__' in array)) {
             var observer = ModifyArrayObserver.create(taskQueue, array);
-            Object.defineProperty(array, '__array_observer__', { value: observer, enumerable: false, configurable: false });
+            Reflect.defineProperty(array, '__array_observer__', { value: observer, enumerable: false, configurable: false });
           }
           return array.__array_observer__;
         };
@@ -1311,7 +1319,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('Expression', Expression = function () {
         function Expression() {
-          _classCallCheck(this, Expression);
+          
 
           this.isChain = false;
           this.isAssignable = false;
@@ -1338,7 +1346,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(Chain, _Expression);
 
         function Chain(expressions) {
-          _classCallCheck(this, Chain);
+          
 
           var _this3 = _possibleConstructorReturn(this, _Expression.call(this));
 
@@ -1376,7 +1384,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(BindingBehavior, _Expression2);
 
         function BindingBehavior(expression, name, args) {
-          _classCallCheck(this, BindingBehavior);
+          
 
           var _this4 = _possibleConstructorReturn(this, _Expression2.call(this));
 
@@ -1436,7 +1444,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(ValueConverter, _Expression3);
 
         function ValueConverter(expression, name, args, allArgs) {
-          _classCallCheck(this, ValueConverter);
+          
 
           var _this5 = _possibleConstructorReturn(this, _Expression3.call(this));
 
@@ -1494,7 +1502,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(Assign, _Expression4);
 
         function Assign(target, value) {
-          _classCallCheck(this, Assign);
+          
 
           var _this6 = _possibleConstructorReturn(this, _Expression4.call(this));
 
@@ -1522,7 +1530,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(Conditional, _Expression5);
 
         function Conditional(condition, yes, no) {
-          _classCallCheck(this, Conditional);
+          
 
           var _this7 = _possibleConstructorReturn(this, _Expression5.call(this));
 
@@ -1558,7 +1566,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(AccessThis, _Expression6);
 
         function AccessThis(ancestor) {
-          _classCallCheck(this, AccessThis);
+          
 
           var _this8 = _possibleConstructorReturn(this, _Expression6.call(this));
 
@@ -1590,7 +1598,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(AccessScope, _Expression7);
 
         function AccessScope(name, ancestor) {
-          _classCallCheck(this, AccessScope);
+          
 
           var _this9 = _possibleConstructorReturn(this, _Expression7.call(this));
 
@@ -1628,7 +1636,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(AccessMember, _Expression8);
 
         function AccessMember(object, name) {
-          _classCallCheck(this, AccessMember);
+          
 
           var _this10 = _possibleConstructorReturn(this, _Expression8.call(this));
 
@@ -1675,7 +1683,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(AccessKeyed, _Expression9);
 
         function AccessKeyed(object, key) {
-          _classCallCheck(this, AccessKeyed);
+          
 
           var _this11 = _possibleConstructorReturn(this, _Expression9.call(this));
 
@@ -1723,7 +1731,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(CallScope, _Expression10);
 
         function CallScope(name, args, ancestor) {
-          _classCallCheck(this, CallScope);
+          
 
           var _this12 = _possibleConstructorReturn(this, _Expression10.call(this));
 
@@ -1764,7 +1772,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(CallMember, _Expression11);
 
         function CallMember(object, name, args) {
-          _classCallCheck(this, CallMember);
+          
 
           var _this13 = _possibleConstructorReturn(this, _Expression11.call(this));
 
@@ -1809,7 +1817,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(CallFunction, _Expression12);
 
         function CallFunction(func, args) {
-          _classCallCheck(this, CallFunction);
+          
 
           var _this14 = _possibleConstructorReturn(this, _Expression12.call(this));
 
@@ -1854,7 +1862,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(Binary, _Expression13);
 
         function Binary(operation, left, right) {
-          _classCallCheck(this, Binary);
+          
 
           var _this15 = _possibleConstructorReturn(this, _Expression13.call(this));
 
@@ -1887,15 +1895,15 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
               return left !== right;
           }
 
-          if (left === null || right === null) {
+          if (left === null || right === null || left === undefined || right === undefined) {
             switch (this.operation) {
               case '+':
-                if (left !== null) return left;
-                if (right !== null) return right;
+                if (left !== null && left !== undefined) return left;
+                if (right !== null && right !== undefined) return right;
                 return 0;
               case '-':
-                if (left !== null) return left;
-                if (right !== null) return 0 - right;
+                if (left !== null && left !== undefined) return left;
+                if (right !== null && right !== undefined) return 0 - right;
                 return 0;
             }
 
@@ -1950,7 +1958,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(PrefixNot, _Expression14);
 
         function PrefixNot(operation, expression) {
-          _classCallCheck(this, PrefixNot);
+          
 
           var _this16 = _possibleConstructorReturn(this, _Expression14.call(this));
 
@@ -1980,7 +1988,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(LiteralPrimitive, _Expression15);
 
         function LiteralPrimitive(value) {
-          _classCallCheck(this, LiteralPrimitive);
+          
 
           var _this17 = _possibleConstructorReturn(this, _Expression15.call(this));
 
@@ -2007,7 +2015,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(LiteralString, _Expression16);
 
         function LiteralString(value) {
-          _classCallCheck(this, LiteralString);
+          
 
           var _this18 = _possibleConstructorReturn(this, _Expression16.call(this));
 
@@ -2034,7 +2042,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(LiteralArray, _Expression17);
 
         function LiteralArray(elements) {
-          _classCallCheck(this, LiteralArray);
+          
 
           var _this19 = _possibleConstructorReturn(this, _Expression17.call(this));
 
@@ -2073,7 +2081,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(LiteralObject, _Expression18);
 
         function LiteralObject(keys, values) {
-          _classCallCheck(this, LiteralObject);
+          
 
           var _this20 = _possibleConstructorReturn(this, _Expression18.call(this));
 
@@ -2114,7 +2122,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('Unparser', Unparser = function () {
         function Unparser(buffer) {
-          _classCallCheck(this, Unparser);
+          
 
           this.buffer = buffer;
         }
@@ -2310,7 +2318,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('ExpressionCloner', ExpressionCloner = function () {
         function ExpressionCloner() {
-          _classCallCheck(this, ExpressionCloner);
+          
         }
 
         ExpressionCloner.prototype.cloneExpressionArray = function cloneExpressionArray(array) {
@@ -2416,7 +2424,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('Token', Token = function () {
         function Token(index, text) {
-          _classCallCheck(this, Token);
+          
 
           this.index = index;
           this.text = text;
@@ -2448,7 +2456,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('Lexer', Lexer = function () {
         function Lexer() {
-          _classCallCheck(this, Lexer);
+          
         }
 
         Lexer.prototype.lex = function lex(text) {
@@ -2471,7 +2479,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('Scanner', Scanner = function () {
         function Scanner(input) {
-          _classCallCheck(this, Scanner);
+          
 
           this.input = input;
           this.length = input.length;
@@ -2773,7 +2781,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('Parser', Parser = function () {
         function Parser() {
-          _classCallCheck(this, Parser);
+          
 
           this.cache = {};
           this.lexer = new Lexer();
@@ -2792,7 +2800,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('ParserImplementation', ParserImplementation = function () {
         function ParserImplementation(lexer, input) {
-          _classCallCheck(this, ParserImplementation);
+          
 
           this.index = 0;
           this.input = input;
@@ -3191,7 +3199,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(ModifyMapObserver, _ModifyCollectionObse2);
 
         function ModifyMapObserver(taskQueue, map) {
-          _classCallCheck(this, ModifyMapObserver);
+          
 
           return _possibleConstructorReturn(this, _ModifyCollectionObse2.call(this, taskQueue, map));
         }
@@ -3199,7 +3207,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         ModifyMapObserver.for = function _for(taskQueue, map) {
           if (!('__map_observer__' in map)) {
             var observer = ModifyMapObserver.create(taskQueue, map);
-            Object.defineProperty(map, '__map_observer__', { value: observer, enumerable: false, configurable: false });
+            Reflect.defineProperty(map, '__map_observer__', { value: observer, enumerable: false, configurable: false });
           }
           return map.__map_observer__;
         };
@@ -3264,7 +3272,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       DelegateHandlerEntry = function () {
         function DelegateHandlerEntry(eventName) {
-          _classCallCheck(this, DelegateHandlerEntry);
+          
 
           this.eventName = eventName;
           this.count = 0;
@@ -3291,7 +3299,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       DefaultEventStrategy = function () {
         function DefaultEventStrategy() {
-          _classCallCheck(this, DefaultEventStrategy);
+          
 
           this.delegatedHandlers = [];
         }
@@ -3331,7 +3339,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('EventManager', EventManager = function () {
         function EventManager() {
-          _classCallCheck(this, EventManager);
+          
 
           this.elementHandlerLookup = {};
           this.eventStrategyLookup = {};
@@ -3453,7 +3461,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('DirtyChecker', DirtyChecker = function () {
         function DirtyChecker() {
-          _classCallCheck(this, DirtyChecker);
+          
 
           this.tracked = [];
           this.checkDelay = 120;
@@ -3506,7 +3514,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('DirtyCheckProperty', DirtyCheckProperty = (_dec5 = subscriberCollection(), _dec5(_class5 = function () {
         function DirtyCheckProperty(dirtyChecker, obj, propertyName) {
-          _classCallCheck(this, DirtyCheckProperty);
+          
 
           this.dirtyChecker = dirtyChecker;
           this.obj = obj;
@@ -3553,6 +3561,8 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('DirtyCheckProperty', DirtyCheckProperty);
 
+      logger = LogManager.getLogger('property-observation');
+
       _export('propertyAccessor', propertyAccessor = {
         getValue: function getValue(obj, propertyName) {
           return obj[propertyName];
@@ -3566,7 +3576,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('PrimitiveObserver', PrimitiveObserver = function () {
         function PrimitiveObserver(primitive, propertyName) {
-          _classCallCheck(this, PrimitiveObserver);
+          
 
           this.doNotCache = true;
 
@@ -3594,7 +3604,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('SetterObserver', SetterObserver = (_dec6 = subscriberCollection(), _dec6(_class7 = function () {
         function SetterObserver(taskQueue, obj, propertyName) {
-          _classCallCheck(this, SetterObserver);
+          
 
           this.taskQueue = taskQueue;
           this.obj = obj;
@@ -3655,14 +3665,14 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
           this.setValue = this.setterValue;
           this.getValue = this.getterValue;
 
-          try {
-            Object.defineProperty(this.obj, this.propertyName, {
-              configurable: true,
-              enumerable: true,
-              get: this.getValue.bind(this),
-              set: this.setValue.bind(this)
-            });
-          } catch (_) {}
+          if (!Reflect.defineProperty(this.obj, this.propertyName, {
+            configurable: true,
+            enumerable: true,
+            get: this.getValue.bind(this),
+            set: this.setValue.bind(this)
+          })) {
+            logger.warn('Cannot observe property \'' + this.propertyName + '\' of object', this.obj);
+          }
         };
 
         return SetterObserver;
@@ -3672,7 +3682,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('XLinkAttributeObserver', XLinkAttributeObserver = function () {
         function XLinkAttributeObserver(element, propertyName, attributeName) {
-          _classCallCheck(this, XLinkAttributeObserver);
+          
 
           this.element = element;
           this.propertyName = propertyName;
@@ -3709,7 +3719,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('DataAttributeObserver', DataAttributeObserver = function () {
         function DataAttributeObserver(element, propertyName) {
-          _classCallCheck(this, DataAttributeObserver);
+          
 
           this.element = element;
           this.propertyName = propertyName;
@@ -3734,7 +3744,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('StyleObserver', StyleObserver = function () {
         function StyleObserver(element, propertyName) {
-          _classCallCheck(this, StyleObserver);
+          
 
           this.element = element;
           this.propertyName = propertyName;
@@ -3803,7 +3813,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('ValueAttributeObserver', ValueAttributeObserver = (_dec7 = subscriberCollection(), _dec7(_class8 = function () {
         function ValueAttributeObserver(element, propertyName, handler) {
-          _classCallCheck(this, ValueAttributeObserver);
+          
 
           this.element = element;
           this.propertyName = propertyName;
@@ -3856,10 +3866,11 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
       _export('ValueAttributeObserver', ValueAttributeObserver);
 
       checkedArrayContext = 'CheckedObserver:array';
+      checkedValueContext = 'CheckedObserver:value';
 
       _export('CheckedObserver', CheckedObserver = (_dec8 = subscriberCollection(), _dec8(_class9 = function () {
         function CheckedObserver(element, handler, observerLocator) {
-          _classCallCheck(this, CheckedObserver);
+          
 
           this.element = element;
           this.handler = handler;
@@ -3898,6 +3909,10 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
         CheckedObserver.prototype.call = function call(context, splices) {
           this.synchronizeElement();
+
+          if (!this.valueObserver && (this.valueObserver = this.element.__observers__.model || this.element.__observers__.value)) {
+            this.valueObserver.subscribe(checkedValueContext, this);
+          }
         };
 
         CheckedObserver.prototype.synchronizeElement = function synchronizeElement() {
@@ -3975,6 +3990,9 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
             this.arrayObserver.unsubscribe(checkedArrayContext, this);
             this.arrayObserver = null;
           }
+          if (this.valueObserver) {
+            this.valueObserver.unsubscribe(checkedValueContext, this);
+          }
         };
 
         return CheckedObserver;
@@ -3986,7 +4004,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('SelectValueObserver', SelectValueObserver = (_dec9 = subscriberCollection(), _dec9(_class10 = function () {
         function SelectValueObserver(element, handler, observerLocator) {
-          _classCallCheck(this, SelectValueObserver);
+          
 
           this.element = element;
           this.handler = handler;
@@ -4195,7 +4213,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('ClassObserver', ClassObserver = function () {
         function ClassObserver(element) {
-          _classCallCheck(this, ClassObserver);
+          
 
           this.element = element;
           this.doNotCache = true;
@@ -4281,7 +4299,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(ComputedExpression, _Expression19);
 
         function ComputedExpression(name, dependencies) {
-          _classCallCheck(this, ComputedExpression);
+          
 
           var _this26 = _possibleConstructorReturn(this, _Expression19.call(this));
 
@@ -4539,7 +4557,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('SVGAnalyzer', SVGAnalyzer = function () {
         function SVGAnalyzer() {
-          _classCallCheck(this, SVGAnalyzer);
+          
 
           if (createElement('<svg><altGlyph /></svg>').firstElementChild.nodeName === 'altglyph' && elements.altGlyph) {
             elements.altglyph = elements.altGlyph;
@@ -4564,7 +4582,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('ObserverLocator', ObserverLocator = (_temp = _class11 = function () {
         function ObserverLocator(taskQueue, eventManager, dirtyChecker, svgAnalyzer, parser) {
-          _classCallCheck(this, ObserverLocator);
+          
 
           this.taskQueue = taskQueue;
           this.eventManager = eventManager;
@@ -4572,6 +4590,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
           this.svgAnalyzer = svgAnalyzer;
           this.parser = parser;
           this.adapters = [];
+          this.logger = LogManager.getLogger('observer-locator');
         }
 
         ObserverLocator.prototype.getObserver = function getObserver(obj, propertyName) {
@@ -4602,14 +4621,14 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         ObserverLocator.prototype.createObserversLookup = function createObserversLookup(obj) {
           var value = {};
 
-          try {
-            Object.defineProperty(obj, '__observers__', {
-              enumerable: false,
-              configurable: false,
-              writable: false,
-              value: value
-            });
-          } catch (_) {}
+          if (!Reflect.defineProperty(obj, '__observers__', {
+            enumerable: false,
+            configurable: false,
+            writable: false,
+            value: value
+          })) {
+            this.logger.warn('Cannot add observers to object', obj);
+          }
 
           return value;
         };
@@ -4708,7 +4727,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
         ObserverLocator.prototype.getAccessor = function getAccessor(obj, propertyName) {
           if (obj instanceof DOM.Element) {
-            if (propertyName === 'class' || propertyName === 'style' || propertyName === 'css' || propertyName === 'value' && (obj.tagName.toLowerCase() === 'input' || obj.tagName.toLowerCase() === 'select') || propertyName === 'checked' && obj.tagName.toLowerCase() === 'input' || /^xlink:.+$/.exec(propertyName)) {
+            if (propertyName === 'class' || propertyName === 'style' || propertyName === 'css' || propertyName === 'value' && (obj.tagName.toLowerCase() === 'input' || obj.tagName.toLowerCase() === 'select') || propertyName === 'checked' && obj.tagName.toLowerCase() === 'input' || propertyName === 'model' && obj.tagName.toLowerCase() === 'input' || /^xlink:.+$/.exec(propertyName)) {
               return this.getObserver(obj, propertyName);
             }
             if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
@@ -4737,7 +4756,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('ObjectObservationAdapter', ObjectObservationAdapter = function () {
         function ObjectObservationAdapter() {
-          _classCallCheck(this, ObjectObservationAdapter);
+          
         }
 
         ObjectObservationAdapter.prototype.getObserver = function getObserver(object, propertyName, descriptor) {
@@ -4751,7 +4770,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('BindingExpression', BindingExpression = function () {
         function BindingExpression(observerLocator, targetProperty, sourceExpression, mode, lookupFunctions, attribute) {
-          _classCallCheck(this, BindingExpression);
+          
 
           this.observerLocator = observerLocator;
           this.targetProperty = targetProperty;
@@ -4775,7 +4794,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('Binding', Binding = (_dec10 = connectable(), _dec10(_class12 = function () {
         function Binding(observerLocator, sourceExpression, target, targetProperty, mode, lookupFunctions) {
-          _classCallCheck(this, Binding);
+          
 
           this.observerLocator = observerLocator;
           this.sourceExpression = sourceExpression;
@@ -4889,7 +4908,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('CallExpression', CallExpression = function () {
         function CallExpression(observerLocator, targetProperty, sourceExpression, lookupFunctions) {
-          _classCallCheck(this, CallExpression);
+          
 
           this.observerLocator = observerLocator;
           this.targetProperty = targetProperty;
@@ -4908,7 +4927,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('Call', Call = function () {
         function Call(observerLocator, sourceExpression, target, targetProperty, lookupFunctions) {
-          _classCallCheck(this, Call);
+          
 
           this.sourceExpression = sourceExpression;
           this.target = target;
@@ -4968,7 +4987,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('ValueConverterResource', ValueConverterResource = function () {
         function ValueConverterResource(name) {
-          _classCallCheck(this, ValueConverterResource);
+          
 
           this.name = name;
         }
@@ -5008,7 +5027,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('BindingBehaviorResource', BindingBehaviorResource = function () {
         function BindingBehaviorResource(name) {
-          _classCallCheck(this, BindingBehaviorResource);
+          
 
           this.name = name;
         }
@@ -5048,7 +5067,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('ListenerExpression', ListenerExpression = function () {
         function ListenerExpression(eventManager, targetEvent, sourceExpression, delegate, preventDefault, lookupFunctions) {
-          _classCallCheck(this, ListenerExpression);
+          
 
           this.eventManager = eventManager;
           this.targetEvent = targetEvent;
@@ -5070,7 +5089,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('Listener', Listener = function () {
         function Listener(eventManager, targetEvent, delegate, sourceExpression, target, preventDefault, lookupFunctions) {
-          _classCallCheck(this, Listener);
+          
 
           this.eventManager = eventManager;
           this.targetEvent = targetEvent;
@@ -5133,7 +5152,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('NameExpression', NameExpression = function () {
         function NameExpression(sourceExpression, apiName, lookupFunctions) {
-          _classCallCheck(this, NameExpression);
+          
 
           this.sourceExpression = sourceExpression;
           this.apiName = apiName;
@@ -5173,7 +5192,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       NameBinder = function () {
         function NameBinder(sourceExpression, target, lookupFunctions) {
-          _classCallCheck(this, NameBinder);
+          
 
           this.sourceExpression = sourceExpression;
           this.target = target;
@@ -5221,7 +5240,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
 
       _export('BindingEngine', BindingEngine = (_temp2 = _class13 = function () {
         function BindingEngine(observerLocator, parser) {
-          _classCallCheck(this, BindingEngine);
+          
 
           this.observerLocator = observerLocator;
           this.parser = parser;
@@ -5301,7 +5320,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         _inherits(ModifySetObserver, _ModifyCollectionObse3);
 
         function ModifySetObserver(taskQueue, set) {
-          _classCallCheck(this, ModifySetObserver);
+          
 
           return _possibleConstructorReturn(this, _ModifyCollectionObse3.call(this, taskQueue, set));
         }
@@ -5309,7 +5328,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
         ModifySetObserver.for = function _for(taskQueue, set) {
           if (!('__set_observer__' in set)) {
             var observer = ModifySetObserver.create(taskQueue, set);
-            Object.defineProperty(set, '__set_observer__', { value: observer, enumerable: false, configurable: false });
+            Reflect.defineProperty(set, '__set_observer__', { value: observer, enumerable: false, configurable: false });
           }
           return set.__set_observer__;
         };
@@ -5401,7 +5420,7 @@ System.register(['aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], funct
           descriptor2.get.dependencies = [innerPropertyName];
 
           if (!babel) {
-            Object.defineProperty(target, key2, descriptor2);
+            Reflect.defineProperty(target, key2, descriptor2);
           }
         };
 
