@@ -1,3 +1,11 @@
+### 1.0.0-beta.1.3.4 (2016-05-04)
+
+
+#### Bug Fixes
+
+* **package:** add missing dependencies ([3b8cbc66](http://github.com/aurelia/binding/commit/3b8cbc660e37ecd533bb74951e932ac85baf7f53))
+
+
 ### 1.0.0-beta.1.3.3 (2016-05-03)
 
 
