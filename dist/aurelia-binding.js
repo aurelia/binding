@@ -3965,6 +3965,51 @@ export function computedFrom(...rest) {
   };
 }
 
+
+export function cachedComputedFrom(...rest) {
+  const dependencyAccess = (object, dependency) => {
+    let value;
+
+    if (typeof dependency === "string") {
+      value = dependency.split('.').reduce((subjObject, subdependency) => subjObject[subdependency], object);
+    } else {
+      let scope = { bindingContext: object, overrideContext: createOverrideContext(object) };
+      value = dependency.evaluate(scope, null);
+    }
+    return value;
+  };
+
+  return function(target, key, descriptor) {
+    const _descriptor = descriptor.get;
+    const dependencies = rest;
+    let store;
+    const cache = {};
+
+    descriptor.get = function() {
+
+      const cached = dependencies.reduce((cached, dependency) => {
+        return cached && cache[dependency] == dependencyAccess(this,dependency) ;
+      }, true);
+
+      if (!cached) {
+        dependencies.map((dependency) => {
+          let key;
+          if (typeof dependency === "string") {
+            key = dependency;
+          } else {
+            key = dependency.name;
+          }
+          return cache[key] = dependencyAccess(this,dependency);
+        });
+        store = _descriptor.call(this);
+      }
+      return store;
+    };
+    descriptor.get.dependencies = rest;
+    return descriptor;
+  };
+}
+
 export class ComputedExpression extends Expression {
   constructor(name, dependencies) {
     super();

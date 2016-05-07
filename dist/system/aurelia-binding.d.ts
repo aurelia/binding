@@ -385,6 +385,13 @@ declare module 'aurelia-binding' {
   export function computedFrom(...propertyNames: string[]): any;
 
  /**
+  * Decorator: Indicates that the decorated property is computed from other properties and implements temporary caching for
+  * repeated fast access while dependencies remain unchanged.
+  * @param propertyNames The names of the properties the decorated property is computed from.  Simple property names, not expressions.
+  */
+  export function cachedComputedFrom(...propertyNames: string[]): any;
+
+ /**
   * Decorator: Indicates that the decorated class is a value converter.
   * @param name The name of the value converter.
   */
@@ -411,7 +418,7 @@ declare module 'aurelia-binding' {
    * An internal API used by Aurelia's array observation components.
    */
   export function mergeSplice(splices: any, index: number, removed: any, addedCount: number): any;
-  
+
   /**
   * Decorator: Specifies that a property is observable.
   * @param targetOrConfig The name of the property, or a configuration object.
