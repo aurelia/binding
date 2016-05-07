@@ -3988,7 +3988,13 @@ export function cachedComputedFrom(...rest) {
     descriptor.get = function() {
 
       const cached = dependencies.reduce((cached, dependency) => {
-        return cached && cache[dependency] == dependencyAccess(this,dependency) ;
+        let key;
+        if (typeof dependency === "string") {
+          key = dependency;
+        } else {
+          key = dependency.name;
+        }
+        return cached && cache[key] == dependencyAccess(this,dependency) ;
       }, true);
 
       if (!cached) {

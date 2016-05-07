@@ -4235,7 +4235,13 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
         var _this26 = this;
 
         var cached = dependencies.reduce(function (cached, dependency) {
-          return cached && cache[dependency] == dependencyAccess(_this26, dependency);
+          var key = void 0;
+          if (typeof dependency === "string") {
+            key = dependency;
+          } else {
+            key = dependency.name;
+          }
+          return cached && cache[key] == dependencyAccess(_this26, dependency);
         }, true);
 
         if (!cached) {
