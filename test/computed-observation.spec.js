@@ -66,7 +66,7 @@ describe('createComputedObserver', () => {
     constructor() {
       this._bar = null;
     }
-  @computedFrom('_bar');
+    @computedFrom('_bar')
     get bar() {
       return this._bar;
     }
@@ -220,14 +220,30 @@ describe('createCachedComputedObserver', () => {
     person.obj.lastName = 'Dough';
 
     expect(person.fullerName).toBe("chineke Jon Dough");
+    expect(person.fullerName).toBe("chineke Jon Dough");
+    expect(person.fullerName).toBe("chineke Jon Dough");
 
     setTimeout(() => {
       expect(spy.calls.count()).toEqual(1);
+
+      person.obj.lastName = 'Doughy';
+      expect(person.fullerName).toBe("chineke Jon Doughy");
+
+      person.obj.lastName = 'Dough';
       expect(person.fullerName).toBe("chineke Jon Dough");
+
+      person.obj.lastName = 'Doughy';
+      expect(person.fullerName).toBe("chineke Jon Doughy");
+
+      expect(person.fullerName).toBe("chineke Jon Doughy");
+      expect(person.fullerName).toBe("chineke Jon Doughy");
+      expect(person.fullerName).toBe("chineke Jon Doughy");
+
       setTimeout(() => {
-        expect(spy.calls.count()).toEqual(1);
+        expect(spy.calls.count()).toEqual(4);
         done();
       }, 0);
+      done();
     }, 0);
 
   });
