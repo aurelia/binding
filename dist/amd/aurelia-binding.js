@@ -4225,6 +4225,16 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
       return value;
     };
 
+    var dependencyKey = function dependencyKey(dependency) {
+      var key = void 0;
+      if (typeof dependency === "string") {
+        key = dependency;
+      } else {
+        key = dependency.name;
+      }
+      return key;
+    };
+
     return function (target, key, descriptor) {
       var _descriptor = descriptor.get;
       var dependencies = rest;
@@ -4235,30 +4245,22 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
         var _this26 = this;
 
         var cached = dependencies.reduce(function (cached, dependency) {
-          var key = void 0;
-          if (typeof dependency === "string") {
-            key = dependency;
-          } else {
-            key = dependency.name;
-          }
+          var key = dependencyKey(dependency);
           return cached && cache[key] == dependencyAccess(_this26, dependency);
         }, true);
 
         if (!cached) {
           dependencies.map(function (dependency) {
-            var key = void 0;
-            if (typeof dependency === "string") {
-              key = dependency;
-            } else {
-              key = dependency.name;
-            }
+            var key = dependencyKey(dependency);
             return cache[key] = dependencyAccess(_this26, dependency);
           });
           store = _descriptor.call(this);
         }
+
         return store;
       };
       descriptor.get.dependencies = rest;
+
       return descriptor;
     };
   }

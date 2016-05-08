@@ -3803,6 +3803,16 @@ export function cachedComputedFrom(...rest) {
     return value;
   };
 
+  const dependencyKey = dependency => {
+    let key;
+    if (typeof dependency === "string") {
+      key = dependency;
+    } else {
+      key = dependency.name;
+    }
+    return key;
+  };
+
   return function (target, key, descriptor) {
     const _descriptor = descriptor.get;
     const dependencies = rest;
@@ -3810,32 +3820,23 @@ export function cachedComputedFrom(...rest) {
     const cache = {};
 
     descriptor.get = function () {
-
       const cached = dependencies.reduce((cached, dependency) => {
-        let key;
-        if (typeof dependency === "string") {
-          key = dependency;
-        } else {
-          key = dependency.name;
-        }
+        const key = dependencyKey(dependency);
         return cached && cache[key] == dependencyAccess(this, dependency);
       }, true);
 
       if (!cached) {
         dependencies.map(dependency => {
-          let key;
-          if (typeof dependency === "string") {
-            key = dependency;
-          } else {
-            key = dependency.name;
-          }
+          const key = dependencyKey(dependency);
           return cache[key] = dependencyAccess(this, dependency);
         });
         store = _descriptor.call(this);
       }
+
       return store;
     };
     descriptor.get.dependencies = rest;
+
     return descriptor;
   };
 }
