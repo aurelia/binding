@@ -12,6 +12,8 @@
     "Rob Eisenberg <rob@bluespire.com> (http://robeisenberg.com/)"
   ],
   "homepage": "http://aurelia.io",
+  "main": "dist/commonjs/aurelia-binding.js",
+  "moduleType": "node",
   "repository": {
     "type": "git",
     "url": "http://github.com/aurelia/binding"
