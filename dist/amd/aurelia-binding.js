@@ -4244,10 +4244,10 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
       descriptor.get = function () {
         var _this26 = this;
 
-        var cached = dependencies.reduce(function (cached, dependency) {
+        var cached = dependencies.every(function (dependency) {
           var key = dependencyKey(dependency);
-          return cached && cache[key] == dependencyAccess(_this26, dependency);
-        }, true);
+          return cache[key] && cache[key] == dependencyAccess(_this26, dependency);
+        });
 
         if (!cached) {
           dependencies.map(function (dependency) {

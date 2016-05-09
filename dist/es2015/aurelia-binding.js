@@ -3820,10 +3820,10 @@ export function cachedComputedFrom(...rest) {
     const cache = {};
 
     descriptor.get = function () {
-      const cached = dependencies.reduce((cached, dependency) => {
+      const cached = dependencies.every(dependency => {
         const key = dependencyKey(dependency);
-        return cached && cache[key] == dependencyAccess(this, dependency);
-      }, true);
+        return cache[key] && cache[key] == dependencyAccess(this, dependency);
+      });
 
       if (!cached) {
         dependencies.map(dependency => {
