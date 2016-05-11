@@ -18,6 +18,58 @@ export function computedFrom(...rest) {
   };
 }
 
+
+export function cachedComputedFrom(...rest) {
+  const dependencyAccess = (object, dependency) => {
+    let value;
+
+    if (typeof dependency === "string") {
+      value = dependency.split('.').reduce((subjObject, subdependency) => subjObject[subdependency], object);
+    } else {
+      let scope = { bindingContext: object, overrideContext: createOverrideContext(object) };
+      value = dependency.evaluate(scope, null);
+    }
+    return value;
+  };
+
+  const dependencyKey = (dependency) => {
+    let key;
+    if (typeof dependency === "string") {
+      key = dependency;
+    } else {
+      key = dependency.name;
+    }
+    return key;
+  };
+
+  return function(target, key, descriptor) {
+    const _descriptor = descriptor.get;
+    const dependencies = rest;
+    let store;
+    const cache = {};
+
+    descriptor.get = function() {
+      const cached = dependencies.every((dependency) => {
+        const key = dependencyKey(dependency);
+        return cache[key] && cache[key] == dependencyAccess(this,dependency) ;
+      });
+
+      if (!cached) {
+        dependencies.map((dependency) => {
+          const key = dependencyKey(dependency);
+          return cache[key] = dependencyAccess(this,dependency);
+        });
+        store = _descriptor.call(this);
+      }
+
+      return store;
+    };
+    descriptor.get.dependencies = rest;
+
+    return descriptor;
+  };
+}
+
 export class ComputedExpression extends Expression {
   constructor(name, dependencies) {
     super();

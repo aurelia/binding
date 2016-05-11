@@ -2,6 +2,7 @@ import './setup';
 import {
   declarePropertyDependencies,
   computedFrom,
+  cachedComputedFrom,
   hasDeclaredDependencies
 } from '../src/computed-observation';
 import {ExpressionObserver} from '../src/expression-observer';
@@ -65,7 +66,7 @@ describe('createComputedObserver', () => {
     constructor() {
       this._bar = null;
     }
-    @computedFrom('_bar');
+    @computedFrom('_bar')
     get bar() {
       return this._bar;
     }
@@ -122,4 +123,129 @@ describe('createComputedObserver', () => {
       }, 0);
     }, 0);
   });
+});
+
+describe('createCachedComputedObserver', () => {
+  var person, observer, locator;
+
+  class Person {
+    constructor() {
+      this.obj = { firstName: 'John', lastName: 'Doe' };
+    }
+
+    @cachedComputedFrom('obj.firstName', 'obj.lastName')
+    get fullName() {
+      return `${this.obj.firstName} ${this.obj.lastName}`;
+    }
+
+    @cachedComputedFrom('fullName')
+    get fullerName() {
+      let fuller  = this.intermediateFunction();
+      return `${fuller} ${this.fullName}`;
+    }
+
+    intermediateFunction () {
+      return 'chineke';
+    }
+  }
+
+  class Foo {
+    constructor() {
+      this._bar = null;
+    }
+    @cachedComputedFrom('_bar')
+    get bar() {
+      return this._bar;
+    }
+    set bar(newValue) {
+      this._bar = newValue;
+    }
+  }
+
+
+  beforeAll(() => {
+    locator = createObserverLocator();
+    person = new Person();
+    observer = locator.getObserver(person, 'fullName');
+  });
+
+  it('should have declared dependencies after observer is created', () => {
+    expect(hasDeclaredDependencies(Object.getPropertyDescriptor(person, 'fullName'))).toBe(true);
+  });
+
+  it('should be an ExpressionObserver', () => {
+    expect(observer instanceof ExpressionObserver).toBe(true);
+  });
+
+  it('gets the value', () => {
+    expect(observer.getValue()).toBe(person.fullName);
+  });
+
+  it('sets the value', () => {
+    var foo = new Foo(),
+        fooObserver = locator.getObserver(foo, 'bar');
+
+    fooObserver.setValue(7);
+
+    expect(foo.bar).toBe(7);
+  });
+
+  it('notifies when value changes', done => {
+    var callback = callback = jasmine.createSpy('callback'),
+        oldValue = observer.getValue();
+
+    expect(observer.oldValue).toBeUndefined();
+    observer.subscribe(callback);
+    expect(observer.oldValue).toBe(observer.getValue());
+    person.obj.lastName = 'Dough';
+    setTimeout(() => {
+      expect(callback).toHaveBeenCalledWith(person.fullName, oldValue);
+      oldValue = observer.getValue();
+      person.obj.firstName = 'Jon';
+      setTimeout(() => {
+        expect(callback).toHaveBeenCalledWith(person.fullName, oldValue);
+        observer.unsubscribe(callback);
+        expect(observer.oldValue).toBeUndefined();
+        done();
+      }, 0);
+    }, 0);
+  });
+
+  it('returns cached value if dependencies are unchanged', done => {
+
+    let spy = spyOn(Person.prototype, "intermediateFunction").and.callThrough();
+
+    person = new Person();
+    person.obj.firstName = 'Jon';
+    person.obj.lastName = 'Dough';
+
+    expect(person.fullerName).toBe("chineke Jon Dough");
+    expect(person.fullerName).toBe("chineke Jon Dough");
+    expect(person.fullerName).toBe("chineke Jon Dough");
+
+    setTimeout(() => {
+      expect(spy.calls.count()).toEqual(1);
+
+      person.obj.lastName = 'Doughy';
+      expect(person.fullerName).toBe("chineke Jon Doughy");
+
+      person.obj.lastName = 'Dough';
+      expect(person.fullerName).toBe("chineke Jon Dough");
+
+      person.obj.lastName = 'Doughy';
+      expect(person.fullerName).toBe("chineke Jon Doughy");
+
+      expect(person.fullerName).toBe("chineke Jon Doughy");
+      expect(person.fullerName).toBe("chineke Jon Doughy");
+      expect(person.fullerName).toBe("chineke Jon Doughy");
+
+      setTimeout(() => {
+        expect(spy.calls.count()).toEqual(4);
+        done();
+      }, 0);
+      done();
+    }, 0);
+
+  });
+
 });

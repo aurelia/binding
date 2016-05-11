@@ -26,6 +26,7 @@ exports.cloneExpression = cloneExpression;
 exports.hasDeclaredDependencies = hasDeclaredDependencies;
 exports.declarePropertyDependencies = declarePropertyDependencies;
 exports.computedFrom = computedFrom;
+exports.cachedComputedFrom = cachedComputedFrom;
 exports.createComputedObserver = createComputedObserver;
 exports.valueConverter = valueConverter;
 exports.bindingBehavior = bindingBehavior;
@@ -4158,18 +4159,77 @@ function computedFrom() {
   };
 }
 
+function cachedComputedFrom() {
+  for (var _len2 = arguments.length, rest = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+    rest[_key2] = arguments[_key2];
+  }
+
+  var dependencyAccess = function dependencyAccess(object, dependency) {
+    var value = void 0;
+
+    if (typeof dependency === "string") {
+      value = dependency.split('.').reduce(function (subjObject, subdependency) {
+        return subjObject[subdependency];
+      }, object);
+    } else {
+      var scope = { bindingContext: object, overrideContext: createOverrideContext(object) };
+      value = dependency.evaluate(scope, null);
+    }
+    return value;
+  };
+
+  var dependencyKey = function dependencyKey(dependency) {
+    var key = void 0;
+    if (typeof dependency === "string") {
+      key = dependency;
+    } else {
+      key = dependency.name;
+    }
+    return key;
+  };
+
+  return function (target, key, descriptor) {
+    var _descriptor = descriptor.get;
+    var dependencies = rest;
+    var store = void 0;
+    var cache = {};
+
+    descriptor.get = function () {
+      var _this26 = this;
+
+      var cached = dependencies.every(function (dependency) {
+        var key = dependencyKey(dependency);
+        return cache[key] && cache[key] == dependencyAccess(_this26, dependency);
+      });
+
+      if (!cached) {
+        dependencies.map(function (dependency) {
+          var key = dependencyKey(dependency);
+          return cache[key] = dependencyAccess(_this26, dependency);
+        });
+        store = _descriptor.call(this);
+      }
+
+      return store;
+    };
+    descriptor.get.dependencies = rest;
+
+    return descriptor;
+  };
+}
+
 var ComputedExpression = exports.ComputedExpression = function (_Expression19) {
   _inherits(ComputedExpression, _Expression19);
 
   function ComputedExpression(name, dependencies) {
     
 
-    var _this26 = _possibleConstructorReturn(this, _Expression19.call(this));
+    var _this27 = _possibleConstructorReturn(this, _Expression19.call(this));
 
-    _this26.name = name;
-    _this26.dependencies = dependencies;
-    _this26.isAssignable = true;
-    return _this26;
+    _this27.name = name;
+    _this27.dependencies = dependencies;
+    _this27.isAssignable = true;
+    return _this27;
   }
 
   ComputedExpression.prototype.evaluate = function evaluate(scope, lookupFunctions) {
@@ -4795,7 +4855,7 @@ var Call = exports.Call = function () {
   };
 
   Call.prototype.bind = function bind(source) {
-    var _this27 = this;
+    var _this28 = this;
 
     if (this.isBound) {
       if (this.source === source) {
@@ -4810,7 +4870,7 @@ var Call = exports.Call = function () {
       this.sourceExpression.bind(this, source, this.lookupFunctions);
     }
     this.targetProperty.setValue(function ($event) {
-      return _this27.callSource($event);
+      return _this28.callSource($event);
     });
   };
 
@@ -4947,7 +5007,7 @@ var Listener = exports.Listener = function () {
   };
 
   Listener.prototype.bind = function bind(source) {
-    var _this28 = this;
+    var _this29 = this;
 
     if (this.isBound) {
       if (this.source === source) {
@@ -4962,7 +5022,7 @@ var Listener = exports.Listener = function () {
       this.sourceExpression.bind(this, source, this.lookupFunctions);
     }
     this._disposeListener = this.eventManager.addEventListener(this.target, this.targetEvent, function (event) {
-      return _this28.callSource(event);
+      return _this29.callSource(event);
     }, this.delegate);
   };
 
@@ -5094,11 +5154,11 @@ var BindingEngine = exports.BindingEngine = (_temp2 = _class13 = function () {
   };
 
   BindingEngine.prototype.propertyObserver = function propertyObserver(obj, propertyName) {
-    var _this29 = this;
+    var _this30 = this;
 
     return {
       subscribe: function subscribe(callback) {
-        var observer = _this29.observerLocator.getObserver(obj, propertyName);
+        var observer = _this30.observerLocator.getObserver(obj, propertyName);
         observer.subscribe(callback);
         return {
           dispose: function dispose() {
@@ -5110,17 +5170,17 @@ var BindingEngine = exports.BindingEngine = (_temp2 = _class13 = function () {
   };
 
   BindingEngine.prototype.collectionObserver = function collectionObserver(collection) {
-    var _this30 = this;
+    var _this31 = this;
 
     return {
       subscribe: function subscribe(callback) {
         var observer = void 0;
         if (collection instanceof Array) {
-          observer = _this30.observerLocator.getArrayObserver(collection);
+          observer = _this31.observerLocator.getArrayObserver(collection);
         } else if (collection instanceof Map) {
-          observer = _this30.observerLocator.getMapObserver(collection);
+          observer = _this31.observerLocator.getMapObserver(collection);
         } else if (collection instanceof Set) {
-          observer = _this30.observerLocator.getSetObserver(collection);
+          observer = _this31.observerLocator.getSetObserver(collection);
         } else {
           throw new Error('collection must be an instance of Array, Map or Set.');
         }
