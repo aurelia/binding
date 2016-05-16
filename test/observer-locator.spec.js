@@ -53,6 +53,24 @@ describe('ObserverLocator', () => {
     expect(Logger.prototype.warn).toHaveBeenCalledWith('Cannot observe property \'bar\' of object', obj);
   });
 
+  it('respects the enumerability in the SetterObserver', () => {
+    var obj = {};
+    Object.defineProperties(obj, {
+      'foo': {
+        configurable: true,
+        enumerable: true
+      },
+      'bar': {
+        configurable: true,
+        enumerable: false
+      }
+    });
+    ['foo', 'bar', 'baz'].forEach(prop => {
+      locator.getObserver(obj, prop).convertProperty();
+    });
+    expect(Object.keys(obj)).toEqual(['foo', 'baz']);
+  });
+
   it('uses ValueAttributeObserver for element value attributes', () => {
     var obj = createElement('<input />'),
         observer = locator.getObserver(obj, 'value');

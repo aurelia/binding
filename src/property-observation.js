@@ -96,7 +96,8 @@ export class SetterObserver {
 
     if (!Reflect.defineProperty(this.obj, this.propertyName, {
       configurable: true,
-      enumerable: true,
+      enumerable: this.propertyName in this.obj ?
+          this.obj.propertyIsEnumerable(this.propertyName) : true,
       get: this.getValue.bind(this),
       set: this.setValue.bind(this)
     })) {
