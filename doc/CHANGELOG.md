@@ -1,3 +1,11 @@
+### 1.0.0-beta.1.3.6 (2016-05-17)
+
+
+#### Bug Fixes
+
+* **observer:** respect non-enumerable properties ([ff8f9c7d](http://github.com/aurelia/binding/commit/ff8f9c7d24f646fa888be416225a0a2a4cd1386e))
+
+
 ### 1.0.0-beta.1.3.5 (2016-05-10)
 
 
