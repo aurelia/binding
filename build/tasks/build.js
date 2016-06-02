@@ -58,7 +58,8 @@ gulp.task('build-index', function(){
     'name-expression.js',
     'binding-engine.js',
     'set-observation.js',
-    'decorator-observable.js'
+    'decorator-observable.js',
+    'view-engine-hooks-resource.js'
     ].map(function(file){
       return paths.root + file;
   });

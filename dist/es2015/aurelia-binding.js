@@ -4816,3 +4816,29 @@ export function observable(targetOrConfig, key, descriptor) {
 
   return deco;
 }
+
+export let ViewEngineHooksResource = class ViewEngineHooksResource {
+  constructor() {}
+
+  initialize(container, target) {
+    this.instance = container.get(target);
+  }
+
+  register(registry, name) {
+    registry.registerViewEngineHooks(this.instance);
+  }
+
+  load(container, target) {}
+
+  static convention(name) {
+    if (name.endsWith('ViewEngineHooks')) {
+      return new ViewEngineHooksResource();
+    }
+  }
+};
+
+export function viewEngineHooks(target) {
+  return function (target) {
+    metadata.define(metadata.resource, new ViewEngineHooksResource(), target);
+  };
+}
