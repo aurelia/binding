@@ -71,6 +71,16 @@ declare module 'aurelia-binding' {
     register(registry: any, name: string): void;
   }
 
+  /** 
+   * A ViewEngineHooks resource.
+   */
+  export class ViewEngineHooksResource {
+    static convention(name: string): ViewEngineHooksResource;
+    constructor();
+    initialize(container: Container, target: any): void;
+    register(registry: any, name: string): void;
+  }
+
   /**
    * Decorator: Adds efficient subscription management methods to the decorated class's prototype.
    */
@@ -396,6 +406,11 @@ declare module 'aurelia-binding' {
   */
   export function bindingBehavior(name: string): any;
 
+  /**
+   * Decorator: Registers the decorated class as a ViewEngineHook.
+   */
+  export function viewEngineHooks(): any;
+ 
   /**
    * A context used when invoking a binding's callable API to notify
    * the binding that the context is a "source update".
