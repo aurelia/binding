@@ -57,7 +57,7 @@ export class SetterObserver {
   setterValue(newValue) {
     let oldValue = this.currentValue;
 
-    if (oldValue !== newValue) {
+    if (oldValue !== newValue && !(Number.isNaN(oldValue) && Number.isNaN(newValue))) {
       if (!this.queued) {
         this.oldValue = oldValue;
         this.queued = true;

@@ -51,6 +51,27 @@ describe('bindingEngine', () => {
     });
   });
 
+  it('detects in property change that NaN is equal to NaN', done => {
+    let obj = { foo: NaN };
+    let callback = jasmine.createSpy('callback');
+    let subscription = bindingEngine.propertyObserver(obj, 'foo').subscribe(callback);
+    obj.foo = NaN;
+    setTimeout(() => {
+      expect(callback).not.toHaveBeenCalled();
+      obj.foo = 123;
+      setTimeout(() => {
+        expect(callback).toHaveBeenCalledWith(123, NaN);
+        subscription.dispose();
+        callback.calls.reset();
+        obj.foo = 123;
+        setTimeout(() => {
+          expect(callback).not.toHaveBeenCalled();
+          done();
+        });
+      });
+    });
+  });
+
   it('observes and unobserves array changes', done => {
     let obj = [];
     let callback = jasmine.createSpy('callback');
