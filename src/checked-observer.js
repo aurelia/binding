@@ -47,9 +47,11 @@ export class CheckedObserver {
     this.synchronizeElement();
     // if the input's model or value property is data-bound, subscribe to it's
     // changes to enable synchronizing the element's checked status when a change occurs.
-    if (!this.valueObserver // eslint-disable-line
-      && (this.valueObserver = this.element.__observers__.model || this.element.__observers__.value)) {
-      this.valueObserver.subscribe(checkedValueContext, this);
+    if (!this.valueObserver) {
+      this.valueObserver = this.element.__observers__.model || this.element.__observers__.value;
+      if (this.valueObserver) {
+        this.valueObserver.subscribe(checkedValueContext, this);
+      }
     }
   }
 

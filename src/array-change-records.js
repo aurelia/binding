@@ -187,7 +187,7 @@ ArraySplice.prototype = {
     let index = currentStart;
     let oldIndex = oldStart;
     for (let i = 0; i < ops.length; ++i) {
-      switch (ops[i]) { // eslint-disable-line
+      switch (ops[i]) {
       case EDIT_LEAVE:
         if (splice) {
           splices.push(splice);
@@ -224,6 +224,7 @@ ArraySplice.prototype = {
         splice.removed.push(old[oldIndex]);
         oldIndex++;
         break;
+       // no default
       }
     }
 
@@ -396,7 +397,7 @@ function createInitialSplices(array, changeRecords) {
       mergeSplice(splices, index, [record.oldValue], record.type === 'delete' ? 0 : 1);
       break;
     default:
-      console.error('Unexpected record type: ' + JSON.stringify(record)); // eslint-disable-line
+      console.error('Unexpected record type: ' + JSON.stringify(record)); // eslint-disable-line no-console
       break;
     }
   }

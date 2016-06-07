@@ -6,7 +6,7 @@ export class BindingBehaviorResource {
     this.name = name;
   }
 
-  static convention(name) { // eslint-disable-line
+  static convention(name) {
     if (name.endsWith('BindingBehavior')) {
       return new BindingBehaviorResource(camelCase(name.substring(0, name.length - 15)));
     }
@@ -23,7 +23,7 @@ export class BindingBehaviorResource {
   load(container, target) {}
 }
 
-export function bindingBehavior(nameOrTarget) { // eslint-disable-line
+export function bindingBehavior(nameOrTarget) {
   if (nameOrTarget === undefined || typeof nameOrTarget === 'string') {
     return function(target) {
       metadata.define(metadata.resource, new BindingBehaviorResource(nameOrTarget), target);

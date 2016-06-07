@@ -6,7 +6,7 @@ export class ValueConverterResource {
     this.name = name;
   }
 
-  static convention(name) { // eslint-disable-line
+  static convention(name) {
     if (name.endsWith('ValueConverter')) {
       return new ValueConverterResource(camelCase(name.substring(0, name.length - 14)));
     }
@@ -23,7 +23,7 @@ export class ValueConverterResource {
   load(container, target) {}
 }
 
-export function valueConverter(nameOrTarget) {  // eslint-disable-line
+export function valueConverter(nameOrTarget) {
   if (nameOrTarget === undefined || typeof nameOrTarget === 'string') {
     return function(target) {
       metadata.define(metadata.resource, new ValueConverterResource(nameOrTarget), target);

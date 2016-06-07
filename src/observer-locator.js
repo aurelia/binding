@@ -138,18 +138,20 @@ export class ObserverLocator {
       return createComputedObserver(obj, propertyName, descriptor, this);
     }
 
-    let existingGetterOrSetter;
-    if (descriptor && (existingGetterOrSetter = descriptor.get || descriptor.set)) {  // eslint-disable-line
-      if (existingGetterOrSetter.getObserver) {
-        return existingGetterOrSetter.getObserver(obj);
-      }
+    if (descriptor) {
+      const existingGetterOrSetter = descriptor.get || descriptor.set;
+      if (existingGetterOrSetter) {
+        if (existingGetterOrSetter.getObserver) {
+          return existingGetterOrSetter.getObserver(obj);
+        }
 
-      // attempt to use an adapter before resorting to dirty checking.
-      let adapterObserver = this.getAdapterObserver(obj, propertyName, descriptor);
-      if (adapterObserver) {
-        return adapterObserver;
+        // attempt to use an adapter before resorting to dirty checking.
+        let adapterObserver = this.getAdapterObserver(obj, propertyName, descriptor);
+        if (adapterObserver) {
+          return adapterObserver;
+        }
+        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
-      return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     }
 
     if (obj instanceof Array) {

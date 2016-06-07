@@ -71,7 +71,7 @@ export class Scanner {
 
     let start = this.index;
 
-    switch (this.peek) {  // eslint-disable-line
+    switch (this.peek) {
     case $PERIOD:
       this.advance();
       return isDigit(this.peek) ? this.scanNumber(start) : new Token(start, '.');
@@ -111,6 +111,7 @@ export class Scanner {
       }
 
       return this.scanToken();
+      // no default
     }
 
     let character = String.fromCharCode(this.peek);
@@ -181,25 +182,25 @@ export class Scanner {
     let simple = (this.index === start);
     this.advance();  // Skip initial digit.
 
-    while (true) {  // eslint-disable-line
-      if (isDigit(this.peek)) {
-        // Do nothing.
-      } else if (this.peek === $PERIOD) {
-        simple = false;
-      } else if (isExponentStart(this.peek)) {
-        this.advance();
-
-        if (isExponentSign(this.peek)) {
+    while (true) { // eslint-disable-line no-constant-condition
+      if (!isDigit(this.peek)) {
+        if (this.peek === $PERIOD) {
+          simple = false;
+        } else if (isExponentStart(this.peek)) {
           this.advance();
-        }
 
-        if (!isDigit(this.peek)) {
-          this.error('Invalid exponent', -1);
-        }
+          if (isExponentSign(this.peek)) {
+            this.advance();
+          }
 
-        simple = false;
-      } else {
-        break;
+          if (!isDigit(this.peek)) {
+            this.error('Invalid exponent', -1);
+          }
+
+          simple = false;
+        } else {
+          break;
+        }
       }
 
       this.advance();
