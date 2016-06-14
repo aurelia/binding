@@ -1,1 +1,7 @@
-define(['module'], function(module) { module.exports = "<template>\n  <require from=\"./rgb-to-hex\"></require>\n\n  <label for=\"color\">Select Color:</label>\n  <input id=\"color\" type=\"color\" value.bind=\"rgb | rgbToHex\" />\n  <br/> r: ${rgb.r}, g:${rgb.g}, b:${rgb.b}\n</template>\n"; });
+<template>
+  <require from="./rgb-to-hex"></require>
+
+  <label for="color">Select Color:</label>
+  <input id="color" type="color" value.bind="rgb | rgbToHex" />
+  <br/> r: ${rgb.r}, g:${rgb.g}, b:${rgb.b}
+</template>

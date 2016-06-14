@@ -58,25 +58,6 @@ gulp.task('build-example-js', function() {
 
 gulp.task('build-example-html', function() {
   return gulp.src(paths.exampleSource + '**/*.html')
-    .pipe(through2.obj(function(file, enc, callback) {
-      var html = file.contents.toString('utf8');
-
-      html = 'define([\'module\'], function(module) { module.exports = "' +
-        html
-          .replace(/(["\\])/g, '\\$1')
-          .replace(/[\f]/g, '\\f')
-          .replace(/[\b]/g, '\\b')
-          .replace(/[\n]/g, '\\n')
-          .replace(/[\t]/g, '\\t')
-          .replace(/[\r]/g, '\\r')
-          .replace(/[\u2028]/g, '\\u2028')
-          .replace(/[\u2029]/g, '\\u2029') +
-        '"; });';
-
-      file.contents = new Buffer(html);
-      this.push(file);
-      return callback();
-    }))
     .pipe(gulp.dest(paths.exampleOutput));
 });
 

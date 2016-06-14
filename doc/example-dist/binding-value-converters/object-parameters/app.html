@@ -1,1 +1,13 @@
-define(['module'], function(module) { module.exports = "\n<template>\n  <require from=\"./sort\"></require>\n\n  <div class=\"row\">\n    <div class=\"col-sm-3\"\n         repeat.for=\"repo of repos | sort: { propertyName: 'open_issues', direction: 'descending' }\">\n      <a href=\"${repo.html_url}/issues\" target=\"_blank\">\n        ${repo.name} (${repo.open_issues})\n      </a>\n    </div>\n  </div>\n</template>\n"; });
+
+<template>
+  <require from="./sort"></require>
+
+  <div class="row">
+    <div class="col-sm-3"
+         repeat.for="repo of repos | sort: { propertyName: 'open_issues', direction: 'descending' }">
+      <a href="${repo.html_url}/issues" target="_blank">
+        ${repo.name} (${repo.open_issues})
+      </a>
+    </div>
+  </div>
+</template>
