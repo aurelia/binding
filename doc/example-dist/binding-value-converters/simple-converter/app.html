@@ -1,7 +1,1 @@
-<template>
-  <require from="./date-format"></require>
-  <require from="./currency-format"></require>
-
-  ${currentDate | dateFormat} <br/>
-  ${netWorth | currencyFormat}
-</template>
+define(['module'], function(module) { module.exports = "<template>\n  <require from=\"./date-format\"></require>\n  <require from=\"./currency-format\"></require>\n\n  ${currentDate | dateFormat} <br/>\n  ${netWorth | currencyFormat}\n</template>\n"; });
