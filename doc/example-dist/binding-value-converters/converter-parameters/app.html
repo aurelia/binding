@@ -1,0 +1,11 @@
+<template>
+  <require from="./date-format"></require>
+  <require from="./number-format"></require>
+
+  ${currentDate | dateFormat:'M/D/YYYY h:mm:ss a'} <br/>
+  ${currentDate | dateFormat:'MMMM Mo YYYY'} <br/>
+  ${currentDate | dateFormat:'h:mm:ss a'} <br/>
+  ${netWorth | numberFormat:'$0,0.00'} <br/>
+  ${netWorth | numberFormat:'$0.0a'} <br/>
+  ${netWorth | numberFormat:'0.00000)'}
+</template>

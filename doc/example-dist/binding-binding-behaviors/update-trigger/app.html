@@ -1,0 +1,19 @@
+<template>
+  <div>
+    <form>
+      <div>
+        <label for="firstName">First Name (standard update trigger)</label>
+        <input type="text" id="firstName" placeholder="First Name"
+               value.bind="firstName">
+        <p>${firstName}</p>
+      </div>
+
+      <div>
+        <label for="lastName">Last Name (updateTrigger:'blur')</label>
+        <input type="text" id="lastName" placeholder="Last Name"
+               value.bind="lastName & updateTrigger:'blur'">
+        <p>${lastName}</p>
+      </div>
+    </form>
+  </div>
+</template>
