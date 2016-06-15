@@ -29,9 +29,9 @@
     </div>
 
     <!-- logging -->
-    <div style="max-height: 300px; overflow-y: auto">
+    <output style="max-height: 300px; overflow-y: auto">
       <div repeat.for="x of intercepted" css="color: ${x.color}">
         Intercepted the binding's [${x.method}] method.  The value is "${x.value}"
       </div>
-    </div>
+    </output>
 </template>
