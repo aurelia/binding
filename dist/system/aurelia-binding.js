@@ -35,6 +35,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
     var observerSlots = this._observerSlots === undefined ? 0 : this._observerSlots;
     var i = observerSlots;
     while (i-- && this[slotNames[i]] !== observer) {}
+
     if (i === -1) {
       i = 0;
       while (this[slotNames[i]]) {
@@ -1661,7 +1662,8 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
             this.object.assign(scope, instance);
           }
 
-          return instance[this.name] = value;
+          instance[this.name] = value;
+          return value;
         };
 
         AccessMember.prototype.accept = function accept(visitor) {
@@ -2620,7 +2622,8 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
           this.advance();
 
           while (true) {
-            if (isDigit(this.peek)) {} else if (this.peek === $PERIOD) {
+            if (!isDigit(this.peek)) {
+              if (this.peek === $PERIOD) {
                 simple = false;
               } else if (isExponentStart(this.peek)) {
                 this.advance();
@@ -2637,6 +2640,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
               } else {
                 break;
               }
+            }
 
             this.advance();
           }
@@ -3912,8 +3916,11 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         CheckedObserver.prototype.call = function call(context, splices) {
           this.synchronizeElement();
 
-          if (!this.valueObserver && (this.valueObserver = this.element.__observers__.model || this.element.__observers__.value)) {
-            this.valueObserver.subscribe(checkedValueContext, this);
+          if (!this.valueObserver) {
+            this.valueObserver = this.element.__observers__.model || this.element.__observers__.value;
+            if (this.valueObserver) {
+              this.valueObserver.subscribe(checkedValueContext, this);
+            }
           }
         };
 
@@ -4691,17 +4698,19 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
             return createComputedObserver(obj, propertyName, descriptor, this);
           }
 
-          var existingGetterOrSetter = void 0;
-          if (descriptor && (existingGetterOrSetter = descriptor.get || descriptor.set)) {
-            if (existingGetterOrSetter.getObserver) {
-              return existingGetterOrSetter.getObserver(obj);
-            }
+          if (descriptor) {
+            var existingGetterOrSetter = descriptor.get || descriptor.set;
+            if (existingGetterOrSetter) {
+              if (existingGetterOrSetter.getObserver) {
+                return existingGetterOrSetter.getObserver(obj);
+              }
 
-            var adapterObserver = this.getAdapterObserver(obj, propertyName, descriptor);
-            if (adapterObserver) {
-              return adapterObserver;
+              var adapterObserver = this.getAdapterObserver(obj, propertyName, descriptor);
+              if (adapterObserver) {
+                return adapterObserver;
+              }
+              return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
             }
-            return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
           }
 
           if (obj instanceof Array) {

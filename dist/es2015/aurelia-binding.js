@@ -73,6 +73,7 @@ function addObserver(observer) {
   let observerSlots = this._observerSlots === undefined ? 0 : this._observerSlots;
   let i = observerSlots;
   while (i-- && this[slotNames[i]] !== observer) {}
+
   if (i === -1) {
     i = 0;
     while (this[slotNames[i]]) {
@@ -1307,7 +1308,8 @@ export let AccessMember = class AccessMember extends Expression {
       this.object.assign(scope, instance);
     }
 
-    return instance[this.name] = value;
+    instance[this.name] = value;
+    return value;
   }
 
   accept(visitor) {
@@ -2217,7 +2219,8 @@ export let Scanner = class Scanner {
     this.advance();
 
     while (true) {
-      if (isDigit(this.peek)) {} else if (this.peek === $PERIOD) {
+      if (!isDigit(this.peek)) {
+        if (this.peek === $PERIOD) {
           simple = false;
         } else if (isExponentStart(this.peek)) {
           this.advance();
@@ -2234,6 +2237,7 @@ export let Scanner = class Scanner {
         } else {
           break;
         }
+      }
 
       this.advance();
     }
@@ -3476,8 +3480,11 @@ export let CheckedObserver = (_dec8 = subscriberCollection(), _dec8(_class9 = cl
   call(context, splices) {
     this.synchronizeElement();
 
-    if (!this.valueObserver && (this.valueObserver = this.element.__observers__.model || this.element.__observers__.value)) {
-      this.valueObserver.subscribe(checkedValueContext, this);
+    if (!this.valueObserver) {
+      this.valueObserver = this.element.__observers__.model || this.element.__observers__.value;
+      if (this.valueObserver) {
+        this.valueObserver.subscribe(checkedValueContext, this);
+      }
     }
   }
 
@@ -4167,17 +4174,19 @@ export let ObserverLocator = (_temp = _class11 = class ObserverLocator {
       return createComputedObserver(obj, propertyName, descriptor, this);
     }
 
-    let existingGetterOrSetter;
-    if (descriptor && (existingGetterOrSetter = descriptor.get || descriptor.set)) {
-      if (existingGetterOrSetter.getObserver) {
-        return existingGetterOrSetter.getObserver(obj);
-      }
+    if (descriptor) {
+      const existingGetterOrSetter = descriptor.get || descriptor.set;
+      if (existingGetterOrSetter) {
+        if (existingGetterOrSetter.getObserver) {
+          return existingGetterOrSetter.getObserver(obj);
+        }
 
-      let adapterObserver = this.getAdapterObserver(obj, propertyName, descriptor);
-      if (adapterObserver) {
-        return adapterObserver;
+        let adapterObserver = this.getAdapterObserver(obj, propertyName, descriptor);
+        if (adapterObserver) {
+          return adapterObserver;
+        }
+        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
-      return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     }
 
     if (obj instanceof Array) {

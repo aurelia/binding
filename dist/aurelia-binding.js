@@ -86,7 +86,9 @@ function addObserver(observer) {
   // find the observer.
   let observerSlots = this._observerSlots === undefined ? 0 : this._observerSlots;
   let i = observerSlots;
-  while (i-- && this[slotNames[i]] !== observer) {} // eslint-disable-line
+  while (i-- && this[slotNames[i]] !== observer) {
+    // Do nothing
+  }
 
   // if we are not already observing, put the observer in an open slot and subscribe.
   if (i === -1) {
@@ -152,7 +154,7 @@ function flush(animationFrameStart) {
   let keys = bindings.keys();
   let item;
 
-  while (item = keys.next()) {  // eslint-disable-line
+  while (item = keys.next()) { // eslint-disable-line no-cond-assign
     if (item.done) {
       break;
     }
@@ -236,7 +238,7 @@ function removeSubscriber(context, callable) {
   }
   let rest = this._contextsRest;
   let index;
-  if (!rest || !rest.length || (index = rest.indexOf(context)) === -1 || this._callablesRest[index] !== callable) { // eslint-disable-line
+  if (!rest || !rest.length || (index = rest.indexOf(context)) === -1 || this._callablesRest[index] !== callable) { // eslint-disable-line no-cond-assign
     return false;
   }
   rest.splice(index, 1);
@@ -263,7 +265,9 @@ function callSubscribers(newValue, oldValue) {
   if (length) {
     // grab temp arrays from the pool.
     poolIndex = poolUtilization.length;
-    while (poolIndex-- && poolUtilization[poolIndex]) { } // eslint-disable-line
+    while (poolIndex-- && poolUtilization[poolIndex]) {
+      // Do nothing
+    }
     if (poolIndex < 0) {
       poolIndex = poolUtilization.length;
       contextsRest = [];
@@ -338,7 +342,7 @@ function hasSubscriber(context, callable) {
   }
   let index;
   let contexts = this._contextsRest;
-  if (!contexts || (index = contexts.length) === 0) { // eslint-disable-line
+  if (!contexts || (index = contexts.length) === 0) { // eslint-disable-line no-cond-assign
     return false;
   }
   let callables = this._callablesRest;
@@ -378,7 +382,7 @@ export class ExpressionObserver {
     this.expression.assign(this.scope, newValue);
   }
 
-  subscribe(context, callable) {  // eslint-disable-line
+  subscribe(context, callable) {
     if (!this.hasSubscribers()) {
       this.oldValue = this.expression.evaluate(this.scope, this.lookupFunctions);
       this.expression.connect(this, this.scope);
@@ -602,7 +606,7 @@ ArraySplice.prototype = {
     let index = currentStart;
     let oldIndex = oldStart;
     for (let i = 0; i < ops.length; ++i) {
-      switch (ops[i]) { // eslint-disable-line
+      switch (ops[i]) {
       case EDIT_LEAVE:
         if (splice) {
           splices.push(splice);
@@ -639,6 +643,7 @@ ArraySplice.prototype = {
         splice.removed.push(old[oldIndex]);
         oldIndex++;
         break;
+       // no default
       }
     }
 
@@ -811,7 +816,7 @@ function createInitialSplices(array, changeRecords) {
       mergeSplice(splices, index, [record.oldValue], record.type === 'delete' ? 0 : 1);
       break;
     default:
-      console.error('Unexpected record type: ' + JSON.stringify(record)); // eslint-disable-line
+      console.error('Unexpected record type: ' + JSON.stringify(record)); // eslint-disable-line no-console
       break;
     }
   }
@@ -853,7 +858,7 @@ export function getChangeRecords(map) {
   let i = 0;
   let item;
 
-  while (item = keys.next()) {  // eslint-disable-line
+  while (item = keys.next()) { // eslint-disable-line no-cond-assign
     if (item.done) {
       break;
     }
@@ -1406,7 +1411,8 @@ export class AccessMember extends Expression {
       this.object.assign(scope, instance);
     }
 
-    return instance[this.name] = value; // eslint-disable-line
+    instance[this.name] = value;
+    return value;
   }
 
   accept(visitor) {
@@ -1580,23 +1586,25 @@ export class Binary extends Expression {
   evaluate(scope, lookupFunctions) {
     let left = this.left.evaluate(scope);
 
-    switch (this.operation) { // eslint-disable-line
+    switch (this.operation) {
     case '&&': return left && this.right.evaluate(scope);
     case '||': return left || this.right.evaluate(scope);
+    // no default
     }
 
     let right = this.right.evaluate(scope);
 
-    switch (this.operation) { // eslint-disable-line
-    case '==' : return left == right; // eslint-disable-line
+    switch (this.operation) {
+    case '==' : return left == right; // eslint-disable-line eqeqeq
     case '===': return left === right;
-    case '!=' : return left != right; // eslint-disable-line
+    case '!=' : return left != right; // eslint-disable-line eqeqeq
     case '!==': return left !== right;
+    // no default
     }
 
     // Null check for the operations.
     if (left === null || right === null || left === undefined || right === undefined) {
-      switch (this.operation) { // eslint-disable-line
+      switch (this.operation) {
       case '+':
         if (left !== null && left !== undefined) return left;
         if (right !== null && right !== undefined) return right;
@@ -1605,12 +1613,13 @@ export class Binary extends Expression {
         if (left !== null && left !== undefined) return left;
         if (right !== null && right !== undefined) return 0 - right;
         return 0;
+      // no default
       }
 
       return null;
     }
 
-    switch (this.operation) { // eslint-disable-line
+    switch (this.operation) {
     case '+'  : return autoConvertAdd(left, right);
     case '-'  : return left - right;
     case '*'  : return left * right;
@@ -1621,6 +1630,7 @@ export class Binary extends Expression {
     case '<=' : return left <= right;
     case '>=' : return left >= right;
     case '^'  : return left ^ right;
+    // no default
     }
 
     throw new Error(`Internal error [${this.operation}] not handled`);
@@ -2211,7 +2221,7 @@ export class Scanner {
 
     let start = this.index;
 
-    switch (this.peek) {  // eslint-disable-line
+    switch (this.peek) {
     case $PERIOD:
       this.advance();
       return isDigit(this.peek) ? this.scanNumber(start) : new Token(start, '.');
@@ -2251,6 +2261,7 @@ export class Scanner {
       }
 
       return this.scanToken();
+      // no default
     }
 
     let character = String.fromCharCode(this.peek);
@@ -2321,25 +2332,25 @@ export class Scanner {
     let simple = (this.index === start);
     this.advance();  // Skip initial digit.
 
-    while (true) {  // eslint-disable-line
-      if (isDigit(this.peek)) {
-        // Do nothing.
-      } else if (this.peek === $PERIOD) {
-        simple = false;
-      } else if (isExponentStart(this.peek)) {
-        this.advance();
-
-        if (isExponentSign(this.peek)) {
+    while (true) { // eslint-disable-line no-constant-condition
+      if (!isDigit(this.peek)) {
+        if (this.peek === $PERIOD) {
+          simple = false;
+        } else if (isExponentStart(this.peek)) {
           this.advance();
-        }
 
-        if (!isDigit(this.peek)) {
-          this.error('Invalid exponent', -1);
-        }
+          if (isExponentSign(this.peek)) {
+            this.advance();
+          }
 
-        simple = false;
-      } else {
-        break;
+          if (!isDigit(this.peek)) {
+            this.error('Invalid exponent', -1);
+          }
+
+          simple = false;
+        } else {
+          break;
+        }
       }
 
       this.advance();
@@ -2720,7 +2731,7 @@ export class ParserImplementation {
   parseEquality() {
     let result = this.parseRelational();
 
-    while (true) {  // eslint-disable-line
+    while (true) { // eslint-disable-line no-constant-condition
       if (this.optional('==')) {
         result = new Binary('==', result, this.parseRelational());
       } else if (this.optional('!=')) {
@@ -2738,7 +2749,7 @@ export class ParserImplementation {
   parseRelational() {
     let result = this.parseAdditive();
 
-    while (true) {  // eslint-disable-line
+    while (true) { // eslint-disable-line no-constant-condition
       if (this.optional('<')) {
         result = new Binary('<', result, this.parseAdditive());
       } else if (this.optional('>')) {
@@ -2756,7 +2767,7 @@ export class ParserImplementation {
   parseAdditive() {
     let result = this.parseMultiplicative();
 
-    while (true) {  // eslint-disable-line
+    while (true) { // eslint-disable-line no-constant-condition
       if (this.optional('+')) {
         result = new Binary('+', result, this.parseMultiplicative());
       } else if (this.optional('-')) {
@@ -2770,7 +2781,7 @@ export class ParserImplementation {
   parseMultiplicative() {
     let result = this.parsePrefix();
 
-    while (true) {  // eslint-disable-line
+    while (true) { // eslint-disable-line no-constant-condition
       if (this.optional('*')) {
         result = new Binary('*', result, this.parsePrefix());
       } else if (this.optional('%')) {
@@ -2798,7 +2809,7 @@ export class ParserImplementation {
   parseAccessOrCallMember() {
     let result = this.parsePrimary();
 
-    while (true) {  // eslint-disable-line
+    while (true) { // eslint-disable-line no-constant-condition
       if (this.optional('.')) {
         let name = this.peek.text; // TODO(kasperl): Check that this is an identifier. Are keywords okay?
 
@@ -2833,7 +2844,7 @@ export class ParserImplementation {
     }
   }
 
-  parsePrimary() {  // eslint-disable-line
+  parsePrimary() {
     if (this.optional('(')) {
       let result = this.parseExpression();
       this.expect(')');
@@ -3639,9 +3650,11 @@ export class CheckedObserver {
     this.synchronizeElement();
     // if the input's model or value property is data-bound, subscribe to it's
     // changes to enable synchronizing the element's checked status when a change occurs.
-    if (!this.valueObserver // eslint-disable-line
-      && (this.valueObserver = this.element.__observers__.model || this.element.__observers__.value)) {
-      this.valueObserver.subscribe(checkedValueContext, this);
+    if (!this.valueObserver) {
+      this.valueObserver = this.element.__observers__.model || this.element.__observers__.value;
+      if (this.valueObserver) {
+        this.valueObserver.subscribe(checkedValueContext, this);
+      }
     }
   }
 
@@ -3792,7 +3805,7 @@ export class SelectValueObserver {
       }
       let optionValue = option.hasOwnProperty('model') ? option.model : option.value;
       if (isArray) {
-        option.selected = !!value.find(item => !!matcher(optionValue, item)); // eslint-disable-line
+        option.selected = !!value.find(item => !!matcher(optionValue, item)); // eslint-disable-line no-loop-func
         continue;
       }
       option.selected = !!matcher(optionValue, value);
@@ -3821,7 +3834,7 @@ export class SelectValueObserver {
         let i = 0;
         while (i < this.value.length) {
           let a = this.value[i];
-          if (value.findIndex(b => matcher(a, b)) === -1) { // eslint-disable-line
+          if (value.findIndex(b => matcher(a, b)) === -1) { // eslint-disable-line no-loop-func
             this.value.splice(i, 1);
           } else {
             i++;
@@ -3831,7 +3844,7 @@ export class SelectValueObserver {
         i = 0;
         while (i < value.length) {
           let a = value[i];
-          if (this.value.findIndex(b => matcher(a, b)) === -1) {  // eslint-disable-line
+          if (this.value.findIndex(b => matcher(a, b)) === -1) { // eslint-disable-line no-loop-func
             this.value.push(a);
           }
           i++;
@@ -4349,18 +4362,20 @@ export class ObserverLocator {
       return createComputedObserver(obj, propertyName, descriptor, this);
     }
 
-    let existingGetterOrSetter;
-    if (descriptor && (existingGetterOrSetter = descriptor.get || descriptor.set)) {  // eslint-disable-line
-      if (existingGetterOrSetter.getObserver) {
-        return existingGetterOrSetter.getObserver(obj);
-      }
+    if (descriptor) {
+      const existingGetterOrSetter = descriptor.get || descriptor.set;
+      if (existingGetterOrSetter) {
+        if (existingGetterOrSetter.getObserver) {
+          return existingGetterOrSetter.getObserver(obj);
+        }
 
-      // attempt to use an adapter before resorting to dirty checking.
-      let adapterObserver = this.getAdapterObserver(obj, propertyName, descriptor);
-      if (adapterObserver) {
-        return adapterObserver;
+        // attempt to use an adapter before resorting to dirty checking.
+        let adapterObserver = this.getAdapterObserver(obj, propertyName, descriptor);
+        if (adapterObserver) {
+          return adapterObserver;
+        }
+        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
-      return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     }
 
     if (obj instanceof Array) {
@@ -4632,7 +4647,7 @@ export class ValueConverterResource {
     this.name = name;
   }
 
-  static convention(name) { // eslint-disable-line
+  static convention(name) {
     if (name.endsWith('ValueConverter')) {
       return new ValueConverterResource(camelCase(name.substring(0, name.length - 14)));
     }
@@ -4649,7 +4664,7 @@ export class ValueConverterResource {
   load(container, target) {}
 }
 
-export function valueConverter(nameOrTarget) {  // eslint-disable-line
+export function valueConverter(nameOrTarget) {
   if (nameOrTarget === undefined || typeof nameOrTarget === 'string') {
     return function(target) {
       metadata.define(metadata.resource, new ValueConverterResource(nameOrTarget), target);
@@ -4664,7 +4679,7 @@ export class BindingBehaviorResource {
     this.name = name;
   }
 
-  static convention(name) { // eslint-disable-line
+  static convention(name) {
     if (name.endsWith('BindingBehavior')) {
       return new BindingBehaviorResource(camelCase(name.substring(0, name.length - 15)));
     }
@@ -4681,7 +4696,7 @@ export class BindingBehaviorResource {
   load(container, target) {}
 }
 
-export function bindingBehavior(nameOrTarget) { // eslint-disable-line
+export function bindingBehavior(nameOrTarget) {
   if (nameOrTarget === undefined || typeof nameOrTarget === 'string') {
     return function(target) {
       metadata.define(metadata.resource, new BindingBehaviorResource(nameOrTarget), target);

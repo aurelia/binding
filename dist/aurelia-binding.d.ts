@@ -253,6 +253,27 @@ export declare interface BindingExpression {
 }
 
 /**
+ * A factory for binding instances.
+ */
+export declare interface ListenerExpression {
+  createBinding(target: any): Binding;
+}
+
+/**
+ * A factory for binding instances.
+ */
+export declare interface CallExpression {
+  createBinding(target: any): Binding;
+}
+
+/**
+ * A factory for binding instances.
+ */
+export declare interface NameExpression {
+  createBinding(target: any): Binding;
+}
+
+/**
  * Provides the base class from which the classes that represent expression tree nodes are derived.
  */
 export declare interface Expression {
@@ -268,6 +289,48 @@ export declare interface Expression {
    * Subscribes a binding instance to the property change events along the path of the expression.
    */
   connect(binding: Binding, scope: Scope): void;
+}
+
+/**
+ * An expression that accesses a property on the scope.
+ */
+export declare interface AccessScope extends Expression {
+  /**
+   * The property name.
+   */
+  name: string;
+  /**
+   * The number of hops up the scope tree.
+   */
+  ancestor: number;
+}
+
+/**
+ * An expression that accesses a property on an object.
+ */
+export declare interface AccessMember extends Expression {
+  /**
+   * The property name.
+   */
+  name: string;
+  /**
+   * The object expression.
+   */
+  object: Expression;
+}
+
+/**
+ * An expression that accesses a property on an object using a key.
+ */
+export declare interface AccessKeyed extends Expression {
+  /**
+   * The property name.
+   */
+  key: Expression;
+  /**
+   * The object expression.
+   */
+  object: Expression;
 }
 
 /**
@@ -413,3 +476,25 @@ export declare function mergeSplice(splices: any, index: number, removed: any, a
 * @param targetOrConfig The name of the property, or a configuration object.
 */
 export declare function observable(targetOrConfig?: Object, key?: any, descriptor?: any): any;
+
+/**
+ * camel-cases a string.
+ */
+export declare function camelCase(name: string): string;
+
+/**
+ * Internal API used to analyze SVG attributes.
+ */
+export declare interface SVGAnalyzer {
+  isStandardSvgAttribute(nodeName: string, attributeName: string): boolean;
+}
+
+/**
+* Decorator: Internal decorator used to mixin binding APIs.
+*/
+export declare function connectable(): void;
+
+/**
+ * Internal API that adds a binding to the connect queue.
+ */
+export declare function enqueueBindingConnect(binding: Binding): void;
