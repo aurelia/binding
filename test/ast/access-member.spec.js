@@ -31,4 +31,9 @@ describe('AccessMember', () => {
     expression.assign(scope, 'bang')
     expect(scope.overrideContext.foo.bar).toBe('bang');
   });
+
+  it('returns the assigned value', () => {
+    let scope = createScopeForTest({ foo: { bar: 'baz' } });
+    expect(expression.assign(scope, 'bang')).toBe('bang');
+  });
 });

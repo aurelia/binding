@@ -71,7 +71,7 @@ export class SelectValueObserver {
       }
       let optionValue = option.hasOwnProperty('model') ? option.model : option.value;
       if (isArray) {
-        option.selected = !!value.find(item => !!matcher(optionValue, item)); // eslint-disable-line
+        option.selected = !!value.find(item => !!matcher(optionValue, item)); // eslint-disable-line no-loop-func
         continue;
       }
       option.selected = !!matcher(optionValue, value);
@@ -100,7 +100,7 @@ export class SelectValueObserver {
         let i = 0;
         while (i < this.value.length) {
           let a = this.value[i];
-          if (value.findIndex(b => matcher(a, b)) === -1) { // eslint-disable-line
+          if (value.findIndex(b => matcher(a, b)) === -1) { // eslint-disable-line no-loop-func
             this.value.splice(i, 1);
           } else {
             i++;
@@ -110,7 +110,7 @@ export class SelectValueObserver {
         i = 0;
         while (i < value.length) {
           let a = value[i];
-          if (this.value.findIndex(b => matcher(a, b)) === -1) {  // eslint-disable-line
+          if (this.value.findIndex(b => matcher(a, b)) === -1) { // eslint-disable-line no-loop-func
             this.value.push(a);
           }
           i++;

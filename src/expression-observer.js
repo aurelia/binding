@@ -19,7 +19,7 @@ export class ExpressionObserver {
     this.expression.assign(this.scope, newValue);
   }
 
-  subscribe(context, callable) {  // eslint-disable-line
+  subscribe(context, callable) {
     if (!this.hasSubscribers()) {
       this.oldValue = this.expression.evaluate(this.scope, this.lookupFunctions);
       this.expression.connect(this, this.scope);

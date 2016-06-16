@@ -13,7 +13,7 @@ export function getChangeRecords(map) {
   let i = 0;
   let item;
 
-  while (item = keys.next()) {  // eslint-disable-line
+  while (item = keys.next()) { // eslint-disable-line no-cond-assign
     if (item.done) {
       break;
     }

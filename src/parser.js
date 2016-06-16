@@ -164,7 +164,7 @@ export class ParserImplementation {
   parseEquality() {
     let result = this.parseRelational();
 
-    while (true) {  // eslint-disable-line
+    while (true) { // eslint-disable-line no-constant-condition
       if (this.optional('==')) {
         result = new Binary('==', result, this.parseRelational());
       } else if (this.optional('!=')) {
@@ -182,7 +182,7 @@ export class ParserImplementation {
   parseRelational() {
     let result = this.parseAdditive();
 
-    while (true) {  // eslint-disable-line
+    while (true) { // eslint-disable-line no-constant-condition
       if (this.optional('<')) {
         result = new Binary('<', result, this.parseAdditive());
       } else if (this.optional('>')) {
@@ -200,7 +200,7 @@ export class ParserImplementation {
   parseAdditive() {
     let result = this.parseMultiplicative();
 
-    while (true) {  // eslint-disable-line
+    while (true) { // eslint-disable-line no-constant-condition
       if (this.optional('+')) {
         result = new Binary('+', result, this.parseMultiplicative());
       } else if (this.optional('-')) {
@@ -214,7 +214,7 @@ export class ParserImplementation {
   parseMultiplicative() {
     let result = this.parsePrefix();
 
-    while (true) {  // eslint-disable-line
+    while (true) { // eslint-disable-line no-constant-condition
       if (this.optional('*')) {
         result = new Binary('*', result, this.parsePrefix());
       } else if (this.optional('%')) {
@@ -242,7 +242,7 @@ export class ParserImplementation {
   parseAccessOrCallMember() {
     let result = this.parsePrimary();
 
-    while (true) {  // eslint-disable-line
+    while (true) { // eslint-disable-line no-constant-condition
       if (this.optional('.')) {
         let name = this.peek.text; // TODO(kasperl): Check that this is an identifier. Are keywords okay?
 
@@ -277,7 +277,7 @@ export class ParserImplementation {
     }
   }
 
-  parsePrimary() {  // eslint-disable-line
+  parsePrimary() {
     if (this.optional('(')) {
       let result = this.parseExpression();
       this.expect(')');

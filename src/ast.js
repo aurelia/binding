@@ -270,7 +270,8 @@ export class AccessMember extends Expression {
       this.object.assign(scope, instance);
     }
 
-    return instance[this.name] = value; // eslint-disable-line
+    instance[this.name] = value;
+    return value;
   }
 
   accept(visitor) {
@@ -444,23 +445,25 @@ export class Binary extends Expression {
   evaluate(scope, lookupFunctions) {
     let left = this.left.evaluate(scope);
 
-    switch (this.operation) { // eslint-disable-line
+    switch (this.operation) {
     case '&&': return left && this.right.evaluate(scope);
     case '||': return left || this.right.evaluate(scope);
+    // no default
     }
 
     let right = this.right.evaluate(scope);
 
-    switch (this.operation) { // eslint-disable-line
-    case '==' : return left == right; // eslint-disable-line
+    switch (this.operation) {
+    case '==' : return left == right; // eslint-disable-line eqeqeq
     case '===': return left === right;
-    case '!=' : return left != right; // eslint-disable-line
+    case '!=' : return left != right; // eslint-disable-line eqeqeq
     case '!==': return left !== right;
+    // no default
     }
 
     // Null check for the operations.
     if (left === null || right === null || left === undefined || right === undefined) {
-      switch (this.operation) { // eslint-disable-line
+      switch (this.operation) {
       case '+':
         if (left !== null && left !== undefined) return left;
         if (right !== null && right !== undefined) return right;
@@ -469,12 +472,13 @@ export class Binary extends Expression {
         if (left !== null && left !== undefined) return left;
         if (right !== null && right !== undefined) return 0 - right;
         return 0;
+      // no default
       }
 
       return null;
     }
 
-    switch (this.operation) { // eslint-disable-line
+    switch (this.operation) {
     case '+'  : return autoConvertAdd(left, right);
     case '-'  : return left - right;
     case '*'  : return left * right;
@@ -485,6 +489,7 @@ export class Binary extends Expression {
     case '<=' : return left <= right;
     case '>=' : return left >= right;
     case '^'  : return left ^ right;
+    // no default
     }
 
     throw new Error(`Internal error [${this.operation}] not handled`);
