@@ -87,4 +87,9 @@ describe('NameExpression', () => {
     expect(scope.bindingContext.foo).toBe(null);
     expect(binding.lookupFunctions.bindingBehaviors().unbind).toHaveBeenCalledWith(binding, scope);
   });
+
+  it('throws error with tagName when element has no behavior', () => {
+    let element = { tagName: 'test-element' };
+    expect(() => NameExpression.locateAPI(element, 'controller')).toThrow(new Error(`No Aurelia APIs are defined for the element: "${element.tagName}".`));
+  });
 });

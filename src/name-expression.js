@@ -2,7 +2,7 @@ function getAU(element) {
   let au = element.au;
 
   if (au === undefined) {
-    throw new Error(`No Aurelia APIs are defined for the element: ${element.tagName} .`);
+    throw new Error(`No Aurelia APIs are defined for the element: "${element.tagName}".`);
   }
 
   return au;
