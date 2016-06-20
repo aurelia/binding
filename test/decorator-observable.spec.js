@@ -1,105 +1,111 @@
 import './setup';
 import {observable} from '../src/decorator-observable.js';
+import {decorators} from 'aurelia-metadata';
 
 describe('observable decorator', () => {
-  it('valueChanged should be called when changing the decorated property - no initializer', () => {
-    class Test {
-      @observable value;
-      valueChanged() {
-        this.test = this.value;
-      }
+  const oldValue = 'old';
+  const newValue = 'new';
+
+  it('should call valueChanged when changing the property', () => {
+    const instance = new class {
+      @observable value = oldValue;
+      valueChanged() { }
     };
+    spyOn(instance, 'valueChanged');
 
-    var test = new Test();
-
-    expect(test.test).not.toBeDefined();
-    test.value = 'hello';
-    expect(test.test).toBeDefined();
-    expect(test.test).toEqual('hello');
-
-    test.value = 'world';
-    expect(test.test).toEqual('world');
+    instance.value = newValue;
+    expect(instance.valueChanged).toHaveBeenCalledWith(newValue, oldValue);
   });
 
-  it('customHandler should be called when changing the decorated property - no initializer', () => {
-    class Test {
+  it('should call valueChanged when changing the undefined property', () => {
+    const instance = new class {
+      @observable value;
+      valueChanged() { }
+    };
+    spyOn(instance, 'valueChanged');
+
+    instance.value = newValue;
+    expect(instance.valueChanged).toHaveBeenCalledWith(newValue, undefined);
+  });
+
+  it('should call customHandler when changing the property', () => {
+    const instance = new class Test {
+      @observable({ changeHandler: 'customHandler' }) value = oldValue;
+      customHandler() { }
+    };
+    spyOn(instance, 'customHandler');
+
+    instance.value = newValue;
+    expect(instance.customHandler).toHaveBeenCalledWith(newValue, oldValue);
+  });
+
+  it('should call customHandler when changing the undefined property', () => {
+    const instance = new class {
       @observable({ changeHandler: 'customHandler' }) value;
-      valueChanged() {
-        this.test = 'fail';
-      }
-      customHandler() {
-        this.test = this.value + ' world';
-      }
+      customHandler() { }
     };
+    spyOn(instance, 'customHandler');
 
-    var test = new Test();
-
-    expect(test.test).not.toBeDefined();
-    test.value = 'hello';
-    expect(test.test).toBeDefined();
-    expect(test.test).toEqual('hello world');
+    instance.value = newValue;
+    expect(instance.customHandler).toHaveBeenCalledWith(newValue, undefined);
   });
 
-  it('valueChanged does not exist - no initializer', () => {
-    class Test {
-      @observable value = 'old';
+  it('should work when valueChanged is undefined', () => {
+    const instance = new class {
+      @observable value = oldValue;
     };
 
-    var test = new Test();
-
-    expect(test.valueChanged).not.toBeDefined();
-    test.value = 'new';
-    expect(test.value).toEqual('new');
+    expect(instance.valueChanged).not.toBeDefined();
+    instance.value = newValue;
+    expect(instance.value).toEqual(newValue);
   });
 
-  it('valueChanged should be called when changing the decorated property - with initializer', () => {
-    class Test {
+  it('should work when valueChanged is undefined and property is undefined', () => {
+    const instance = new class {
       @observable value;
-      valueChanged() {
-        this.test = this.value;
-      }
     };
 
-    var test = new Test();
-
-    expect(test.test).not.toBeDefined();
-    test.value = 'hello';
-    expect(test.test).toBeDefined();
-    expect(test.test).toEqual('hello');
-
-    test.value = 'world';
-    expect(test.test).toEqual('world');
+    expect(instance.valueChanged).not.toBeDefined();
+    instance.value = newValue;
+    expect(instance.value).toEqual(newValue);
   });
 
-  it('customHandler should be called when changing the decorated property - with initializer', () => {
-    class Test {
-      @observable({ changeHandler: 'customHandler' }) value = '';
-      valueChanged() {
-        this.test = 'fail';
-      }
-      customHandler() {
-        this.test = this.value + ' world';
-      }
-    };
+  it('should work with decorators function', () => {
+    const instance = new (decorators(observable('value'))
+      .on(class {
+        constructor() {
+          this.value = oldValue;
+        }
+        valueChanged() { }
+      }));
+    spyOn(instance, 'valueChanged');
 
-    var test = new Test();
-
-    expect(test.test).not.toBeDefined();
-    test.value = 'hello';
-    expect(test.test).toBeDefined();
-    expect(test.test).toEqual('hello world');
+    instance.value = newValue;
+    expect(instance.valueChanged).toHaveBeenCalledWith(newValue, oldValue);
   });
 
-  it('valueChanged does not exist - with initializer', () => {
-    class Test {
-      @observable value = 'old';
-    };
+  it('should work with decorators function when property is undefined', () => {
+    const instance = new (decorators(observable('value'))
+      .on(class {
+        valueChanged() { }
+      }));
+    spyOn(instance, 'valueChanged');
 
-    var test = new Test();
-
-    expect(test.valueChanged).not.toBeDefined();
-    test.value = 'new';
-    expect(test.value).toEqual('new');
+    instance.value = newValue;
+    expect(instance.valueChanged).toHaveBeenCalledWith(newValue, undefined);
   });
 
+  it('should work with decorators function and config', () => {
+    const instance = new (decorators(observable({ name: 'value', changeHandler: 'customHandler' }))
+      .on(class {
+        constructor() {
+          this.value = oldValue;
+        }
+        customHandler() { }
+      }));
+    spyOn(instance, 'customHandler');
+
+    instance.value = newValue;
+    expect(instance.customHandler).toHaveBeenCalledWith(newValue, oldValue);
+  });
 });
