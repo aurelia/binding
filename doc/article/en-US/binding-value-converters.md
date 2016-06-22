@@ -622,6 +622,6 @@ In the example below, we have a view-model that exposes colors in an object form
   <source-code src="example/binding-value-converters/bi-directional-value-converters/app.js"></source-code>
 </au-demo>
 
-## [Globally Accessible Value Converters](aurelia-doc://section/8/version/1.0.0)
+## [Globally Accessible Value Converters](aurelia-doc://section/9/version/1.0.0)
 
 In all of our examples, we've been using the `require` element to import converters we need into our view.  There's an easier way.  If you have some commonly used value converters that you'd like to make globally available, use Aurelia's `globalResources` function to register them.  This will will eliminate the need for `require` elements at the top of every view.
