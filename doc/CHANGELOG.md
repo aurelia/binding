@@ -1,3 +1,13 @@
+<a name="1.0.0-rc.1.0.0"></a>
+# [1.0.0-rc.1.0.0](https://github.com/aurelia/binding/compare/1.0.0-beta.2.0.7...v1.0.0-rc.1.0.0) (2016-06-22)
+
+
+### Bug Fixes
+
+* **observable:** fix usage with decorators function ([051a17a](https://github.com/aurelia/binding/commit/051a17a))
+
+
+
 ### 1.0.0-beta.1.3.6 (2016-05-17)
 
 
