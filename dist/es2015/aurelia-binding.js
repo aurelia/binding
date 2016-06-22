@@ -4569,7 +4569,7 @@ function getAU(element) {
   let au = element.au;
 
   if (au === undefined) {
-    throw new Error('No Aurelia APIs are defined for the referenced element.');
+    throw new Error(`No Aurelia APIs are defined for the element: "${ element.tagName }".`);
   }
 
   return au;
@@ -4781,28 +4781,31 @@ let ModifySetObserver = class ModifySetObserver extends ModifyCollectionObserver
 };
 
 
-export function observable(targetOrConfig, key, descriptor) {
-  let deco = function (target, key2, descriptor2) {
-    let innerPropertyName = `_${ key2 }`;
-    let callbackName = targetOrConfig && targetOrConfig.changeHandler || `${ key2 }Changed`;
-
-    let babel = descriptor2 !== undefined;
-
-    if (babel) {
-      if (typeof descriptor2.initializer === 'function') {
-        target[innerPropertyName] = descriptor2.initializer();
-      }
-    } else {
-      descriptor2 = {};
+export function observable(keyOrTargetOrConfig, _key, _descriptor) {
+  let deco = function (target, key, descriptor) {
+    if (!key) {
+      key = typeof keyOrTargetOrConfig === 'string' ? keyOrTargetOrConfig : keyOrTargetOrConfig.name;
     }
 
-    delete descriptor2.writable;
-    delete descriptor2.initializer;
+    let innerPropertyName = `_${ key }`;
+    let callbackName = keyOrTargetOrConfig && keyOrTargetOrConfig.changeHandler || `${ key }Changed`;
 
-    descriptor2.get = function () {
+    if (descriptor) {
+      if (typeof descriptor.initializer === 'function') {
+        target[innerPropertyName] = descriptor.initializer();
+      }
+    } else {
+      descriptor = {};
+      target = target.prototype;
+    }
+
+    delete descriptor.writable;
+    delete descriptor.initializer;
+
+    descriptor.get = function () {
       return this[innerPropertyName];
     };
-    descriptor2.set = function (newValue) {
+    descriptor.set = function (newValue) {
       let oldValue = this[innerPropertyName];
       this[innerPropertyName] = newValue;
       if (this[callbackName]) {
@@ -4810,17 +4813,13 @@ export function observable(targetOrConfig, key, descriptor) {
       }
     };
 
-    descriptor2.get.dependencies = [innerPropertyName];
+    descriptor.get.dependencies = [innerPropertyName];
 
-    if (!babel) {
-      Reflect.defineProperty(target, key2, descriptor2);
-    }
+    Reflect.defineProperty(target, key, descriptor);
   };
 
-  if (key) {
-    let target = targetOrConfig;
-    targetOrConfig = null;
-    return deco(target, key, descriptor);
+  if (_key) {
+    return deco(keyOrTargetOrConfig, _key, _descriptor);
   }
 
   return deco;

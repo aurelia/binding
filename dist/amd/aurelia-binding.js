@@ -4202,8 +4202,8 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
   }
 
   function computedFrom() {
-    for (var _len = arguments.length, rest = Array(_len), _key = 0; _key < _len; _key++) {
-      rest[_key] = arguments[_key];
+    for (var _len = arguments.length, rest = Array(_len), _key2 = 0; _key2 < _len; _key2++) {
+      rest[_key2] = arguments[_key2];
     }
 
     return function (target, key, descriptor) {
@@ -5042,7 +5042,7 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
     var au = element.au;
 
     if (au === undefined) {
-      throw new Error('No Aurelia APIs are defined for the referenced element.');
+      throw new Error('No Aurelia APIs are defined for the element: "' + element.tagName + '".');
     }
 
     return au;
@@ -5287,28 +5287,31 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
     return ModifySetObserver;
   }(ModifyCollectionObserver);
 
-  function observable(targetOrConfig, key, descriptor) {
-    var deco = function deco(target, key2, descriptor2) {
-      var innerPropertyName = '_' + key2;
-      var callbackName = targetOrConfig && targetOrConfig.changeHandler || key2 + 'Changed';
-
-      var babel = descriptor2 !== undefined;
-
-      if (babel) {
-        if (typeof descriptor2.initializer === 'function') {
-          target[innerPropertyName] = descriptor2.initializer();
-        }
-      } else {
-        descriptor2 = {};
+  function observable(keyOrTargetOrConfig, _key, _descriptor) {
+    var deco = function deco(target, key, descriptor) {
+      if (!key) {
+        key = typeof keyOrTargetOrConfig === 'string' ? keyOrTargetOrConfig : keyOrTargetOrConfig.name;
       }
 
-      delete descriptor2.writable;
-      delete descriptor2.initializer;
+      var innerPropertyName = '_' + key;
+      var callbackName = keyOrTargetOrConfig && keyOrTargetOrConfig.changeHandler || key + 'Changed';
 
-      descriptor2.get = function () {
+      if (descriptor) {
+        if (typeof descriptor.initializer === 'function') {
+          target[innerPropertyName] = descriptor.initializer();
+        }
+      } else {
+        descriptor = {};
+        target = target.prototype;
+      }
+
+      delete descriptor.writable;
+      delete descriptor.initializer;
+
+      descriptor.get = function () {
         return this[innerPropertyName];
       };
-      descriptor2.set = function (newValue) {
+      descriptor.set = function (newValue) {
         var oldValue = this[innerPropertyName];
         this[innerPropertyName] = newValue;
         if (this[callbackName]) {
@@ -5316,17 +5319,13 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
         }
       };
 
-      descriptor2.get.dependencies = [innerPropertyName];
+      descriptor.get.dependencies = [innerPropertyName];
 
-      if (!babel) {
-        Reflect.defineProperty(target, key2, descriptor2);
-      }
+      Reflect.defineProperty(target, key, descriptor);
     };
 
-    if (key) {
-      var target = targetOrConfig;
-      targetOrConfig = null;
-      return deco(target, key, descriptor);
+    if (_key) {
+      return deco(keyOrTargetOrConfig, _key, _descriptor);
     }
 
     return deco;
