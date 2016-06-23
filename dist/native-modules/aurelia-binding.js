@@ -4118,8 +4118,8 @@ export function declarePropertyDependencies(ctor, propertyName, dependencies) {
 }
 
 export function computedFrom() {
-  for (var _len = arguments.length, rest = Array(_len), _key2 = 0; _key2 < _len; _key2++) {
-    rest[_key2] = arguments[_key2];
+  for (var _len = arguments.length, rest = Array(_len), _key = 0; _key < _len; _key++) {
+    rest[_key] = arguments[_key];
   }
 
   return function (target, key, descriptor) {
@@ -5202,14 +5202,16 @@ var ModifySetObserver = function (_ModifyCollectionObse3) {
   return ModifySetObserver;
 }(ModifyCollectionObserver);
 
-export function observable(keyOrTargetOrConfig, _key, _descriptor) {
-  var deco = function deco(target, key, descriptor) {
-    if (!key) {
-      key = typeof keyOrTargetOrConfig === 'string' ? keyOrTargetOrConfig : keyOrTargetOrConfig.name;
+export function observable(targetOrConfig, key, descriptor) {
+  function deco(target, key, descriptor, config) {
+    if (key === undefined) {
+      target = target.prototype;
+      key = typeof config === 'string' ? config : config.name;
     }
 
     var innerPropertyName = '_' + key;
-    var callbackName = keyOrTargetOrConfig && keyOrTargetOrConfig.changeHandler || key + 'Changed';
+
+    var callbackName = config && config.changeHandler || key + 'Changed';
 
     if (descriptor) {
       if (typeof descriptor.initializer === 'function') {
@@ -5217,7 +5219,6 @@ export function observable(keyOrTargetOrConfig, _key, _descriptor) {
       }
     } else {
       descriptor = {};
-      target = target.prototype;
     }
 
     delete descriptor.writable;
@@ -5237,11 +5238,12 @@ export function observable(keyOrTargetOrConfig, _key, _descriptor) {
     descriptor.get.dependencies = [innerPropertyName];
 
     Reflect.defineProperty(target, key, descriptor);
-  };
-
-  if (_key) {
-    return deco(keyOrTargetOrConfig, _key, _descriptor);
   }
 
-  return deco;
+  if (key === undefined) {
+    return function (t, k, d) {
+      return deco(t, k, d, targetOrConfig);
+    };
+  }
+  return deco(targetOrConfig, key, descriptor);
 }

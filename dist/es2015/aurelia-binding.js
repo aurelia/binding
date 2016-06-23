@@ -4781,14 +4781,16 @@ let ModifySetObserver = class ModifySetObserver extends ModifyCollectionObserver
 };
 
 
-export function observable(keyOrTargetOrConfig, _key, _descriptor) {
-  let deco = function (target, key, descriptor) {
-    if (!key) {
-      key = typeof keyOrTargetOrConfig === 'string' ? keyOrTargetOrConfig : keyOrTargetOrConfig.name;
+export function observable(targetOrConfig, key, descriptor) {
+  function deco(target, key, descriptor, config) {
+    if (key === undefined) {
+      target = target.prototype;
+      key = typeof config === 'string' ? config : config.name;
     }
 
     let innerPropertyName = `_${ key }`;
-    let callbackName = keyOrTargetOrConfig && keyOrTargetOrConfig.changeHandler || `${ key }Changed`;
+
+    const callbackName = config && config.changeHandler || `${ key }Changed`;
 
     if (descriptor) {
       if (typeof descriptor.initializer === 'function') {
@@ -4796,7 +4798,6 @@ export function observable(keyOrTargetOrConfig, _key, _descriptor) {
       }
     } else {
       descriptor = {};
-      target = target.prototype;
     }
 
     delete descriptor.writable;
@@ -4816,11 +4817,10 @@ export function observable(keyOrTargetOrConfig, _key, _descriptor) {
     descriptor.get.dependencies = [innerPropertyName];
 
     Reflect.defineProperty(target, key, descriptor);
-  };
-
-  if (_key) {
-    return deco(keyOrTargetOrConfig, _key, _descriptor);
   }
 
-  return deco;
+  if (key === undefined) {
+    return (t, k, d) => deco(t, k, d, targetOrConfig);
+  }
+  return deco(targetOrConfig, key, descriptor);
 }

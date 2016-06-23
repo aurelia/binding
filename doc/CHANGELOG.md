@@ -1,3 +1,13 @@
+<a name="1.0.0-rc.1.0.2"></a>
+# [1.0.0-rc.1.0.2](https://github.com/aurelia/binding/compare/1.0.0-rc.1.0.1...v1.0.0-rc.1.0.2) (2016-06-23)
+
+
+### Bug Fixes
+
+* **observable:** fix TypeScript support ([a6db85e](https://github.com/aurelia/binding/commit/a6db85e)), closes [#438](https://github.com/aurelia/binding/issues/438)
+
+
+
 <a name="1.0.0-rc.1.0.0"></a>
 # [1.0.0-rc.1.0.0](https://github.com/aurelia/binding/compare/1.0.0-beta.2.0.7...v1.0.0-rc.1.0.0) (2016-06-22)
 
