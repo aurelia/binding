@@ -1,12 +1,16 @@
-export function observable(keyOrTargetOrConfig: any, _key?: string, _descriptor?: PropertyDescriptor) {
-  let deco = function(target, key, descriptor) {
-    if (!key) {
-      key = typeof keyOrTargetOrConfig === 'string' ? keyOrTargetOrConfig : keyOrTargetOrConfig.name;
+export function observable(targetOrConfig: any, key: string, descriptor?: PropertyDescriptor) {
+  function deco(target, key, descriptor, config) { // eslint-disable-line no-shadow
+    // class decorator?
+    if (key === undefined) {
+      target = target.prototype;
+      key = typeof config === 'string' ? config : config.name;
     }
-    // use a convention to compute the inner property name and the callback
-    // function name.
+
+    // use a convention to compute the inner property name
     let innerPropertyName = `_${key}`;
-    let callbackName = (keyOrTargetOrConfig && keyOrTargetOrConfig.changeHandler) || `${key}Changed`;
+
+    // determine callback name based on config or convention.
+    const callbackName = (config && config.changeHandler) || `${key}Changed`;
 
     if (descriptor) {
       // babel passes in the property descriptor with a method to get the initial value.
@@ -17,7 +21,6 @@ export function observable(keyOrTargetOrConfig: any, _key?: string, _descriptor?
       }
     } else {
       descriptor = {};
-      target = target.prototype;
     }
 
     // we're adding a getter and setter which means the property descriptor
@@ -40,11 +43,24 @@ export function observable(keyOrTargetOrConfig: any, _key?: string, _descriptor?
     descriptor.get.dependencies = [innerPropertyName];
 
     Reflect.defineProperty(target, key, descriptor);
-  };
-
-  if (_key) {
-    return deco(keyOrTargetOrConfig, _key, _descriptor);
   }
 
-  return deco;
+  if (key === undefined) {
+    // parens...
+    return (t, k, d) => deco(t, k, d, targetOrConfig);
+  }
+  return deco(targetOrConfig, key, descriptor);
 }
+
+/*
+          | typescript       | babel
+----------|------------------|-------------------------
+property  | config           | config
+w/parens  | target, key      | target, key, descriptor
+----------|------------------|-------------------------
+property  | target, key      | target, key, descriptor
+no parens | n/a              | n/a
+----------|------------------|-------------------------
+class     | config           | config
+          | target           | target
+*/
