@@ -230,12 +230,12 @@ export class AccessScope extends Expression {
 
   evaluate(scope, lookupFunctions) {
     let context = getContextFor(this.name, scope, this.ancestor);
-    return context[this.name];
+    return getScoped(context, this.name);
   }
 
   assign(scope, value) {
     let context = getContextFor(this.name, scope, this.ancestor);
-    return context ? (context[this.name] = value) : undefined;
+    return context ? (setScoped(context, this.name, value)) : undefined;
   }
 
   accept(visitor) {
@@ -259,7 +259,7 @@ export class AccessMember extends Expression {
 
   evaluate(scope, lookupFunctions) {
     let instance = this.object.evaluate(scope, lookupFunctions);
-    return instance === null || instance === undefined ? instance : instance[this.name];
+    return instance === null || instance === undefined ? instance : getScoped(instance, this.name);
   }
 
   assign(scope, value) {
@@ -270,8 +270,7 @@ export class AccessMember extends Expression {
       this.object.assign(scope, instance);
     }
 
-    instance[this.name] = value;
-    return value;
+    return setScoped(instance, this.name, value); // eslint-disable-line
   }
 
   accept(visitor) {
@@ -686,11 +685,30 @@ function getFunction(obj, name, mustExist) {
   throw new Error(`${name} is not a function`);
 }
 
+function getScoped(obj, key) {
+  let descriptor = Object.getPropertyDescriptor(obj, key);
+  if (descriptor && descriptor.get && descriptor.get.bindingGetter) {
+    return descriptor.get.bindingGetter();
+  } else {
+    return obj[key];
+  }
+}
+
+function setScoped(obj, key, value) {
+  let descriptor = Object.getPropertyDescriptor(obj, key);
+  if (descriptor && descriptor.set && descriptor.set.bindingSetter) {
+    descriptor.set.bindingSetter(value);
+  } else {
+    return obj[key] = value;
+  }
+  return value;
+}
+
 function getKeyed(obj, key) {
   if (Array.isArray(obj)) {
     return obj[parseInt(key, 10)];
   } else if (obj) {
-    return obj[key];
+    return getScoped(obj, key);
   } else if (obj === null || obj === undefined) {
     return undefined;
   }
@@ -708,7 +726,7 @@ function setKeyed(obj, key, value) {
 
     obj[index] = value;
   } else {
-    obj[key] = value;
+    setScoped(obj, key, value);
   }
 
   return value;
