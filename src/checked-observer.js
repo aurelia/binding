@@ -65,7 +65,7 @@ export class CheckedObserver {
     element.checked =
       isRadio && !!matcher(value, elementValue)
       || !isRadio && value === true
-      || !isRadio && Array.isArray(value) && !!value.find(item => !!matcher(item, elementValue));
+      || !isRadio && Array.isArray(value) && value.findIndex(item => !!matcher(item, elementValue)) !== -1;
   }
 
   synchronizeValue() {
