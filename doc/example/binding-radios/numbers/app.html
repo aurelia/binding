@@ -1,0 +1,12 @@
+<template>
+  <form>
+    <h4>Products</h4>
+    <label repeat.for="product of products">
+      <input type="radio" name="group1"
+             model.bind="product.id" checked.bind="selectedProductId">
+      ${product.id} - ${product.name}
+    </label>
+    <br />
+    Selected product ID: ${selectedProductId}
+  </form>
+</template>

@@ -1,0 +1,12 @@
+<template>
+  <form>
+    <h4>Products</h4>
+    <label repeat.for="product of products">
+      <input type="radio" name="group4"
+             value.bind="product" checked.bind="selectedProduct">
+      ${product}
+    </label>
+    <br />
+    Selected product: ${selectedProduct}
+  </form>
+</template>

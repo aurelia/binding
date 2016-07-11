@@ -1,0 +1,12 @@
+<template>
+  <label>
+    Select products:<br/>
+    <select multiple value.bind="selectedProductIds">
+      <option repeat.for="product of products"
+              model.bind="product.id">
+        ${product.id} - ${product.name}
+      </option>
+    </select>
+  </label>
+  Selected product IDs: ${selectedProductIds}
+</template>

@@ -106,6 +106,26 @@
     "documentation": {
       "articles": [
         {
+          "title": "Binding: Basics",
+          "href": "doc/article/en-US/binding-basics.md"
+        },
+        {
+          "title": "Binding: Checkboxes",
+          "href": "doc/article/en-US/binding-checkboxes.md"
+        },
+        {
+          "title": "Binding: Radios",
+          "href": "doc/article/en-US/binding-radios.md"
+        },
+        {
+          "title": "Binding: Selects",
+          "href": "doc/article/en-US/binding-selects.md"
+        },
+        {
+          "title": "Binding: Delegate vs Trigger",
+          "href": "doc/article/en-US/binding-delegate-vs-trigger.md"
+        },
+        {
           "title": "Binding: Binding Behaviors",
           "href": "doc/article/en-US/binding-binding-behaviors.md"
         },

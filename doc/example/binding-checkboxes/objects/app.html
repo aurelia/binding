@@ -1,0 +1,14 @@
+<template>
+  <form>
+    <h4>Products</h4>
+    <label repeat.for="product of products">
+      <input type="checkbox" model.bind="product" checked.bind="selectedProducts">
+      ${product.id} - ${product.name}
+    </label>
+
+    Selected products:
+    <ul>
+      <li repeat.for="product of selectedProducts">${product.id} - ${product.name}</li>
+    </ul>
+  </form>
+</template>

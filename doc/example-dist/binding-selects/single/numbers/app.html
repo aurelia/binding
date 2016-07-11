@@ -1,0 +1,13 @@
+<template>
+  <label>
+    Select product:<br/>
+    <select value.bind="selectedProductId">
+      <option model.bind="null">Choose...</option>
+      <option repeat.for="product of products"
+              model.bind="product.id">
+        ${product.id} - ${product.name}
+      </option>
+    </select>
+  </label>
+  Selected product ID: ${selectedProductId}
+</template>

@@ -1,0 +1,13 @@
+<template>
+  <label>
+    Select product:<br/>
+    <select value.bind="selectedProduct">
+      <option value="">Choose...</option>
+      <option repeat.for="product of products"
+              value.bind="product">
+        ${product}
+      </option>
+    </select>
+  </label>
+  Selected product: ${selectedProduct}
+</template>

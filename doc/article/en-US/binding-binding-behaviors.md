@@ -15,7 +15,7 @@
 ---
 ## [Introduction](aurelia-doc://section/1/version/1.0.0)
 
-Binding behaviors are a category of view resource, just like value converters, custom attributes and custom elements.  Binding behaviors are most like [value converters](http://www.danyow.net/aurelia-value-converters/) in that  you use them declaratively in binding expressions to affect the binding.
+Binding behaviors are a category of view resource, just like value converters, custom attributes and custom elements.  Binding behaviors are most like [value converters](http://www.danyow.net/aurelia-value-converters/) in that you use them declaratively in binding expressions to affect the binding.
 
 The primary difference between a binding behavior and a value converter is *binding behaviors have full access to the binding instance, throughout it's lifecycle*. Contrast this with a value converter which only has the ability to intercept values passing from the model to the view and visa versa.
 
