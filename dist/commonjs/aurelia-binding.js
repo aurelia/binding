@@ -3805,9 +3805,9 @@ var CheckedObserver = exports.CheckedObserver = (_dec8 = subscriberCollection(),
       return a === b;
     };
 
-    element.checked = isRadio && !!matcher(value, elementValue) || !isRadio && value === true || !isRadio && Array.isArray(value) && !!value.find(function (item) {
+    element.checked = isRadio && !!matcher(value, elementValue) || !isRadio && value === true || !isRadio && Array.isArray(value) && value.findIndex(function (item) {
       return !!matcher(item, elementValue);
-    });
+    }) !== -1;
   };
 
   CheckedObserver.prototype.synchronizeValue = function synchronizeValue() {
@@ -3953,9 +3953,9 @@ var SelectValueObserver = exports.SelectValueObserver = (_dec9 = subscriberColle
       }
       var optionValue = option.hasOwnProperty('model') ? option.model : option.value;
       if (isArray) {
-        option.selected = !!value.find(function (item) {
+        option.selected = value.findIndex(function (item) {
           return !!matcher(optionValue, item);
-        });
+        }) !== -1;
         return 'continue';
       }
       option.selected = !!matcher(optionValue, value);

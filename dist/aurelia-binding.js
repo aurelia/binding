@@ -3668,7 +3668,7 @@ export class CheckedObserver {
     element.checked =
       isRadio && !!matcher(value, elementValue)
       || !isRadio && value === true
-      || !isRadio && Array.isArray(value) && !!value.find(item => !!matcher(item, elementValue));
+      || !isRadio && Array.isArray(value) && value.findIndex(item => !!matcher(item, elementValue)) !== -1;
   }
 
   synchronizeValue() {
@@ -3805,7 +3805,7 @@ export class SelectValueObserver {
       }
       let optionValue = option.hasOwnProperty('model') ? option.model : option.value;
       if (isArray) {
-        option.selected = !!value.find(item => !!matcher(optionValue, item)); // eslint-disable-line no-loop-func
+        option.selected = value.findIndex(item => !!matcher(optionValue, item)) !== -1; // eslint-disable-line no-loop-func
         continue;
       }
       option.selected = !!matcher(optionValue, value);

@@ -3495,7 +3495,7 @@ export let CheckedObserver = (_dec8 = subscriberCollection(), _dec8(_class9 = cl
     let isRadio = element.type === 'radio';
     let matcher = element.matcher || ((a, b) => a === b);
 
-    element.checked = isRadio && !!matcher(value, elementValue) || !isRadio && value === true || !isRadio && Array.isArray(value) && !!value.find(item => !!matcher(item, elementValue));
+    element.checked = isRadio && !!matcher(value, elementValue) || !isRadio && value === true || !isRadio && Array.isArray(value) && value.findIndex(item => !!matcher(item, elementValue)) !== -1;
   }
 
   synchronizeValue() {
@@ -3629,7 +3629,7 @@ export let SelectValueObserver = (_dec9 = subscriberCollection(), _dec9(_class10
       }
       let optionValue = option.hasOwnProperty('model') ? option.model : option.value;
       if (isArray) {
-        option.selected = !!value.find(item => !!matcher(optionValue, item));
+        option.selected = value.findIndex(item => !!matcher(optionValue, item)) !== -1;
         continue;
       }
       option.selected = !!matcher(optionValue, value);

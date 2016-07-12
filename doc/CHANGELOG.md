@@ -1,3 +1,13 @@
+<a name="1.0.0-rc.1.0.3"></a>
+# [1.0.0-rc.1.0.3](https://github.com/aurelia/binding/compare/1.0.0-rc.1.0.2...v1.0.0-rc.1.0.3) (2016-07-12)
+
+
+### Bug Fixes
+
+* **CheckedObserver:** handle falsey model ([9d39a1a](https://github.com/aurelia/binding/commit/9d39a1a))
+
+
+
 <a name="1.0.0-rc.1.0.2"></a>
 # [1.0.0-rc.1.0.2](https://github.com/aurelia/binding/compare/1.0.0-rc.1.0.1...v1.0.0-rc.1.0.2) (2016-06-23)
 
