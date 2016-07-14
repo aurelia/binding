@@ -19,8 +19,8 @@ Choose one of the two headings, delete the other.
 **I'm submitting a bug report**
 **I'm submitting a feature request**
 
-* **aurelia-binding version:**
-1.0.0-rc.1.0.3
+* **Library Version:**
+major.minor.patch-pre
 
 
 **Please tell us about your environment:**
