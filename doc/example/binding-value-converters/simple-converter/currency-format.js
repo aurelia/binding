@@ -1,4 +1,4 @@
-import numeral from 'numeral';
+import * as numeral from 'numeral';
 
 export class CurrencyFormatValueConverter {
   toView(value) {
