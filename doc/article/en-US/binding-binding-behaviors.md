@@ -187,7 +187,7 @@ This is an important feature to expose. One-time bindings are the most efficient
 
 There are also binding behaviors for `oneWay` and `twoWay` which you could use like this:
 
-<code-listing heading="One-time String Interpolation">
+<code-listing heading="One-way and two-way binding behaviours">
   <source-code lang="HTML">
     <input value.bind="foo & oneWay">
     <input value.one-way="foo">
