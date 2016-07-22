@@ -122,17 +122,15 @@ class ModifyArrayObserver extends ModifyCollectionObserver {
    */
   static for(taskQueue, array) {
     if (!('__array_observer__' in array)) {
-      let observer = ModifyArrayObserver.create(taskQueue, array);
-      Reflect.defineProperty(
-        array,
-        '__array_observer__',
-        { value: observer, enumerable: false, configurable: false });
+      Reflect.defineProperty(array, '__array_observer__', {
+        value: ModifyArrayObserver.create(taskQueue, array),
+        enumerable: false, configurable: false
+      });
     }
     return array.__array_observer__;
   }
 
   static create(taskQueue, array) {
-    let observer = new ModifyArrayObserver(taskQueue, array);
-    return observer;
+    return new ModifyArrayObserver(taskQueue, array);
   }
 }
