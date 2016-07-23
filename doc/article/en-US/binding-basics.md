@@ -116,7 +116,7 @@ The `ref` command has several qualifiers you can use in conjunction with custom 
 
 String interpolation expressions enable interpolating (surprise!) the result of an expression with text.  The best way to demonstrate this capability is with an example. Below are two span elements with data-bound textcontent:
 
-<code-listing heading="Simple ref example">
+<code-listing heading="String interpolation example">
   <source-code lang="HTML">
     <span textcontent.bind="'Hello' + firstName"></span>
 
@@ -127,3 +127,31 @@ String interpolation expressions enable interpolating (surprise!) the result of 
 The first span uses the `bind` command. The second uses string interpolation.  The interpolated version is much easier to read and easy to remember because the syntax matches the [template literal](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals) syntax standardized in ES2015/ES6.
 
 String interpolation can be used within html attributes as an alternative to one-way binding. By default, the mode of an interpolation binding is `one-way` and the result of the expression is always coerced to a string. Results that are `null` or `undefined` will result in empty string.
+
+## [Element Content](aurelia-doc://section/7/version/1.0.0)
+
+The previous example compared string interpolation binding with `textcontent.bind`. Interpolation is easier to read but `textcontent.bind` can come in handy when you need to two-bind a `contenteditable` element:
+
+<code-listing heading="textContent example">
+  <source-code lang="HTML">
+    <div contenteditable textcontent.bind="firstName"></div>
+    <div contenteditable textcontent.bind="lastName"></div>
+  </source-code>
+</code-listing>
+
+You may also need to bind html text to an element's `innerHTML` property:
+
+<code-listing heading="Binding innerHTML">
+  <source-code lang="HTML">
+    <template>
+      <div innerhtml.bind="htmlProperty | sanitizeHTML"></div>
+      <div innerhtml="${htmlProperty | sanitizeHTML}"></div>
+    </template>
+  </source-code>
+</code-listing>
+
+> Danger
+> Always use HTML sanitization. We provide a simple converter that can be used. You are encouraged to use a more complete HTML sanitizer such as [sanitize-html](https://www.npmjs.com/package/sanitize-html).
+
+> Warning
+> Binding using the `innerhtml` attribute simply sets the element's `innerHTML` property.  The markup does not pass through Aurelia's templating system.  Binding expressions and require elements will not be evaluated.
