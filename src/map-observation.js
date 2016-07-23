@@ -19,11 +19,10 @@ class ModifyMapObserver extends ModifyCollectionObserver {
    */
   static for(taskQueue, map) {
     if (!('__map_observer__' in map)) {
-      let observer = ModifyMapObserver.create(taskQueue, map);
-      Reflect.defineProperty(
-        map,
-        '__map_observer__',
-        { value: observer, enumerable: false, configurable: false });
+      Reflect.defineProperty(map, '__map_observer__', {
+        value: ModifyMapObserver.create(taskQueue, map),
+        enumerable: false, configurable: false
+      });
     }
     return map.__map_observer__;
   }
