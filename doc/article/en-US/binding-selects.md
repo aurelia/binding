@@ -16,7 +16,7 @@
 
 ## [Introduction](aurelia-doc://section/1/version/1.0.0)
 
-An `<select>` element can serve as a single-select or multiple-select "picker" depending on whether the `multiple` attribute is present. The binding system supports both use cases. The samples below demonstrate a variety scenarios, all use a common series of steps to configure the select element:
+A `<select>` element can serve as a single-select or multiple-select "picker" depending on whether the `multiple` attribute is present. The binding system supports both use cases. The samples below demonstrate a variety scenarios, all use a common series of steps to configure the select element:
 
 1. Add a `<select>` element to the template and decide whether the `multiple` attribute should be applied.
 2. Bind the select element's `value` attribute to a property. In "multiple" mode, the property should be an array. In singular mode it can be any type.
