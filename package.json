@@ -140,6 +140,10 @@
         {
           "title": "Binding: Value Converters",
           "href": "doc/article/en-US/binding-value-converters.md"
+        },
+        {
+          "title": "Binding: How it Works",
+          "href": "doc/article/en-US/binding-how-it-works.md"
         }
       ]
     }
