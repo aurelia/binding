@@ -159,7 +159,79 @@ The binding system supports binding all types to radios, including objects. Here
   <source-code src="example/binding-radios/objects/app.js"></source-code>
 </au-demo>
 
-## [Booleans](aurelia-doc://section/4/version/1.0.0)
+## [Objects with Matcher](aurelia-doc://section/4/version/1.0.0)
+
+You may run into situations where the object your input element's model is bound to does not have reference equality to any of the object in your checked attribute is bound to. The objects might match by id, but they may not be the same object instance. To support this scenario you can override Aurelia's default "matcher" which is a equality comparison function that looks like this: `(a, b) => a === b`. You can substitute a function of your choosing that has the right logic to compare your objects.
+
+<code-listing heading="app${context.language.fileExtension}">
+  <source-code lang="ES 2015">
+    export class App {
+      constructor() {
+        this.selectedProduct = { id: 1, name: 'CPU' };
+
+        this.productMatcher = (a, b) => a.id === b.id;
+      }
+    }
+  </source-code>
+  <source-code lang="ES 2016">
+    export class App {
+      selectedProduct = { id: 1, name: 'CPU' };
+
+      productMatcher = (a, b) => a.id === b.id;
+    }
+  </source-code>
+  <source-code lang="TypeScript">
+    export interface IProduct {
+       id: number;
+       name: string;
+    }
+
+    export class App {
+      selectedProduct: IProduct = { id: 1, name: 'CPU' };
+
+      productMatcher = (a, b) => a.id === b.id;
+    }
+  </source-code>
+</code-listing>
+
+<code-listing heading="app.html">
+  <source-code lang="HTML">
+    <template>
+      <form>
+        <h4>Products</h4>
+        <label>
+          <input type="radio" name="group3"
+                 model.bind="{ id: 0, name: 'Motherboard' }"
+                 matcher.bind="productMatcher"
+                 checked.bind="selectedProduct">
+          Motherboard
+        </label>
+        <label>
+          <input type="radio" name="group3"
+                 model.bind="{ id: 1, name: 'CPU' }"
+                 matcher.bind="productMatcher"
+                 checked.bind="selectedProduct">
+          Motherboard
+        </label>
+        <label>
+          <input type="radio" name="group3"
+                 model.bind="{ id: 2, name: 'Memory' }"
+                 matcher.bind="productMatcher"
+                 checked.bind="selectedProduct">
+          Motherboard
+        </label>
+
+        Selected product: ${selectedProduct.id} - ${selectedProduct.name}
+      </form>
+    </template>
+  </source-code>
+</code-listing>
+
+<au-demo heading="Object matcher demo">
+  <source-code src="example/binding-radios/objects-matcher/app.js"></source-code>
+</au-demo>
+
+## [Booleans](aurelia-doc://section/5/version/1.0.0)
 
 In this example each radio input is assigned one of three literal values: `null`, `true` and `false`. Selecting one of the radios will assign it's value to the `likesCake` property.
 
@@ -214,7 +286,7 @@ In this example each radio input is assigned one of three literal values: `null`
   <source-code src="example/binding-radios/booleans/app.js"></source-code>
 </au-demo>
 
-## [Strings](aurelia-doc://section/5/version/1.0.0)
+## [Strings](aurelia-doc://section/6/version/1.0.0)
 
 Finally, here's an example using strings. This is example is unique because it does not use `model.bind` to assign each radio's value. Instead the input's standard `value` attribute is used. Normally we cannot use the standard `value` attribute in conjunction with checked binding because it coerces anything it's assigned to a string.
 

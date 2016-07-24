@@ -146,13 +146,13 @@ Numbers aren't the only type of value you can store in a "selected items" array.
   <source-code lang="ES 2015">
     export class App {
       constructor() {
-        products = [
+        this.products = [
           { id: 0, name: 'Motherboard' },
           { id: 1, name: 'CPU' },
           { id: 2, name: 'Memory' },
         ];
 
-        selectedProducts = [];
+        this.selectedProducts = [];
       }
     }
   </source-code>
@@ -208,7 +208,88 @@ Numbers aren't the only type of value you can store in a "selected items" array.
   <source-code src="example/binding-checkboxes/objects/app.js"></source-code>
 </au-demo>
 
-## [Array of Strings](aurelia-doc://section/5/version/1.0.0)
+## [Array of Objects with Matcher](aurelia-doc://section/5/version/1.0.0)
+
+You may run into situations where the object your input element's model is bound to does not have reference equality to any of the objects in your checked array. The objects might match by id, but they may not be the same object instance. To support this scenario you can override Aurelia's default "matcher" which is a equality comparison function that looks like this: `(a, b) => a === b`. You can substitute a function of your choosing that has the right logic to compare your objects.
+
+<code-listing heading="app${context.language.fileExtension}">
+  <source-code lang="ES 2015">
+    export class App {
+      constructor() {
+        this.selectedProducts = [
+          { id: 1, name: 'CPU' },
+          { id: 2, name: 'Memory' }
+        ];
+
+        this.productMatcher = (a, b) => a.id === b.id;
+      }
+    }
+  </source-code>
+  <source-code lang="ES 2016">
+    export class App {
+      selectedProducts = [
+        { id: 1, name: 'CPU' },
+        { id: 2, name: 'Memory' }
+      ];
+
+      productMatcher = (a, b) => a.id === b.id;
+    }
+  </source-code>
+  <source-code lang="TypeScript">
+    export interface IProduct {
+       id: number;
+       name: string;
+    }
+
+    export class App {
+      selectedProducts: IProduct[] = [
+        { id: 1, name: 'CPU' },
+        { id: 2, name: 'Memory' }
+      ];
+
+      productMatcher = (a, b) => a.id === b.id;
+    }
+  </source-code>
+</code-listing>
+
+<code-listing heading="app.html">
+  <source-code lang="HTML">
+    <template>
+      <form>
+        <h4>Products</h4>
+        <label>
+          <input type="checkbox" model.bind="{ id: 0, name: 'Motherboard' }"
+                 matcher.bind="productMatcher"
+                 checked.bind="selectedProducts">
+          Motherboard
+        </label>
+        <label>
+          <input type="checkbox" model.bind="{ id: 1, name: 'CPU' }"
+                 matcher.bind="productMatcher"
+                 checked.bind="selectedProducts">
+          Motherboard
+        </label>
+        <label>
+          <input type="checkbox" model.bind="{ id: 2, name: 'Memory' }"
+                 matcher.bind="productMatcher"
+                 checked.bind="selectedProducts">
+          Motherboard
+        </label>
+
+        Selected products:
+        <ul>
+          <li repeat.for="product of selectedProducts">${product.id} - ${product.name}</li>
+        </ul>
+      </form>
+    </template>
+  </source-code>
+</code-listing>
+
+<au-demo heading="Object array matcher demo">
+  <source-code src="example/binding-checkboxes/objects-matcher/app.js"></source-code>
+</au-demo>
+
+## [Array of Strings](aurelia-doc://section/6/version/1.0.0)
 
 Finally, here's an example that adds and removes strings from a `selectedProducts` array using the checkbox data-binding. This is example is unique because it does not use `model.bind` to assign each checkbox's value. Instead the input's standard `value` attribute is used. Normally we cannot use the standard `value` attribute in conjunction with checked binding because it coerces anything it's assigned to a string. This example uses an array of strings so everything works just fine.
 

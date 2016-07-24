@@ -158,7 +158,83 @@ A `<select>` element can serve as a single-select or multiple-select "picker" de
   <source-code src="example/binding-selects/single/objects/app.js"></source-code>
 </au-demo>
 
-## [Select Boolean](aurelia-doc://section/4/version/1.0.0)
+## [Select Object with Matcher](aurelia-doc://section/4/version/1.0.0)
+
+You may run into situations where the object your select element's value is bound does not have reference equality with any of the objects your option element model properties are bound to. The select's value object might "match" one of the option objects by id, but they may not be the same object instance. To support this scenario you can override Aurelia's default "matcher" which is a equality comparison function that looks like this: `(a, b) => a === b`. You can substitute a function of your choosing that has the right logic to compare your objects.
+
+<code-listing heading="app${context.language.fileExtension}">
+  <source-code lang="ES 2015">
+    export class App {
+      constructor() {
+        this.products = [
+          { id: 0, name: 'Motherboard' },
+          { id: 1, name: 'CPU' },
+          { id: 2, name: 'Memory' },
+        ];
+
+        this.productMatcher = (a, b) => a.id === b.id;
+
+        this.selectedProduct = { id: 1, name: 'CPU' };
+      }
+    }
+  </source-code>
+  <source-code lang="ES 2016">
+    export class App {
+      products = [
+        { id: 0, name: 'Motherboard' },
+        { id: 1, name: 'CPU' },
+        { id: 2, name: 'Memory' },
+      ];
+
+      productMatcher = (a, b) => a.id === b.id;
+
+      selectedProduct = { id: 1, name: 'CPU' };
+    }
+  </source-code>
+  <source-code lang="TypeScript">
+    export interface IProduct {
+       id: number;
+       name: string;
+    }
+
+    export class App {
+      products: IProduct[] = [
+        { id: 0, name: 'Motherboard' },
+        { id: 1, name: 'CPU' },
+        { id: 2, name: 'Memory' },
+      ];
+
+      productMatcher = (a, b) => a.id === b.id;
+
+      selectedProduct: IProduct = { id: 1, name: 'CPU' };
+    }
+  </source-code>
+</code-listing>
+<code-listing heading="app.html">
+  <source-code lang="HTML">
+    <template>
+      <label>
+        Select product:<br/>
+        <select value.bind="selectedProduct" matcher.bind="productMatcher">
+          <option model.bind="null">Choose...</option>
+          <option repeat.for="product of products"
+                  model.bind="product">
+            ${product.id} - ${product.name}
+          </option>
+        </select>
+      </label>
+
+      Selected product: ${selectedProduct.id} - ${selectedProduct.name}
+    </template>
+  </source-code>
+</code-listing>
+
+<au-demo heading="Select object matcher demo">
+  <source-code src="example/binding-selects/single/objects-matcher/app.js"></source-code>
+</au-demo>
+
+
+## [Select Boolean](aurelia-doc://section/5/version/1.0.0)
 
 <code-listing heading="app${context.language.fileExtension}">
   <source-code lang="ES 2015">
@@ -199,7 +275,7 @@ A `<select>` element can serve as a single-select or multiple-select "picker" de
   <source-code src="example/binding-selects/single/booleans/app.js"></source-code>
 </au-demo>
 
-## [Select String](aurelia-doc://section/5/version/1.0.0)
+## [Select String](aurelia-doc://section/6/version/1.0.0)
 
 <code-listing heading="app${context.language.fileExtension}">
   <source-code lang="ES 2015">
@@ -245,7 +321,7 @@ A `<select>` element can serve as a single-select or multiple-select "picker" de
   <source-code src="example/binding-selects/single/strings/app.js"></source-code>
 </au-demo>
 
-## [Multiple Select Numbers](aurelia-doc://section/6/version/1.0.0)
+## [Multiple Select Numbers](aurelia-doc://section/7/version/1.0.0)
 
 <code-listing heading="app${context.language.fileExtension}">
   <source-code lang="ES 2015">
@@ -311,7 +387,7 @@ A `<select>` element can serve as a single-select or multiple-select "picker" de
   <source-code src="example/binding-selects/multiple/numbers/app.js"></source-code>
 </au-demo>
 
-## [Multiple Select Objects](aurelia-doc://section/7/version/1.0.0)
+## [Multiple Select Objects](aurelia-doc://section/8/version/1.0.0)
 
 <code-listing heading="app${context.language.fileExtension}">
   <source-code lang="ES 2015">
@@ -381,7 +457,7 @@ A `<select>` element can serve as a single-select or multiple-select "picker" de
   <source-code src="example/binding-selects/multiple/objects/app.js"></source-code>
 </au-demo>
 
-## [Multiple Select Strings](aurelia-doc://section/8/version/1.0.0)
+## [Multiple Select Strings](aurelia-doc://section/9/version/1.0.0)
 
 <code-listing heading="app${context.language.fileExtension}">
   <source-code lang="ES 2015">
