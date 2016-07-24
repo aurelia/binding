@@ -6,12 +6,23 @@ define(['exports', 'numeral'], function (exports, _numeral) {
   });
   exports.NumberFormatValueConverter = undefined;
 
-  var _numeral2 = _interopRequireDefault(_numeral);
+  var numeral = _interopRequireWildcard(_numeral);
 
-  function _interopRequireDefault(obj) {
-    return obj && obj.__esModule ? obj : {
-      default: obj
-    };
+  function _interopRequireWildcard(obj) {
+    if (obj && obj.__esModule) {
+      return obj;
+    } else {
+      var newObj = {};
+
+      if (obj != null) {
+        for (var key in obj) {
+          if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
+        }
+      }
+
+      newObj.default = obj;
+      return newObj;
+    }
   }
 
   function _classCallCheck(instance, Constructor) {
@@ -26,7 +37,7 @@ define(['exports', 'numeral'], function (exports, _numeral) {
     }
 
     NumberFormatValueConverter.prototype.toView = function toView(value, format) {
-      return (0, _numeral2.default)(value).format(format);
+      return numeral(value).format(format);
     };
 
     return NumberFormatValueConverter;

@@ -1028,15 +1028,16 @@ let ModifyArrayObserver = class ModifyArrayObserver extends ModifyCollectionObse
 
   static for(taskQueue, array) {
     if (!('__array_observer__' in array)) {
-      let observer = ModifyArrayObserver.create(taskQueue, array);
-      Reflect.defineProperty(array, '__array_observer__', { value: observer, enumerable: false, configurable: false });
+      Reflect.defineProperty(array, '__array_observer__', {
+        value: ModifyArrayObserver.create(taskQueue, array),
+        enumerable: false, configurable: false
+      });
     }
     return array.__array_observer__;
   }
 
   static create(taskQueue, array) {
-    let observer = new ModifyArrayObserver(taskQueue, array);
-    return observer;
+    return new ModifyArrayObserver(taskQueue, array);
   }
 };
 
@@ -2840,8 +2841,10 @@ let ModifyMapObserver = class ModifyMapObserver extends ModifyCollectionObserver
 
   static for(taskQueue, map) {
     if (!('__map_observer__' in map)) {
-      let observer = ModifyMapObserver.create(taskQueue, map);
-      Reflect.defineProperty(map, '__map_observer__', { value: observer, enumerable: false, configurable: false });
+      Reflect.defineProperty(map, '__map_observer__', {
+        value: ModifyMapObserver.create(taskQueue, map),
+        enumerable: false, configurable: false
+      });
     }
     return map.__map_observer__;
   }
@@ -4721,8 +4724,10 @@ let ModifySetObserver = class ModifySetObserver extends ModifyCollectionObserver
 
   static for(taskQueue, set) {
     if (!('__set_observer__' in set)) {
-      let observer = ModifySetObserver.create(taskQueue, set);
-      Reflect.defineProperty(set, '__set_observer__', { value: observer, enumerable: false, configurable: false });
+      Reflect.defineProperty(set, '__set_observer__', {
+        value: ModifySetObserver.create(taskQueue, set),
+        enumerable: false, configurable: false
+      });
     }
     return set.__set_observer__;
   }

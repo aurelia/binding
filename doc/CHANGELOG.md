@@ -1,3 +1,13 @@
+<a name="1.0.0-rc.1.0.4"></a>
+# [1.0.0-rc.1.0.4](https://github.com/aurelia/binding/compare/1.0.0-rc.1.0.3...v1.0.0-rc.1.0.4) (2016-07-24)
+
+
+### Bug Fixes
+
+* **definitions:** use classes for expressions ([8181cf5](https://github.com/aurelia/binding/commit/8181cf5)), closes [#436](https://github.com/aurelia/binding/issues/436)
+
+
+
 <a name="1.0.0-rc.1.0.3"></a>
 # [1.0.0-rc.1.0.3](https://github.com/aurelia/binding/compare/1.0.0-rc.1.0.2...v1.0.0-rc.1.0.3) (2016-07-12)
 

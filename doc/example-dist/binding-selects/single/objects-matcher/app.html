@@ -1,0 +1,14 @@
+<template>
+  <label>
+    Select product:<br/>
+    <select value.bind="selectedProduct" matcher.bind="productMatcher">
+      <option model.bind="null">Choose...</option>
+      <option repeat.for="product of products"
+              model.bind="product">
+        ${product.id} - ${product.name}
+      </option>
+    </select>
+  </label>
+
+  Selected product: ${selectedProduct.id} - ${selectedProduct.name}
+</template>

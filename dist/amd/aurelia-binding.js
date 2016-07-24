@@ -1141,15 +1141,16 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
 
     ModifyArrayObserver.for = function _for(taskQueue, array) {
       if (!('__array_observer__' in array)) {
-        var observer = ModifyArrayObserver.create(taskQueue, array);
-        Reflect.defineProperty(array, '__array_observer__', { value: observer, enumerable: false, configurable: false });
+        Reflect.defineProperty(array, '__array_observer__', {
+          value: ModifyArrayObserver.create(taskQueue, array),
+          enumerable: false, configurable: false
+        });
       }
       return array.__array_observer__;
     };
 
     ModifyArrayObserver.create = function create(taskQueue, array) {
-      var observer = new ModifyArrayObserver(taskQueue, array);
-      return observer;
+      return new ModifyArrayObserver(taskQueue, array);
     };
 
     return ModifyArrayObserver;
@@ -3128,8 +3129,10 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
 
     ModifyMapObserver.for = function _for(taskQueue, map) {
       if (!('__map_observer__' in map)) {
-        var observer = ModifyMapObserver.create(taskQueue, map);
-        Reflect.defineProperty(map, '__map_observer__', { value: observer, enumerable: false, configurable: false });
+        Reflect.defineProperty(map, '__map_observer__', {
+          value: ModifyMapObserver.create(taskQueue, map),
+          enumerable: false, configurable: false
+        });
       }
       return map.__map_observer__;
     };
@@ -5226,8 +5229,10 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
 
     ModifySetObserver.for = function _for(taskQueue, set) {
       if (!('__set_observer__' in set)) {
-        var observer = ModifySetObserver.create(taskQueue, set);
-        Reflect.defineProperty(set, '__set_observer__', { value: observer, enumerable: false, configurable: false });
+        Reflect.defineProperty(set, '__set_observer__', {
+          value: ModifySetObserver.create(taskQueue, set),
+          enumerable: false, configurable: false
+        });
       }
       return set.__set_observer__;
     };

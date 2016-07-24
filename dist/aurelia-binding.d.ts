@@ -276,7 +276,7 @@ export declare interface NameExpression {
 /**
  * Provides the base class from which the classes that represent expression tree nodes are derived.
  */
-export declare interface Expression {
+export declare class Expression {
   /**
    * Evaluates the expression using the provided scope and lookup functions.
    */
@@ -294,7 +294,7 @@ export declare interface Expression {
 /**
  * An expression that accesses a property on the scope.
  */
-export declare interface AccessScope extends Expression {
+export declare class AccessScope extends Expression {
   /**
    * The property name.
    */
@@ -308,7 +308,7 @@ export declare interface AccessScope extends Expression {
 /**
  * An expression that accesses a property on an object.
  */
-export declare interface AccessMember extends Expression {
+export declare class AccessMember extends Expression {
   /**
    * The property name.
    */
@@ -322,7 +322,7 @@ export declare interface AccessMember extends Expression {
 /**
  * An expression that accesses a property on an object using a key.
  */
-export declare interface AccessKeyed extends Expression {
+export declare class AccessKeyed extends Expression {
   /**
    * The property name.
    */
@@ -336,7 +336,7 @@ export declare interface AccessKeyed extends Expression {
 /**
  * A binding behavior expression.
  */
-export declare class BindingBehavior implements Expression {
+export declare class BindingBehavior extends Expression {
   evaluate(scope: Scope, lookupFunctions: LookupFunctions): any;
   assign(scope: Scope, value: any, lookupFunctions: LookupFunctions): void;
   connect(binding: Binding, scope: Scope): void;
@@ -345,7 +345,7 @@ export declare class BindingBehavior implements Expression {
 /**
  * A value converter expression.
  */
-export declare class ValueConverter implements Expression {
+export declare class ValueConverter extends Expression {
   evaluate(scope: Scope, lookupFunctions: LookupFunctions): any;
   assign(scope: Scope, value: any, lookupFunctions: LookupFunctions): void;
   connect(binding: Binding, scope: Scope): void;
