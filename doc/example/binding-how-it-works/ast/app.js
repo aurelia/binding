@@ -21,13 +21,16 @@ export class App {
     { name: 'Literal Array', expression: `[a, 1, 'hello', null, undefined]` },
     { name: 'Call Method', expression: 'save(entity)' },
     { name: 'Assignment', expression: 'width = rangeInput.value' },
+    { name: 'Value Converter', expression: `startDate | dateFormat:'MM/dd/yyyy'` },
+    { name: 'Binding Behavior', expression: `lastName & updateTrigger:'blur'` },
+    { name: 'Kitchen Sink', expression: `getPosts({ start: minDate, end: maxDate })[0].timestamp | timeAgo & signal:'tick'` },
   ];
 
   constructor(parser) {
     this.parser = parser;
     this.expressionString = ``;
   }
-  
+
   expressionStringChanged(newValue, oldValue) {
     this.error = '';
     this.expression = null;
