@@ -64,4 +64,71 @@ describe('EventManager', () => {
       dispose();
     });
   });
+
+  describe('addEventListener', () => {
+    const em = new EventManager();
+
+    it('bubbles properly', () => {
+      const one = document.createElement('div');
+      const two = document.createElement('div');
+      const three = document.createElement('div');
+      document.body.appendChild(one);
+      one.appendChild(two);
+      two.appendChild(three);
+
+      const oneClick = jasmine.createSpy('one-click');
+      const threeClick = jasmine.createSpy('three-click');
+      const oneFoo = jasmine.createSpy('one-foo');
+      const threeFoo = jasmine.createSpy('three-foo');
+
+      em.addEventListener(one, 'click', oneClick, false);
+      em.addEventListener(three, 'click', threeClick, false);
+      em.addEventListener(one, 'foo', oneFoo, true);
+      em.addEventListener(three, 'foo', threeFoo, true);
+
+      // click event (not delegated)
+      const threeClickEvent = DOM.createCustomEvent('click', { bubbles: true });
+      three.dispatchEvent(threeClickEvent);
+      expect(threeClick).toHaveBeenCalledWith(threeClickEvent);
+      expect(oneClick).toHaveBeenCalledWith(threeClickEvent);
+      oneClick.calls.reset();
+      threeClick.calls.reset();
+
+      const twoClickEvent = DOM.createCustomEvent('click', { bubbles: true });
+      two.dispatchEvent(twoClickEvent);
+      expect(threeClick).not.toHaveBeenCalledWith(twoClickEvent);
+      expect(oneClick).toHaveBeenCalledWith(twoClickEvent);
+      oneClick.calls.reset();
+      threeClick.calls.reset();
+
+      const oneClickEvent = DOM.createCustomEvent('click', { bubbles: true });
+      one.dispatchEvent(oneClickEvent);
+      expect(threeClick).not.toHaveBeenCalledWith(threeClickEvent);
+      expect(oneClick).toHaveBeenCalledWith(oneClickEvent);
+      oneClick.calls.reset();
+      threeClick.calls.reset();
+
+      // foo event (delegate)
+      const threeFooEvent = DOM.createCustomEvent('foo', { bubbles: true });
+      three.dispatchEvent(threeFooEvent);
+      expect(threeFoo).toHaveBeenCalledWith(threeFooEvent);
+      expect(oneFoo).toHaveBeenCalledWith(threeFooEvent);
+      oneFoo.calls.reset();
+      threeFoo.calls.reset();
+
+      const twoFooEvent = DOM.createCustomEvent('foo', { bubbles: true });
+      two.dispatchEvent(twoFooEvent);
+      expect(threeFoo).not.toHaveBeenCalledWith(twoFooEvent);
+      expect(oneFoo).toHaveBeenCalledWith(twoFooEvent);
+      oneFoo.calls.reset();
+      threeFoo.calls.reset();
+
+      const oneFooEvent = DOM.createCustomEvent('foo', { bubbles: true });
+      one.dispatchEvent(oneFooEvent);
+      expect(threeFoo).not.toHaveBeenCalledWith(threeFooEvent);
+      expect(oneFoo).toHaveBeenCalledWith(oneFooEvent);
+      oneFoo.calls.reset();
+      threeFoo.calls.reset();
+    });
+  });
 });
