@@ -3067,20 +3067,16 @@ function findOriginalEventTarget(event) {
 
 function handleDelegatedEvent(event) {
   let target = findOriginalEventTarget(event);
-  let callback;
 
-  while (target && !callback) {
+  while (target) {
     if (target.delegatedCallbacks) {
-      callback = target.delegatedCallbacks[event.type];
+      let callback = target.delegatedCallbacks[event.type];
+      if (callback) {
+        callback(event);
+      }
     }
 
-    if (!callback) {
-      target = target.parentNode;
-    }
-  }
-
-  if (callback) {
-    callback(event);
+    target = target.parentNode;
   }
 }
 
@@ -3108,7 +3104,7 @@ class DelegateHandlerEntry {
 }
 
 class DefaultEventStrategy {
-  delegatedHandlers = [];
+  delegatedHandlers = {};
 
   subscribe(target, targetEvent, callback, delegate) {
     if (delegate) {

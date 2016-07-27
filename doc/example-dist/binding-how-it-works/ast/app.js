@@ -64,7 +64,7 @@ define(['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
       _initDefineProp(this, 'expressionString', _descriptor, this);
 
       this.value = null;
-      this.examples = [{ name: 'Basic Property', expression: 'firstName' }, { name: 'Property Path', expression: 'person.firstName' }, { name: 'Conditional', expression: 'isActive ? \'active\' : \'\'' }, { name: 'Array Index', expression: 'myArray[index]' }, { name: 'Binary', expression: 'x * y' }, { name: 'Object Literal', expression: '{ x: 3, y: height, z: depth }' }, { name: 'Literal Array', expression: '[a, 1, \'hello\', null, undefined]' }, { name: 'Call Method', expression: 'save(entity)' }, { name: 'Assignment', expression: 'width = rangeInput.value' }];
+      this.examples = [{ name: 'Basic Property', expression: 'firstName' }, { name: 'Property Path', expression: 'person.firstName' }, { name: 'Conditional', expression: 'isActive ? \'active\' : \'\'' }, { name: 'Array Index', expression: 'myArray[index]' }, { name: 'Binary', expression: 'x * y' }, { name: 'Object Literal', expression: '{ x: 3, y: height, z: depth }' }, { name: 'Literal Array', expression: '[a, 1, \'hello\', null, undefined]' }, { name: 'Call Method', expression: 'save(entity)' }, { name: 'Assignment', expression: 'width = rangeInput.value' }, { name: 'Value Converter', expression: 'startDate | dateFormat:\'MM/dd/yyyy\'' }, { name: 'Binding Behavior', expression: 'lastName & updateTrigger:\'blur\'' }, { name: 'Kitchen Sink', expression: 'getPosts({ start: minDate, end: maxDate })[0].timestamp | timeAgo & signal:\'tick\'' }];
 
       this.parser = parser;
       this.expressionString = '';
