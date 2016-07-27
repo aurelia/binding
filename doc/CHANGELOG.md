@@ -1,3 +1,13 @@
+<a name="1.0.0"></a>
+# [1.0.0](https://github.com/aurelia/binding/compare/1.0.0-rc.1.0.4...v1.0.0) (2016-07-27)
+
+
+### Bug Fixes
+
+* **EventManager:** fix delegate bubbling ([2c08d05](https://github.com/aurelia/binding/commit/2c08d05)), closes [#460](https://github.com/aurelia/binding/issues/460)
+
+
+
 <a name="1.0.0-rc.1.0.4"></a>
 # [1.0.0-rc.1.0.4](https://github.com/aurelia/binding/compare/1.0.0-rc.1.0.3...v1.0.0-rc.1.0.4) (2016-07-24)
 
