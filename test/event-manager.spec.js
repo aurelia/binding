@@ -67,26 +67,31 @@ describe('EventManager', () => {
 
   describe('addEventListener', () => {
     const em = new EventManager();
+    const one = document.createElement('div');
+    const two = document.createElement('div');
+    const three = document.createElement('div');
 
-    it('bubbles properly', () => {
-      const one = document.createElement('div');
-      const two = document.createElement('div');
-      const three = document.createElement('div');
+    const oneClick = jasmine.createSpy('one-click');
+    const threeClick = jasmine.createSpy('three-click');
+    const oneDelegate = jasmine.createSpy('one-delegate');
+    const threeDelegate = jasmine.createSpy('three-delegate');
+
+    beforeEach(() => {
       document.body.appendChild(one);
       one.appendChild(two);
       two.appendChild(three);
 
-      const oneClick = jasmine.createSpy('one-click');
-      const threeClick = jasmine.createSpy('three-click');
-      const oneFoo = jasmine.createSpy('one-foo');
-      const threeFoo = jasmine.createSpy('three-foo');
-
       em.addEventListener(one, 'click', oneClick, false);
       em.addEventListener(three, 'click', threeClick, false);
-      em.addEventListener(one, 'foo', oneFoo, true);
-      em.addEventListener(three, 'foo', threeFoo, true);
+      em.addEventListener(one, 'delegate', oneDelegate, true);
+      em.addEventListener(three, 'delegate', threeDelegate, true);
+    });
 
-      // click event (not delegated)
+    afterEach(() => {
+      one.remove();
+    });
+
+    it('bubbles properly when not delegated', () => {
       const threeClickEvent = DOM.createCustomEvent('click', { bubbles: true });
       three.dispatchEvent(threeClickEvent);
       expect(threeClick).toHaveBeenCalledWith(threeClickEvent);
@@ -107,28 +112,45 @@ describe('EventManager', () => {
       expect(oneClick).toHaveBeenCalledWith(oneClickEvent);
       oneClick.calls.reset();
       threeClick.calls.reset();
+    });
 
-      // foo event (delegate)
-      const threeFooEvent = DOM.createCustomEvent('foo', { bubbles: true });
-      three.dispatchEvent(threeFooEvent);
-      expect(threeFoo).toHaveBeenCalledWith(threeFooEvent);
-      expect(oneFoo).toHaveBeenCalledWith(threeFooEvent);
-      oneFoo.calls.reset();
-      threeFoo.calls.reset();
+    it('bubbles properly when delegated', () => {
+      const threeDelegateEvent = DOM.createCustomEvent('delegate', { bubbles: true });
+      three.dispatchEvent(threeDelegateEvent);
+      expect(threeDelegate).toHaveBeenCalledWith(threeDelegateEvent);
+      expect(oneDelegate).toHaveBeenCalledWith(threeDelegateEvent);
+      oneDelegate.calls.reset();
+      threeDelegate.calls.reset();
 
-      const twoFooEvent = DOM.createCustomEvent('foo', { bubbles: true });
+      const twoFooEvent = DOM.createCustomEvent('delegate', { bubbles: true });
       two.dispatchEvent(twoFooEvent);
-      expect(threeFoo).not.toHaveBeenCalledWith(twoFooEvent);
-      expect(oneFoo).toHaveBeenCalledWith(twoFooEvent);
-      oneFoo.calls.reset();
-      threeFoo.calls.reset();
+      expect(threeDelegate).not.toHaveBeenCalledWith(twoFooEvent);
+      expect(oneDelegate).toHaveBeenCalledWith(twoFooEvent);
+      oneDelegate.calls.reset();
+      threeDelegate.calls.reset();
 
-      const oneFooEvent = DOM.createCustomEvent('foo', { bubbles: true });
-      one.dispatchEvent(oneFooEvent);
-      expect(threeFoo).not.toHaveBeenCalledWith(threeFooEvent);
-      expect(oneFoo).toHaveBeenCalledWith(oneFooEvent);
-      oneFoo.calls.reset();
-      threeFoo.calls.reset();
+      const oneDelegateEvent = DOM.createCustomEvent('delegate', { bubbles: true });
+      one.dispatchEvent(oneDelegateEvent);
+      expect(threeDelegate).not.toHaveBeenCalledWith(threeDelegateEvent);
+      expect(oneDelegate).toHaveBeenCalledWith(oneDelegateEvent);
+      oneDelegate.calls.reset();
+      threeDelegate.calls.reset();
+    });
+
+    it('stops bubbling when asked', () => {
+      let wasCalled = false;
+      let stopDelegate = (event) => {
+        event.stopPropagation();
+        wasCalled = true;
+      }
+      em.addEventListener(one, 'delegate', oneDelegate, true);
+      em.addEventListener(three, 'delegate', stopDelegate, true);
+
+      const threeDelegateEvent = DOM.createCustomEvent('delegate', { bubbles: true });
+      three.dispatchEvent(threeDelegateEvent);
+
+      expect(wasCalled).toBeTruthy();
+      expect(oneDelegate).not.toHaveBeenCalledWith(threeDelegateEvent);
     });
   });
 });
