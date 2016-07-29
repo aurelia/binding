@@ -1,3 +1,13 @@
+<a name="1.0.1"></a>
+## [1.0.1](https://github.com/aurelia/binding/compare/1.0.0...v1.0.1) (2016-07-29)
+
+
+### Features
+
+* **event-manager:** enable stopping propagation of delegated events ([91287cf](https://github.com/aurelia/binding/commit/91287cf)), closes [#467](https://github.com/aurelia/binding/issues/467)
+
+
+
 <a name="1.0.0"></a>
 # [1.0.0](https://github.com/aurelia/binding/compare/1.0.0-rc.1.0.4...v1.0.0) (2016-07-27)
 

@@ -3118,13 +3118,27 @@ function findOriginalEventTarget(event) {
   return event.path && event.path[0] || event.deepPath && event.deepPath[0] || event.target;
 }
 
+function interceptStopPropagation(event) {
+  event.standardStopPropagation = event.stopPropagation;
+  event.stopPropagation = function () {
+    this.propagationStopped = true;
+    this.standardStopPropagation();
+  };
+}
+
 function handleDelegatedEvent(event) {
+  var interceptInstalled = false;
+  event.propagationStopped = false;
   var target = findOriginalEventTarget(event);
 
-  while (target) {
+  while (target && !event.propagationStopped) {
     if (target.delegatedCallbacks) {
       var callback = target.delegatedCallbacks[event.type];
       if (callback) {
+        if (!interceptInstalled) {
+          interceptStopPropagation(event);
+          interceptInstalled = true;
+        }
         callback(event);
       }
     }

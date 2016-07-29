@@ -63,7 +63,7 @@ define(['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
 
       _initDefineProp(this, 'value', _descriptor, this);
 
-      this.name = '???';
+      this.type = null;
       this.children = null;
     }
 
@@ -72,52 +72,72 @@ define(['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
       var expression = _ref.expression;
 
       if (expression instanceof _aureliaFramework.AccessThis) {
+        this.type = 'AccessThis';
         this.children = null;
       } else if (expression instanceof _aureliaFramework.AccessScope) {
+        this.type = 'AccessScope';
         this.children = null;
       } else if (expression instanceof _aureliaFramework.AccessMember) {
-        this.children = [{ role: 'object', expression: expression.object }];
+        this.type = 'AccessMember';
+        this.children = [{ role: 'Object', expression: expression.object }];
       } else if (expression instanceof _aureliaFramework.AccessKeyed) {
+        this.type = 'AccessKeyed';
         this.children = [{ role: 'Object', expression: expression.object }, { role: 'Key', expression: expression.key }];
       } else if (expression instanceof _aureliaFramework.Assign) {
+        this.type = 'Assign';
         this.children = [{ role: 'Target', expression: expression.target }, { role: 'Value', expression: expression.value }];
       } else if (expression instanceof _aureliaFramework.Binary) {
+        this.type = 'Binary';
         this.children = [{ role: 'Left', expression: expression.left }, { role: 'Right', expression: expression.right }];
       } else if (expression instanceof _aureliaFramework.BindingBehavior) {
+        this.type = 'BindingBehavior';
         this.children = [{ role: 'Target', expression: expression.expression }].concat(expression.args.map(function (x) {
           return { role: 'Argument', expression: x };
         }));
       } else if (expression instanceof _aureliaFramework.CallFunction) {
+        this.type = 'CallFunction';
         this.children = [{ role: 'Function', expression: expression.func }].concat(expression.args.map(function (x) {
           return { role: 'Argument', expression: x };
         }));
       } else if (expression instanceof _aureliaFramework.CallMember) {
+        this.type = 'CallMember';
         this.children = [{ role: 'Object', expression: expression.object }].concat(expression.args.map(function (x) {
           return { role: 'Argument', expression: x };
         }));
       } else if (expression instanceof _aureliaFramework.CallScope) {
+        this.type = 'CallScope';
         this.children = expression.args.map(function (x) {
           return { role: 'Argument', expression: x };
         });
       } else if (expression instanceof _aureliaFramework.Conditional) {
+        this.type = 'Conditional';
         this.children = [{ role: 'Condition', expression: expression.condition }, { role: 'True-Value', expression: expression.yes }, { role: 'False-Value', expression: expression.no }];
-      } else if (expression instanceof _aureliaFramework.LiteralPrimitive || expression instanceof _aureliaFramework.LiteralString) {
+      } else if (expression instanceof _aureliaFramework.LiteralPrimitive) {
+        this.type = 'LiteralPrimitive';
+        this.children = null;
+      } else if (expression instanceof _aureliaFramework.LiteralString) {
+        this.type = 'LiteralString';
         this.children = null;
       } else if (expression instanceof _aureliaFramework.LiteralArray) {
+        this.type = 'LiteralArray';
         this.children = expression.elements.map(function (x) {
           return { role: 'Element', expression: x };
         });
       } else if (expression instanceof _aureliaFramework.LiteralObject) {
+        this.type = 'LiteralObject';
         this.children = expression.values.map(function (x) {
           return { role: 'Property Value', expression: x };
         });
       } else if (expression instanceof _aureliaFramework.PrefixNot) {
+        this.type = 'PrefixNot';
         this.children = [{ role: 'Target', expression: expression.expression }];
       } else if (expression instanceof _aureliaFramework.ValueConverter) {
+        this.type = 'ValueConverter';
         this.children = [{ role: 'Target', expression: expression.allArgs[0] }].concat(expression.args.map(function (x) {
           return { role: 'Argument', expression: x };
         }));
       } else {
+        this.type = 'Unknown';
         this.children = null;
       }
     };
