@@ -267,13 +267,13 @@ You may run into situations where the object your input element's model is bound
           <input type="checkbox" model.bind="{ id: 1, name: 'CPU' }"
                  matcher.bind="productMatcher"
                  checked.bind="selectedProducts">
-          Motherboard
+          CPU
         </label>
         <label>
           <input type="checkbox" model.bind="{ id: 2, name: 'Memory' }"
                  matcher.bind="productMatcher"
                  checked.bind="selectedProducts">
-          Motherboard
+          Memory
         </label>
 
         Selected products:
