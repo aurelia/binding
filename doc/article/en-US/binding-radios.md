@@ -211,14 +211,14 @@ You may run into situations where the object your input element's model is bound
                  model.bind="{ id: 1, name: 'CPU' }"
                  matcher.bind="productMatcher"
                  checked.bind="selectedProduct">
-          Motherboard
+          CPU
         </label>
         <label>
           <input type="radio" name="group3"
                  model.bind="{ id: 2, name: 'Memory' }"
                  matcher.bind="productMatcher"
                  checked.bind="selectedProduct">
-          Motherboard
+          Memory
         </label>
 
         Selected product: ${selectedProduct.id} - ${selectedProduct.name}
