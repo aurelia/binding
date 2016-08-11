@@ -144,14 +144,14 @@ export class ObserverLocator {
         if (existingGetterOrSetter.getObserver) {
           return existingGetterOrSetter.getObserver(obj);
         }
-
-        // attempt to use an adapter before resorting to dirty checking.
-        let adapterObserver = this.getAdapterObserver(obj, propertyName, descriptor);
-        if (adapterObserver) {
-          return adapterObserver;
-        }
-        return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
       }
+
+      // attempt to use an adapter before resorting to dirty checking.
+      let adapterObserver = this.getAdapterObserver(obj, propertyName, descriptor);
+      if (adapterObserver) {
+        return adapterObserver;
+      }
+      return new DirtyCheckProperty(this.dirtyChecker, obj, propertyName);
     }
 
     if (obj instanceof Array) {
