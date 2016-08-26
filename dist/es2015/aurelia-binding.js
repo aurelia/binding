@@ -2651,10 +2651,10 @@ export let ParserImplementation = class ParserImplementation {
     if (this.optional('+')) {
       return this.parsePrefix();
     } else if (this.optional('-')) {
-        return new Binary('-', new LiteralPrimitive(0), this.parsePrefix());
-      } else if (this.optional('!')) {
-        return new PrefixNot('!', this.parsePrefix());
-      }
+      return new Binary('-', new LiteralPrimitive(0), this.parsePrefix());
+    } else if (this.optional('!')) {
+      return new PrefixNot('!', this.parsePrefix());
+    }
 
     return this.parseAccessOrCallMember();
   }
@@ -3688,12 +3688,12 @@ export let SelectValueObserver = (_dec9 = subscriberCollection(), _dec9(_class10
         return;
       }
     } else {
-        if (count === 0) {
-          value = null;
-        } else {
-          value = value[0];
-        }
+      if (count === 0) {
+        value = null;
+      } else {
+        value = value[0];
       }
+    }
 
     if (value !== this.value) {
       this.oldValue = this.value;
