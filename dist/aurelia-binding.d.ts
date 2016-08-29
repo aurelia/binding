@@ -243,6 +243,16 @@ export declare interface Binding {
    * Disconnects the binding from a scope.
    */
   unbind(): void;
+
+  /**
+   * Whether the binding is data-bound.
+   */
+  isBound: boolean;
+
+  /**
+   * The binding's source.
+   */
+  source: Scope;
 }
 
 /**
