@@ -411,8 +411,8 @@ export declare class Conditional extends Expression {
  * A literal primitive (null, undefined, number, boolean).
  */
 export declare class LiteralPrimitive extends Expression {
-  value: null|undefined|number|boolean;
-  constructor(value: null|undefined|number|boolean);
+  value: number|boolean;
+  constructor(value: number|boolean);
 }
 
 /**
