@@ -284,6 +284,23 @@ export declare interface NameExpression {
 }
 
 /**
+ * An expression AST visitor.
+ */
+export interface ExpressionVisitor {}
+
+/**
+ * Visits an expression AST and returns the string equivalent.
+ */
+export class Unparser implements ExpressionVisitor {
+  constructor(buffer: string[]);
+}
+
+/**
+ * Clones an expression AST.
+ */
+export class ExpressionCloner implements ExpressionVisitor {}
+
+/**
  * Provides the base class from which the classes that represent expression tree nodes are derived.
  */
 export declare class Expression {
@@ -301,6 +318,11 @@ export declare class Expression {
    * Subscribes a binding instance to the property change events along the path of the expression.
    */
   connect(binding: Binding, scope: Scope): void;
+  /**
+   * Accepts an expression visitor.
+   */
+  accept(visitor: ExpressionVisitor): void;
+
 }
 
 /**
@@ -411,8 +433,8 @@ export declare class Conditional extends Expression {
  * A literal primitive (null, undefined, number, boolean).
  */
 export declare class LiteralPrimitive extends Expression {
-  value: number|boolean;
-  constructor(value: number|boolean);
+  value: any;
+  constructor(value: any);
 }
 
 /**
