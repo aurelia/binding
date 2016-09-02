@@ -168,6 +168,34 @@ describe('element observation', () => {
       expect(el.style.backgroundColor).toBe('');
       expect(el.style.backgroundImage).toBe('');
 
+      observer.setValue(` width : 25px ; background: url("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]%@!$&'()*+,;=");`);
+      expect(observer.getValue()).toBe(`width: 25px; background: url("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]%@!$&'()*+,;=");`);
+
+      observer.setValue('');
+      expect(el.style.width).toBe('');
+      expect(el.style.background).toBe('');
+
+      observer.setValue(` width : 25px ; background: url('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]%@!$&\\'()*+,;=');`);
+      expect(observer.getValue()).toBe(`width: 25px; background: url("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]%@!$&'()*+,;=");`);
+
+      observer.setValue('');
+      expect(el.style.width).toBe('');
+      expect(el.style.background).toBe('');
+
+      observer.setValue(`    color : rgb( 255 , 255 , 255 ) ; background: url(abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]%@!$&*+,;=);`);
+      expect(observer.getValue()).toBe(`color: rgb(255, 255, 255); background: url("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]%@!$&*+,;=");`);
+
+      observer.setValue('');
+      expect(el.style.color).toBe('');
+      expect(el.style.background).toBe('');
+
+      observer.setValue(`background: url(data:image/gif;base64,R0lGODh0o/XBs/fNl3/zy7//wA7);`);
+      expect(observer.getValue()).toBe(`background: url("data:image/gif;base64,R0lGODh0o/XBs/fNl3/zy7//wA7");`);
+
+      observer.setValue('');
+      expect(el.style.width).toBe('');
+      expect(el.style.background).toBe('');
+
       observer.setValue({ width: '50px', height: '40px', 'background-color': 'blue', 'background-image': 'url("http://aurelia.io/test2.png")' });
       expect(observer.getValue()).toBe('width: 50px; height: 40px; background-image: url("http://aurelia.io/test2.png"); background-color: blue;');
       expect(el.style.height).toBe('40px');
