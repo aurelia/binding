@@ -75,7 +75,7 @@ Let's start with an example that uses a numeric "selected item" property. In thi
       <form>
         <h4>Products</h4>
         <label repeat.for="product of products">
-          <input type="radio" group="group1"
+          <input type="radio" name="group1"
                  model.bind="product.id" checked.bind="selectedProductId">
           ${product.id} - ${product.name}
         </label>
