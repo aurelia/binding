@@ -88,7 +88,7 @@ describe('EventManager', () => {
     });
 
     afterEach(() => {
-      one.remove();
+      one.parentNode.removeChild(one);
     });
 
     it('bubbles properly when not delegated', () => {
