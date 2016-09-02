@@ -14,7 +14,7 @@ describe('observable decorator', () => {
     spyOn(instance, 'valueChanged');
 
     instance.value = newValue;
-    expect(instance.valueChanged).toHaveBeenCalledWith(newValue, oldValue);
+    expect(instance.valueChanged).toHaveBeenCalledWith(newValue, oldValue, 'value');
   });
 
   it('should call valueChanged when changing the undefined property', () => {
@@ -25,7 +25,7 @@ describe('observable decorator', () => {
     spyOn(instance, 'valueChanged');
 
     instance.value = newValue;
-    expect(instance.valueChanged).toHaveBeenCalledWith(newValue, undefined);
+    expect(instance.valueChanged).toHaveBeenCalledWith(newValue, undefined, 'value');
   });
 
   it('should call customHandler when changing the property', () => {
@@ -36,7 +36,7 @@ describe('observable decorator', () => {
     spyOn(instance, 'customHandler');
 
     instance.value = newValue;
-    expect(instance.customHandler).toHaveBeenCalledWith(newValue, oldValue);
+    expect(instance.customHandler).toHaveBeenCalledWith(newValue, oldValue, 'value');
   });
 
   it('should call customHandler when changing the undefined property', () => {
@@ -47,7 +47,7 @@ describe('observable decorator', () => {
     spyOn(instance, 'customHandler');
 
     instance.value = newValue;
-    expect(instance.customHandler).toHaveBeenCalledWith(newValue, undefined);
+    expect(instance.customHandler).toHaveBeenCalledWith(newValue, undefined, 'value');
   });
 
   it('should work when valueChanged is undefined', () => {
@@ -81,7 +81,7 @@ describe('observable decorator', () => {
     spyOn(instance, 'valueChanged');
 
     instance.value = newValue;
-    expect(instance.valueChanged).toHaveBeenCalledWith(newValue, oldValue);
+    expect(instance.valueChanged).toHaveBeenCalledWith(newValue, oldValue, 'value');
   });
 
   it('should work with decorators function when property is undefined', () => {
@@ -92,7 +92,7 @@ describe('observable decorator', () => {
     spyOn(instance, 'valueChanged');
 
     instance.value = newValue;
-    expect(instance.valueChanged).toHaveBeenCalledWith(newValue, undefined);
+    expect(instance.valueChanged).toHaveBeenCalledWith(newValue, undefined, 'value');
   });
 
   it('should work with decorators function and config', () => {
@@ -106,6 +106,6 @@ describe('observable decorator', () => {
     spyOn(instance, 'customHandler');
 
     instance.value = newValue;
-    expect(instance.customHandler).toHaveBeenCalledWith(newValue, oldValue);
+    expect(instance.customHandler).toHaveBeenCalledWith(newValue, oldValue, 'value');
   });
 });
