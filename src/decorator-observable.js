@@ -34,7 +34,7 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
       let oldValue = this[innerPropertyName];
       this[innerPropertyName] = newValue;
       if (this[callbackName]) {
-        this[callbackName](newValue, oldValue);
+        this[callbackName](newValue, oldValue, key);
       }
     };
 
