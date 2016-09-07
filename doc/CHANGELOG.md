@@ -1,3 +1,20 @@
+<a name="1.0.4"></a>
+## [1.0.4](https://github.com/aurelia/binding/compare/1.0.3...v1.0.4) (2016-09-07)
+
+
+### Bug Fixes
+
+* **StyleObserver:** parse complex styles ([044746f](https://github.com/aurelia/binding/commit/044746f))
+* **typescript:** fix doc generation and add missing classes ([347ac4f](https://github.com/aurelia/binding/commit/347ac4f))
+* **typings:** remove TypeScript 2.0 syntax ([e9003ee](https://github.com/aurelia/binding/commit/e9003ee))
+
+
+### Features
+
+* **observable:** add propertyName argument ([e7825eb](https://github.com/aurelia/binding/commit/e7825eb))
+
+
+
 <a name="1.0.3"></a>
 ## [1.0.3](https://github.com/aurelia/binding/compare/1.0.2...v1.0.3) (2016-08-29)
 

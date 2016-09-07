@@ -76,8 +76,7 @@ export class StyleObserver {
       } else if (newValue.length) {
         let rx = /\s*([\w\-]+)\s*:\s*((?:(?:[\w\-]+\(\s*(?:"(?:\\"|[^"])*"|'(?:\\'|[^'])*'|[\w\-]+\(\s*(?:^"(?:\\"|[^"])*"|'(?:\\'|[^'])*'|[^\)]*)\),?|[^\)]*)\),?|"(?:\\"|[^"])*"|'(?:\\'|[^'])*'|[^;]*),?\s*)+);?/g;
         let pair;
-        while( (pair = rx.exec(newValue)) !== null )
-        {
+        while ((pair = rx.exec(newValue)) !== null) {
           style = pair[1];
           if ( !style ) { continue; }
 

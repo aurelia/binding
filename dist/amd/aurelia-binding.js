@@ -3712,16 +3712,16 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
             }
           }
         } else if (newValue.length) {
-          var pairs = newValue.split(/(?:;|:(?!\/))\s*/);
-          for (var _i22 = 0, length = pairs.length; _i22 < length; _i22++) {
-            style = pairs[_i22].trim();
+          var rx = /\s*([\w\-]+)\s*:\s*((?:(?:[\w\-]+\(\s*(?:"(?:\\"|[^"])*"|'(?:\\'|[^'])*'|[\w\-]+\(\s*(?:^"(?:\\"|[^"])*"|'(?:\\'|[^'])*'|[^\)]*)\),?|[^\)]*)\),?|"(?:\\"|[^"])*"|'(?:\\'|[^'])*'|[^;]*),?\s*)+);?/g;
+          var pair = void 0;
+          while ((pair = rx.exec(newValue)) !== null) {
+            style = pair[1];
             if (!style) {
               continue;
             }
 
             styles[style] = version;
-
-            this.element.style[style] = pairs[++_i22];
+            this.element.style[style] = pair[2];
           }
         }
       }
@@ -4035,8 +4035,8 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
       var count = 0;
       var value = [];
 
-      for (var _i23 = 0, ii = options.length; _i23 < ii; _i23++) {
-        var _option = options.item(_i23);
+      for (var _i22 = 0, ii = options.length; _i22 < ii; _i22++) {
+        var _option = options.item(_i22);
         if (!_option.selected) {
           continue;
         }
@@ -4171,8 +4171,8 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
 
       if (newValue !== null && newValue !== undefined && newValue.length) {
         names = newValue.split(/\s+/);
-        for (var _i24 = 0, length = names.length; _i24 < length; _i24++) {
-          name = names[_i24];
+        for (var _i23 = 0, length = names.length; _i23 < length; _i23++) {
+          name = names[_i23];
           if (name === '') {
             continue;
           }
@@ -4265,9 +4265,9 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
   function createComputedObserver(obj, propertyName, descriptor, observerLocator) {
     var dependencies = descriptor.get.dependencies;
     if (!(dependencies instanceof ComputedExpression)) {
-      var _i25 = dependencies.length;
-      while (_i25--) {
-        dependencies[_i25] = observerLocator.parser.parse(dependencies[_i25]);
+      var _i24 = dependencies.length;
+      while (_i24--) {
+        dependencies[_i24] = observerLocator.parser.parse(dependencies[_i24]);
       }
       dependencies = descriptor.get.dependencies = new ComputedExpression(propertyName, dependencies);
     }
@@ -4561,8 +4561,8 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
     };
 
     ObserverLocator.prototype.getAdapterObserver = function getAdapterObserver(obj, propertyName, descriptor) {
-      for (var _i26 = 0, ii = this.adapters.length; _i26 < ii; _i26++) {
-        var adapter = this.adapters[_i26];
+      for (var _i25 = 0, ii = this.adapters.length; _i25 < ii; _i25++) {
+        var adapter = this.adapters[_i25];
         var observer = adapter.getObserver(obj, propertyName, descriptor);
         if (observer) {
           return observer;
@@ -5331,7 +5331,7 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
         var oldValue = this[innerPropertyName];
         this[innerPropertyName] = newValue;
         if (this[callbackName]) {
-          this[callbackName](newValue, oldValue);
+          this[callbackName](newValue, oldValue, key);
         }
       };
 

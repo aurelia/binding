@@ -3526,14 +3526,14 @@ export class StyleObserver {
           }
         }
       } else if (newValue.length) {
-        let pairs = newValue.split(/(?:;|:(?!\/))\s*/);
-        for (let i = 0, length = pairs.length; i < length; i++) {
-          style = pairs[i].trim();
+        let rx = /\s*([\w\-]+)\s*:\s*((?:(?:[\w\-]+\(\s*(?:"(?:\\"|[^"])*"|'(?:\\'|[^'])*'|[\w\-]+\(\s*(?:^"(?:\\"|[^"])*"|'(?:\\'|[^'])*'|[^\)]*)\),?|[^\)]*)\),?|"(?:\\"|[^"])*"|'(?:\\'|[^'])*'|[^;]*),?\s*)+);?/g;
+        let pair;
+        while ((pair = rx.exec(newValue)) !== null) {
+          style = pair[1];
           if ( !style ) { continue; }
 
           styles[style] = version;
-
-          this.element.style[style] = pairs[++i];
+          this.element.style[style] = pair[2];
         }
       }
     }
@@ -5058,7 +5058,7 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
       let oldValue = this[innerPropertyName];
       this[innerPropertyName] = newValue;
       if (this[callbackName]) {
-        this[callbackName](newValue, oldValue);
+        this[callbackName](newValue, oldValue, key);
       }
     };
 
