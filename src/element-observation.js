@@ -53,7 +53,6 @@ export class StyleObserver {
     this.propertyName = propertyName;
 
     this.styles = null;
-    this.version = 0;
   }
 
   getValue() {
@@ -61,46 +60,38 @@ export class StyleObserver {
   }
 
   setValue(newValue) {
-    let styles = this.styles || {};
+    let styles = '';
     let style;
-    let version = this.version;
 
     if (newValue !== null && newValue !== undefined) {
       if (newValue instanceof Object) {
+        styles = '';
         for (style in newValue) {
           if (newValue.hasOwnProperty(style)) {
-            styles[style] = version;
-            this.element.style[style] = newValue[style];
+            styles += `${style}: ${newValue[style]};`;
           }
         }
       } else if (newValue.length) {
-        let rx = /\s*([\w\-]+)\s*:\s*((?:(?:[\w\-]+\(\s*(?:"(?:\\"|[^"])*"|'(?:\\'|[^'])*'|[\w\-]+\(\s*(?:^"(?:\\"|[^"])*"|'(?:\\'|[^'])*'|[^\)]*)\),?|[^\)]*)\),?|"(?:\\"|[^"])*"|'(?:\\'|[^'])*'|[^;]*),?\s*)+);?/g;
-        let pair;
-        while ((pair = rx.exec(newValue)) !== null) {
-          style = pair[1];
-          if ( !style ) { continue; }
+        styles = newValue;
+      }
+    }
 
-          styles[style] = version;
-          this.element.style[style] = pair[2];
+    let el = document.createElement('div');
+    el.style.cssText = styles;
+    styles = el.style;
+
+    if ( this.styles ) {
+      for (let i = 0, e = this.styles.length; i < e; ++i) {
+        style = this.styles[i];
+        if ( !styles[style] ) {
+          this.element.style[style] = '';
         }
       }
     }
 
+    this.element.style.cssText += styles.cssText;
+
     this.styles = styles;
-    this.version += 1;
-
-    if (version === 0) {
-      return;
-    }
-
-    version -= 1;
-    for (style in styles) {
-      if (!styles.hasOwnProperty(style) || styles[style] !== version) {
-        continue;
-      }
-
-      this.element.style[style] = '';
-    }
   }
 
   subscribe() {
