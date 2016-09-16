@@ -42,7 +42,7 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
     // dependencies. This is the equivalent of "@computedFrom(...)".
     descriptor.get.dependencies = [innerPropertyName];
 
-    Reflect.defineProperty(target, key, descriptor);
+    return descriptor;
   }
 
   if (key === undefined) {
