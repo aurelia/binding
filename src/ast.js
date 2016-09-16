@@ -630,22 +630,13 @@ export class LiteralObject extends Expression {
   }
 }
 
-let evalListCache = [[], [0], [0, 0], [0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0]];
-
 /// Evaluate the [list] in context of the [scope].
 function evalList(scope, list, lookupFunctions) {
-  let length = list.length;
-
-  for (let cacheLength = evalListCache.length; cacheLength <= length; ++cacheLength) {
-    evalListCache.push([]);
-  }
-
-  let result = evalListCache[length];
-
-  for (let i = 0; i < length; ++i) {
+  const length = list.length;
+  const result = [];
+  for (let i = 0; i < length; i++) {
     result[i] = list[i].evaluate(scope, lookupFunctions);
   }
-
   return result;
 }
 
