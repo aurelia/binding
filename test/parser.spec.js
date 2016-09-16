@@ -208,23 +208,34 @@ describe('Parser', () => {
     let expression = parser.parse('{parent: $parent}');
     expect(expression instanceof LiteralObject).toBe(true);
     expect(expression.keys.length).toBe(1);
+    expect(expression.keys).toEqual(['parent']);
     expect(expression.values.length).toBe(1);
     expect(expression.values[0] instanceof AccessThis).toBe(true);
     expect(expression.values[0].ancestor).toBe(1);
+
+    expression = parser.parse('{parent: $parent, foo: bar}');
+    expect(expression instanceof LiteralObject).toBe(true);
+    expect(expression.keys.length).toBe(2);
+    expect(expression.keys).toEqual(['parent', 'foo']);
+    expect(expression.values.length).toBe(2);
+    expect(expression.values[0] instanceof AccessThis).toBe(true);
+    expect(expression.values[0].ancestor).toBe(1);
+    expect(expression.values[1] instanceof AccessScope).toBe(true);
+    expect(expression.values[1].name).toBe('bar');
   });
-  
+
   it('parses es6 shorthand LiteralObject', () => {
     let expression = parser.parse('{ foo, bar }');
     expect(expression instanceof LiteralObject).toBe(true);
     expect(expression.keys.length).toBe(2);
     expect(expression.values.length).toBe(2);
-    
+
     expect(expression.values[0] instanceof AccessScope).toBe(true);
     expect(expression.values[0].name).toBe('foo');
     expect(expression.values[1] instanceof AccessScope).toBe(true);
     expect(expression.values[1].name).toBe('bar');
   });
-  
+
   it('does not parse invalid shorthand properties', () => {
       let pass = false;
       try {
@@ -232,7 +243,7 @@ describe('Parser', () => {
           pass = true;
       } catch (e) { pass = false; }
       expect(pass).toBe(false);
-      
+
       try {
           parser.parse('{ "foo.bar" }');
           pass = true;
