@@ -155,49 +155,66 @@ describe('element observation', () => {
       expect(observer instanceof StyleObserver).toBe(true);
       expect(() => observer.subscribe(() => {})).toThrow(new Error('Observation of a "DIV" element\'s "' + attrs[i] + '" property is not supported.'));
 
+      el.style.borderStyle = 'solid';
+      expect(el.style.borderStyle).toBe('solid');
+
       observer.setValue(' 	  width : 30px;height:20px; background-color	: red;background-image: url("http://aurelia.io/test.png"); 	 ');
-      //expect(observer.getValue()).toBe('width: 30px; height: 20px; background-image: url("http://aurelia.io/test.png"); background-color: red;');
       expect(el.style.height).toBe('20px');
       expect(el.style.width).toBe('30px');
       expect(el.style.backgroundColor).toBe('red');
       expect(el.style.backgroundImage).toBe('url("http://aurelia.io/test.png")');
+      expect(el.style.borderStyle).toBe('solid');
 
       observer.setValue('');
       expect(el.style.height).toBe('');
       expect(el.style.width).toBe('');
       expect(el.style.backgroundColor).toBe('');
       expect(el.style.backgroundImage).toBe('');
+      expect(el.style.borderStyle).toBe('solid');
 
-      observer.setValue(` width : 25px ; background: url("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]%@!$&'()*+,;=");`);
+      observer.setValue(` width : 25px ; background-image: url("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]%@!$&'()*+,;=");`);
       expect(el.style.width).toBe('25px');
-      expect(el.style.background).toBe(`url("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]%@!$&'()*+,;=")`);
+      expect(el.style.backgroundImage).toBe(`url("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]%@!$&'()*+,;=")`);
 
       observer.setValue('');
       expect(el.style.width).toBe('');
       expect(el.style.background).toBe('');
 
-      observer.setValue(` width : 25px ; background: url('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]%@!$&\\'()*+,;=');`);
+      observer.setValue(` width : 25px ; background-image: url('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]%@!$&\\'()*+,;=');`);
       expect(el.style.width).toBe('25px');
-      expect(el.style.background).toBe(`url("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]%@!$&'()*+,;=")`);
+      expect(el.style.backgroundImage).toBe(`url("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]%@!$&'()*+,;=")`);
 
       observer.setValue('');
       expect(el.style.width).toBe('');
-      expect(el.style.background).toBe('');
+      expect(el.style.backgroundImage).toBe('');
 
-      observer.setValue(`    color : rgb( 255 , 255 , 255 ) ; background: url(abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]%@!$&*+,;=);`);
+      observer.setValue(`    color : rgb( 255 , 255 , 255 ) ; background-image: url(abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]%@!$&*+,;=);`);
       expect(el.style.color).toBe('rgb(255, 255, 255)');
-      expect(el.style.background).toBe(`url("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]%@!$&*+,;=")`);
+      expect(el.style.backgroundImage).toBe(`url("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]%@!$&*+,;=")`);
 
       observer.setValue('');
       expect(el.style.color).toBe('');
-      expect(el.style.background).toBe('');
+      expect(el.style.backgroundImage).toBe('');
 
-      observer.setValue(`background: url(data:image/gif;base64,R0lGODh0o/XBs/fNl3/zy7//wA7);`);
-      expect(el.style.background).toBe(`url("data:image/gif;base64,R0lGODh0o/XBs/fNl3/zy7//wA7")`);
+      observer.setValue(`background-image: url(data:image/gif;base64,R0lGODh0o/XBs/fNl3/zy7//wA7);`);
+      expect(el.style.backgroundImage).toBe(`url("data:image/gif;base64,R0lGODh0o/XBs/fNl3/zy7//wA7")`);
 
       observer.setValue('');
-      expect(el.style.width).toBe('');
+      expect(el.style.backgroundImage).toBe('');
+
+      observer.setValue('background-color: #000 !important;');
+      expect(el.style.backgroundColor).toBe('rgb(0, 0, 0)');
+
+      observer.setValue('');
       expect(el.style.background).toBe('');
+
+      observer.setValue('width: 10px');
+      expect(el.style.width).toBe('10px');
+      observer.setValue('width: 15px !important');
+      expect(el.style.width).toBe('15px');
+
+      observer.setValue('');
+      expect(el.style.fontWeight).toBe('');
 
       observer.setValue({ width: '50px', height: '40px', 'background-color': 'blue', 'background-image': 'url("http://aurelia.io/test2.png")' });
       expect(el.style.height).toBe('40px');

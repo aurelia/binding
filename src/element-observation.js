@@ -60,6 +60,16 @@ export class StyleObserver {
     return this.element.style.cssText;
   }
 
+  _setProperty(style, value) {
+    let priority = '';
+
+    if (value.indexOf('!important') !== -1) {
+      priority = 'important';
+      value = value.replace('!important', '');
+    }
+    this.element.style.setProperty(style, value, priority);
+  }
+
   setValue(newValue) {
     let styles = this.styles || {};
     let style;
@@ -70,7 +80,7 @@ export class StyleObserver {
         for (style in newValue) {
           if (newValue.hasOwnProperty(style)) {
             styles[style] = version;
-            this.element.style[style] = newValue[style];
+            this._setProperty(style, newValue[style]);
           }
         }
       } else if (newValue.length) {
@@ -81,7 +91,7 @@ export class StyleObserver {
           if ( !style ) { continue; }
 
           styles[style] = version;
-          this.element.style[style] = pair[2];
+          this._setProperty(style, pair[2]);
         }
       }
     }
@@ -99,7 +109,7 @@ export class StyleObserver {
         continue;
       }
 
-      this.element.style[style] = '';
+      this.element.style.removeProperty(style);
     }
   }
 
