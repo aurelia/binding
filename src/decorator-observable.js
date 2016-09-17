@@ -21,7 +21,11 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
         target[innerPropertyName] = descriptor.initializer();
       }
     } else {
-      descriptor = {};
+      // there is no descriptor if the target was a field, 
+      // or if the decorator was applied to a class.
+      descriptor = {
+        enumerable: true  // if the target was a field, it was enumerable
+      };
     }
 
     // we're adding a getter and setter which means the property descriptor
