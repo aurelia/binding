@@ -42,10 +42,7 @@
     "devDependencies": {
       "aurelia-dependency-injection": "^1.0.0",
       "aurelia-pal-browser": "^1.0.0-rc.1.0.0",
-      "aurelia-polyfills": "^1.0.0-rc.1.0.0",
-      "babel": "babel-core@^5.8.24",
-      "babel-runtime": "^5.8.24",
-      "core-js": "^2.0.3"
+      "aurelia-polyfills": "^1.0.0-rc.1.0.0"
     }
   },
   "dependencies": {
