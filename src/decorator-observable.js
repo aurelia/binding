@@ -1,7 +1,8 @@
 export function observable(targetOrConfig: any, key: string, descriptor?: PropertyDescriptor) {
   function deco(target, key, descriptor, config) { // eslint-disable-line no-shadow
     // class decorator?
-    if (key === undefined) {
+    const isClassDecorator = key === undefined;
+    if (isClassDecorator) {
       target = target.prototype;
       key = typeof config === 'string' ? config : config.name;
     }
@@ -42,7 +43,12 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
     // dependencies. This is the equivalent of "@computedFrom(...)".
     descriptor.get.dependencies = [innerPropertyName];
 
-    return descriptor;
+    if (isClassDecorator) {
+      Reflect.defineProperty(target, key, descriptor); 
+    }
+    else {
+      return descriptor;
+    }
   }
 
   if (key === undefined) {
