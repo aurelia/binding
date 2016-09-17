@@ -113,6 +113,6 @@ describe('observable decorator', () => {
     const instance = new class {
       @observable value;
     };
-    expect(instance.isPropertyEnumerable('value')).toBe(true);
+    expect(instance.propertyIsEnumerable('value')).toBe(true);
   });
 });
