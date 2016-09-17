@@ -23,9 +23,11 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
     } else {
       // there is no descriptor if the target was a field, 
       // or if the decorator was applied to a class.
-      descriptor = {
-        enumerable: true  // if the target was a field, it was enumerable
-      };
+      descriptor = { };
+    }
+    // make the accessor enumerable by default, as fields are enumerable
+    if (!('enumerable' in descriptor)) {
+      descriptor.enumerable = true;
     }
 
     // we're adding a getter and setter which means the property descriptor
