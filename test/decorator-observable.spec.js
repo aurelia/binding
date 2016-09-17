@@ -108,4 +108,11 @@ describe('observable decorator', () => {
     instance.value = newValue;
     expect(instance.customHandler).toHaveBeenCalledWith(newValue, oldValue, 'value');
   });
+  
+  it('should create an enumerable accessor', () => {
+    const instance = new class {
+      @observable value;
+    };
+    expect(instance.isPropertyEnumerable('value')).toBe(true);
+  });
 });
