@@ -21,9 +21,9 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
         target[innerPropertyName] = descriptor.initializer();
       }
     } else {
-      // there is no descriptor if the target was a field, 
+      // there is no descriptor if the target was a field in TS (although Babel provides one), 
       // or if the decorator was applied to a class.
-      descriptor = { };
+      descriptor = {};
     }
     // make the accessor enumerable by default, as fields are enumerable
     if (!('enumerable' in descriptor)) {
