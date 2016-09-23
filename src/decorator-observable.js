@@ -1,7 +1,8 @@
 export function observable(targetOrConfig: any, key: string, descriptor?: PropertyDescriptor) {
   function deco(target, key, descriptor, config) { // eslint-disable-line no-shadow
     // class decorator?
-    if (key === undefined) {
+    const isClassDecorator = key === undefined;
+    if (isClassDecorator) {
       target = target.prototype;
       key = typeof config === 'string' ? config : config.name;
     }
@@ -20,7 +21,13 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
         target[innerPropertyName] = descriptor.initializer();
       }
     } else {
+      // there is no descriptor if the target was a field in TS (although Babel provides one), 
+      // or if the decorator was applied to a class.
       descriptor = {};
+    }
+    // make the accessor enumerable by default, as fields are enumerable
+    if (!('enumerable' in descriptor)) {
+      descriptor.enumerable = true;
     }
 
     // we're adding a getter and setter which means the property descriptor
@@ -42,7 +49,12 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
     // dependencies. This is the equivalent of "@computedFrom(...)".
     descriptor.get.dependencies = [innerPropertyName];
 
-    Reflect.defineProperty(target, key, descriptor);
+    if (isClassDecorator) {
+      Reflect.defineProperty(target, key, descriptor); 
+    }
+    else {
+      return descriptor;
+    }
   }
 
   if (key === undefined) {
