@@ -21,7 +21,7 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
         target[innerPropertyName] = descriptor.initializer();
       }
     } else {
-      // there is no descriptor if the target was a field in TS (although Babel provides one), 
+      // there is no descriptor if the target was a field in TS (although Babel provides one),
       // or if the decorator was applied to a class.
       descriptor = {};
     }
@@ -50,9 +50,8 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
     descriptor.get.dependencies = [innerPropertyName];
 
     if (isClassDecorator) {
-      Reflect.defineProperty(target, key, descriptor); 
-    }
-    else {
+      Reflect.defineProperty(target, key, descriptor);
+    } else {
       return descriptor;
     }
   }
