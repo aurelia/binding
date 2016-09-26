@@ -92,6 +92,24 @@ describe('ObserverLocator', () => {
     expect(observer instanceof DataAttributeObserver).toBe(true);
   });
 
+  it('uses DataAttributeObserver for role attributes on elements', () => {
+    var obj = createElement('<div></div>'),
+        observer = locator.getObserver(obj, 'role');
+    expect(observer instanceof DataAttributeObserver).toBe(true);
+  });
+
+  it('uses DataAttributeObserver for role attributes on svg elements', () => {
+    var obj = createElement('<svg></svg>'),
+        observer = locator.getObserver(obj, 'role');
+    expect(observer instanceof DataAttributeObserver).toBe(true);
+  });
+
+  it('uses SetterObserver for role properties on objects', () => {
+    var obj = {},
+        observer = locator.getObserver(obj, 'role');
+    expect(observer instanceof SetterObserver).toBe(true);
+  });
+
   it('uses CheckedObserver for input checked attributes', () => {
     var obj = createElement('<input />'),
         observer = locator.getObserver(obj, 'checked');

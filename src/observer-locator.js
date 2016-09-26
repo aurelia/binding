@@ -126,7 +126,8 @@ export class ObserverLocator {
       if (xlinkResult) {
         return new XLinkAttributeObserver(obj, propertyName, xlinkResult[1]);
       }
-      if (/^\w+:|^data-|^aria-/.test(propertyName)
+      if (propertyName === 'role' && (obj instanceof DOM.Element || obj instanceof DOM.SVGElement)
+        || /^\w+:|^data-|^aria-/.test(propertyName)
         || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
         return new DataAttributeObserver(obj, propertyName);
       }
