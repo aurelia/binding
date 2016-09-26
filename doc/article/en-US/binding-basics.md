@@ -71,6 +71,8 @@ Below are a few examples.
 
 The cancel button uses the `trigger` command to attach an event listener to the button element that will call the view-model's cancel method.  The yes and no buttons use the `delegate` command which will use the event delegation pattern.  The input elements have binding expressions that use the special `$event` property to access the [DOM event](https://developer.mozilla.org/en-US/docs/Web/API/Event).
 
+Aurelia will automatically call [`preventDefault()`](https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault) on events handled with `delegate` or `trigger` binding. Most of the time this is the behavior you want. To turn this off, return `true` from your event handler function.
+
 ## [Function References](aurelia-doc://section/4/version/1.0.0)
 
 While developing custom elements or custom attributes you may encounter a situation where you have a `@bindable` property that expects a reference to a function. Use the `call` binding command to declare and pass a function to the bindable property. The `call` command is superior to the `bind` command for this use-case because it will execute the function in the correct context, ensuring `this` is what you expect it to be.
