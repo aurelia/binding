@@ -185,6 +185,11 @@ export declare interface InternalPropertyObserver {
 }
 
 /**
+ * Property observer for HTML Attributes.
+ */
+export declare class DataAttributeObserver implements InternalPropertyObserver {}
+
+/**
  * Observes collection mutation.
  */
 export declare interface InternalCollectionObserver {
