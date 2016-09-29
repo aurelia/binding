@@ -187,7 +187,24 @@ export declare interface InternalPropertyObserver {
 /**
  * Property observer for HTML Attributes.
  */
-export declare class DataAttributeObserver implements InternalPropertyObserver {}
+export declare class DataAttributeObserver implements InternalPropertyObserver {
+  /**
+   * Gets the property value.
+   */
+  getValue(): any;
+  /**
+   * Sets the property value.
+   */
+  setValue(newValue: any): void;
+  /**
+   * Unsupported.
+   */
+  subscribe(): void;
+  /**
+   * Unsupported.
+   */
+  unsubscribe(): void;
+}
 
 /**
  * Observes collection mutation.
