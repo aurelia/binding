@@ -1675,21 +1675,12 @@ export let LiteralObject = class LiteralObject extends Expression {
   }
 };
 
-let evalListCache = [[], [0], [0, 0], [0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0]];
-
 function evalList(scope, list, lookupFunctions) {
-  let length = list.length;
-
-  for (let cacheLength = evalListCache.length; cacheLength <= length; ++cacheLength) {
-    evalListCache.push([]);
-  }
-
-  let result = evalListCache[length];
-
-  for (let i = 0; i < length; ++i) {
+  const length = list.length;
+  const result = [];
+  for (let i = 0; i < length; i++) {
     result[i] = list[i].evaluate(scope, lookupFunctions);
   }
-
   return result;
 }
 
@@ -2744,7 +2735,7 @@ export let ParserImplementation = class ParserImplementation {
       if (this.optional('.')) {
         name = this.peek.key;
         this.advance();
-      } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === '[' || this.peek.text === '}') {
+      } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === '[' || this.peek.text === '}' || this.peek.text === ',') {
         return new AccessThis(ancestor);
       } else {
         this.error(`Unexpected token ${ this.peek.text }`);
@@ -3352,6 +3343,16 @@ export let StyleObserver = class StyleObserver {
     return this.element.style.cssText;
   }
 
+  _setProperty(style, value) {
+    let priority = '';
+
+    if (value.indexOf('!important') !== -1) {
+      priority = 'important';
+      value = value.replace('!important', '');
+    }
+    this.element.style.setProperty(style, value, priority);
+  }
+
   setValue(newValue) {
     let styles = this.styles || {};
     let style;
@@ -3362,7 +3363,7 @@ export let StyleObserver = class StyleObserver {
         for (style in newValue) {
           if (newValue.hasOwnProperty(style)) {
             styles[style] = version;
-            this.element.style[style] = newValue[style];
+            this._setProperty(style, newValue[style]);
           }
         }
       } else if (newValue.length) {
@@ -3375,7 +3376,7 @@ export let StyleObserver = class StyleObserver {
           }
 
           styles[style] = version;
-          this.element.style[style] = pair[2];
+          this._setProperty(style, pair[2]);
         }
       }
     }
@@ -3393,7 +3394,7 @@ export let StyleObserver = class StyleObserver {
         continue;
       }
 
-      this.element.style[style] = '';
+      this.element.style.removeProperty(style);
     }
   }
 
@@ -4176,7 +4177,7 @@ export let ObserverLocator = (_temp = _class11 = class ObserverLocator {
       if (xlinkResult) {
         return new XLinkAttributeObserver(obj, propertyName, xlinkResult[1]);
       }
-      if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
+      if (propertyName === 'role' && (obj instanceof DOM.Element || obj instanceof DOM.SVGElement) || /^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
         return new DataAttributeObserver(obj, propertyName);
       }
     }
@@ -4798,7 +4799,8 @@ let ModifySetObserver = class ModifySetObserver extends ModifyCollectionObserver
 
 export function observable(targetOrConfig, key, descriptor) {
   function deco(target, key, descriptor, config) {
-    if (key === undefined) {
+    const isClassDecorator = key === undefined;
+    if (isClassDecorator) {
       target = target.prototype;
       key = typeof config === 'string' ? config : config.name;
     }
@@ -4813,6 +4815,10 @@ export function observable(targetOrConfig, key, descriptor) {
       }
     } else {
       descriptor = {};
+    }
+
+    if (!('enumerable' in descriptor)) {
+      descriptor.enumerable = true;
     }
 
     delete descriptor.writable;
@@ -4831,7 +4837,11 @@ export function observable(targetOrConfig, key, descriptor) {
 
     descriptor.get.dependencies = [innerPropertyName];
 
-    Reflect.defineProperty(target, key, descriptor);
+    if (isClassDecorator) {
+      Reflect.defineProperty(target, key, descriptor);
+    } else {
+      return descriptor;
+    }
   }
 
   if (key === undefined) {

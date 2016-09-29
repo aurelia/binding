@@ -1,3 +1,17 @@
+<a name="1.0.5"></a>
+## [1.0.5](https://github.com/aurelia/binding/compare/1.0.4...v1.0.5) (2016-09-29)
+
+
+### Bug Fixes
+
+* **AST:** remove evalList array cache ([73f1a3e](https://github.com/aurelia/binding/commit/73f1a3e)), closes [#495](https://github.com/aurelia/binding/issues/495)
+* **observable:** enable chaining, enumerating ([6586cd2](https://github.com/aurelia/binding/commit/6586cd2)), closes [#501](https://github.com/aurelia/binding/issues/501)
+* **ObserverLocator:** use correct observer for aria role ([ca1dd60](https://github.com/aurelia/binding/commit/ca1dd60)), closes [aurelia/framework#582](https://github.com/aurelia/framework/issues/582) [#486](https://github.com/aurelia/binding/issues/486)
+* **Parser:** fix object literal parsing with ([52d01dd](https://github.com/aurelia/binding/commit/52d01dd)), closes [#502](https://github.com/aurelia/binding/issues/502)
+* **StyleObserver:** enable !important override ([0872d12](https://github.com/aurelia/binding/commit/0872d12)), closes [aurelia/templating-resources#251](https://github.com/aurelia/templating-resources/issues/251)
+
+
+
 <a name="1.0.4"></a>
 ## [1.0.4](https://github.com/aurelia/binding/compare/1.0.3...v1.0.4) (2016-09-07)
 

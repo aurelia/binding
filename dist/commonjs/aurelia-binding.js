@@ -1873,21 +1873,12 @@ var LiteralObject = exports.LiteralObject = function (_Expression18) {
   return LiteralObject;
 }(Expression);
 
-var evalListCache = [[], [0], [0, 0], [0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0]];
-
 function evalList(scope, list, lookupFunctions) {
   var length = list.length;
-
-  for (var cacheLength = evalListCache.length; cacheLength <= length; ++cacheLength) {
-    evalListCache.push([]);
-  }
-
-  var result = evalListCache[length];
-
-  for (var _i14 = 0; _i14 < length; ++_i14) {
+  var result = [];
+  for (var _i14 = 0; _i14 < length; _i14++) {
     result[_i14] = list[_i14].evaluate(scope, lookupFunctions);
   }
-
   return result;
 }
 
@@ -2970,7 +2961,7 @@ var ParserImplementation = exports.ParserImplementation = function () {
       if (this.optional('.')) {
         name = this.peek.key;
         this.advance();
-      } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === '[' || this.peek.text === '}') {
+      } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === '[' || this.peek.text === '}' || this.peek.text === ',') {
         return new AccessThis(ancestor);
       } else {
         this.error('Unexpected token ' + this.peek.text);
@@ -3651,6 +3642,16 @@ var StyleObserver = exports.StyleObserver = function () {
     return this.element.style.cssText;
   };
 
+  StyleObserver.prototype._setProperty = function _setProperty(style, value) {
+    var priority = '';
+
+    if (value.indexOf('!important') !== -1) {
+      priority = 'important';
+      value = value.replace('!important', '');
+    }
+    this.element.style.setProperty(style, value, priority);
+  };
+
   StyleObserver.prototype.setValue = function setValue(newValue) {
     var styles = this.styles || {};
     var style = void 0;
@@ -3661,7 +3662,7 @@ var StyleObserver = exports.StyleObserver = function () {
         for (style in newValue) {
           if (newValue.hasOwnProperty(style)) {
             styles[style] = version;
-            this.element.style[style] = newValue[style];
+            this._setProperty(style, newValue[style]);
           }
         }
       } else if (newValue.length) {
@@ -3674,7 +3675,7 @@ var StyleObserver = exports.StyleObserver = function () {
           }
 
           styles[style] = version;
-          this.element.style[style] = pair[2];
+          this._setProperty(style, pair[2]);
         }
       }
     }
@@ -3692,7 +3693,7 @@ var StyleObserver = exports.StyleObserver = function () {
         continue;
       }
 
-      this.element.style[style] = '';
+      this.element.style.removeProperty(style);
     }
   };
 
@@ -4554,7 +4555,7 @@ var ObserverLocator = exports.ObserverLocator = (_temp = _class11 = function () 
       if (xlinkResult) {
         return new XLinkAttributeObserver(obj, propertyName, xlinkResult[1]);
       }
-      if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof _aureliaPal.DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
+      if (propertyName === 'role' && (obj instanceof _aureliaPal.DOM.Element || obj instanceof _aureliaPal.DOM.SVGElement) || /^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof _aureliaPal.DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
         return new DataAttributeObserver(obj, propertyName);
       }
     }
@@ -5257,7 +5258,8 @@ var ModifySetObserver = function (_ModifyCollectionObse3) {
 
 function observable(targetOrConfig, key, descriptor) {
   function deco(target, key, descriptor, config) {
-    if (key === undefined) {
+    var isClassDecorator = key === undefined;
+    if (isClassDecorator) {
       target = target.prototype;
       key = typeof config === 'string' ? config : config.name;
     }
@@ -5272,6 +5274,10 @@ function observable(targetOrConfig, key, descriptor) {
       }
     } else {
       descriptor = {};
+    }
+
+    if (!('enumerable' in descriptor)) {
+      descriptor.enumerable = true;
     }
 
     delete descriptor.writable;
@@ -5290,7 +5296,11 @@ function observable(targetOrConfig, key, descriptor) {
 
     descriptor.get.dependencies = [innerPropertyName];
 
-    Reflect.defineProperty(target, key, descriptor);
+    if (isClassDecorator) {
+      Reflect.defineProperty(target, key, descriptor);
+    } else {
+      return descriptor;
+    }
   }
 
   if (key === undefined) {

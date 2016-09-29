@@ -3,7 +3,7 @@
 System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], function (_export, _context) {
   "use strict";
 
-  var LogManager, PLATFORM, DOM, TaskQueue, metadata, _typeof, _createClass, _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class5, _dec6, _class7, _dec7, _class8, _dec8, _class9, _dec9, _class10, _class11, _temp, _dec10, _class12, _class13, _temp2, map, sourceContext, slotNames, versionSlotNames, i, bindings, minimumImmediate, frameBudget, isFlushRequested, immediate, arrayPool1, arrayPool2, poolUtilization, ExpressionObserver, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, pop, push, reverse, shift, sort, splice, unshift, ModifyArrayObserver, Expression, Chain, BindingBehavior, ValueConverter, Assign, Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, PrefixNot, LiteralPrimitive, LiteralString, LiteralArray, LiteralObject, evalListCache, Unparser, ExpressionCloner, bindingMode, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP, EOF, Parser, ParserImplementation, mapProto, ModifyMapObserver, DelegateHandlerEntry, DefaultEventStrategy, EventManager, DirtyChecker, DirtyCheckProperty, logger, propertyAccessor, PrimitiveObserver, SetterObserver, XLinkAttributeObserver, dataAttributeAccessor, DataAttributeObserver, StyleObserver, ValueAttributeObserver, checkedArrayContext, checkedValueContext, CheckedObserver, selectArrayContext, SelectValueObserver, ClassObserver, ComputedExpression, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, targetContext, Binding, CallExpression, Call, ValueConverterResource, BindingBehaviorResource, ListenerExpression, Listener, NameExpression, NameBinder, LookupFunctions, BindingEngine, setProto, ModifySetObserver;
+  var LogManager, PLATFORM, DOM, TaskQueue, metadata, _typeof, _createClass, _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class5, _dec6, _class7, _dec7, _class8, _dec8, _class9, _dec9, _class10, _class11, _temp, _dec10, _class12, _class13, _temp2, map, sourceContext, slotNames, versionSlotNames, i, bindings, minimumImmediate, frameBudget, isFlushRequested, immediate, arrayPool1, arrayPool2, poolUtilization, ExpressionObserver, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, pop, push, reverse, shift, sort, splice, unshift, ModifyArrayObserver, Expression, Chain, BindingBehavior, ValueConverter, Assign, Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, PrefixNot, LiteralPrimitive, LiteralString, LiteralArray, LiteralObject, Unparser, ExpressionCloner, bindingMode, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP, EOF, Parser, ParserImplementation, mapProto, ModifyMapObserver, DelegateHandlerEntry, DefaultEventStrategy, EventManager, DirtyChecker, DirtyCheckProperty, logger, propertyAccessor, PrimitiveObserver, SetterObserver, XLinkAttributeObserver, dataAttributeAccessor, DataAttributeObserver, StyleObserver, ValueAttributeObserver, checkedArrayContext, checkedValueContext, CheckedObserver, selectArrayContext, SelectValueObserver, ClassObserver, ComputedExpression, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, targetContext, Binding, CallExpression, Call, ValueConverterResource, BindingBehaviorResource, ListenerExpression, Listener, NameExpression, NameBinder, LookupFunctions, BindingEngine, setProto, ModifySetObserver;
 
   function _possibleConstructorReturn(self, call) {
     if (!self) {
@@ -559,17 +559,10 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
 
   function evalList(scope, list, lookupFunctions) {
     var length = list.length;
-
-    for (var cacheLength = evalListCache.length; cacheLength <= length; ++cacheLength) {
-      evalListCache.push([]);
-    }
-
-    var result = evalListCache[length];
-
-    for (var _i14 = 0; _i14 < length; ++_i14) {
+    var result = [];
+    for (var _i14 = 0; _i14 < length; _i14++) {
       result[_i14] = list[_i14].evaluate(scope, lookupFunctions);
     }
-
     return result;
   }
 
@@ -815,7 +808,8 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
 
   function observable(targetOrConfig, key, descriptor) {
     function deco(target, key, descriptor, config) {
-      if (key === undefined) {
+      var isClassDecorator = key === undefined;
+      if (isClassDecorator) {
         target = target.prototype;
         key = typeof config === 'string' ? config : config.name;
       }
@@ -830,6 +824,10 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         }
       } else {
         descriptor = {};
+      }
+
+      if (!('enumerable' in descriptor)) {
+        descriptor.enumerable = true;
       }
 
       delete descriptor.writable;
@@ -848,7 +846,11 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
 
       descriptor.get.dependencies = [innerPropertyName];
 
-      Reflect.defineProperty(target, key, descriptor);
+      if (isClassDecorator) {
+        Reflect.defineProperty(target, key, descriptor);
+      } else {
+        return descriptor;
+      }
     }
 
     if (key === undefined) {
@@ -2261,8 +2263,6 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
 
       _export('LiteralObject', LiteralObject);
 
-      evalListCache = [[], [0], [0, 0], [0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0]];
-
       _export('Unparser', Unparser = function () {
         function Unparser(buffer) {
           
@@ -3234,7 +3234,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
             if (this.optional('.')) {
               name = this.peek.key;
               this.advance();
-            } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === '[' || this.peek.text === '}') {
+            } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === '[' || this.peek.text === '}' || this.peek.text === ',') {
               return new AccessThis(ancestor);
             } else {
               this.error('Unexpected token ' + this.peek.text);
@@ -3897,6 +3897,16 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
           return this.element.style.cssText;
         };
 
+        StyleObserver.prototype._setProperty = function _setProperty(style, value) {
+          var priority = '';
+
+          if (value.indexOf('!important') !== -1) {
+            priority = 'important';
+            value = value.replace('!important', '');
+          }
+          this.element.style.setProperty(style, value, priority);
+        };
+
         StyleObserver.prototype.setValue = function setValue(newValue) {
           var styles = this.styles || {};
           var style = void 0;
@@ -3907,7 +3917,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
               for (style in newValue) {
                 if (newValue.hasOwnProperty(style)) {
                   styles[style] = version;
-                  this.element.style[style] = newValue[style];
+                  this._setProperty(style, newValue[style]);
                 }
               }
             } else if (newValue.length) {
@@ -3920,7 +3930,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
                 }
 
                 styles[style] = version;
-                this.element.style[style] = pair[2];
+                this._setProperty(style, pair[2]);
               }
             }
           }
@@ -3938,7 +3948,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
               continue;
             }
 
-            this.element.style[style] = '';
+            this.element.style.removeProperty(style);
           }
         };
 
@@ -4779,7 +4789,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
             if (xlinkResult) {
               return new XLinkAttributeObserver(obj, propertyName, xlinkResult[1]);
             }
-            if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
+            if (propertyName === 'role' && (obj instanceof DOM.Element || obj instanceof DOM.SVGElement) || /^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
               return new DataAttributeObserver(obj, propertyName);
             }
           }
