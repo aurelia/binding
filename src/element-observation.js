@@ -45,6 +45,10 @@ export class DataAttributeObserver {
   subscribe() {
     throw new Error(`Observation of a "${this.element.nodeName}" element\'s "${this.propertyName}" property is not supported.`);
   }
+
+  unsubscribe() {
+    throw new Error(`Observation of a "${this.element.nodeName}" element\'s "${this.propertyName}" property is not supported.`);
+  }
 }
 
 export class StyleObserver {
