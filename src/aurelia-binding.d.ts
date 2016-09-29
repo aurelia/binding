@@ -187,7 +187,36 @@ export declare interface InternalPropertyObserver {
 /**
  * Property observer for HTML Attributes.
  */
-export declare class DataAttributeObserver implements InternalPropertyObserver {}
+export declare class DataAttributeObserver implements InternalPropertyObserver {
+  /**
+   * Gets the property value.
+   */
+  getValue(): any;
+  /**
+   * Sets the property value.
+   */
+  setValue(newValue: any): void;
+  /**
+   * Subscribe to property changes with a callback function.
+   */
+  subscribe(callback: (newValue: any, oldValue: any) => void): void;
+  /**
+   * Subscribe a callable object to property changes.
+   * @param context A value to be passed to the callable object's call function when a property change occurs.
+   * @param callable A callable object.
+   */
+  subscribe(context: any, callable: Callable): void;
+  /**
+   * Unsubscribes a callback function from property changes.
+   */
+  unsubscribe(callback: (newValue: any, oldValue: any) => void): void;
+  /**
+   * Unsubscribes a callable object from property changes.
+   * @param context A value to be passed to the callable object's call function when a property change occurs.
+   * @param callable A callable object.
+   */
+  unsubscribe(context: any, callable: Callable): void;
+}
 
 /**
  * Observes collection mutation.
