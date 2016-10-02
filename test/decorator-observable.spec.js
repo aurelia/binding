@@ -108,7 +108,18 @@ describe('observable decorator', () => {
     instance.value = newValue;
     expect(instance.customHandler).toHaveBeenCalledWith(newValue, oldValue, 'value');
   });
-  
+
+  it('should return a valid descriptor', () => {
+    const target = class { };
+    const descriptor = observable(target, 'value');
+
+    expect(typeof descriptor.value).toBe('undefined');
+    expect(typeof descriptor.writable).toBe('undefined');
+    expect(typeof descriptor.get).toBe('function');
+    expect(typeof descriptor.set).toBe('function');
+    expect(Reflect.defineProperty(target, 'value', descriptor)).toBe(true);
+  });
+
   it('should create an enumerable accessor', () => {
     const instance = new class {
       @observable value;
