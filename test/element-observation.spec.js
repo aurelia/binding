@@ -205,9 +205,6 @@ describe('element observation', () => {
       observer.setValue('background-color: #000 !important;');
       expect(el.style.backgroundColor).toBe('rgb(0, 0, 0)');
 
-      observer.setValue('');
-      expect(el.style.background).toBe('');
-
       observer.setValue('width: 10px');
       expect(el.style.width).toBe('10px');
       observer.setValue('width: 15px !important');
@@ -216,6 +213,12 @@ describe('element observation', () => {
       observer.setValue('');
       expect(el.style.fontWeight).toBe('');
 
+      observer.setValue({ opacity: 0.65 });
+      expect(el.style.opacity).toBe('0.65');
+      
+      observer.setValue('');
+      expect(el.style.opacity).toBe('');
+      
       observer.setValue({ width: '50px', height: '40px', 'background-color': 'blue', 'background-image': 'url("http://aurelia.io/test2.png")' });
       expect(el.style.height).toBe('40px');
       expect(el.style.width).toBe('50px');
