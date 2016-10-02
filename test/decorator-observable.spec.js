@@ -70,43 +70,63 @@ describe('observable decorator', () => {
     expect(instance.value).toEqual(newValue);
   });
 
-  it('should work with decorators function', () => {
-    const instance = new (decorators(observable('value'))
-      .on(class {
+  describe('es2015 with decorators function', () => {
+    it('should work when decorating property', () => {
+      class MyClass {
         constructor() {
           this.value = oldValue;
         }
         valueChanged() { }
-      }));
-    spyOn(instance, 'valueChanged');
+      }
+      decorators(observable).on(MyClass.prototype, 'value');
+      const instance = new MyClass();
+      spyOn(instance, 'valueChanged');
 
-    instance.value = newValue;
-    expect(instance.valueChanged).toHaveBeenCalledWith(newValue, oldValue, 'value');
-  });
+      instance.value = newValue;
+      expect(instance.valueChanged).toHaveBeenCalledWith(newValue, oldValue, 'value');
+    });
 
-  it('should work with decorators function when property is undefined', () => {
-    const instance = new (decorators(observable('value'))
-      .on(class {
+    it('should work when decorating class', () => {
+      class MyClass {
+        constructor() {
+          this.value = oldValue;
+        }
         valueChanged() { }
-      }));
-    spyOn(instance, 'valueChanged');
+      }
+      decorators(observable('value')).on(MyClass);
+      const instance = new MyClass();
+      spyOn(instance, 'valueChanged');
 
-    instance.value = newValue;
-    expect(instance.valueChanged).toHaveBeenCalledWith(newValue, undefined, 'value');
-  });
+      instance.value = newValue;
+      expect(instance.valueChanged).toHaveBeenCalledWith(newValue, oldValue, 'value');
+    });
 
-  it('should work with decorators function and config', () => {
-    const instance = new (decorators(observable({ name: 'value', changeHandler: 'customHandler' }))
-      .on(class {
+    it('should work when property is undefined', () => {
+      class MyClass {
+        valueChanged() { }
+      }
+      decorators(observable).on(MyClass.prototype, 'value');
+      const instance = new MyClass();
+      spyOn(instance, 'valueChanged');
+
+      instance.value = newValue;
+      expect(instance.valueChanged).toHaveBeenCalledWith(newValue, undefined, 'value');
+    });
+
+    it('should work with customHandler', () => {
+      class MyClass {
         constructor() {
           this.value = oldValue;
         }
         customHandler() { }
-      }));
-    spyOn(instance, 'customHandler');
+      }
+      decorators(observable({ changeHandler: 'customHandler' })).on(MyClass.prototype, 'value');
+      const instance = new MyClass();
+      spyOn(instance, 'customHandler');
 
-    instance.value = newValue;
-    expect(instance.customHandler).toHaveBeenCalledWith(newValue, oldValue, 'value');
+      instance.value = newValue;
+      expect(instance.customHandler).toHaveBeenCalledWith(newValue, oldValue, 'value');
+    });
   });
 
   it('should return a valid descriptor', () => {
