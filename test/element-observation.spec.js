@@ -218,10 +218,13 @@ describe('element observation', () => {
       
       observer.setValue({ opacity: 0.65 });
       expect(el.style.opacity).toBe('0.65');
+      observer.setValue('opacity: 0.1 !important');
+      expect(el.style.opacity).toBe('0.1');
+      expect(el.style.getPropertyPriority('opacity')).toBe('important');
       
       observer.setValue('');
       expect(el.style.opacity).toBe('');
-
+      
       observer.setValue({ width: '50px', height: '40px', 'background-color': 'blue', 'background-image': 'url("http://aurelia.io/test2.png")' });
       expect(el.style.height).toBe('40px');
       expect(el.style.width).toBe('50px');
