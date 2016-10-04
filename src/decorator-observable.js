@@ -37,6 +37,7 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
 
     // we're adding a getter and setter which means the property descriptor
     // cannot have a "value" or "writable" attribute
+    delete descriptor.value;
     delete descriptor.writable;
     delete descriptor.initializer;
 
