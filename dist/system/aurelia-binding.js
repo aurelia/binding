@@ -815,12 +815,17 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
       }
 
       var innerPropertyName = '_' + key;
+      var innerPropertyDescriptor = {
+        configurable: true,
+        enumerable: false,
+        writable: true
+      };
 
       var callbackName = config && config.changeHandler || key + 'Changed';
 
       if (descriptor) {
         if (typeof descriptor.initializer === 'function') {
-          target[innerPropertyName] = descriptor.initializer();
+          innerPropertyDescriptor.value = descriptor.initializer();
         }
       } else {
         descriptor = {};
@@ -830,15 +835,21 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         descriptor.enumerable = true;
       }
 
+      delete descriptor.value;
       delete descriptor.writable;
       delete descriptor.initializer;
+
+      Reflect.defineProperty(target, innerPropertyName, innerPropertyDescriptor);
 
       descriptor.get = function () {
         return this[innerPropertyName];
       };
       descriptor.set = function (newValue) {
         var oldValue = this[innerPropertyName];
+
         this[innerPropertyName] = newValue;
+        Reflect.defineProperty(this, innerPropertyName, { enumerable: false });
+
         if (this[callbackName]) {
           this[callbackName](newValue, oldValue, key);
         }
@@ -3900,7 +3911,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         StyleObserver.prototype._setProperty = function _setProperty(style, value) {
           var priority = '';
 
-          if (value.indexOf('!important') !== -1) {
+          if (value.indexOf && value.indexOf('!important') !== -1) {
             priority = 'important';
             value = value.replace('!important', '');
           }

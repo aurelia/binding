@@ -1,3 +1,15 @@
+<a name="1.0.7"></a>
+## [1.0.7](https://github.com/aurelia/binding/compare/1.0.6...v1.0.7) (2016-10-05)
+
+
+### Bug Fixes
+
+* **observable:** backing property should not be enumerable ([521270b](https://github.com/aurelia/binding/commit/521270b))
+* **observable:** handle descriptor with set ([fa3dafb](https://github.com/aurelia/binding/commit/fa3dafb)), closes [#511](https://github.com/aurelia/binding/issues/511)
+* **StyleObserver:** handle numbers ([ca4933d](https://github.com/aurelia/binding/commit/ca4933d)), closes [#518](https://github.com/aurelia/binding/issues/518)
+
+
+
 <a name="1.0.6"></a>
 ## [1.0.6](https://github.com/aurelia/binding/compare/1.0.5...v1.0.6) (2016-09-29)
 

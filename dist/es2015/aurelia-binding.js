@@ -3346,7 +3346,7 @@ export let StyleObserver = class StyleObserver {
   _setProperty(style, value) {
     let priority = '';
 
-    if (value.indexOf('!important') !== -1) {
+    if (value.indexOf && value.indexOf('!important') !== -1) {
       priority = 'important';
       value = value.replace('!important', '');
     }
@@ -4806,12 +4806,17 @@ export function observable(targetOrConfig, key, descriptor) {
     }
 
     let innerPropertyName = `_${ key }`;
+    const innerPropertyDescriptor = {
+      configurable: true,
+      enumerable: false,
+      writable: true
+    };
 
     const callbackName = config && config.changeHandler || `${ key }Changed`;
 
     if (descriptor) {
       if (typeof descriptor.initializer === 'function') {
-        target[innerPropertyName] = descriptor.initializer();
+        innerPropertyDescriptor.value = descriptor.initializer();
       }
     } else {
       descriptor = {};
@@ -4821,15 +4826,21 @@ export function observable(targetOrConfig, key, descriptor) {
       descriptor.enumerable = true;
     }
 
+    delete descriptor.value;
     delete descriptor.writable;
     delete descriptor.initializer;
+
+    Reflect.defineProperty(target, innerPropertyName, innerPropertyDescriptor);
 
     descriptor.get = function () {
       return this[innerPropertyName];
     };
     descriptor.set = function (newValue) {
       let oldValue = this[innerPropertyName];
+
       this[innerPropertyName] = newValue;
+      Reflect.defineProperty(this, innerPropertyName, { enumerable: false });
+
       if (this[callbackName]) {
         this[callbackName](newValue, oldValue, key);
       }
