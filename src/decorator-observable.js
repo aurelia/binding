@@ -12,7 +12,7 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
     const innerPropertyDescriptor: PropertyDescriptor = {
       configurable: true,
       enumerable: false,
-      writable: true,
+      writable: true
     };
 
     // determine callback name based on config or convention.
