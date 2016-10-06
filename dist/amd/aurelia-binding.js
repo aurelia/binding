@@ -3692,7 +3692,7 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
     StyleObserver.prototype._setProperty = function _setProperty(style, value) {
       var priority = '';
 
-      if (value.indexOf && value.indexOf('!important') !== -1) {
+      if (value !== null && value !== undefined && typeof value.indexOf === 'function' && value.indexOf('!important') !== -1) {
         priority = 'important';
         value = value.replace('!important', '');
       }

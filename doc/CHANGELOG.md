@@ -1,3 +1,15 @@
+<a name="1.0.9"></a>
+## [1.0.9](https://github.com/aurelia/binding/compare/1.0.8...v1.0.9) (2016-10-06)
+
+
+### Bug Fixes
+
+* **styleobserver:** check if value is defined ([c7495d2](https://github.com/aurelia/binding/commit/c7495d2))
+* **styleobserver:** if statement for numeric check was wrong ([15a589b](https://github.com/aurelia/binding/commit/15a589b))
+* **styleobserver:** proper null check ([7018a1d](https://github.com/aurelia/binding/commit/7018a1d))
+
+
+
 <a name="1.0.8"></a>
 ## [1.0.8](https://github.com/aurelia/binding/compare/1.0.7...v1.0.8) (2016-10-06)
 
