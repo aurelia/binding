@@ -1,3 +1,13 @@
+<a name="1.0.8"></a>
+## [1.0.8](https://github.com/aurelia/binding/compare/1.0.7...v1.0.8) (2016-10-06)
+
+
+### Bug Fixes
+
+* **Name:** preserve modified value on unbind ([a50d5e8](https://github.com/aurelia/binding/commit/a50d5e8)), closes [aurelia/templating#467](https://github.com/aurelia/templating/issues/467)
+
+
+
 <a name="1.0.7"></a>
 ## [1.0.7](https://github.com/aurelia/binding/compare/1.0.6...v1.0.7) (2016-10-05)
 

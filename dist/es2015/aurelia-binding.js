@@ -4650,7 +4650,9 @@ let NameBinder = class NameBinder {
       return;
     }
     this.isBound = false;
-    this.sourceExpression.assign(this.source, null, this.lookupFunctions);
+    if (this.sourceExpression.evaluate(this.source, this.lookupFunctions) === this.target) {
+      this.sourceExpression.assign(this.source, null, this.lookupFunctions);
+    }
     if (this.sourceExpression.unbind) {
       this.sourceExpression.unbind(this, this.source);
     }
