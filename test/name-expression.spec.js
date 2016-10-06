@@ -92,4 +92,16 @@ describe('NameExpression', () => {
     let element = { tagName: 'test-element' };
     expect(() => NameExpression.locateAPI(element, 'controller')).toThrow(new Error(`No Aurelia APIs are defined for the element: "${element.tagName}".`));
   });
+
+  it('unbind preserves updated value', () => {
+    let sourceExpression = new AccessScope('foo');
+    let expression = new NameExpression(sourceExpression, 'element');
+    let scope = createScopeForTest({});
+    let binding = expression.createBinding(element);
+    binding.bind(scope);
+    expect(scope.bindingContext.foo).toBe(element);
+    scope.bindingContext.foo = 'should remain';
+    binding.unbind();
+    expect(scope.bindingContext.foo).toBe('should remain');
+  });
 });
