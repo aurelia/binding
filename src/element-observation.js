@@ -63,7 +63,7 @@ export class StyleObserver {
   _setProperty(style, value) {
     let priority = '';
 
-    if (value && value.indexOf('!important') !== -1) {
+    if (typeof value !== typeof undefined && typeof value.indexOf !== typeof undefined && value.indexOf('!important') !== -1) {
       priority = 'important';
       value = value.replace('!important', '');
     }
