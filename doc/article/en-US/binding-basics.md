@@ -157,3 +157,16 @@ You may also need to bind html text to an element's `innerHTML` property:
 
 > Warning
 > Binding using the `innerhtml` attribute simply sets the element's `innerHTML` property.  The markup does not pass through Aurelia's templating system.  Binding expressions and require elements will not be evaluated.
+
+## [Contextual Properties](aurelia-doc://section/8/version/1.0.0)
+
+The binding system makes several properties available for binding in your templates, depending on the context.
+
+* `$this` - The binding context (the view-model).
+* `$parent` - Explicitly accesses the outer scope from within a compose or repeat template. You may need this when a property on the current scope masks a property on the outer scope. Chainable- eg `$parent.$parent.foo` is supported.
+* `$event` - The DOM Event in delegate or trigger bindings.
+* `$index` - In a repeat template, the index of the item in the collection.
+* `$first` - In a repeat template, is true if the item is the first item in the array.
+* `$last` - In a repeat template, is true if the item is the last item in the array.
+* `$even` - In a repeat template, is true if the item has an even numbered index.
+* `$odd` - In a repeat template, is true if the item has an odd numbered index.
