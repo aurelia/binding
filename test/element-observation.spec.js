@@ -225,7 +225,7 @@ describe('element observation', () => {
       observer.setValue('');
       expect(el.style.opacity).toBe('');
       
-      observer.setValue({ width: '50px', height: '40px', 'background-color': 'blue', 'background-image': 'url("http://aurelia.io/test2.png")' });
+      observer.setValue({ width: '50px', height: '40px', backgroundColor: 'blue', 'background-image': 'url("http://aurelia.io/test2.png")' });
       expect(el.style.height).toBe('40px');
       expect(el.style.width).toBe('50px');
       expect(el.style.backgroundColor).toBe('blue');

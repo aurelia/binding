@@ -77,10 +77,13 @@ export class StyleObserver {
 
     if (newValue !== null && newValue !== undefined) {
       if (newValue instanceof Object) {
+        let value;
         for (style in newValue) {
           if (newValue.hasOwnProperty(style)) {
+            value = newValue[style];
+            style = style.replace(/([A-Z])/g, m => '-' + m.toLowerCase());
             styles[style] = version;
-            this._setProperty(style, newValue[style]);
+            this._setProperty(style, value);
           }
         }
       } else if (newValue.length) {
