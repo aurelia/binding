@@ -1,9 +1,9 @@
 export class ListenerExpression {
-  constructor(eventManager, targetEvent, sourceExpression, delegate, preventDefault, lookupFunctions) {
+  constructor(eventManager, targetEvent, sourceExpression, eventHandlingMethod, preventDefault, lookupFunctions) {
     this.eventManager = eventManager;
     this.targetEvent = targetEvent;
     this.sourceExpression = sourceExpression;
-    this.delegate = delegate;
+    this.eventHandlingMethod = eventHandlingMethod;
     this.discrete = true;
     this.preventDefault = preventDefault;
     this.lookupFunctions = lookupFunctions;
@@ -13,7 +13,7 @@ export class ListenerExpression {
     return new Listener(
       this.eventManager,
       this.targetEvent,
-      this.delegate,
+      this.eventHandlingMethod,
       this.sourceExpression,
       target,
       this.preventDefault,
@@ -23,10 +23,10 @@ export class ListenerExpression {
 }
 
 export class Listener {
-  constructor(eventManager, targetEvent, delegate, sourceExpression, target, preventDefault, lookupFunctions) {
+  constructor(eventManager, targetEvent, eventHandlingMethod, sourceExpression, target, preventDefault, lookupFunctions) {
     this.eventManager = eventManager;
     this.targetEvent = targetEvent;
-    this.delegate = delegate;
+    this.eventHandlingMethod = eventHandlingMethod;
     this.sourceExpression = sourceExpression;
     this.target = target;
     this.preventDefault = preventDefault;
@@ -62,7 +62,7 @@ export class Listener {
       this.target,
       this.targetEvent,
       event => this.callSource(event),
-      this.delegate);
+      this.eventHandlingMethod);
   }
 
   unbind() {
