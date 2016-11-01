@@ -380,15 +380,15 @@ export declare class AccessScope extends Expression {
  */
 export declare class AccessMember extends Expression {
   /**
-   * The property name.
-   */
-  name: string;
-  /**
    * The object expression.
    */
   object: Expression;
+  /**
+   * The property name.
+   */
+  name: string;
 
-  constructor(name: string, object: Expression);
+  constructor(object: Expression, name: string);
 }
 
 /**
