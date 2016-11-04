@@ -1,6 +1,6 @@
 {
   "name": "aurelia-binding",
-  "version": "1.1.0",
+  "version": "1.0.9",
   "description": "A modern databinding library for JavaScript and HTML.",
   "keywords": [
     "aurelia",
@@ -21,17 +21,10 @@
   },
   "jspm": {
     "registry": "npm",
-    "jspmPackage": true,
     "main": "aurelia-binding",
     "format": "amd",
     "directories": {
       "dist": "dist/amd"
-    },
-    "peerDependencies": {
-      "aurelia-logging": "^1.0.0",
-      "aurelia-metadata": "^1.0.0",
-      "aurelia-pal": "^1.0.0",
-      "aurelia-task-queue": "^1.0.0"
     },
     "dependencies": {
       "aurelia-logging": "^1.0.0",

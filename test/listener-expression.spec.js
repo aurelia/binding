@@ -3,6 +3,7 @@ import {fireEvent, checkDelay} from './shared';
 import {Parser} from '../src/parser';
 import {EventManager} from '../src/event-manager';
 import {ListenerExpression} from '../src/listener-expression';
+import {delegationStrategy} from '../src/event-manager';
 import {createScopeForTest} from '../src/scope';
 import {DOM} from 'aurelia-pal';
 
@@ -11,14 +12,14 @@ describe('ListenerExpression', () => {
     let eventName = 'mousemove';
 
     // create expression
-    let delegate = false;
+    let noDelegateStrategy = delegationStrategy.none;
     let preventDefault = false;
     let lookupFunctions = { bindingBehaviors: name => null, valueConverters: name => null };
     let listenerExpression = new ListenerExpression(
       new EventManager(),
       eventName,
       new Parser().parse('doSomething($event, arg1, arg2)'),
-      delegate,
+      noDelegateStrategy,
       preventDefault,
       lookupFunctions);
 

@@ -76,19 +76,19 @@ export declare function subscriberCollection(): any;
 /**
  * Describes the strategy phase where event should be handled.
  */
-export declare enum eventHandlingMethod {
+export declare enum delegationStrategy {
   /**
-   * Default strategy, event listener is bound to the listening element
+   * No event delegation.
    */
-  normal = 0,
+  none = 0,
   /**
-   * Capture strategy, listening on root level during event capturing phase
+   * Capturing phase event delegation strategy.
    */
-  capture = 1,
+  capturing = 1,
   /**
-   * Delegate strategy, listening on root level during event bubbling phase
+   * Bubbling phase event delegation strategy.
    */
-  delegate = 2
+  bubbling = 2
 }
 
 /**
@@ -106,7 +106,7 @@ export declare class EventManager {
    * @param delegate True to use event delegation mechanism.
    * @returns function wich removes event listener.
    */
-  addEventListener(target: Element, targetEvent: string, callback: (event: Event) => any, delegate: eventHandlingMethod): () => void;
+  addEventListener(target: Element, targetEvent: string, callback: (event: Event) => any, delegate: delegationStrategy): () => void;
 }
 
 /**
