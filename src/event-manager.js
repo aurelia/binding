@@ -28,14 +28,14 @@ function handleCapturedEvent(event) {
       if (callback) {
         if (!interceptInstalled) {
           interceptStopPropagation(event);
-          interceptInstalled = true
+          interceptInstalled = true;
         }
         orderedCallbacks.push(callback);
       }
     }
     target = target.parentNode;
   }
-  for (let i = orderedCallbacks.length; i > 0; i--) {
+  for (let i = orderedCallbacks.length - 1; i > 0; i--) {
     let orderedCallback = orderedCallbacks[i];
     orderedCallback(event);
     if (event.propagationStopped) {
@@ -60,7 +60,7 @@ class CapturedHandlerEntry {
 
   decrement() {
     this.count--;
-    
+
     if (this.count === 0) {
       DOM.removeEventListener(this.eventName, handleCapturedEvent, true);
     }
@@ -116,7 +116,7 @@ class DefaultEventStrategy {
   capturedHandlers = {};
 
   subscribe(target, targetEvent, callback, strategy) {
-    let delegatedHandlers, handlerEntry;
+    let delegatedHandlers, capturedHandlers, handlerEntry;
     if (strategy === delegationStrategy.delegate) {
       delegatedHandlers = this.delegatedHandlers;
       handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent));
@@ -156,7 +156,7 @@ export const delegationStrategy = {
   none: 0,
   capturing: 1,
   bubbling: 2
-}
+};
 
 export class EventManager {
   constructor() {
