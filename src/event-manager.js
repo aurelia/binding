@@ -35,7 +35,7 @@ function handleCapturedEvent(event) {
     }
     target = target.parentNode;
   }
-  for (let i = orderedCallbacks.length - 1; i > 0; i--) {
+  for (let i = orderedCallbacks.length - 1; i >= 0; i--) {
     let orderedCallback = orderedCallbacks[i];
     orderedCallback(event);
     if (event.propagationStopped) {
@@ -117,7 +117,7 @@ class DefaultEventStrategy {
 
   subscribe(target, targetEvent, callback, strategy) {
     let delegatedHandlers, capturedHandlers, handlerEntry;
-    if (strategy === delegationStrategy.delegate) {
+    if (strategy === delegationStrategy.bubbling) {
       delegatedHandlers = this.delegatedHandlers;
       handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent));
       let delegatedCallbacks = target.delegatedCallbacks || (target.delegatedCallbacks = {});
@@ -130,7 +130,7 @@ class DefaultEventStrategy {
         delegatedCallbacks[targetEvent] = null;
       };
     }
-    if (strategy === delegationStrategy.capture) {
+    if (strategy === delegationStrategy.capturing) {
       capturedHandlers = this.capturedHandlers;
       handlerEntry = capturedHandlers[targetEvent] || (capturedHandlers[targetEvent] = new CapturedHandlerEntry(targetEvent));
       let capturedCallbacks = target.capturedCallbacks || (target.capturedCallbacks = {});
