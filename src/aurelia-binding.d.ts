@@ -265,7 +265,13 @@ export declare interface InternalCollectionObserver {
 
 /**
  * Provides high-level access to the definition of a binding, which connects the properties of
- * binding target objects (typically, HTML elements), and any data source
+ * binding target objects (typically, HTML elements), and any data source.
+ * 
+ * There are several implementations of this interface, depending on the type of 
+ * binding (attribute, event, interpolation). 
+ * 
+ * The `updateSource`, `updateTarget` and `callSource` are methods that may or may not be defined 
+ * depending on the type of binding.
  */
 export declare interface Binding {
   /**
@@ -279,15 +285,15 @@ export declare interface Binding {
   /**
    * Assigns a value to the target.
    */
-  updateTarget?: (value: any) => void;
+  updateTarget?(value: any): void;
   /**
    * Assigns a value to the source.
    */
-  updateSource?: (value: any) => void;
+  updateSource?(value: any): void;
   /**
-   * Calls the source method with the specified args object.
+   * Calls the source method with the specified args object. This method is present in event bindings like trigger/delegate.
    */
-  callSource?: (event: any) => any;
+  callSource?(event: any): any;
   /**
    * Connects the binding to a scope.
    */
@@ -399,15 +405,15 @@ export declare class AccessScope extends Expression {
  */
 export declare class AccessMember extends Expression {
   /**
-   * The property name.
-   */
-  name: string;
-  /**
    * The object expression.
    */
   object: Expression;
+  /**
+   * The property name.
+   */
+  name: string;
 
-  constructor(name: string, object: Expression);
+  constructor(object: Expression, name: string);
 }
 
 /**

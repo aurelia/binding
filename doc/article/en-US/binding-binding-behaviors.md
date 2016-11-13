@@ -202,7 +202,7 @@ There are also binding behaviors for `oneWay` and `twoWay` which you could use l
 
 ## [Custom binding behaviors](aurelia-doc://section/7/version/1.0.0)
 
-You can build custom binding behaviors just like you can build value converters. Instead of `toView` and `fromView` methods you'll create `bind(binding, scope, [...args])` and `unbind(binding, scope)` methods. In the bind method you'll add your behavior to the binding and in the unbind method you should cleanup whatever you did in the bind method to restore the binding instance to it's original state.
+You can build custom binding behaviors just like you can build value converters. Instead of `toView` and `fromView` methods you'll create `bind(binding, scope, [...args])` and `unbind(binding, scope)` methods. In the bind method you'll add your behavior to the binding and in the unbind method you should cleanup whatever you did in the bind method to restore the binding instance to it's original state. The `binding` argument is the binding instance whose behavior you want to change. It's an implementation of the `Binding` interface. The `scope` argument is the binding's data-context. It provides access to the model the binding will be bound to via it's `bindingContext` and `overrideContext` properties.
 
 Here's a custom binding behavior that calls a method on your view model each time the binding's `updateSource` / `updateTarget` and `callSource` methods are invoked.
 
