@@ -13,6 +13,60 @@ function interceptStopPropagation(event) {
   };
 }
 
+function handleCapturedEvent(event) {
+  let interceptInstalled = false;
+  event.propagationStopped = false;
+  let target = findOriginalEventTarget(event);
+
+  let orderedCallbacks = [];
+  /**
+   * During capturing phase, event 'bubbles' down from parent. Needs to reorder callback from root down to target
+   */
+  while (target) {
+    if (target.capturedCallbacks) {
+      let callback = target.capturedCallbacks[event.type];
+      if (callback) {
+        if (!interceptInstalled) {
+          interceptStopPropagation(event);
+          interceptInstalled = true;
+        }
+        orderedCallbacks.push(callback);
+      }
+    }
+    target = target.parentNode;
+  }
+  for (let i = orderedCallbacks.length - 1; i > 0; i--) {
+    let orderedCallback = orderedCallbacks[i];
+    orderedCallback(event);
+    if (event.propagationStopped) {
+      break;
+    }
+  }
+}
+
+class CapturedHandlerEntry {
+  constructor(eventName) {
+    this.eventName = eventName;
+    this.count = 0;
+  }
+
+  increment() {
+    this.count++;
+
+    if (this.count === 1) {
+      DOM.addEventListener(this.eventName, handleCapturedEvent, true);
+    }
+  }
+
+  decrement() {
+    this.count--;
+
+    if (this.count === 0) {
+      DOM.removeEventListener(this.eventName, handleCapturedEvent, true);
+    }
+  }
+}
+
 function handleDelegatedEvent(event) {
   let interceptInstalled = false;
   event.propagationStopped = false;
@@ -59,11 +113,13 @@ class DelegateHandlerEntry {
 
 class DefaultEventStrategy {
   delegatedHandlers = {};
+  capturedHandlers = {};
 
-  subscribe(target, targetEvent, callback, delegate) {
-    if (delegate) {
-      let delegatedHandlers = this.delegatedHandlers;
-      let handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent));
+  subscribe(target, targetEvent, callback, strategy) {
+    let delegatedHandlers, capturedHandlers, handlerEntry;
+    if (strategy === delegationStrategy.delegate) {
+      delegatedHandlers = this.delegatedHandlers;
+      handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent));
       let delegatedCallbacks = target.delegatedCallbacks || (target.delegatedCallbacks = {});
 
       handlerEntry.increment();
@@ -74,6 +130,19 @@ class DefaultEventStrategy {
         delegatedCallbacks[targetEvent] = null;
       };
     }
+    if (strategy === delegationStrategy.capture) {
+      capturedHandlers = this.capturedHandlers;
+      handlerEntry = capturedHandlers[targetEvent] || (capturedHandlers[targetEvent] = new CapturedHandlerEntry(targetEvent));
+      let capturedCallbacks = target.capturedCallbacks || (target.capturedCallbacks = {});
+
+      handlerEntry.increment();
+      capturedCallbacks[targetEvent] = callback;
+
+      return function() {
+        handlerEntry.decrement();
+        capturedCallbacks[targetEvent] = null;
+      };
+    }
 
     target.addEventListener(targetEvent, callback, false);
 
@@ -82,6 +151,12 @@ class DefaultEventStrategy {
     };
   }
 }
+
+export const delegationStrategy = {
+  none: 0,
+  capturing: 1,
+  bubbling: 2
+};
 
 export class EventManager {
   constructor() {

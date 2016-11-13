@@ -72,6 +72,25 @@ export declare class BindingBehaviorResource {
  */
 export declare function subscriberCollection(): any;
 
+
+/**
+ * Describes the strategy phase where event should be handled.
+ */
+export declare enum delegationStrategy {
+  /**
+   * No event delegation.
+   */
+  none = 0,
+  /**
+   * Capturing phase event delegation strategy.
+   */
+  capturing = 1,
+  /**
+   * Bubbling phase event delegation strategy.
+   */
+  bubbling = 2
+}
+
 /**
  * Subscribes to appropriate element events based on the element property
  * being observed for changes.
@@ -87,7 +106,7 @@ export declare class EventManager {
    * @param delegate True to use event delegation mechanism.
    * @returns function wich removes event listener.
    */
-  addEventListener(target: Element, targetEvent: string, callback: (event: Event) => any, delegate: boolean): () => void;
+  addEventListener(target: Element, targetEvent: string, callback: (event: Event) => any, delegate: delegationStrategy): () => void;
 }
 
 /**
