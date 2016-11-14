@@ -5,12 +5,14 @@ function findOriginalEventTarget(event) {
   return (event.path && event.path[0]) || (event.deepPath && event.deepPath[0]) || event.target;
 }
 
+function stopPropagation() {
+  this.standardStopPropagation();
+  this.propagationStopped = true;
+}
+
 function interceptStopPropagation(event) {
   event.standardStopPropagation = event.stopPropagation;
-  event.stopPropagation = function() {
-    this.propagationStopped  = true;
-    this.standardStopPropagation();
-  };
+  event.stopPropagation = stopPropagation;
 }
 
 function handleCapturedEvent(event) {
