@@ -10,10 +10,10 @@ let isFlushRequested = false;  // whether a flush of the connect queue has been 
 let immediate = 0;             // count of bindings that have been immediately connected
 
 function flush(animationFrameStart) {
+  const length = queue.length;
   let i = 0;
-  let binding;
-
-  while (binding = queue.shift()) { // eslint-disable-line no-cond-assign
+  while (i < length) {
+    const binding = queue[i];
     queued[binding.__connectQueueId] = false;
     binding.connect(true);
     i++;
@@ -23,6 +23,7 @@ function flush(animationFrameStart) {
       break;
     }
   }
+  queue.splice(0, i);
 
   if (queue.length) {
     PLATFORM.requestAnimationFrame(flush);
