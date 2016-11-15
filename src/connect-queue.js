@@ -1,6 +1,8 @@
 import {PLATFORM} from 'aurelia-pal';
 
-const bindings = new Map();    // the connect queue
+const queue = [];              // the connect queue
+const queued = {};             // tracks whether a binding with a particular id is in the queue
+let nextId = 0;                // next available id that can be assigned to a binding for queue tracking purposes
 const minimumImmediate = 100;  // number of bindings we should connect immediately before resorting to queueing
 const frameBudget = 15;        // milliseconds allotted to each frame for flushing queue
 
@@ -9,16 +11,10 @@ let immediate = 0;             // count of bindings that have been immediately c
 
 function flush(animationFrameStart) {
   let i = 0;
-  let keys = bindings.keys();
-  let item;
+  let binding;
 
-  while (item = keys.next()) { // eslint-disable-line no-cond-assign
-    if (item.done) {
-      break;
-    }
-
-    let binding = item.value;
-    bindings.delete(binding);
+  while (binding = queue.shift()) { // eslint-disable-line no-cond-assign
+    queued[binding.__connectQueueId] = false;
     binding.connect(true);
     i++;
     // periodically check whether the frame budget has been hit.
@@ -28,7 +24,7 @@ function flush(animationFrameStart) {
     }
   }
 
-  if (bindings.size) {
+  if (queue.length) {
     PLATFORM.requestAnimationFrame(flush);
   } else {
     isFlushRequested = false;
@@ -41,7 +37,18 @@ export function enqueueBindingConnect(binding) {
     immediate++;
     binding.connect(false);
   } else {
-    bindings.set(binding);
+    // get or assign the binding's id that enables tracking whether it's been queued.
+    let id = binding.__connectQueueId;
+    if (id === undefined) {
+      id = nextId;
+      nextId++;
+      binding.__connectQueueId = id;
+    }
+    // enqueue the binding.
+    if (!queued[id]) {
+      queue.push(binding);
+      queued[id] = true;
+    }
   }
   if (!isFlushRequested) {
     isFlushRequested = true;
