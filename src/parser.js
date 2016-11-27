@@ -326,6 +326,7 @@ export class ParserImplementation {
         this.advance();
       } else if (this.peek === EOF
         || this.peek.text === '('
+        || this.peek.text === ')'
         || this.peek.text === '['
         || this.peek.text === '}'
         || this.peek.text === ','

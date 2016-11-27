@@ -204,6 +204,15 @@ describe('Parser', () => {
     }
   });
 
+  it('handles $parent inside CallMember', () => {
+    let expression = parser.parse('matcher.bind($parent)');
+    expect(expression instanceof CallMember).toBe(true);
+    expect(expression.name).toBe('bind');
+    expect(expression.args.length).toBe(1);
+    expect(expression.args[0] instanceof AccessThis).toBe(true);
+    expect(expression.args[0].ancestor).toBe(1);
+  });
+
   it('parses $parent in LiteralObject', () => {
     let expression = parser.parse('{parent: $parent}');
     expect(expression instanceof LiteralObject).toBe(true);
