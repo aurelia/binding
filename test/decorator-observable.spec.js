@@ -30,6 +30,17 @@ describe('observable decorator', () => {
     expect(instance.valueChanged).toHaveBeenCalledWith(newValue, undefined, 'value');
   });
 
+  it('should not call valueChanged when property is assigned the same value', () => {
+    const instance = new class {
+      @observable value = oldValue;
+      valueChanged() { }
+    };
+    spyOn(instance, 'valueChanged');
+
+    instance.value = oldValue;
+    expect(instance.valueChanged).not.toHaveBeenCalled();
+  });
+
   it('should call customHandler when changing the property', () => {
     const instance = new class Test {
       @observable({ changeHandler: 'customHandler' }) value = oldValue;

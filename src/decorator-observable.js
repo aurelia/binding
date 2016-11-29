@@ -48,6 +48,9 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
     descriptor.get = function() { return this[innerPropertyName]; };
     descriptor.set = function(newValue) {
       let oldValue = this[innerPropertyName];
+      if (newValue === oldValue) {
+        return;
+      }
 
       // Add the inner property on the instance and make it nonenumerable.
       this[innerPropertyName] = newValue;
