@@ -81,7 +81,7 @@ While developing custom elements or custom attributes you may encounter a situat
   <source-code lang="HTML">
     <my-element go.call="doSomething()"></my-element>
 
-    <input type="text" value.bind="taskName"
+    <input type="text" value.bind="taskName">
     <my-element go.call="doSomething(taskName)"></my-element>
   </source-code>
 </code-listing>
