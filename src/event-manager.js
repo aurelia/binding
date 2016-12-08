@@ -118,7 +118,10 @@ class DefaultEventStrategy {
   capturedHandlers = {};
 
   subscribe(target, targetEvent, callback, strategy) {
-    let delegatedHandlers, capturedHandlers, handlerEntry;
+    let delegatedHandlers;
+    let capturedHandlers;
+    let handlerEntry;
+
     if (strategy === delegationStrategy.bubbling) {
       delegatedHandlers = this.delegatedHandlers;
       handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent));
