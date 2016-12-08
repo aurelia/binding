@@ -125,7 +125,9 @@ export function connectable() {
   };
 }
 
-const bindings = new Map();
+const queue = [];
+const queued = {};
+let nextId = 0;
 const minimumImmediate = 100;
 const frameBudget = 15;
 
@@ -133,17 +135,11 @@ let isFlushRequested = false;
 let immediate = 0;
 
 function flush(animationFrameStart) {
+  const length = queue.length;
   let i = 0;
-  let keys = bindings.keys();
-  let item;
-
-  while (item = keys.next()) {
-    if (item.done) {
-      break;
-    }
-
-    let binding = item.value;
-    bindings.delete(binding);
+  while (i < length) {
+    const binding = queue[i];
+    queued[binding.__connectQueueId] = false;
     binding.connect(true);
     i++;
 
@@ -151,8 +147,9 @@ function flush(animationFrameStart) {
       break;
     }
   }
+  queue.splice(0, i);
 
-  if (bindings.size) {
+  if (queue.length) {
     PLATFORM.requestAnimationFrame(flush);
   } else {
     isFlushRequested = false;
@@ -165,7 +162,17 @@ export function enqueueBindingConnect(binding) {
     immediate++;
     binding.connect(false);
   } else {
-    bindings.set(binding);
+    let id = binding.__connectQueueId;
+    if (id === undefined) {
+      id = nextId;
+      nextId++;
+      binding.__connectQueueId = id;
+    }
+
+    if (!queued[id]) {
+      queue.push(binding);
+      queued[id] = true;
+    }
   }
   if (!isFlushRequested) {
     isFlushRequested = true;
@@ -2735,7 +2742,7 @@ export let ParserImplementation = class ParserImplementation {
       if (this.optional('.')) {
         name = this.peek.key;
         this.advance();
-      } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === '[' || this.peek.text === '}' || this.peek.text === ',') {
+      } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === ')' || this.peek.text === '[' || this.peek.text === '}' || this.peek.text === ',') {
         return new AccessThis(ancestor);
       } else {
         this.error(`Unexpected token ${ this.peek.text }`);
@@ -2900,13 +2907,68 @@ function findOriginalEventTarget(event) {
   return event.path && event.path[0] || event.deepPath && event.deepPath[0] || event.target;
 }
 
+function stopPropagation() {
+  this.standardStopPropagation();
+  this.propagationStopped = true;
+}
+
 function interceptStopPropagation(event) {
   event.standardStopPropagation = event.stopPropagation;
-  event.stopPropagation = function () {
-    this.propagationStopped = true;
-    this.standardStopPropagation();
-  };
+  event.stopPropagation = stopPropagation;
 }
+
+function handleCapturedEvent(event) {
+  let interceptInstalled = false;
+  event.propagationStopped = false;
+  let target = findOriginalEventTarget(event);
+
+  let orderedCallbacks = [];
+
+  while (target) {
+    if (target.capturedCallbacks) {
+      let callback = target.capturedCallbacks[event.type];
+      if (callback) {
+        if (!interceptInstalled) {
+          interceptStopPropagation(event);
+          interceptInstalled = true;
+        }
+        orderedCallbacks.push(callback);
+      }
+    }
+    target = target.parentNode;
+  }
+  for (let i = orderedCallbacks.length - 1; i >= 0; i--) {
+    let orderedCallback = orderedCallbacks[i];
+    orderedCallback(event);
+    if (event.propagationStopped) {
+      break;
+    }
+  }
+}
+
+let CapturedHandlerEntry = class CapturedHandlerEntry {
+  constructor(eventName) {
+    this.eventName = eventName;
+    this.count = 0;
+  }
+
+  increment() {
+    this.count++;
+
+    if (this.count === 1) {
+      DOM.addEventListener(this.eventName, handleCapturedEvent, true);
+    }
+  }
+
+  decrement() {
+    this.count--;
+
+    if (this.count === 0) {
+      DOM.removeEventListener(this.eventName, handleCapturedEvent, true);
+    }
+  }
+};
+
 
 function handleDelegatedEvent(event) {
   let interceptInstalled = false;
@@ -2954,12 +3016,17 @@ let DelegateHandlerEntry = class DelegateHandlerEntry {
 let DefaultEventStrategy = class DefaultEventStrategy {
   constructor() {
     this.delegatedHandlers = {};
+    this.capturedHandlers = {};
   }
 
-  subscribe(target, targetEvent, callback, delegate) {
-    if (delegate) {
-      let delegatedHandlers = this.delegatedHandlers;
-      let handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent));
+  subscribe(target, targetEvent, callback, strategy) {
+    let delegatedHandlers;
+    let capturedHandlers;
+    let handlerEntry;
+
+    if (strategy === delegationStrategy.bubbling) {
+      delegatedHandlers = this.delegatedHandlers;
+      handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent));
       let delegatedCallbacks = target.delegatedCallbacks || (target.delegatedCallbacks = {});
 
       handlerEntry.increment();
@@ -2968,6 +3035,19 @@ let DefaultEventStrategy = class DefaultEventStrategy {
       return function () {
         handlerEntry.decrement();
         delegatedCallbacks[targetEvent] = null;
+      };
+    }
+    if (strategy === delegationStrategy.capturing) {
+      capturedHandlers = this.capturedHandlers;
+      handlerEntry = capturedHandlers[targetEvent] || (capturedHandlers[targetEvent] = new CapturedHandlerEntry(targetEvent));
+      let capturedCallbacks = target.capturedCallbacks || (target.capturedCallbacks = {});
+
+      handlerEntry.increment();
+      capturedCallbacks[targetEvent] = callback;
+
+      return function () {
+        handlerEntry.decrement();
+        capturedCallbacks[targetEvent] = null;
       };
     }
 
@@ -2979,6 +3059,12 @@ let DefaultEventStrategy = class DefaultEventStrategy {
   }
 };
 
+
+export const delegationStrategy = {
+  none: 0,
+  capturing: 1,
+  bubbling: 2
+};
 
 export let EventManager = class EventManager {
   constructor() {
@@ -3360,10 +3446,13 @@ export let StyleObserver = class StyleObserver {
 
     if (newValue !== null && newValue !== undefined) {
       if (newValue instanceof Object) {
+        let value;
         for (style in newValue) {
           if (newValue.hasOwnProperty(style)) {
+            value = newValue[style];
+            style = style.replace(/([A-Z])/g, m => '-' + m.toLowerCase());
             styles[style] = version;
-            this._setProperty(style, newValue[style]);
+            this._setProperty(style, value);
           }
         }
       } else if (newValue.length) {
@@ -4511,26 +4600,26 @@ export function bindingBehavior(nameOrTarget) {
 }
 
 export let ListenerExpression = class ListenerExpression {
-  constructor(eventManager, targetEvent, sourceExpression, delegate, preventDefault, lookupFunctions) {
+  constructor(eventManager, targetEvent, sourceExpression, delegationStrategy, preventDefault, lookupFunctions) {
     this.eventManager = eventManager;
     this.targetEvent = targetEvent;
     this.sourceExpression = sourceExpression;
-    this.delegate = delegate;
+    this.delegationStrategy = delegationStrategy;
     this.discrete = true;
     this.preventDefault = preventDefault;
     this.lookupFunctions = lookupFunctions;
   }
 
   createBinding(target) {
-    return new Listener(this.eventManager, this.targetEvent, this.delegate, this.sourceExpression, target, this.preventDefault, this.lookupFunctions);
+    return new Listener(this.eventManager, this.targetEvent, this.delegationStrategy, this.sourceExpression, target, this.preventDefault, this.lookupFunctions);
   }
 };
 
 export let Listener = class Listener {
-  constructor(eventManager, targetEvent, delegate, sourceExpression, target, preventDefault, lookupFunctions) {
+  constructor(eventManager, targetEvent, delegationStrategy, sourceExpression, target, preventDefault, lookupFunctions) {
     this.eventManager = eventManager;
     this.targetEvent = targetEvent;
-    this.delegate = delegate;
+    this.delegationStrategy = delegationStrategy;
     this.sourceExpression = sourceExpression;
     this.target = target;
     this.preventDefault = preventDefault;
@@ -4562,7 +4651,7 @@ export let Listener = class Listener {
     if (this.sourceExpression.bind) {
       this.sourceExpression.bind(this, source, this.lookupFunctions);
     }
-    this._disposeListener = this.eventManager.addEventListener(this.target, this.targetEvent, event => this.callSource(event), this.delegate);
+    this._disposeListener = this.eventManager.addEventListener(this.target, this.targetEvent, event => this.callSource(event), this.delegationStrategy);
   }
 
   unbind() {
@@ -4839,6 +4928,9 @@ export function observable(targetOrConfig, key, descriptor) {
     };
     descriptor.set = function (newValue) {
       let oldValue = this[innerPropertyName];
+      if (newValue === oldValue) {
+        return;
+      }
 
       this[innerPropertyName] = newValue;
       Reflect.defineProperty(this, innerPropertyName, { enumerable: false });

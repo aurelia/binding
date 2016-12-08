@@ -142,7 +142,9 @@ export function connectable() {
   };
 }
 
-const bindings = new Map();    // the connect queue
+const queue = [];              // the connect queue
+const queued = {};             // tracks whether a binding with a particular id is in the queue
+let nextId = 0;                // next available id that can be assigned to a binding for queue tracking purposes
 const minimumImmediate = 100;  // number of bindings we should connect immediately before resorting to queueing
 const frameBudget = 15;        // milliseconds allotted to each frame for flushing queue
 
@@ -150,17 +152,11 @@ let isFlushRequested = false;  // whether a flush of the connect queue has been 
 let immediate = 0;             // count of bindings that have been immediately connected
 
 function flush(animationFrameStart) {
+  const length = queue.length;
   let i = 0;
-  let keys = bindings.keys();
-  let item;
-
-  while (item = keys.next()) { // eslint-disable-line no-cond-assign
-    if (item.done) {
-      break;
-    }
-
-    let binding = item.value;
-    bindings.delete(binding);
+  while (i < length) {
+    const binding = queue[i];
+    queued[binding.__connectQueueId] = false;
     binding.connect(true);
     i++;
     // periodically check whether the frame budget has been hit.
@@ -169,8 +165,9 @@ function flush(animationFrameStart) {
       break;
     }
   }
+  queue.splice(0, i);
 
-  if (bindings.size) {
+  if (queue.length) {
     PLATFORM.requestAnimationFrame(flush);
   } else {
     isFlushRequested = false;
@@ -183,7 +180,18 @@ export function enqueueBindingConnect(binding) {
     immediate++;
     binding.connect(false);
   } else {
-    bindings.set(binding);
+    // get or assign the binding's id that enables tracking whether it's been queued.
+    let id = binding.__connectQueueId;
+    if (id === undefined) {
+      id = nextId;
+      nextId++;
+      binding.__connectQueueId = id;
+    }
+    // enqueue the binding.
+    if (!queued[id]) {
+      queue.push(binding);
+      queued[id] = true;
+    }
   }
   if (!isFlushRequested) {
     isFlushRequested = true;
@@ -2882,6 +2890,7 @@ export class ParserImplementation {
         this.advance();
       } else if (this.peek === EOF
         || this.peek.text === '('
+        || this.peek.text === ')'
         || this.peek.text === '['
         || this.peek.text === '}'
         || this.peek.text === ','
@@ -3061,12 +3070,68 @@ function findOriginalEventTarget(event) {
   return (event.path && event.path[0]) || (event.deepPath && event.deepPath[0]) || event.target;
 }
 
+function stopPropagation() {
+  this.standardStopPropagation();
+  this.propagationStopped = true;
+}
+
 function interceptStopPropagation(event) {
   event.standardStopPropagation = event.stopPropagation;
-  event.stopPropagation = function() {
-    this.propagationStopped  = true;
-    this.standardStopPropagation();
-  };
+  event.stopPropagation = stopPropagation;
+}
+
+function handleCapturedEvent(event) {
+  let interceptInstalled = false;
+  event.propagationStopped = false;
+  let target = findOriginalEventTarget(event);
+
+  let orderedCallbacks = [];
+  /**
+   * During capturing phase, event 'bubbles' down from parent. Needs to reorder callback from root down to target
+   */
+  while (target) {
+    if (target.capturedCallbacks) {
+      let callback = target.capturedCallbacks[event.type];
+      if (callback) {
+        if (!interceptInstalled) {
+          interceptStopPropagation(event);
+          interceptInstalled = true;
+        }
+        orderedCallbacks.push(callback);
+      }
+    }
+    target = target.parentNode;
+  }
+  for (let i = orderedCallbacks.length - 1; i >= 0; i--) {
+    let orderedCallback = orderedCallbacks[i];
+    orderedCallback(event);
+    if (event.propagationStopped) {
+      break;
+    }
+  }
+}
+
+class CapturedHandlerEntry {
+  constructor(eventName) {
+    this.eventName = eventName;
+    this.count = 0;
+  }
+
+  increment() {
+    this.count++;
+
+    if (this.count === 1) {
+      DOM.addEventListener(this.eventName, handleCapturedEvent, true);
+    }
+  }
+
+  decrement() {
+    this.count--;
+
+    if (this.count === 0) {
+      DOM.removeEventListener(this.eventName, handleCapturedEvent, true);
+    }
+  }
 }
 
 function handleDelegatedEvent(event) {
@@ -3115,11 +3180,16 @@ class DelegateHandlerEntry {
 
 class DefaultEventStrategy {
   delegatedHandlers = {};
+  capturedHandlers = {};
 
-  subscribe(target, targetEvent, callback, delegate) {
-    if (delegate) {
-      let delegatedHandlers = this.delegatedHandlers;
-      let handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent));
+  subscribe(target, targetEvent, callback, strategy) {
+    let delegatedHandlers;
+    let capturedHandlers;
+    let handlerEntry;
+
+    if (strategy === delegationStrategy.bubbling) {
+      delegatedHandlers = this.delegatedHandlers;
+      handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent));
       let delegatedCallbacks = target.delegatedCallbacks || (target.delegatedCallbacks = {});
 
       handlerEntry.increment();
@@ -3130,6 +3200,19 @@ class DefaultEventStrategy {
         delegatedCallbacks[targetEvent] = null;
       };
     }
+    if (strategy === delegationStrategy.capturing) {
+      capturedHandlers = this.capturedHandlers;
+      handlerEntry = capturedHandlers[targetEvent] || (capturedHandlers[targetEvent] = new CapturedHandlerEntry(targetEvent));
+      let capturedCallbacks = target.capturedCallbacks || (target.capturedCallbacks = {});
+
+      handlerEntry.increment();
+      capturedCallbacks[targetEvent] = callback;
+
+      return function() {
+        handlerEntry.decrement();
+        capturedCallbacks[targetEvent] = null;
+      };
+    }
 
     target.addEventListener(targetEvent, callback, false);
 
@@ -3138,6 +3221,12 @@ class DefaultEventStrategy {
     };
   }
 }
+
+export const delegationStrategy = {
+  none: 0,
+  capturing: 1,
+  bubbling: 2
+};
 
 export class EventManager {
   constructor() {
@@ -3525,10 +3614,13 @@ export class StyleObserver {
 
     if (newValue !== null && newValue !== undefined) {
       if (newValue instanceof Object) {
+        let value;
         for (style in newValue) {
           if (newValue.hasOwnProperty(style)) {
+            value = newValue[style];
+            style = style.replace(/([A-Z])/g, m => '-' + m.toLowerCase());
             styles[style] = version;
-            this._setProperty(style, newValue[style]);
+            this._setProperty(style, value);
           }
         }
       } else if (newValue.length) {
@@ -4721,11 +4813,11 @@ export function bindingBehavior(nameOrTarget) {
 }
 
 export class ListenerExpression {
-  constructor(eventManager, targetEvent, sourceExpression, delegate, preventDefault, lookupFunctions) {
+  constructor(eventManager, targetEvent, sourceExpression, delegationStrategy, preventDefault, lookupFunctions) {
     this.eventManager = eventManager;
     this.targetEvent = targetEvent;
     this.sourceExpression = sourceExpression;
-    this.delegate = delegate;
+    this.delegationStrategy = delegationStrategy;
     this.discrete = true;
     this.preventDefault = preventDefault;
     this.lookupFunctions = lookupFunctions;
@@ -4735,7 +4827,7 @@ export class ListenerExpression {
     return new Listener(
       this.eventManager,
       this.targetEvent,
-      this.delegate,
+      this.delegationStrategy,
       this.sourceExpression,
       target,
       this.preventDefault,
@@ -4745,10 +4837,10 @@ export class ListenerExpression {
 }
 
 export class Listener {
-  constructor(eventManager, targetEvent, delegate, sourceExpression, target, preventDefault, lookupFunctions) {
+  constructor(eventManager, targetEvent, delegationStrategy, sourceExpression, target, preventDefault, lookupFunctions) {
     this.eventManager = eventManager;
     this.targetEvent = targetEvent;
-    this.delegate = delegate;
+    this.delegationStrategy = delegationStrategy;
     this.sourceExpression = sourceExpression;
     this.target = target;
     this.preventDefault = preventDefault;
@@ -4784,7 +4876,7 @@ export class Listener {
       this.target,
       this.targetEvent,
       event => this.callSource(event),
-      this.delegate);
+      this.delegationStrategy);
   }
 
   unbind() {
@@ -5081,6 +5173,9 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
     descriptor.get = function() { return this[innerPropertyName]; };
     descriptor.set = function(newValue) {
       let oldValue = this[innerPropertyName];
+      if (newValue === oldValue) {
+        return;
+      }
 
       // Add the inner property on the instance and make it nonenumerable.
       this[innerPropertyName] = newValue;

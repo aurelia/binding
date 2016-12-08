@@ -141,7 +141,9 @@ export function connectable() {
   };
 }
 
-var bindings = new Map();
+var queue = [];
+var queued = {};
+var nextId = 0;
 var minimumImmediate = 100;
 var frameBudget = 15;
 
@@ -149,17 +151,11 @@ var isFlushRequested = false;
 var immediate = 0;
 
 function flush(animationFrameStart) {
+  var length = queue.length;
   var i = 0;
-  var keys = bindings.keys();
-  var item = void 0;
-
-  while (item = keys.next()) {
-    if (item.done) {
-      break;
-    }
-
-    var binding = item.value;
-    bindings.delete(binding);
+  while (i < length) {
+    var binding = queue[i];
+    queued[binding.__connectQueueId] = false;
     binding.connect(true);
     i++;
 
@@ -167,8 +163,9 @@ function flush(animationFrameStart) {
       break;
     }
   }
+  queue.splice(0, i);
 
-  if (bindings.size) {
+  if (queue.length) {
     PLATFORM.requestAnimationFrame(flush);
   } else {
     isFlushRequested = false;
@@ -181,7 +178,17 @@ export function enqueueBindingConnect(binding) {
     immediate++;
     binding.connect(false);
   } else {
-    bindings.set(binding);
+    var id = binding.__connectQueueId;
+    if (id === undefined) {
+      id = nextId;
+      nextId++;
+      binding.__connectQueueId = id;
+    }
+
+    if (!queued[id]) {
+      queue.push(binding);
+      queued[id] = true;
+    }
   }
   if (!isFlushRequested) {
     isFlushRequested = true;
@@ -2929,7 +2936,7 @@ export var ParserImplementation = function () {
       if (this.optional('.')) {
         name = this.peek.key;
         this.advance();
-      } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === '[' || this.peek.text === '}' || this.peek.text === ',') {
+      } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === ')' || this.peek.text === '[' || this.peek.text === '}' || this.peek.text === ',') {
         return new AccessThis(ancestor);
       } else {
         this.error('Unexpected token ' + this.peek.text);
@@ -3109,13 +3116,71 @@ function findOriginalEventTarget(event) {
   return event.path && event.path[0] || event.deepPath && event.deepPath[0] || event.target;
 }
 
+function stopPropagation() {
+  this.standardStopPropagation();
+  this.propagationStopped = true;
+}
+
 function interceptStopPropagation(event) {
   event.standardStopPropagation = event.stopPropagation;
-  event.stopPropagation = function () {
-    this.propagationStopped = true;
-    this.standardStopPropagation();
-  };
+  event.stopPropagation = stopPropagation;
 }
+
+function handleCapturedEvent(event) {
+  var interceptInstalled = false;
+  event.propagationStopped = false;
+  var target = findOriginalEventTarget(event);
+
+  var orderedCallbacks = [];
+
+  while (target) {
+    if (target.capturedCallbacks) {
+      var callback = target.capturedCallbacks[event.type];
+      if (callback) {
+        if (!interceptInstalled) {
+          interceptStopPropagation(event);
+          interceptInstalled = true;
+        }
+        orderedCallbacks.push(callback);
+      }
+    }
+    target = target.parentNode;
+  }
+  for (var _i22 = orderedCallbacks.length - 1; _i22 >= 0; _i22--) {
+    var orderedCallback = orderedCallbacks[_i22];
+    orderedCallback(event);
+    if (event.propagationStopped) {
+      break;
+    }
+  }
+}
+
+var CapturedHandlerEntry = function () {
+  function CapturedHandlerEntry(eventName) {
+    
+
+    this.eventName = eventName;
+    this.count = 0;
+  }
+
+  CapturedHandlerEntry.prototype.increment = function increment() {
+    this.count++;
+
+    if (this.count === 1) {
+      DOM.addEventListener(this.eventName, handleCapturedEvent, true);
+    }
+  };
+
+  CapturedHandlerEntry.prototype.decrement = function decrement() {
+    this.count--;
+
+    if (this.count === 0) {
+      DOM.removeEventListener(this.eventName, handleCapturedEvent, true);
+    }
+  };
+
+  return CapturedHandlerEntry;
+}();
 
 function handleDelegatedEvent(event) {
   var interceptInstalled = false;
@@ -3170,15 +3235,20 @@ var DefaultEventStrategy = function () {
     
 
     this.delegatedHandlers = {};
+    this.capturedHandlers = {};
   }
 
-  DefaultEventStrategy.prototype.subscribe = function subscribe(target, targetEvent, callback, delegate) {
+  DefaultEventStrategy.prototype.subscribe = function subscribe(target, targetEvent, callback, strategy) {
     var _this22 = this;
 
-    if (delegate) {
+    var delegatedHandlers = void 0;
+    var capturedHandlers = void 0;
+    var handlerEntry = void 0;
+
+    if (strategy === delegationStrategy.bubbling) {
       var _ret = function () {
-        var delegatedHandlers = _this22.delegatedHandlers;
-        var handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent));
+        delegatedHandlers = _this22.delegatedHandlers;
+        handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent));
         var delegatedCallbacks = target.delegatedCallbacks || (target.delegatedCallbacks = {});
 
         handlerEntry.increment();
@@ -3194,6 +3264,25 @@ var DefaultEventStrategy = function () {
 
       if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
     }
+    if (strategy === delegationStrategy.capturing) {
+      var _ret2 = function () {
+        capturedHandlers = _this22.capturedHandlers;
+        handlerEntry = capturedHandlers[targetEvent] || (capturedHandlers[targetEvent] = new CapturedHandlerEntry(targetEvent));
+        var capturedCallbacks = target.capturedCallbacks || (target.capturedCallbacks = {});
+
+        handlerEntry.increment();
+        capturedCallbacks[targetEvent] = callback;
+
+        return {
+          v: function v() {
+            handlerEntry.decrement();
+            capturedCallbacks[targetEvent] = null;
+          }
+        };
+      }();
+
+      if ((typeof _ret2 === 'undefined' ? 'undefined' : _typeof(_ret2)) === "object") return _ret2.v;
+    }
 
     target.addEventListener(targetEvent, callback, false);
 
@@ -3204,6 +3293,12 @@ var DefaultEventStrategy = function () {
 
   return DefaultEventStrategy;
 }();
+
+export var delegationStrategy = {
+  none: 0,
+  capturing: 1,
+  bubbling: 2
+};
 
 export var EventManager = function () {
   function EventManager() {
@@ -3624,10 +3719,15 @@ export var StyleObserver = function () {
 
     if (newValue !== null && newValue !== undefined) {
       if (newValue instanceof Object) {
+        var value = void 0;
         for (style in newValue) {
           if (newValue.hasOwnProperty(style)) {
+            value = newValue[style];
+            style = style.replace(/([A-Z])/g, function (m) {
+              return '-' + m.toLowerCase();
+            });
             styles[style] = version;
-            this._setProperty(style, newValue[style]);
+            this._setProperty(style, value);
           }
         }
       } else if (newValue.length) {
@@ -3939,9 +4039,9 @@ export var SelectValueObserver = (_dec9 = subscriberCollection(), _dec9(_class10
     };
 
     while (i--) {
-      var _ret2 = _loop();
+      var _ret3 = _loop();
 
-      if (_ret2 === 'continue') continue;
+      if (_ret3 === 'continue') continue;
     }
   };
 
@@ -3952,8 +4052,8 @@ export var SelectValueObserver = (_dec9 = subscriberCollection(), _dec9(_class10
     var count = 0;
     var value = [];
 
-    for (var _i22 = 0, ii = options.length; _i22 < ii; _i22++) {
-      var _option = options.item(_i22);
+    for (var _i23 = 0, ii = options.length; _i23 < ii; _i23++) {
+      var _option = options.item(_i23);
       if (!_option.selected) {
         continue;
       }
@@ -3963,7 +4063,7 @@ export var SelectValueObserver = (_dec9 = subscriberCollection(), _dec9(_class10
 
     if (this.element.multiple) {
       if (Array.isArray(this.value)) {
-        var _ret3 = function () {
+        var _ret4 = function () {
           var matcher = _this24.element.matcher || function (a, b) {
             return a === b;
           };
@@ -4005,7 +4105,7 @@ export var SelectValueObserver = (_dec9 = subscriberCollection(), _dec9(_class10
           };
         }();
 
-        if ((typeof _ret3 === 'undefined' ? 'undefined' : _typeof(_ret3)) === "object") return _ret3.v;
+        if ((typeof _ret4 === 'undefined' ? 'undefined' : _typeof(_ret4)) === "object") return _ret4.v;
       }
     } else {
       if (count === 0) {
@@ -4088,8 +4188,8 @@ export var ClassObserver = function () {
 
     if (newValue !== null && newValue !== undefined && newValue.length) {
       names = newValue.split(/\s+/);
-      for (var _i23 = 0, length = names.length; _i23 < length; _i23++) {
-        name = names[_i23];
+      for (var _i24 = 0, length = names.length; _i24 < length; _i24++) {
+        name = names[_i24];
         if (name === '') {
           continue;
         }
@@ -4182,9 +4282,9 @@ export var ComputedExpression = function (_Expression19) {
 export function createComputedObserver(obj, propertyName, descriptor, observerLocator) {
   var dependencies = descriptor.get.dependencies;
   if (!(dependencies instanceof ComputedExpression)) {
-    var _i24 = dependencies.length;
-    while (_i24--) {
-      dependencies[_i24] = observerLocator.parser.parse(dependencies[_i24]);
+    var _i25 = dependencies.length;
+    while (_i25--) {
+      dependencies[_i25] = observerLocator.parser.parse(dependencies[_i25]);
     }
     dependencies = descriptor.get.dependencies = new ComputedExpression(propertyName, dependencies);
   }
@@ -4480,8 +4580,8 @@ export var ObserverLocator = (_temp = _class11 = function () {
   };
 
   ObserverLocator.prototype.getAdapterObserver = function getAdapterObserver(obj, propertyName, descriptor) {
-    for (var _i25 = 0, ii = this.adapters.length; _i25 < ii; _i25++) {
-      var adapter = this.adapters[_i25];
+    for (var _i26 = 0, ii = this.adapters.length; _i26 < ii; _i26++) {
+      var adapter = this.adapters[_i26];
       var observer = adapter.getObserver(obj, propertyName, descriptor);
       if (observer) {
         return observer;
@@ -4890,32 +4990,32 @@ export function bindingBehavior(nameOrTarget) {
 }
 
 export var ListenerExpression = function () {
-  function ListenerExpression(eventManager, targetEvent, sourceExpression, delegate, preventDefault, lookupFunctions) {
+  function ListenerExpression(eventManager, targetEvent, sourceExpression, delegationStrategy, preventDefault, lookupFunctions) {
     
 
     this.eventManager = eventManager;
     this.targetEvent = targetEvent;
     this.sourceExpression = sourceExpression;
-    this.delegate = delegate;
+    this.delegationStrategy = delegationStrategy;
     this.discrete = true;
     this.preventDefault = preventDefault;
     this.lookupFunctions = lookupFunctions;
   }
 
   ListenerExpression.prototype.createBinding = function createBinding(target) {
-    return new Listener(this.eventManager, this.targetEvent, this.delegate, this.sourceExpression, target, this.preventDefault, this.lookupFunctions);
+    return new Listener(this.eventManager, this.targetEvent, this.delegationStrategy, this.sourceExpression, target, this.preventDefault, this.lookupFunctions);
   };
 
   return ListenerExpression;
 }();
 
 export var Listener = function () {
-  function Listener(eventManager, targetEvent, delegate, sourceExpression, target, preventDefault, lookupFunctions) {
+  function Listener(eventManager, targetEvent, delegationStrategy, sourceExpression, target, preventDefault, lookupFunctions) {
     
 
     this.eventManager = eventManager;
     this.targetEvent = targetEvent;
-    this.delegate = delegate;
+    this.delegationStrategy = delegationStrategy;
     this.sourceExpression = sourceExpression;
     this.target = target;
     this.preventDefault = preventDefault;
@@ -4951,7 +5051,7 @@ export var Listener = function () {
     }
     this._disposeListener = this.eventManager.addEventListener(this.target, this.targetEvent, function (event) {
       return _this28.callSource(event);
-    }, this.delegate);
+    }, this.delegationStrategy);
   };
 
   Listener.prototype.unbind = function unbind() {
@@ -5260,6 +5360,9 @@ export function observable(targetOrConfig, key, descriptor) {
     };
     descriptor.set = function (newValue) {
       var oldValue = this[innerPropertyName];
+      if (newValue === oldValue) {
+        return;
+      }
 
       this[innerPropertyName] = newValue;
       Reflect.defineProperty(this, innerPropertyName, { enumerable: false });

@@ -1,3 +1,29 @@
+<a name="1.1.0"></a>
+# [1.1.0](https://github.com/aurelia/binding/compare/1.0.9...v1.1.0) (2016-12-08)
+
+
+### Bug Fixes
+
+* **doc:** broken numeral and moment import ([9a37615](https://github.com/aurelia/binding/commit/9a37615)), closes [#504](https://github.com/aurelia/binding/issues/504)
+* **EventManager:** capture bugfixes ([bb78aea](https://github.com/aurelia/binding/commit/bb78aea))
+* **observable:** skip notify on same value assign ([fed8b6f](https://github.com/aurelia/binding/commit/fed8b6f)), closes [#544](https://github.com/aurelia/binding/issues/544)
+* **Parser:** handle parent in CallMember ([048c8dd](https://github.com/aurelia/binding/commit/048c8dd))
+* **StyleObserver:** convert camelCase style properties to kebab-case ([2bd5e0f](https://github.com/aurelia/binding/commit/2bd5e0f)), closes [#523](https://github.com/aurelia/binding/issues/523)
+* **typings:** fix AccessMember constructor parameters order ([f858369](https://github.com/aurelia/binding/commit/f858369))
+
+
+### Features
+
+* **EventManager:** support capturing event ([d5da991](https://github.com/aurelia/binding/commit/d5da991))
+
+
+### Performance Improvements
+
+* **connect-queue:** mutate queue once per flush ([58224dd](https://github.com/aurelia/binding/commit/58224dd))
+* **connect-queue:** remove map usage ([d676d63](https://github.com/aurelia/binding/commit/d676d63))
+
+
+
 <a name="1.0.9"></a>
 ## [1.0.9](https://github.com/aurelia/binding/compare/1.0.8...v1.0.9) (2016-10-06)
 
