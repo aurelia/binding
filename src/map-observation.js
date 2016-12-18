@@ -31,9 +31,9 @@ class ModifyMapObserver extends ModifyCollectionObserver {
     let observer = new ModifyMapObserver(taskQueue, map);
 
     let proto = mapProto;
-    if (proto.add !== map.add || proto.delete !== map.delete || proto.clear !== map.clear) {
+    if (proto.set !== map.set || proto.delete !== map.delete || proto.clear !== map.clear) {
       proto = {
-        add: map.add,
+        set: map.set,
         delete: map.delete,
         clear: map.clear
       };
