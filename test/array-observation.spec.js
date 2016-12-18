@@ -127,9 +127,52 @@ describe('array observation', () => {
     spyOn(observer, 'addChangeRecord');
     array.splice(1, 1, 'foo');
     expect(observer.addChangeRecord).toHaveBeenCalled();
+    expect(observer.addChangeRecord.calls.mostRecent().args).toEqual([{
+      type: 'splice',
+      object: array,
+      index: 1,
+      removed: ['hello'],
+      addedCount: 1
+    }]);
     observer.addChangeRecord.calls.reset();
     Array.prototype.splice.call(array, 2, 1, 'bar');
     expect(observer.addChangeRecord).toHaveBeenCalled();
+    expect(observer.addChangeRecord.calls.mostRecent().args).toEqual([{
+      type: 'splice',
+      object: array,
+      index: 2,
+      removed: ['world'],
+      addedCount: 1
+    }]);
+    expect(array).toEqual([1, 'foo', 'bar', 4]);
+  });
+
+  it('splices string indexes', () => {
+    let array = [1, 2, 3, 4];
+    array.splice('1', '1', 'hello');
+    Array.prototype.splice.call(array, '2', '1', 'world');
+    expect(array).toEqual([1, 'hello', 'world', 4]);
+    let observer = getArrayObserver(taskQueue, array);
+    spyOn(observer, 'addChangeRecord');
+    array.splice('1', '1', 'foo');
+    expect(observer.addChangeRecord).toHaveBeenCalled();
+    expect(observer.addChangeRecord.calls.mostRecent().args).toEqual([{
+      type: 'splice',
+      object: array,
+      index: 1,
+      removed: ['hello'],
+      addedCount: 1
+    }]);
+    observer.addChangeRecord.calls.reset();
+    Array.prototype.splice.call(array, '2', '1', 'bar');
+    expect(observer.addChangeRecord).toHaveBeenCalled();
+    expect(observer.addChangeRecord.calls.mostRecent().args).toEqual([{
+      type: 'splice',
+      object: array,
+      index: 2,
+      removed: ['world'],
+      addedCount: 1
+    }]);
     expect(array).toEqual([1, 'foo', 'bar', 4]);
   });
 
