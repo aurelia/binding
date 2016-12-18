@@ -83,7 +83,7 @@ Array.prototype.splice = function() {
     this.__array_observer__.addChangeRecord({
       type: 'splice',
       object: this,
-      index: arguments[0],
+      index: +arguments[0],
       removed: methodCallResult,
       addedCount: arguments.length > 2 ? arguments.length - 2 : 0
     });
