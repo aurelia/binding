@@ -206,7 +206,7 @@ With the `self` binding behavior, you can specify that event handler will only r
 
 For example, in the following markup
 
-<code-listing heading="Self binding behaviours">
+<code-listing heading="Self binding behavior">
   <source-code lang="HTML">
     <panel>
       <header mousedown.delegate='onMouseDown($event)' ref='header'>
@@ -222,7 +222,7 @@ elements inside it, which in this case are the buttons `settings` and `close`. H
 Sometimes you want the component to only react when user click on the header itself, not the buttons. In order to achieve this, `onMouseDown` method needs
 some modification:
 
-<code-listing heading="Creating a Custom Binding Behavior">
+<code-listing heading="Handler without self binding behavior">
   <source-code lang="ES 2015/ES 2016/TypeScript">
     // inside component's view model class
     onMouseDown(event) {
@@ -237,7 +237,7 @@ some modification:
 This works, but now business/ component logic are mixed up with DOM event handling, which are not necessary. Using `self` binding behavior can help
 you achieve the same goal without filling up your methods with unnecessary code:
 
-<code-listing heading="One-way and two-way binding behaviours">
+<code-listing heading="Using self binding behavior">
   <source-code lang="HTML">
     <panel>
       <header mousedown.delegate='onMouseDown($event) & self'>
@@ -248,7 +248,7 @@ you achieve the same goal without filling up your methods with unnecessary code:
   </source-code>
 </code-listing>
 
-<code-listing heading="Creating a Custom Binding Behavior">
+<code-listing heading="Using self binding behavior">
   <source-code lang="ES 2015/ES 2016/TypeScript">
     // inside component's view model class
     onMouseDown(event) {
