@@ -200,7 +200,67 @@ There are also binding behaviors for `oneWay` and `twoWay` which you could use l
 > Warning: Binding Mode Casing
 > The casing for binding modes is different depending on whether they appear as a **binding command** or as a **binding behavior**. Because HTML is case-insensitive, binding commands cannot use capitals. Thus, the binding modes, when specified in this place, use lowercase, dashed names. However, when used within a binding expression as a binding behavior, they must not use a dash because that is not a valid symbol for variable names in JavaScript. So, in this case, camel casing is used.
 
-## [Custom binding behaviors](aurelia-doc://section/7/version/1.0.0)
+## [self](aurelia-doc://section/7/version/1.0.0)
+
+With the `self` binding behavior, you can specify that event handler will only response to the target where listener was attached to, not its descendants.
+
+For example, in the following markup
+
+<code-listing heading="Self binding behavior">
+  <source-code lang="HTML">
+    <panel>
+      <header mousedown.delegate='onMouseDown($event)' ref='header'>
+        <button>Settings</button>
+        <button>Close</button>
+      </header>
+    </panel>
+  </source-code>
+</code-listing>
+
+`onMouseDown` is your event handler and it will be called not only when user `mousedown` on header element, but also all
+elements inside it, which in this case are the buttons `settings` and `close`. However, this is not always desired behavior.
+Sometimes you want the component to only react when user click on the header itself, not the buttons. In order to achieve this, `onMouseDown` method needs
+some modification:
+
+<code-listing heading="Handler without self binding behavior">
+  <source-code lang="ES 2015/ES 2016/TypeScript">
+    // inside component's view model class
+    onMouseDown(event) {
+      // if mousedown on the header's descendants. Do nothing
+      if (event.target !== header) return;
+      // mousedown on header, start listening for mousemove to drag the panel
+      // ...
+    }
+  </source-code>
+</code-listing>
+
+This works, but now business/ component logic are mixed up with DOM event handling, which are not necessary. Using `self` binding behavior can help
+you achieve the same goal without filling up your methods with unnecessary code:
+
+<code-listing heading="Using self binding behavior">
+  <source-code lang="HTML">
+    <panel>
+      <header mousedown.delegate='onMouseDown($event) & self'>
+        <button class='settings'></button>
+        <button class='close'></button>
+      </header>
+    </panel>
+  </source-code>
+</code-listing>
+
+<code-listing heading="Using self binding behavior">
+  <source-code lang="ES 2015/ES 2016/TypeScript">
+    // inside component's view model class
+    onMouseDown(event) {
+      // No need to perform check, as the binding behavior will ensure check
+      // if (event.target !== header) return;
+      // mousedown on header, start listening for mousemove to drag the panel
+      // ...
+    }
+  </source-code>
+</code-listing>
+
+## [Custom binding behaviors](aurelia-doc://section/8/version/1.0.0)
 
 You can build custom binding behaviors just like you can build value converters. Instead of `toView` and `fromView` methods you'll create `bind(binding, scope, [...args])` and `unbind(binding, scope)` methods. In the bind method you'll add your behavior to the binding and in the unbind method you should cleanup whatever you did in the bind method to restore the binding instance to it's original state. The `binding` argument is the binding instance whose behavior you want to change. It's an implementation of the `Binding` interface. The `scope` argument is the binding's data-context. It provides access to the model the binding will be bound to via it's `bindingContext` and `overrideContext` properties.
 
