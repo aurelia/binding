@@ -1,3 +1,14 @@
+<a name="1.1.1"></a>
+## [1.1.1](https://github.com/aurelia/binding/compare/1.1.0...v1.1.1) (2017-01-06)
+
+
+### Bug Fixes
+
+* **array-observation:** coerce splice args ([#552](https://github.com/aurelia/binding/issues/552)) ([94899e0](https://github.com/aurelia/binding/commit/94899e0)), closes [aurelia/templating#470](https://github.com/aurelia/templating/issues/470)
+* **map-observation:** change "add" property to "set" ([1fd7ebd](https://github.com/aurelia/binding/commit/1fd7ebd)), closes [#549](https://github.com/aurelia/binding/issues/549)
+
+
+
 <a name="1.1.0"></a>
 # [1.1.0](https://github.com/aurelia/binding/compare/1.0.9...v1.1.0) (2016-12-08)
 

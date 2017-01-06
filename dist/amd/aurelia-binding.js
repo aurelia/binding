@@ -1109,7 +1109,7 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
       this.__array_observer__.addChangeRecord({
         type: 'splice',
         object: this,
-        index: arguments[0],
+        index: +arguments[0],
         removed: methodCallResult,
         addedCount: arguments.length > 2 ? arguments.length - 2 : 0
       });
@@ -3139,9 +3139,9 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
       var observer = new ModifyMapObserver(taskQueue, map);
 
       var proto = mapProto;
-      if (proto.add !== map.add || proto.delete !== map.delete || proto.clear !== map.clear) {
+      if (proto.set !== map.set || proto.delete !== map.delete || proto.clear !== map.clear) {
         proto = {
-          add: map.add,
+          set: map.set,
           delete: map.delete,
           clear: map.clear
         };

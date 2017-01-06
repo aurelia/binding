@@ -1002,7 +1002,7 @@ Array.prototype.splice = function () {
     this.__array_observer__.addChangeRecord({
       type: 'splice',
       object: this,
-      index: arguments[0],
+      index: +arguments[0],
       removed: methodCallResult,
       addedCount: arguments.length > 2 ? arguments.length - 2 : 0
     });
@@ -2851,9 +2851,9 @@ let ModifyMapObserver = class ModifyMapObserver extends ModifyCollectionObserver
     let observer = new ModifyMapObserver(taskQueue, map);
 
     let proto = mapProto;
-    if (proto.add !== map.add || proto.delete !== map.delete || proto.clear !== map.clear) {
+    if (proto.set !== map.set || proto.delete !== map.delete || proto.clear !== map.clear) {
       proto = {
-        add: map.add,
+        set: map.set,
         delete: map.delete,
         clear: map.clear
       };
