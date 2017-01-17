@@ -104,7 +104,7 @@ Ideally, the date would be in a more readable format and the amount would be for
 
 ## [Value Converters](aurelia-doc://section/2/version/1.0.0)
 
-> A value converter is a class whose responsibility is to convert view-model values into values that are appropriate to display in the view *and visa-versa*.
+> A value converter is a class whose responsibility is to convert view-model values into values that are appropriate to display in the view *and vice versa*.
 
 Most commonly you'll be creating value converters that translate model data to a format suitable for the view; however, there are situations where you'll need to convert data from the view to a format expected by the view-model, typically when using two-way binding with input elements.
 
