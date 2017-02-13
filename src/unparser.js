@@ -1,189 +1,193 @@
-export class Unparser {
-  constructor(buffer) {
-    this.buffer = buffer;
-  }
+export let Unparser = null;
 
-  static unparse(expression) {
-    let buffer = [];
-    let visitor = new Unparser(buffer);
-
-    expression.accept(visitor);
-
-    return buffer.join('');
-  }
-
-  write(text) {
-    this.buffer.push(text);
-  }
-
-  writeArgs(args) {
-    this.write('(');
-
-    for (let i = 0, length = args.length; i < length; ++i) {
-      if (i !== 0) {
-        this.write(',');
-      }
-
-      args[i].accept(this);
+if (typeof FEATURE_NO_UNPARSER === 'undefined') {
+  Unparser = class {
+    constructor(buffer) {
+      this.buffer = buffer;
     }
 
-    this.write(')');
-  }
+    static unparse(expression) {
+      let buffer = [];
+      let visitor = new Unparser(buffer);
 
-  visitChain(chain) {
-    let expressions = chain.expressions;
+      expression.accept(visitor);
 
-    for (let i = 0, length = expression.length; i < length; ++i) {
-      if (i !== 0) {
-        this.write(';');
+      return buffer.join('');
+    }
+
+    write(text) {
+      this.buffer.push(text);
+    }
+
+    writeArgs(args) {
+      this.write('(');
+
+      for (let i = 0, length = args.length; i < length; ++i) {
+        if (i !== 0) {
+          this.write(',');
+        }
+
+        args[i].accept(this);
       }
 
-      expressions[i].accept(this);
+      this.write(')');
     }
-  }
 
-  visitBindingBehavior(behavior) {
-    let args = behavior.args;
+    visitChain(chain) {
+      let expressions = chain.expressions;
 
-    behavior.expression.accept(this);
-    this.write(`&${behavior.name}`);
+      for (let i = 0, length = expression.length; i < length; ++i) {
+        if (i !== 0) {
+          this.write(';');
+        }
 
-    for (let i = 0, length = args.length; i < length; ++i) {
+        expressions[i].accept(this);
+      }
+    }
+
+    visitBindingBehavior(behavior) {
+      let args = behavior.args;
+
+      behavior.expression.accept(this);
+      this.write(`&${behavior.name}`);
+
+      for (let i = 0, length = args.length; i < length; ++i) {
+        this.write(':');
+        args[i].accept(this);
+      }
+    }
+
+    visitValueConverter(converter) {
+      let args = converter.args;
+
+      converter.expression.accept(this);
+      this.write(`|${converter.name}`);
+
+      for (let i = 0, length = args.length; i < length; ++i) {
+        this.write(':');
+        args[i].accept(this);
+      }
+    }
+
+    visitAssign(assign) {
+      assign.target.accept(this);
+      this.write('=');
+      assign.value.accept(this);
+    }
+
+    visitConditional(conditional) {
+      conditional.condition.accept(this);
+      this.write('?');
+      conditional.yes.accept(this);
       this.write(':');
-      args[i].accept(this);
+      conditional.no.accept(this);
     }
-  }
 
-  visitValueConverter(converter) {
-    let args = converter.args;
-
-    converter.expression.accept(this);
-    this.write(`|${converter.name}`);
-
-    for (let i = 0, length = args.length; i < length; ++i) {
-      this.write(':');
-      args[i].accept(this);
+    visitAccessThis(access) {
+      if (access.ancestor === 0) {
+        this.write('$this');
+        return;
+      }
+      this.write('$parent');
+      let i = access.ancestor - 1;
+      while (i--) {
+        this.write('.$parent');
+      }
     }
-  }
 
-  visitAssign(assign) {
-    assign.target.accept(this);
-    this.write('=');
-    assign.value.accept(this);
-  }
-
-  visitConditional(conditional) {
-    conditional.condition.accept(this);
-    this.write('?');
-    conditional.yes.accept(this);
-    this.write(':');
-    conditional.no.accept(this);
-  }
-
-  visitAccessThis(access) {
-    if (access.ancestor === 0) {
-      this.write('$this');
-      return;
+    visitAccessScope(access) {
+      let i = access.ancestor;
+      while (i--) {
+        this.write('$parent.');
+      }
+      this.write(access.name);
     }
-    this.write('$parent');
-    let i = access.ancestor - 1;
-    while (i--) {
-      this.write('.$parent');
+
+    visitAccessMember(access) {
+      access.object.accept(this);
+      this.write(`.${access.name}`);
     }
-  }
 
-  visitAccessScope(access) {
-    let i = access.ancestor;
-    while (i--) {
-      this.write('$parent.');
+    visitAccessKeyed(access) {
+      access.object.accept(this);
+      this.write('[');
+      access.key.accept(this);
+      this.write(']');
     }
-    this.write(access.name);
-  }
 
-  visitAccessMember(access) {
-    access.object.accept(this);
-    this.write(`.${access.name}`);
-  }
-
-  visitAccessKeyed(access) {
-    access.object.accept(this);
-    this.write('[');
-    access.key.accept(this);
-    this.write(']');
-  }
-
-  visitCallScope(call) {
-    let i = call.ancestor;
-    while (i--) {
-      this.write('$parent.');
+    visitCallScope(call) {
+      let i = call.ancestor;
+      while (i--) {
+        this.write('$parent.');
+      }
+      this.write(call.name);
+      this.writeArgs(call.args);
     }
-    this.write(call.name);
-    this.writeArgs(call.args);
-  }
 
-  visitCallFunction(call) {
-    call.func.accept(this);
-    this.writeArgs(call.args);
-  }
+    visitCallFunction(call) {
+      call.func.accept(this);
+      this.writeArgs(call.args);
+    }
 
-  visitCallMember(call) {
-    call.object.accept(this);
-    this.write(`.${call.name}`);
-    this.writeArgs(call.args);
-  }
+    visitCallMember(call) {
+      call.object.accept(this);
+      this.write(`.${call.name}`);
+      this.writeArgs(call.args);
+    }
 
-  visitPrefix(prefix) {
-    this.write(`(${prefix.operation}`);
-    prefix.expression.accept(this);
-    this.write(')');
-  }
+    visitPrefix(prefix) {
+      this.write(`(${prefix.operation}`);
+      prefix.expression.accept(this);
+      this.write(')');
+    }
 
-  visitBinary(binary) {
-    binary.left.accept(this);
-    this.write(binary.operation);
-    binary.right.accept(this);
-  }
+    visitBinary(binary) {
+      binary.left.accept(this);
+      this.write(binary.operation);
+      binary.right.accept(this);
+    }
 
-  visitLiteralPrimitive(literal) {
-    this.write(`${literal.value}`);
-  }
+    visitLiteralPrimitive(literal) {
+      this.write(`${literal.value}`);
+    }
 
-  visitLiteralArray(literal) {
-    let elements = literal.elements;
+    visitLiteralArray(literal) {
+      let elements = literal.elements;
 
-    this.write('[');
+      this.write('[');
 
-    for (let i = 0, length = elements.length; i < length; ++i) {
-      if (i !== 0) {
-        this.write(',');
+      for (let i = 0, length = elements.length; i < length; ++i) {
+        if (i !== 0) {
+          this.write(',');
+        }
+
+        elements[i].accept(this);
       }
 
-      elements[i].accept(this);
+      this.write(']');
     }
 
-    this.write(']');
-  }
+    visitLiteralObject(literal) {
+      let keys = literal.keys;
+      let values = literal.values;
 
-  visitLiteralObject(literal) {
-    let keys = literal.keys;
-    let values = literal.values;
+      this.write('{');
 
-    this.write('{');
+      for (let i = 0, length = keys.length; i < length; ++i) {
+        if (i !== 0) {
+          this.write(',');
+        }
 
-    for (let i = 0, length = keys.length; i < length; ++i) {
-      if (i !== 0) {
-        this.write(',');
+        this.write(`'${keys[i]}':`);
+        values[i].accept(this);
       }
 
-      this.write(`'${keys[i]}':`);
-      values[i].accept(this);
+      this.write('}');
     }
 
-    this.write('}');
-  }
-
-  visitLiteralString(literal) {
-    let escaped = literal.value.replace(/'/g, "\'");
-    this.write(`'${escaped}'`);
-  }
+    visitLiteralString(literal) {
+      let escaped = literal.value.replace(/'/g, "\'");
+      this.write(`'${escaped}'`);
+    }
+  };
 }
