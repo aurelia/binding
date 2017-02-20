@@ -12,7 +12,8 @@ import {
   CallMember,
   CallFunction,
   AccessThis,
-  AccessAncestor
+  AccessAncestor,
+  Assign
 } from '../src/ast';
 
 describe('Parser', () => {
@@ -106,6 +107,25 @@ describe('Parser', () => {
     expect(expression.name).toBe('bar');
     expect(expression.object instanceof AccessScope).toBe(true);
     expect(expression.object.name).toBe('foo');
+  });
+
+  it('parses Assign', () => {
+    let expression = parser.parse('foo = bar');
+    expect(expression instanceof Assign).toBe(true);
+    expect(expression.target instanceof AccessScope).toBe(true);
+    expect(expression.target.name).toBe('foo');
+    expect(expression.value instanceof AccessScope).toBe(true);
+    expect(expression.value.name).toBe('bar');
+
+    expression = parser.parse('foo = bar = baz');
+    expect(expression instanceof Assign).toBe(true);
+    expect(expression.target instanceof Assign).toBe(true);
+    expect(expression.target.target instanceof AccessScope).toBe(true);
+    expect(expression.target.target.name).toBe('foo');
+    expect(expression.target.value instanceof AccessScope).toBe(true);
+    expect(expression.target.value.name).toBe('bar');
+    expect(expression.value instanceof AccessScope).toBe(true);
+    expect(expression.value.name).toBe('baz');
   });
 
   it('parses CallScope', () => {
