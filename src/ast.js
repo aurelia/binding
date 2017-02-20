@@ -155,6 +155,7 @@ export class Assign extends Expression {
 
     this.target = target;
     this.value = value;
+    this.isAssignable = true;
   }
 
   evaluate(scope, lookupFunctions) {
@@ -166,6 +167,11 @@ export class Assign extends Expression {
   }
 
   connect(binding, scope) {
+  }
+
+  assign(scope, value) {
+    this.value.assign(scope, value);
+    this.target.assign(scope, value);
   }
 }
 
