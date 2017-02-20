@@ -16,7 +16,7 @@ export class CheckedObserver {
   }
 
   setValue(newValue) {
-    if (this.value === newValue) {
+    if (this.initialSync && this.value === newValue) {
       return;
     }
 
@@ -103,6 +103,10 @@ export class CheckedObserver {
   notify() {
     let oldValue = this.oldValue;
     let newValue = this.value;
+
+    if (newValue === oldValue) {
+      return;
+    }
 
     this.callSubscribers(newValue, oldValue);
   }

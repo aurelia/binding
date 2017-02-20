@@ -525,4 +525,70 @@ describe('CheckedObserver', () => {
       document.body.removeChild(el);
     });
   });
+
+  describe('radio - undefined model', () => {
+    var obj, radios, el;
+
+    beforeAll(() => {
+      obj = { value: undefined };
+      el = createElement(
+        `<div>
+          <input name="test" type="radio" />
+          <input name="test" type="radio" />
+          <input name="test" type="radio" />
+        </div>`);
+      document.body.appendChild(el);
+      el.children.item(0).model = undefined;
+      el.children.item(1).model = 1;
+      el.children.item(2).model = 2;
+      radios = [
+        getBinding(observerLocator, obj, 'value', el.children.item(0), 'checked', bindingMode.twoWay),
+        getBinding(observerLocator, obj, 'value', el.children.item(1), 'checked', bindingMode.twoWay),
+        getBinding(observerLocator, obj, 'value', el.children.item(2), 'checked', bindingMode.twoWay)];
+    });
+
+    it('binds', () => {
+      radios[0].binding.bind(createScopeForTest(obj));
+      radios[1].binding.bind(createScopeForTest(obj));
+      radios[2].binding.bind(createScopeForTest(obj));
+      expect(radios[0].view.checked).toBe(true);
+      expect(radios[1].view.checked).toBe(false);
+      expect(radios[2].view.checked).toBe(false);
+    });
+
+    it('responds to model change', done => {
+      obj.value = 1;
+      setTimeout(() => {
+        expect(radios[0].view.checked).toBe(false);
+        expect(radios[1].view.checked).toBe(true);
+        expect(radios[2].view.checked).toBe(false);
+        done();
+      }, 0);
+    });
+
+    it('responds to element change', done => {
+      radios[2].view.checked = true;
+      radios[2].view.dispatchEvent(DOM.createCustomEvent('change'));
+      setTimeout(() => {
+        expect(radios[0].view.checked).toBe(false);
+        expect(radios[1].view.checked).toBe(false);
+        expect(radios[2].view.checked).toBe(true);
+        expect(obj.value).toBe(2);
+        done();
+      }, 0);
+    });
+
+    it('unbinds', () => {
+      var i = radios.length;
+      while(i--) {
+        spyOn(radios[i].targetObserver, 'unbind').and.callThrough();
+        radios[i].binding.unbind();
+        expect(radios[i].targetObserver.unbind).toHaveBeenCalled();
+      }
+    });
+
+    afterAll(() => {
+      document.body.removeChild(el);
+    });
+  });
 });
