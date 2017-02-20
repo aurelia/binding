@@ -282,6 +282,85 @@ describe('SelectValueObserver', () => {
     });
   });
 
+  describe('single-select objects with null', () => {
+    var obj, el, binding, elementValueProperty;
+    beforeAll(() => {
+      var option, info;
+      el = createElement('<select></select>');
+      option = document.createElement('option');
+      option.text = 'A';
+      option.model = { foo: 'A' };
+      el.appendChild(option);
+      option = document.createElement('option');
+      option.text = 'B';
+      option.model = { foo: 'B' };
+      el.appendChild(option);
+      option = document.createElement('option');
+      option.text = 'C';
+      option.model = null;
+      el.appendChild(option);
+      document.body.appendChild(el);
+      obj = { selectedItem: el.options.item(2).model };
+
+      info = getBinding(observerLocator, obj, 'selectedItem', el, 'value', bindingMode.twoWay);
+      binding = info.binding;
+      elementValueProperty = info.targetObserver;
+    });
+
+    it('binds', () => {
+      var targetObserver = observerLocator.getObserver(el, 'value');
+      spyOn(targetObserver, 'bind').and.callThrough();
+      binding.bind(createScopeForTest(obj));
+      expect(targetObserver.bind).toHaveBeenCalled();
+      expect(elementValueProperty.getValue()).toBe(obj.selectedItem);
+      expect(getElementValue(el)).toEqual(obj.selectedItem);
+    });
+
+    it('responds to model change', done => {
+      obj.selectedItem = el.options.item(0).model;
+      setTimeout(() => {
+        expect(elementValueProperty.getValue()).toBe(obj.selectedItem);
+        expect(getElementValue(el)).toEqual(obj.selectedItem);
+        done();
+      }, 0);
+    });
+
+    it('responds to element change', done => {
+      el.options.item(0).selected = false;
+      el.options.item(1).selected = true;
+      el.dispatchEvent(DOM.createCustomEvent('change'));
+      setTimeout(() => {
+        expect(elementValueProperty.getValue()).toBe(obj.selectedItem);
+        expect(getElementValue(el)).toEqual(obj.selectedItem);
+        done();
+      }, 0);
+    });
+
+    it('responds to options change', done => {
+      var option = document.createElement('option');
+      option.text = 'D';
+      option.model = { foo: 'D' };
+      obj.selectedItem = option.model;
+      el.appendChild(option);
+      setTimeout(() => {
+        expect(elementValueProperty.getValue()).toBe(obj.selectedItem);
+        expect(getElementValue(el)).toEqual(obj.selectedItem);
+        done();
+      }, 0);
+    });
+
+    it('unbinds', () => {
+      var targetObserver = observerLocator.getObserver(el, 'value');
+      spyOn(targetObserver, 'unbind').and.callThrough();
+      binding.unbind();
+      expect(targetObserver.unbind).toHaveBeenCalled();
+    });
+
+    afterAll(() => {
+      document.body.removeChild(el);
+    });
+  });
+
   describe('single-select objects with matcher', () => {
     var obj, el, binding, elementValueProperty;
     beforeAll(() => {

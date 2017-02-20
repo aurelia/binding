@@ -51,12 +51,9 @@ export class SelectValueObserver {
 
   synchronizeOptions() {
     let value = this.value;
-    let clear;
     let isArray;
 
-    if (value === null || value === undefined) {
-      clear = true;
-    } else if (Array.isArray(value)) {
+    if (Array.isArray(value)) {
       isArray = true;
     }
 
@@ -65,10 +62,6 @@ export class SelectValueObserver {
     let matcher = this.element.matcher || ((a, b) => a === b);
     while (i--) {
       let option = options.item(i);
-      if (clear) {
-        option.selected = false;
-        continue;
-      }
       let optionValue = option.hasOwnProperty('model') ? option.model : option.value;
       if (isArray) {
         option.selected = value.findIndex(item => !!matcher(optionValue, item)) !== -1; // eslint-disable-line no-loop-func
