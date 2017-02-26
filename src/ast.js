@@ -16,7 +16,7 @@ export class Expression {
   }
 
   toString() {
-    return typeof FEATURE_NO_UNPARSER === 'undefined' ? 
+    return typeof FEATURE_NO_UNPARSER === 'undefined' ?
       Unparser.unparse(this) :
       super.toString();
   }

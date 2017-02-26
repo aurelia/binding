@@ -1,6 +1,9 @@
 import {DOM} from 'aurelia-pal';
 
-let svgElements, svgPresentationElements, svgPresentationAttributes, svgAnalyzer;
+let svgElements;
+let svgPresentationElements;
+let svgPresentationAttributes;
+let svgAnalyzer;
 
 if (typeof FEATURE_NO_SVG === 'undefined') {
   /* eslint-disable */
@@ -205,11 +208,11 @@ if (typeof FEATURE_NO_SVG === 'undefined') {
   };
 
   // SVG elements/attributes are case-sensitive.  Not all browsers use the same casing for all attributes.
-  function createElement(html) {
+  let createElement = function(html) {
     let div = DOM.createElement('div');
     div.innerHTML = html;
     return div.firstChild;
-  }
+  };
 
   svgAnalyzer = class SVGAnalyzer {
     constructor() {
