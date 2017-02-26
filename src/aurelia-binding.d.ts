@@ -112,11 +112,11 @@ export declare class EventManager {
 /**
  * Observes property changes.
  */
-export declare interface PropertyObserver {
+export declare interface PropertyObserver<T> {
   /**
    * Subscribe to property change events.
    */
-  subscribe(callback: (newValue: any, oldValue: any) => void): Disposable;
+  subscribe(callback: (newValue: T, oldValue: T) => void): Disposable;
 }
 
 /**
@@ -560,7 +560,7 @@ export declare class BindingEngine {
   /**
    * Gets an observer for property changes.
    */
-  propertyObserver(obj: Object, propertyName: string): PropertyObserver;
+  propertyObserver<T>(obj: Object, propertyName: string): PropertyObserver<T>;
   /**
    * Gets an observer for collection mutation.
    */
@@ -570,7 +570,7 @@ export declare class BindingEngine {
    * @param bindingContext The binding context (view-model)
    * @param expression A javascript expression accessing the source property.
    */
-  expressionObserver(bindingContext: any, expression: string): PropertyObserver;
+  expressionObserver<T>(bindingContext: any, expression: string): PropertyObserver<T>;
   /**
    * Parses a string containing a javascript expression and returns a data-binding specialized AST. Memoized.
    */
