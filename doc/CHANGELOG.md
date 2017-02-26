@@ -1,3 +1,20 @@
+<a name="1.2.0"></a>
+# [1.2.0](https://github.com/aurelia/binding/compare/1.1.1...v1.2.0) (2017-02-26)
+
+
+### Bug Fixes
+
+* **Assign:** enable nesting assignments ([8186ef7](https://github.com/aurelia/binding/commit/8186ef7)), closes [#561](https://github.com/aurelia/binding/issues/561)
+* **CheckedObserver:** handle undefined model ([#575](https://github.com/aurelia/binding/issues/575)) ([e16bb9e](https://github.com/aurelia/binding/commit/e16bb9e)), closes [#574](https://github.com/aurelia/binding/issues/574)
+* **SelectValueObserver:** handle null model ([f3d80c9](https://github.com/aurelia/binding/commit/f3d80c9)), closes [#540](https://github.com/aurelia/binding/issues/540)
+
+
+### Features
+
+* **build:** make SVG support optional ([b2d68c8](https://github.com/aurelia/binding/commit/b2d68c8))
+
+
+
 <a name="1.1.1"></a>
 ## [1.1.1](https://github.com/aurelia/binding/compare/1.1.0...v1.1.1) (2017-01-06)
 
