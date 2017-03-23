@@ -1,3 +1,13 @@
+<a name="1.2.1"></a>
+## [1.2.1](https://github.com/aurelia/binding/compare/1.2.0...v1.2.1) (2017-03-23)
+
+
+### Bug Fixes
+
+* **AST:** pass lookupFunctions to all evaluate methods ([04e4e92](https://github.com/aurelia/binding/commit/04e4e92))
+
+
+
 <a name="1.2.0"></a>
 # [1.2.0](https://github.com/aurelia/binding/compare/1.1.1...v1.2.0) (2017-02-26)
 

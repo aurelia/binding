@@ -1334,7 +1334,7 @@ export class Conditional extends Expression {
   }
 
   evaluate(scope, lookupFunctions) {
-    return (!!this.condition.evaluate(scope)) ? this.yes.evaluate(scope) : this.no.evaluate(scope);
+    return (!!this.condition.evaluate(scope, lookupFunctions)) ? this.yes.evaluate(scope, lookupFunctions) : this.no.evaluate(scope, lookupFunctions);
   }
 
   accept(visitor) {
@@ -1598,15 +1598,15 @@ export class Binary extends Expression {
   }
 
   evaluate(scope, lookupFunctions) {
-    let left = this.left.evaluate(scope);
+    let left = this.left.evaluate(scope, lookupFunctions);
 
     switch (this.operation) {
-    case '&&': return left && this.right.evaluate(scope);
-    case '||': return left || this.right.evaluate(scope);
+    case '&&': return left && this.right.evaluate(scope, lookupFunctions);
+    case '||': return left || this.right.evaluate(scope, lookupFunctions);
     // no default
     }
 
-    let right = this.right.evaluate(scope);
+    let right = this.right.evaluate(scope, lookupFunctions);
 
     switch (this.operation) {
     case '==' : return left == right; // eslint-disable-line eqeqeq
@@ -1673,7 +1673,7 @@ export class PrefixNot extends Expression {
   }
 
   evaluate(scope, lookupFunctions) {
-    return !this.expression.evaluate(scope);
+    return !this.expression.evaluate(scope, lookupFunctions);
   }
 
   accept(visitor) {

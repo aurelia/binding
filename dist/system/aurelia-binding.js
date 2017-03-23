@@ -1737,7 +1737,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         }
 
         Conditional.prototype.evaluate = function evaluate(scope, lookupFunctions) {
-          return !!this.condition.evaluate(scope) ? this.yes.evaluate(scope) : this.no.evaluate(scope);
+          return !!this.condition.evaluate(scope, lookupFunctions) ? this.yes.evaluate(scope, lookupFunctions) : this.no.evaluate(scope, lookupFunctions);
         };
 
         Conditional.prototype.accept = function accept(visitor) {
@@ -2070,16 +2070,16 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         }
 
         Binary.prototype.evaluate = function evaluate(scope, lookupFunctions) {
-          var left = this.left.evaluate(scope);
+          var left = this.left.evaluate(scope, lookupFunctions);
 
           switch (this.operation) {
             case '&&':
-              return left && this.right.evaluate(scope);
+              return left && this.right.evaluate(scope, lookupFunctions);
             case '||':
-              return left || this.right.evaluate(scope);
+              return left || this.right.evaluate(scope, lookupFunctions);
           }
 
-          var right = this.right.evaluate(scope);
+          var right = this.right.evaluate(scope, lookupFunctions);
 
           switch (this.operation) {
             case '==':
@@ -2165,7 +2165,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         }
 
         PrefixNot.prototype.evaluate = function evaluate(scope, lookupFunctions) {
-          return !this.expression.evaluate(scope);
+          return !this.expression.evaluate(scope, lookupFunctions);
         };
 
         PrefixNot.prototype.accept = function accept(visitor) {
