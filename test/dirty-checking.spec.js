@@ -44,4 +44,20 @@ describe('DirtyCheckProperty', () => {
 		observer.unsubscribe(callback);
 		expect(dirtyChecker.tracked.length).toBe(0);
 	});
+
+	it('clears dirty checking timeout when destructor is called', () => {
+		var dirtyChecker = observerLocator.dirtyChecker;
+		dirtyChecker.timeout = setTimeout(() => {}, 0);
+		spyOn(window, 'clearTimeout');
+		dirtyChecker.destruct();
+		expect(clearTimeout).toHaveBeenCalledWith(dirtyChecker.timeout);
+	});
+
+	it('clears tracked when destructor is called', () => {
+		var dirtyChecker = observerLocator.dirtyChecker;
+		let callback = () => {};
+		observer.subscribe(callback);
+		dirtyChecker.destruct();
+		expect(dirtyChecker.tracked.length).toBe(0);
+	});
 });
