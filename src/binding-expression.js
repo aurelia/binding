@@ -40,11 +40,21 @@ export class Binding {
   }
 
   updateTarget(value) {
-    this.targetObserver.setValue(value, this.target, this.targetProperty);
+    try {
+      this.targetObserver.setValue(value, this.target, this.targetProperty);
+    } catch (e) {
+      throw new Error(
+        `aurelia-binding: Error encountered updating property ${this.targetProperty} of target ${this.target} to ${value} - ${e}`
+      );
+    }
   }
 
   updateSource(value) {
-    this.sourceExpression.assign(this.source, value, this.lookupFunctions);
+    try {
+      this.sourceExpression.assign(this.source, value, this.lookupFunctions);
+    } catch (e) {
+      throw new Error(`aurelia-binding: Error encountered setting value of source ${source} to ${value} - ${e}`);
+    }
   }
 
   call(context, newValue, oldValue) {
