@@ -1,6 +1,65 @@
-export function observable(targetOrConfig: any, key: string, descriptor?: PropertyDescriptor) {
+import * as LogManager from 'aurelia-logging';
+import {
+  coerces,
+  classCoerceMap,
+  mapCoerceForClass
+} from './coerce';
+import { metadata } from 'aurelia-metadata';
+
+type ObservableConfig = { name: string, changeHandler(curr: any, prev: any): any, coerce?: Function | string }
+type TargetOrConfig = Function | ObservableConfig
+
+export function observable(targetOrConfig: TargetOrConfig, key: string, descriptor?: PropertyDescriptor) {
+  /**
+   * 
+   * @param {Function | {}} target 
+   * @param {string} key
+   * @param {PropertyDescriptor} descriptor 
+   * @param {ObservableConfig} config 
+   */
   function deco(target, key, descriptor, config) { // eslint-disable-line no-shadow
-    // class decorator?
+    let userDidDefineCoerce;
+    let propType;
+    let coerce;
+
+    // Setting up coerce
+    userDidDefineCoerce = config && typeof config.coerce !== 'undefined';
+    
+    if (userDidDefineCoerce) {
+      switch (typeof config.coerce) {
+      case 'string':
+        coerce = coerces[config.coerce]; break;
+      case 'function':
+        coerce = config.coerce; break;
+      }
+      if (!coerce) {
+        LogManager
+          .getLogger('aurelia-observable-decortaor')
+          .warn(`Invalid coerce instruction. Should be either one of ${Object.keys(coerces)} or a function.`)
+      }
+      coerce = coerce || coerces.none;
+    } else {
+      propType = metadata.getOwn(metadata.propertyType, target, key);
+      if (propType) {
+        coerce = coerces[classCoerceMap.get(propType)] || coerces.none;
+      }
+    }
+
+    /**
+     * When called with parens, config will be undefined
+     * @example
+     * @observable() class MyVM {}
+     * 
+     * class MyVM {
+     *   @observable() prop
+     * }
+     */
+
+    /**
+     * When called without parens on a class, key will be undefined
+     * @example
+     * @observable class MyVM {}
+     */
     const isClassDecorator = key === undefined;
     if (isClassDecorator) {
       target = target.prototype;
@@ -23,7 +82,8 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
 
       // set the initial value of the property if it is defined.
       if (typeof descriptor.initializer === 'function') {
-        innerPropertyDescriptor.value = descriptor.initializer();
+        let temp = descriptor.initializer();
+        innerPropertyDescriptor.value = coerce ? coerce(temp) : temp;
       }
     } else {
       // there is no descriptor if the target was a field in TS (although Babel provides one),
@@ -48,16 +108,18 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
     descriptor.get = function() { return this[innerPropertyName]; };
     descriptor.set = function(newValue) {
       let oldValue = this[innerPropertyName];
-      if (newValue === oldValue) {
+      let realNewValue = coerce ? coerce(newValue) : newValue;
+
+      if (realNewValue === oldValue) {
         return;
       }
 
       // Add the inner property on the instance and make it nonenumerable.
-      this[innerPropertyName] = newValue;
+      this[innerPropertyName] = realNewValue;
       Reflect.defineProperty(this, innerPropertyName, { enumerable: false });
 
       if (this[callbackName]) {
-        this[callbackName](newValue, oldValue, key);
+        this[callbackName](realNewValue, oldValue, key);
       }
     };
 
@@ -66,8 +128,22 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
     descriptor.get.dependencies = [innerPropertyName];
 
     if (isClassDecorator) {
+      /**
+       * No need return as runtime code will look like this
+       * 
+       * observable(class Vm {})
+       */
       Reflect.defineProperty(target, key, descriptor);
     } else {
+      /**
+       * Runtime code will look like this:
+       * 
+       * class Vm {
+       *   constructor() {
+       *     observable(this, 'prop', descriptor); // the descriptor that is return from following line
+       *   }
+       * }
+       */
       return descriptor;
     }
   }
@@ -78,6 +154,48 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
   }
   return deco(targetOrConfig, key, descriptor);
 }
+
+/**
+ * @param {string} type 
+ */
+export function registerTypeObservable(type) {
+  observable[type] = function(targetOrConfig, key, descriptor) {
+    if (!arguments.length) {
+      /**
+       * MyClass {
+       *   @observable.number() num
+       * }
+       */
+      return observable({ coerce: type });
+    }
+    if (arguments.length === 1) {
+      /**
+       * @observable.number('num')
+       * class MyClass {}
+       * 
+       * @observable.number({...})
+       * class MyClass
+       * 
+       * class MyClass {
+       *   @observable.number({...})
+       *   num
+       * }
+       */
+      let cfg = arguments[0];
+      cfg = typeof cfg === 'string' ? { name: cfg } : cfg;
+      cfg.coerce = type;
+      return observable(cfg);
+    }
+    /**
+     * class MyClass {
+     *   @observable.number num
+     * }
+     */
+    return observable({ coerce: type })(targetOrConfig, key, descriptor);
+  }
+}
+
+['string', 'number', 'boolean', 'date'].forEach(registerTypeObservable);
 
 /*
           | typescript       | babel
