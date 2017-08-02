@@ -159,8 +159,13 @@ export function observable(targetOrConfig: TargetOrConfig, key: string, descript
  * @param {string} type 
  */
 export function registerTypeObservable(type) {
-  observable[type] = function(targetOrConfig, key, descriptor) {
-    if (!arguments.length) {
+  /**
+   * There no attempts to protect user from mis-using the decorators.
+   * ex. @observable({}, accidentParam) class SomeClass {}
+   * If we have some flag to use in if block, which can be remove at build time, it would be great.
+   */
+  return observable[type] = function(targetOrConfig, key, descriptor) {
+    if (targetOrConfig === void 0) {
       /**
        * MyClass {
        *   @observable.number() num
@@ -168,7 +173,7 @@ export function registerTypeObservable(type) {
        */
       return observable({ coerce: type });
     }
-    if (arguments.length === 1) {
+    if (key === void 0) {
       /**
        * @observable.number('num')
        * class MyClass {}
@@ -181,10 +186,9 @@ export function registerTypeObservable(type) {
        *   num
        * }
        */
-      let cfg = arguments[0];
-      cfg = typeof cfg === 'string' ? { name: cfg } : cfg;
-      cfg.coerce = type;
-      return observable(cfg);
+      targetOrConfig = typeof targetOrConfig === 'string' ? { name: targetOrConfig } : targetOrConfig;
+      targetOrConfig.coerce = type;
+      return observable(targetOrConfig);
     }
     /**
      * class MyClass {
