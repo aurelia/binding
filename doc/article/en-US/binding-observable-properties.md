@@ -15,11 +15,11 @@
 
 ## [Introduction](aurelia-doc://section/1/version/1.0.0)
 
-Have you ever needed to perform an action when a property is changed? Well, that's when we use property observation. 
+Have you ever needed to perform an action when a property is changed? If you have, that's a great use of property observation.
 
-To observe a property, you just need to decorate it with the `@observable` decorator and define a method to be the change handler. This method can receive 2 parameters, the new value and the old value. You can put any business logic inside this method.
+To observe a property, you need to decorate it with the `@observable` decorator and define a method as the change handler. This method can receive 2 parameters: the new value and the old value. You can put any business logic inside this method.
 
-By convention, the change handler is a method whose name is composed by the _property_name_ + 'Changed'. For example, if you decorate the property `color` with `@observable`, you have to define a method named `colorChanged()` to be the change handler. That's is how it should look:
+By convention, the change handler is a method whose name is composed of the _property_name_ and the literal value 'Changed'. For example, if you decorate the property `color` with `@observable`, you have to define a method named `colorChanged()` to be the change handler. Here's an example of that:
 
 <code-listing heading="Observable Properties">
   <source-code lang="ES 2015">
@@ -28,7 +28,6 @@ By convention, the change handler is a method whose name is composed by the _pro
     export const App = decorators(
       observable('color')
     ).on(class {
-    
       color = 'blue';
 
       colorChanged(newValue, oldValue) {
@@ -40,9 +39,7 @@ By convention, the change handler is a method whose name is composed by the _pro
     import { observable } from 'aurelia-framework';
 
     export class Car {
-
-      @observable
-      color = 'blue';
+      @observable color = 'blue';
 
       colorChanged(newValue, oldValue) {
         // this will fire whenever the 'color' property changes
@@ -53,9 +50,7 @@ By convention, the change handler is a method whose name is composed by the _pro
     import { observable } from 'aurelia-framework';
 
     export class Car {
-
-      @observable
-      color = 'blue';
+      @observable color = 'blue';
 
       colorChanged(newValue, oldValue) {
         // this will fire whenever the 'color' property changes
@@ -64,18 +59,18 @@ By convention, the change handler is a method whose name is composed by the _pro
   </source-code>
 </code-listing>
 
-Note that you do not have to check if `newValue` and `oldValue` are different. The change handler will not be called if you assign a value that the property already has.
+> Info
+> You do not have to check if `newValue` and `oldValue` are different. The change handler will not be called if you assign a value that the property already has.
 
-If you do not want to use the conventions, you can define another name for the change handler by setting the `changeHandler` property of the `@observable` decorator:
+If you do not want to use the convention, you can define the callback name for the change handler by setting the `changeHandler` property of the `@observable` decorator:
 
 <code-listing heading="Observable Properties">
   <source-code lang="ES 2015">
     import { observable, decorators } from 'aurelia-framework';
-    
+
     export const Car = decorators(
       observable({ name: 'color', changeHandler: 'myChangeHandler' })
     ).on(class {
-    
       color = 'blue';
 
       myChangeHandler(newValue, oldValue) {
@@ -85,9 +80,8 @@ If you do not want to use the conventions, you can define another name for the c
   </source-code>
   <source-code lang="ES 2016">
     import { observable } from 'aurelia-framework';
-    
-    export class Car {
 
+    export class Car {
       @observable({ changeHandler: 'myChangeHandler' })
       color = 'blue';
 
@@ -98,9 +92,8 @@ If you do not want to use the conventions, you can define another name for the c
   </source-code>
   <source-code lang="TypeScript">
     import { observable } from 'aurelia-framework';
-    
-    export class Car {
 
+    export class Car {
       @observable({ changeHandler: 'myChangeHandler' })
       color = 'blue';
 
@@ -111,7 +104,7 @@ If you do not want to use the conventions, you can define another name for the c
   </source-code>
 </code-listing>
 
-You can also put the `@observable` on classes.
+If you prefer, can also put the `@observable` on classes:
 
 <code-listing heading="Observable Properties">
   <source-code lang="ES 2015">
@@ -121,14 +114,13 @@ You can also put the `@observable` on classes.
       observable('color'),
       observable({ name: 'speed', changeHandler: 'speedChangeHandler' })
     ).on(class {
-    
       color = 'blue';
       speed = 300;
 
       colorChanged(newValue, oldValue) {
         // this will fire whenever the 'color' property changes
       }
-      
+
       speedChangeHandler(newValue, oldValue) {
         // this will fire whenever the 'speed' property changes
       }
@@ -136,18 +128,17 @@ You can also put the `@observable` on classes.
   </source-code>
   <source-code lang="ES 2016">
     import { observable } from 'aurelia-framework';
-    
+
     @observable('color')
     @observable({ name: 'speed', changeHandler: 'speedChangeHandler' })
     export class Car {
-
       color = 'blue';
       speed = 300;
 
       colorChanged(newValue, oldValue) {
         // this will fire whenever the 'color' property changes
       }
-      
+
       speedChangeHandler(newValue, oldValue) {
         // this will fire whenever the 'speed' property changes
       }
@@ -155,7 +146,7 @@ You can also put the `@observable` on classes.
   </source-code>
   <source-code lang="TypeScript">
     import { observable } from 'aurelia-framework';
-    
+
     @observable('color')
     @observable({ name: 'speed', changeHandler: 'speedChangeHandler' })
     export class Car {
@@ -166,7 +157,7 @@ You can also put the `@observable` on classes.
       colorChanged(newValue, oldValue) {
         // this will fire whenever the 'color' property changes
       }
-      
+
       speedChangeHandler(newValue, oldValue) {
         // this will fire whenever the 'speed' property changes
       }
