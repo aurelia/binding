@@ -65,7 +65,7 @@ describe('createComputedObserver', () => {
     constructor() {
       this._bar = null;
     }
-    @computedFrom('_bar');
+    @computedFrom('_bar')
     get bar() {
       return this._bar;
     }
