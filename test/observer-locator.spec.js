@@ -6,7 +6,8 @@ import {
   ValueAttributeObserver,
   XLinkAttributeObserver,
   DataAttributeObserver,
-  StyleObserver
+  StyleObserver,
+  specialDomAttributeAccesor
 } from '../src/element-observation';
 import {SelectValueObserver} from '../src/select-value-observer';
 import {CheckedObserver} from '../src/checked-observer';
@@ -235,5 +236,10 @@ describe('ObserverLocator', () => {
 
   it('getAccessor returns SetterObserver for input.model', () => {
     expect(locator.getAccessor(document.createElement('input'), 'model') instanceof SetterObserver).toBe(true);
+  });
+
+  it('return correct accessor for element special properties', () => {
+    expect(locator.getAccessor(document.createElement('a'), 'href')).toBe(specialDomAttributeAccesor);
+    expect(locator.getAccessor(document.createElement('img'), 'src')).toBe(specialDomAttributeAccesor);
   });
 });

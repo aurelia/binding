@@ -28,6 +28,20 @@ export const dataAttributeAccessor = {
   setValue: (value, obj, propertyName) => obj.setAttribute(propertyName, value)
 };
 
+export const specialDomAttributeAccesor = {
+  getValue: (obj, propertyName) => obj[propertyName],
+  setValue(value, obj, propertyName) {
+    // Don't pass undefined to special properties/ attributes
+    // Potential improvement ? dont' reset value if they are the same. This is helpful in some cases
+    if (value == null) {
+      obj[propertyName] = null;
+      obj.removeAttribute(propertyName);
+    } else {
+      obj[propertyName] = value;
+    }
+  }
+}
+
 export class DataAttributeObserver {
   constructor(element, propertyName) {
     this.element = element;
