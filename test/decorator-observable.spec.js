@@ -1,7 +1,12 @@
 import './setup';
 import {observable} from '../src/decorator-observable.js';
-import {decorators} from 'aurelia-metadata';
+import {decorators, metadata} from 'aurelia-metadata';
 import {SetterObserver} from '../src/property-observation';
+import {
+  coerces,
+  classCoerceMap,
+  mapCoerceForClass
+} from '../src/coerce'
 import {Logger} from 'aurelia-logging';
 
 describe('observable decorator', () => {
@@ -246,5 +251,107 @@ describe('observable decorator', () => {
       instance1.value = newValue;
       expect(instance2.value).toBe(oldValue);
     });
+  });
+
+  describe('coerce', () => {
+    const baseNumberVal = 5;
+    const baseStringVal = 'string';
+    const baseDateVal = new Date();
+    const baseBoolVal = false;
+
+    it('should initialize value correctly', () => {
+
+      const instance1 = new class MyClass {
+        @observable({ coerce: 'string' }) num = baseNumberVal;
+        @observable({ coerce: 'string' }) bool = baseBoolVal;
+        @observable({ coerce: 'string' }) date = baseDateVal;
+        @observable({ coerce: 'string' }) undef;
+      }
+
+      expect(instance1.num).toBe(baseNumberVal.toString());
+      expect(instance1.bool).toBe(baseBoolVal.toString());
+      expect(instance1.date).toBe(baseDateVal.toString());
+      expect(instance1.undef).toBe(undefined);
+    });
+
+    it('should coerce value correctly when defined on class prototype', () => {
+      const prop = 'value';
+
+      @observable({ name: prop, coerce: 'number' })
+      class MyClass {}
+
+      const instance1 = new MyClass();
+      instance1[prop] = '5';
+      expect(instance1[`_${prop}`]).toBe(5);
+      expect(instance1[prop]).toBe(5);
+    });
+
+    it('should coerce value correctly when defined on instance', () => {
+      
+      class MyClass {
+        @observable({ coerce: 'number' }) value
+      }
+
+      const instance1 = new MyClass();
+      instance1.value = '4';
+
+      expect(instance1.value).toBe(4);
+    });
+
+    it('should coerce value correctly when defined on property with metadata', () => {
+      class MyClass {
+        @observable
+        @Reflect.metadata(metadata.propertyType, Number)
+        value
+
+        @observable()
+        @Reflect.metadata(metadata.propertyType, Date)
+        date
+
+        @observable({ coerce: 'boolean' })
+        @Reflect.metadata(metadata.propertyType, Number)
+        num
+      }
+
+      const date = new Date();
+      const instance1 = new MyClass();
+      instance1.value = '4';
+      instance1.date = date.toJSON();
+      instance1.num = '4';
+      expect(instance1.value).toBe(4);
+      expect(instance1.date.toJSON()).toBe(date.toJSON());
+      expect(instance1.num).toBe(!!'4');
+    });
+
+    describe('fluent syntax', () => {
+
+      it('should coerce value correctly when defined on field', () => {
+        let instance = new class MyClass {
+          @observable.number num
+          @observable.boolean() bool
+          @observable.string({ coerce: 'number' }) string
+        }
+  
+        instance.num = '5';
+        instance.bool = '';
+        instance.string = 5;
+        expect(instance.num).toBe(5);
+        expect(instance.bool).toBe(false);
+        expect(instance.string).toBe('5');
+      });
+
+      it('should coerce value corectly when defined on class', () => {
+        let instance;
+  
+        instance = new @observable.number('num') class MyClass {}
+        instance.num = '5';
+        expect(instance.num).toBe(5);
+  
+        instance = new @observable.number({ name: 'num' }) class MyClass {}
+        instance.num = '5';
+        expect(instance.num).toBe(5);
+      })
+    });
+
   });
 });
