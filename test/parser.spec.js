@@ -1,4 +1,4 @@
-import {Parser} from '../src/parser';
+import { Parser } from '../src/parser';
 import {
   LiteralString,
   LiteralPrimitive,
@@ -178,6 +178,60 @@ describe('Parser', () => {
     }
   });
 
+  it('parses $parent before value converter', () => {
+    let child = '';
+    for (let i = 1; i < 10; i++) {
+      let s = `$parent${child} | foo`;
+      let expression = parser.parse(s);
+      expect(expression instanceof ValueConverter).toBe(true);
+      expect(expression.name).toBe('foo');
+      expect(expression.expression instanceof AccessThis).toBe(true);
+      expect(expression.expression.ancestor).toBe(i);
+      child += '.$parent';
+    }
+  });
+
+  it('parses $parent.foo before value converter', () => {
+    let child = '';
+    for (let i = 1; i < 10; i++) {
+      let s = `$parent${child}.bar | foo`;
+      let expression = parser.parse(s);
+      expect(expression instanceof ValueConverter).toBe(true);
+      expect(expression.name).toBe('foo');
+      expect(expression.expression instanceof AccessScope).toBe(true);
+      expect(expression.expression.name).toBe('bar');
+      expect(expression.expression.ancestor).toBe(i);
+      child += '.$parent';
+    }
+  });
+
+  it('parses $parent before binding behavior', () => {
+    let child = '';
+    for (let i = 1; i < 10; i++) {
+      let s = `$parent${child} & foo`;
+      let expression = parser.parse(s);
+      expect(expression instanceof BindingBehavior).toBe(true);
+      expect(expression.name).toBe('foo');
+      expect(expression.expression instanceof AccessThis).toBe(true);
+      expect(expression.expression.ancestor).toBe(i);
+      child += '.$parent';
+    }
+  });
+
+  it('parses $parent.foo before binding behavior', () => {
+    let child = '';
+    for (let i = 1; i < 10; i++) {
+      let s = `$parent${child}.bar & foo`;
+      let expression = parser.parse(s);
+      expect(expression instanceof BindingBehavior).toBe(true);
+      expect(expression.name).toBe('foo');
+      expect(expression.expression instanceof AccessScope).toBe(true);
+      expect(expression.expression.name).toBe('bar');
+      expect(expression.expression.ancestor).toBe(i);
+      child += '.$parent';
+    }
+  });
+
   it('translates $parent.foo to AccessScope', () => {
     let s = '$parent.foo';
     for (let i = 1; i < 10; i++) {
@@ -266,17 +320,17 @@ describe('Parser', () => {
   });
 
   it('does not parse invalid shorthand properties', () => {
-      let pass = false;
-      try {
-          parser.parse('{ foo.bar, bar.baz }');
-          pass = true;
-      } catch (e) { pass = false; }
-      expect(pass).toBe(false);
+    let pass = false;
+    try {
+      parser.parse('{ foo.bar, bar.baz }');
+      pass = true;
+    } catch (e) { pass = false; }
+    expect(pass).toBe(false);
 
-      try {
-          parser.parse('{ "foo.bar" }');
-          pass = true;
-      } catch (e) { pass = false; }
-      expect(pass).toBe(false);
+    try {
+      parser.parse('{ "foo.bar" }');
+      pass = true;
+    } catch (e) { pass = false; }
+    expect(pass).toBe(false);
   });
 });

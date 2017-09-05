@@ -330,6 +330,8 @@ export class ParserImplementation {
         || this.peek.text === '['
         || this.peek.text === '}'
         || this.peek.text === ','
+        || this.peek.text === '|'
+        || this.peek.text === '&'
       ) {
         return new AccessThis(ancestor);
       } else {
