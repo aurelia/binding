@@ -45,6 +45,10 @@ export class Listener {
     return result;
   }
 
+  handleEvent(event) {
+    this.callSource(event);
+  }
+
   bind(source) {
     if (this.isBound) {
       if (this.source === source) {
@@ -61,7 +65,7 @@ export class Listener {
     this._disposeListener = this.eventManager.addEventListener(
       this.target,
       this.targetEvent,
-      event => this.callSource(event),
+      this,
       this.delegationStrategy);
   }
 
