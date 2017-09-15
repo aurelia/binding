@@ -89,20 +89,24 @@ export class Binding {
 
     let mode = this.mode;
     if (!this.targetObserver) {
-      let method = mode === bindingMode.twoWay ? 'getObserver' : 'getAccessor';
+      let method = mode === bindingMode.twoWay || mode === bindingMode.fromView ? 'getObserver' : 'getAccessor';
       this.targetObserver = this.observerLocator[method](this.target, this.targetProperty);
     }
 
     if ('bind' in this.targetObserver) {
       this.targetObserver.bind();
     }
-    let value = this.sourceExpression.evaluate(source, this.lookupFunctions);
-    this.updateTarget(value);
+    if (this.mode !== bindingMode.fromView) {
+      let value = this.sourceExpression.evaluate(source, this.lookupFunctions);
+      this.updateTarget(value);
+    }
 
     if (mode === bindingMode.oneWay) {
       enqueueBindingConnect(this);
     } else if (mode === bindingMode.twoWay) {
       this.sourceExpression.connect(this, source);
+      this.targetObserver.subscribe(targetContext, this);
+    } else if (mode === bindingMode.fromView) {
       this.targetObserver.subscribe(targetContext, this);
     }
   }

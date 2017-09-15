@@ -4,6 +4,7 @@ import {bindingMode} from '../src/binding-mode';
 import {BindingEngine} from '../src/binding-engine';
 import {checkDelay} from './shared';
 import {createScopeForTest} from '../src/scope';
+import {sourceContext} from '../src/connectable-binding';
 
 describe('BindingExpression', () => {
   let bindingEngine;
@@ -13,7 +14,7 @@ describe('BindingExpression', () => {
     bindingEngine.observerLocator.dirtyChecker.checkDelay = checkDelay;
   });
 
-  it('handles AccessMember', done => {
+  it('handles AccessMember in twoWay mode', done => {
     let source = { foo: { bar: 'baz'} };
     let target = document.createElement('input');
     let bindingExpression = bindingEngine.createBindingExpression('value', 'foo.bar', bindingMode.twoWay);
@@ -32,6 +33,37 @@ describe('BindingExpression', () => {
         expect(target.value).toBe('xup');
         done();
       }, checkDelay * 2);
+    }, checkDelay * 2);
+  });
+
+  it('handles AccessMember in fromView mode', done => {
+    let source = { foo: { bar: 'baz'} };
+    let target = document.createElement('input');
+    let bindingExpression = bindingEngine.createBindingExpression('value', 'foo.bar', bindingMode.fromView);
+    let binding = bindingExpression.createBinding(target);
+
+    binding.bind(createScopeForTest(source));
+    expect(target.value).toBe('');
+
+    let sourceObserver = bindingEngine.observerLocator.getObserver(source.foo, 'bar');
+    expect(sourceObserver.hasSubscribers()).toBe(false);
+
+    expect(binding.targetObserver.hasSubscribers()).toBe(true);
+    expect(binding.targetObserver.hasSubscriber(sourceContext, sourceObserver)).toBe(false);
+    
+    source.foo.bar = 'xup';
+    setTimeout(() => {
+      expect(target.value).toBe('');
+      target.value = 'xup';
+      target.dispatchEvent(new CustomEvent('input'));
+      
+      setTimeout(() => {
+        expect(source.foo.bar).toBe('xup');
+        binding.unbind();
+        expect(binding.targetObserver.hasSubscribers()).toBe(false);
+        done();
+      }, checkDelay * 2);
+      
     }, checkDelay * 2);
   });
 
