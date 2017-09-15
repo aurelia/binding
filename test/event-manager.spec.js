@@ -142,7 +142,7 @@ describe('EventManager', () => {
       let stopDelegate = (event) => {
         event.stopPropagation();
         wasCalled = true;
-      }
+      };
       em.addEventListener(one, 'delegate', oneDelegate, true);
       em.addEventListener(three, 'delegate', stopDelegate, true);
 
@@ -151,6 +151,19 @@ describe('EventManager', () => {
 
       expect(wasCalled).toBeTruthy();
       expect(oneDelegate).not.toHaveBeenCalledWith(threeDelegateEvent);
+    });
+
+    it('calls handleEvent', () => {
+      let wasCalled = false;
+      let listener = {
+        handleEvent() {
+          wasCalled = true;
+        }
+      };
+      em.addEventListener(one, 'any', listener);
+
+      one.dispatchEvent(DOM.createCustomEvent('any'));
+      expect(wasCalled).toBe(true);
     });
   });
 });

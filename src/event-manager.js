@@ -39,7 +39,11 @@ function handleCapturedEvent(event) {
   }
   for (let i = orderedCallbacks.length - 1; i >= 0; i--) {
     let orderedCallback = orderedCallbacks[i];
-    orderedCallback(event);
+    if ('handleEvent' in orderedCallback) {
+      orderedCallback.handleEvent(event);
+    } else {
+      orderedCallback(event);
+    }
     if (event.propagationStopped) {
       break;
     }
@@ -82,7 +86,11 @@ function handleDelegatedEvent(event) {
           interceptStopPropagation(event);
           interceptInstalled = true;
         }
-        callback(event);
+        if ('handleEvent' in callback) {
+          callback.handleEvent(event);
+        } else {
+          callback(event);
+        }
       }
     }
 
@@ -274,8 +282,8 @@ export class EventManager {
     return null;
   }
 
-  addEventListener(target, targetEvent, callback, delegate) {
+  addEventListener(target, targetEvent, callbackOrListener, delegate) {
     return (this.eventStrategyLookup[targetEvent] || this.defaultEventStrategy)
-      .subscribe(target, targetEvent, callback, delegate);
+      .subscribe(target, targetEvent, callbackOrListener, delegate);
   }
 }
