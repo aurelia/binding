@@ -25,7 +25,8 @@ Aurelia supports binding HTML and SVG attributes to JavaScript expressions. Attr
 * `attribute`:  an HTML or SVG attribute name.
 * `command`: one of Aurelia's attribute binding commands:
   * `one-time`: flows data one direction: from the view-model to the view, **once**.
-  * `one-way`: flows data one direction: from the view-model to the view.
+  * `one-way` / `to-view`: flows data one direction: from the view-model to the view.
+  * `from-view`: flows data one direction: from the view to the view-model.
   * `two-way`: flows data both ways: from view-model to view and from view to view-model.
   * `bind`: automically chooses the binding mode. Uses two-way binding for form controls and one-way binding for almost everything else.
 * `expression`: a JavaScript expression.
@@ -36,6 +37,7 @@ Typically you'll use the `bind` command since it does what you intend most of th
   <source-code lang="HTML">
     <input type="text" value.bind="firstName">
     <input type="text" value.two-way="lastName">
+    <input type="text" value.from-view="middleName">
 
     <a class="external-link" href.bind="profile.blogUrl">Blog</a>
     <a class="external-link" href.one-way="profile.twitterUrl">Twitter</a>
@@ -43,7 +45,7 @@ Typically you'll use the `bind` command since it does what you intend most of th
   </source-code>
 </code-listing>
 
-The first input uses the `bind` command which will automatically create `two-way` bindings for input value attribute bindings.  The second input uses the `two-way` command which explicitly sets the binding mode. The first anchor element uses the `bind` command which will automatically create a `one-way` binding for anchor href attributes. The other two anchor elements use the `one-way` and `one-time` commands to explicitly set the binding's mode.
+The first input uses the `bind` command which will automatically create `two-way` bindings for input value attribute bindings. The second and third input uses the `two-way` / `from-view` commands which explicitly set the binding modes. For the first and second inputs, their value will be updated whenever the bound view-model `firstName` / `lastName` properties are updated, and the those properties will also be updated whenever the inputs change. For the third input, changes in the bound view-model `middleName` property will not update the input value, however, changes in the input will update the view-model. The first anchor element uses the `bind` command which will automatically create a `one-way` binding for anchor href attributes. The other two anchor elements use the `one-way` and `one-time` commands to explicitly set the binding's mode.
 
 ## [DOM Events](aurelia-doc://section/3/version/1.0.0)
 
@@ -51,8 +53,9 @@ The binding system supports binding to DOM events.  A DOM event binding will exe
 
 * `event`:  the name of a DOM event, without the "on" prefix.
 * `command`: one of Aurelia's event binding commands:
-  * `trigger`: attaches an event handler directly to the element. When the event fires, the expression will be invoked.  
-  * `delegate`: attaches a single event handler to the document (or nearest shadow DOM boundary) which handles all events of the specified type, properly dispatching them back to their original targets for invocation of the associated expression.
+  * `trigger`: attaches an event handler directly to the element. When the event fires, the expression will be invoked.
+  * `delegate`: attaches a single event handler to the document (or nearest shadow DOM boundary) which handles all events of the specified type in **bubbling** phase, properly dispatching them back to their original targets for invocation of the associated expression.
+  * `capture`: attaches a single event handler to the document (or nearest shadow DOM boundary) which handles all events of the specified type in **capturing** phase, properly dispatching them back to their original targets for invocation of the associated expression.
 * `expression`: a JavaScript expression. Use the special `$event` property to access the DOM event in your binding expression.
 
 Below are a few examples.
