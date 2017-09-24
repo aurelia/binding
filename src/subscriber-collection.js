@@ -43,13 +43,29 @@ function removeSubscriber(context, callable) {
     this._callable2 = null;
     return true;
   }
-  let rest = this._contextsRest;
+  let contextsRest = this._contextsRest;
+  let callablesRest = this._callablesRest;
   let index;
-  if (!rest || !rest.length || (index = rest.indexOf(context)) === -1 || this._callablesRest[index] !== callable) { // eslint-disable-line no-cond-assign
+  if (!contextsRest || !contextsRest.length) {
     return false;
   }
-  rest.splice(index, 1);
-  this._callablesRest.splice(index, 1);
+  if ((index = callablesRest.indexOf(callable)) === -1) {
+    return false;
+  }
+  if (contextsRest[index] !== context) {
+    let len = callablesRest.length;
+    while (len > index) {
+      if (contextsRest[index] === context) {
+        break;
+      }
+      index++;
+    }
+    if (index === len) {
+      return false;
+    }
+  }
+  contextsRest.splice(index, 1);
+  callablesRest.splice(index, 1);
   return true;
 }
 
