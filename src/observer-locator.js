@@ -19,8 +19,7 @@ import {
   XLinkAttributeObserver,
   DataAttributeObserver,
   StyleObserver,
-  dataAttributeAccessor,
-  specialDomAttributeAccesor
+  dataAttributeAccessor
 } from './element-observation';
 import {ClassObserver} from './class-observer';
 import {
@@ -189,13 +188,11 @@ export class ObserverLocator {
         || /^xlink:.+$/.exec(propertyName)) {
         return this.getObserver(obj, propertyName);
       }
-      if (/^\w+:|^data-|^aria-/.test(propertyName)
-        || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
-        return dataAttributeAccessor;
-      }
-      if (propertyName in obj) {
-        return specialDomAttributeAccesor;
-      }
+      return dataAttributeAccessor;
+      // if (/^\w+:|^data-|^aria-/.test(propertyName)
+      //   || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
+      //   return dataAttributeAccessor;
+      // }
     }
     return propertyAccessor;
   }

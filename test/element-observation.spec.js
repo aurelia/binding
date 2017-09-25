@@ -5,7 +5,8 @@ import {
   ValueAttributeObserver,
   XLinkAttributeObserver,
   DataAttributeObserver,
-  StyleObserver
+  StyleObserver,
+  dataAttributeAccessor
 } from '../src/element-observation';
 import {
   createElement,
@@ -255,6 +256,29 @@ describe('element observation', () => {
 
     it('implements the property observer api', done => {
       executeSharedPropertyObserverTests(obj, observer, done);
+    });
+  });
+
+  describe('element accessor', () => {
+    it('sets and remove attribute correctly', () => {
+      let cases = [
+        { tag: '<a></a>', attr: 'href' },
+        { tag: '<img />', attr: 'src' }
+      ];
+      cases.forEach(test => {
+        let el = createElement(test.tag);
+        let accessor = locator.getAccessor(el);
+        [null, undefined].forEach(val => {
+          accessor.setValue(val, el, test.attr);
+          expect(el.hasAttributes(test.attr)).toBe(false);
+        });
+
+        accessor = locator.getAccessor(el);
+        [true, false, '', NaN, 'foo', 5].forEach(val => {
+          accessor.setValue(val, el, test.attr);
+          expect(el.getAttribute(test.attr)).toBe(val.toString());
+        });
+      });
     });
   });
 });

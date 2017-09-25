@@ -25,22 +25,14 @@ export class XLinkAttributeObserver {
 
 export const dataAttributeAccessor = {
   getValue: (obj, propertyName) => obj.getAttribute(propertyName),
-  setValue: (value, obj, propertyName) => obj.setAttribute(propertyName, value)
-};
-
-export const specialDomAttributeAccesor = {
-  getValue: (obj, propertyName) => obj[propertyName],
-  setValue(value, obj, propertyName) {
-    // Don't pass undefined to special properties/ attributes
-    // Potential improvement ? dont' reset value if they are the same. This is helpful in some cases
-    if (value == null) {
-      obj[propertyName] = null;
+  setValue: (value, obj, propertyName) => {
+    if (value === null || value === undefined) {
       obj.removeAttribute(propertyName);
     } else {
-      obj[propertyName] = value;
+      obj.setAttribute(propertyName, value);
     }
   }
-}
+};
 
 export class DataAttributeObserver {
   constructor(element, propertyName) {
@@ -53,6 +45,9 @@ export class DataAttributeObserver {
   }
 
   setValue(newValue) {
+    if (newValue === null || newValue === undefined) {
+      return this.element.removeAttribute(this.propertyName);
+    }
     return this.element.setAttribute(this.propertyName, newValue);
   }
 
