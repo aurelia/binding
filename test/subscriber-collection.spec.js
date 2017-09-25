@@ -43,4 +43,24 @@ describe('subscriberCollection', () => {
     expect(callable9.call).toHaveBeenCalledWith('9', 'new value2', 'old value2');
     expect(callable10.call).toHaveBeenCalledWith('10', 'new value2', 'old value2');
   });
+
+  it('removes subscribers', () => {
+    let observer = new Test();
+
+    let subscribers = [];
+    for (let i = 0, ii = 100; ii > i; ++i) {
+      observer.addSubscriber((i % 5).toString(), subscribers[i] = { i });
+    }
+
+    let removalCount = 0;
+    for (let i = 4, ii = subscribers.length; ii > i; i += 5) {
+      let result = observer.removeSubscriber((i % 5).toString(), subscribers[i]);
+      if (result) {
+        removalCount++;
+      }
+    }
+    expect(observer._callablesRest.length).toBe(subscribers.length - 3 - removalCount);
+
+    expect(observer.removeSubscriber('5', {})).toBe(false);
+  });
 });
