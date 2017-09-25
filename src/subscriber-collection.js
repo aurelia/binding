@@ -43,29 +43,20 @@ function removeSubscriber(context, callable) {
     this._callable2 = null;
     return true;
   }
-  let contextsRest = this._contextsRest;
-  let callablesRest = this._callablesRest;
-  let index;
-  if (!contextsRest || !contextsRest.length) {
+  const callables = this._callablesRest;
+  if (callables === undefined || callables.length === 0) {
     return false;
   }
-  if ((index = callablesRest.indexOf(callable)) === -1) {
+  const contexts = this._contextsRest;
+  let i = 0;
+  while (!(callables[i] === callable && contexts[i] === context) && callables.length > i) {
+    i++;
+  }
+  if (i >= callables.length) {
     return false;
   }
-  if (contextsRest[index] !== context) {
-    let len = callablesRest.length;
-    while (len > index) {
-      if (contextsRest[index] === context) {
-        break;
-      }
-      index++;
-    }
-    if (index === len) {
-      return false;
-    }
-  }
-  contextsRest.splice(index, 1);
-  callablesRest.splice(index, 1);
+  contexts.splice(i, 1);
+  callables.splice(i, 1);
   return true;
 }
 

@@ -54,11 +54,13 @@ describe('subscriberCollection', () => {
 
     let removalCount = 0;
     for (let i = 4, ii = subscribers.length; ii > i; i += 5) {
-      let result = observer.removeSubscriber(i.toString(), subscribers[i]);
+      let result = observer.removeSubscriber((i % 5).toString(), subscribers[i]);
       if (result) {
         removalCount++;
       }
     }
-    expect(observer._callablesRest.length).toBe(100 - 3 - removalCount);
+    expect(observer._callablesRest.length).toBe(subscribers.length - 3 - removalCount);
+
+    expect(observer.removeSubscriber('5', {})).toBe(false);
   });
 });
