@@ -70,7 +70,7 @@ describe('CallScope', () => {
   });
 
   it('connects defined property on bindingContext', () => {
-    let scope = createScopeForTest({ foo: 'bar' });
+    let scope = createScopeForTest({ foo: null });
     binding.observeProperty.calls.reset();
     foo.connect(binding, scope);
     expect(binding.observeProperty).not.toHaveBeenCalled();
@@ -133,5 +133,47 @@ describe('CallScope', () => {
     expect(binding.observeProperty).not.toHaveBeenCalled();
     hello.connect(binding, scope);
     expect(binding.observeProperty).toHaveBeenCalledWith(scope.overrideContext.parentOverrideContext, 'arg');
+  });
+
+  describe('decorated with computedFrom', () => {
+    let fooFn;
+    let helloFn;
+
+    beforeEach(() => {
+      fooFn = function() {
+        return `message of bar is ${this.message}`;
+      };
+      fooFn.dependencies = ['message'];
+
+      helloFn = function(arg) {
+        return `hello with arg: ${arg}. Will update binding if message property changes. Current: ${this.message}`;
+      };
+      helloFn.dependencies = ['message', 'name'];
+    });
+
+    it('connects with dependencies on target method', () => {
+      let scope = createScopeForTest({ message: 'Fuh Ro Dah', foo: fooFn, hello: helloFn, arg: 'world' });
+      binding.observeProperty.calls.reset();
+      binding.observerLocator = {
+        parser: {
+          parse(name) {
+            return new AccessScope(name, 0);
+          }
+        }
+      };
+      foo.connect(binding, scope);
+      expect(fooFn.dependencies[0] instanceof AccessScope).toBe(true);
+      expect(binding.observeProperty).toHaveBeenCalledWith(scope.bindingContext, 'message');
+      expect(binding.observeProperty).not.toHaveBeenCalledWith(scope.bindingContext, 'name');
+      expect(binding.observeProperty).not.toHaveBeenCalledWith(scope.bindingContext, 'arg');
+
+      binding.observeProperty.calls.reset();
+      hello.connect(binding, scope);
+      expect(helloFn.dependencies.every(d => d instanceof AccessScope)).toBe(true);
+
+      expect(binding.observeProperty).toHaveBeenCalledWith(scope.bindingContext, 'message');
+      expect(binding.observeProperty).toHaveBeenCalledWith(scope.bindingContext, 'name');
+      expect(binding.observeProperty).toHaveBeenCalledWith(scope.bindingContext, 'arg');
+    });
   });
 });

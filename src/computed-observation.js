@@ -12,10 +12,30 @@ export function declarePropertyDependencies(ctor, propertyName, dependencies) {
 }
 
 export function computedFrom(...rest) {
-  return function(target, key, descriptor) {
-    descriptor.get.dependencies = rest;
+  return deco;
+  /**
+   * @param {Function} target
+   * @param {string} key
+   * @param {PropertyDescriptor} descriptor
+   */
+  function deco(target, key, descriptor) {
+    /**
+     * For typescript, property initialization will be delegated to constructor
+     * For babel, it's a special property on descriptor, `initializer`
+     * Which means, descriptor.get === getter & descriptor.value === method
+     */
+    if (descriptor === undefined || (descriptor.get === undefined && descriptor.value === undefined)) {
+      const realTarget = key === undefined ? target : target.constructor;
+      throw new Error(`Cannot place 'computedFrom' on property '${key}' for '${realTarget.name}'. No getter or method found. Is it on a normal class field ?`);
+    }
+    // decorator on method
+    if (descriptor.get === undefined) {
+      descriptor.value.dependencies = rest;
+    } else { // decorator on getter
+      descriptor.get.dependencies = rest;
+    }
     return descriptor;
-  };
+  }
 }
 
 export class ComputedExpression extends Expression {

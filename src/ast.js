@@ -360,8 +360,22 @@ export class CallScope extends Expression {
   }
 
   connect(binding, scope) {
-    let args = this.args;
-    let i = args.length;
+    const context = getContextFor(this.name, scope, this.ancestor);
+    const func = getFunction(context, this.name, false);
+    let i;
+    if (func !== null && func.dependencies !== undefined) {
+      const dependencies = func.dependencies;
+      i = dependencies.length;
+      while (i--) {
+        let dependency = dependencies[i];
+        if (typeof dependency === 'string') {
+          dependency = dependencies[i] = binding.observerLocator.parser.parse(dependency);
+        }
+        dependency.connect(binding, scope);
+      }
+    }
+    const args = this.args;
+    i = args.length;
     while (i--) {
       args[i].connect(binding, scope);
     }
