@@ -1,3 +1,19 @@
+<a name="1.3.0"></a>
+# [1.3.0](https://github.com/aurelia/binding/compare/1.2.2...v1.3.0) (2017-10-01)
+
+
+### Bug Fixes
+
+* **ParserImplementation:** allow use of $parent with | or & expressions ([a18fd33](https://github.com/aurelia/binding/commit/a18fd33)), closes [aurelia/framework#791](https://github.com/aurelia/framework/issues/791)
+* **subscriber-collection:** fix removeSubscriber leak ([8fe6181](https://github.com/aurelia/binding/commit/8fe6181)), closes [#585](https://github.com/aurelia/binding/issues/585) [#555](https://github.com/aurelia/binding/issues/555)
+
+
+### Features
+
+* **Binding:** fromView, toView ([f232a73](https://github.com/aurelia/binding/commit/f232a73)), closes [aurelia/binding#33](https://github.com/aurelia/binding/issues/33)
+
+
+
 <a name="1.2.1"></a>
 ## [1.2.1](https://github.com/aurelia/binding/compare/1.2.0...v1.2.1) (2017-03-23)
 
