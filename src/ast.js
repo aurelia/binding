@@ -1,5 +1,41 @@
 import {Unparser} from './unparser';
 import {getContextFor} from './scope';
+import {sourceContext} from './connectable-binding';
+
+/**
+ * @typedef IBinding
+ * @prop {{()}} bind
+ * @prop {{()}} unbind
+ * @prop {{()}} call
+ */
+
+/**@type {{[x: string]: Set<IBinding>}} */
+const converterBindingSignals = {};
+
+function callBinding(binding: IBinding) {
+  binding.call(sourceContext);
+}
+
+export const ConverterSignaler = {
+  addBinding(name: string, binding: IBinding): void {
+    const bindings = converterBindingSignals[name] || (converterBindingSignals[name] = new Set());
+    if (!bindings.has(binding)) {
+      bindings.add(binding);
+    }
+  },
+  removeBinding(name: string, binding: IBinding): void {
+    const bindings = converterBindingSignals[name];
+    if (bindings !== undefined) {
+      bindings.delete(binding);
+    }
+  },
+  signal(name: string): void {
+    let bindings = converterBindingSignals[name];
+    if (bindings !== undefined) {
+      bindings.forEach(callBinding);
+    }
+  }
+};
 
 export class Expression {
   constructor() {
@@ -147,6 +183,42 @@ export class ValueConverter extends Expression {
     let i = expressions.length;
     while (i--) {
       expressions[i].connect(binding, scope);
+    }
+  }
+
+  bind(binding, scope, lookupFunctions) {
+    if (this.expression.expression && this.expression.bind) {
+      this.expression.bind(binding, scope, lookupFunctions);
+    }
+    const converter = lookupFunctions.valueConverters(this.name);
+    if (!converter) {
+      throw new Error(`No ValueConverter named "${this.name}" was found`);
+    }
+    const signalNames = converter.signals;
+    if (signalNames === null || signalNames === undefined) {
+      return;
+    }
+
+    const converterSignalsKey = `${this.name}_ConverterSignals`;
+    binding[converterSignalsKey] = Array.isArray(signalNames) ? signalNames : [signalNames];
+    let i = signalNames.length;
+    while (i--) {
+      ConverterSignaler.addBinding(signalNames[i], binding);
+    }
+  }
+
+  unbind(binding, scope) {
+    const converterSignalsKey = `${this.name}_ConverterSignals`;
+    const converterSignals = binding[converterSignalsKey];
+    if (Array.isArray(converterSignals)) {
+      let i = converterSignals.length;
+      while (i--) {
+        ConverterSignaler.removeBinding(converterSignals[i], binding);
+      }
+    }
+    binding[converterSignalsKey] = null;
+    if (this.expression.expression && this.expression.unbind) {
+      this.expression.unbind(binding, scope);
     }
   }
 }
