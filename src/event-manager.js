@@ -237,14 +237,14 @@ export class EventManager {
 
   createElementHandler(events) {
     return {
-      subscribe(target, callback) {
+      subscribe(target, callbackOrListener) {
         events.forEach(changeEvent => {
-          target.addEventListener(changeEvent, callback, false);
+          target.addEventListener(changeEvent, callbackOrListener, false);
         });
 
         return function() {
           events.forEach(changeEvent => {
-            target.removeEventListener(changeEvent, callback);
+            target.removeEventListener(changeEvent, callbackOrListener, false);
           });
         };
       }

@@ -133,9 +133,13 @@ export class SelectValueObserver {
     this.callSubscribers(newValue, oldValue);
   }
 
+  handleEvent() {
+    this.synchronizeValue();
+  }
+
   subscribe(context, callable) {
     if (!this.hasSubscribers()) {
-      this.disposeHandler = this.handler.subscribe(this.element, this.synchronizeValue.bind(this, false));
+      this.disposeHandler = this.handler.subscribe(this.element, this);
     }
     this.addSubscriber(context, callable);
   }
