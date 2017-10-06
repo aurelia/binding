@@ -1,6 +1,7 @@
 import {Unparser} from './unparser';
 import {getContextFor} from './scope';
 import {sourceContext} from './connectable-binding';
+import {connectBindingToSignal} from './signals';
 
 /**
  * @typedef IBinding
@@ -184,41 +185,19 @@ export class ValueConverter extends Expression {
     while (i--) {
       expressions[i].connect(binding, scope);
     }
-  }
-
-  bind(binding, scope, lookupFunctions) {
-    if (this.expression.expression && this.expression.bind) {
-      this.expression.bind(binding, scope, lookupFunctions);
-    }
-    const converter = lookupFunctions.valueConverters(this.name);
+    let converter = binding.lookupFunctions.valueConverters(this.name);
     if (!converter) {
-      throw new Error(`No ValueConverter named "${this.name}" was found`);
+      throw new Error(`No ValueConverter named "${this.name}" was found!`);
     }
-    const signalNames = converter.signals;
-    if (signalNames === null || signalNames === undefined) {
+    let signals = converter.signals;
+    if (signals === undefined) {
       return;
     }
-
-    const converterSignalsKey = `${this.name}_ConverterSignals`;
-    binding[converterSignalsKey] = Array.isArray(signalNames) ? signalNames : [signalNames];
-    let i = signalNames.length;
+    // support both input type 'signal' & ['signal-1', 'signal-2']
+    signals = Array.isArray(signals) ? signals : [signals];
+    i = signals.length;
     while (i--) {
-      ConverterSignaler.addBinding(signalNames[i], binding);
-    }
-  }
-
-  unbind(binding, scope) {
-    const converterSignalsKey = `${this.name}_ConverterSignals`;
-    const converterSignals = binding[converterSignalsKey];
-    if (Array.isArray(converterSignals)) {
-      let i = converterSignals.length;
-      while (i--) {
-        ConverterSignaler.removeBinding(converterSignals[i], binding);
-      }
-    }
-    binding[converterSignalsKey] = null;
-    if (this.expression.expression && this.expression.unbind) {
-      this.expression.unbind(binding, scope);
+      connectBindingToSignal(binding, signals[i]);
     }
   }
 }
