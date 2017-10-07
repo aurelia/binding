@@ -1,42 +1,6 @@
 import {Unparser} from './unparser';
 import {getContextFor} from './scope';
-import {sourceContext} from './connectable-binding';
 import {connectBindingToSignal} from './signals';
-
-/**
- * @typedef IBinding
- * @prop {{()}} bind
- * @prop {{()}} unbind
- * @prop {{()}} call
- */
-
-/**@type {{[x: string]: Set<IBinding>}} */
-const converterBindingSignals = {};
-
-function callBinding(binding: IBinding) {
-  binding.call(sourceContext);
-}
-
-export const ConverterSignaler = {
-  addBinding(name: string, binding: IBinding): void {
-    const bindings = converterBindingSignals[name] || (converterBindingSignals[name] = new Set());
-    if (!bindings.has(binding)) {
-      bindings.add(binding);
-    }
-  },
-  removeBinding(name: string, binding: IBinding): void {
-    const bindings = converterBindingSignals[name];
-    if (bindings !== undefined) {
-      bindings.delete(binding);
-    }
-  },
-  signal(name: string): void {
-    let bindings = converterBindingSignals[name];
-    if (bindings !== undefined) {
-      bindings.forEach(callBinding);
-    }
-  }
-};
 
 export class Expression {
   constructor() {
