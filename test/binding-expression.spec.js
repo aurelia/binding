@@ -51,27 +51,26 @@ describe('BindingExpression', () => {
 
     expect(binding.targetObserver.hasSubscribers()).toBe(true);
     expect(binding.targetObserver.hasSubscriber(sourceContext, sourceObserver)).toBe(false);
-    
+
     source.foo.bar = 'xup';
     setTimeout(() => {
       expect(target.value).toBe('');
       target.value = 'xup';
       target.dispatchEvent(new CustomEvent('input'));
-      
+
       setTimeout(() => {
         expect(source.foo.bar).toBe('xup');
         binding.unbind();
         expect(binding.targetObserver.hasSubscribers()).toBe(false);
         done();
       }, checkDelay * 2);
-      
     }, checkDelay * 2);
   });
 
   describe('ValueConverter', () => {
     it('handles ValueConverter without signals', done => {
       let valueConverters = {
-        numberToString: { toView: value => value.toString(), fromView: value => parseInt(value) },
+        numberToString: { toView: value => value.toString(), fromView: value => parseInt(value, 10) },
         multiply: { toView: (value, arg) => value * arg, fromView: (value, arg) => value / arg }
       };
       spyOn(valueConverters.numberToString, 'toView').and.callThrough();
@@ -146,7 +145,7 @@ describe('BindingExpression', () => {
       let prefix = '_';
       let valueConverters = {
         withSingleSignals: {
-          signals: 'hello',
+          signals: ['hello'],
           toView: val => prefix + val
         },
         withMultipleSignals: {
@@ -172,7 +171,7 @@ describe('BindingExpression', () => {
         lookupFunctions
       );
       let binding2 = bindingExpression2.createBinding(target2);
-      var scope = createScopeForTest(source);
+      let scope = createScopeForTest(source);
       binding1.bind(scope);
       binding2.bind(scope);
       expect(target1.value).toBe('_1');
@@ -197,7 +196,7 @@ describe('BindingExpression', () => {
     let bindingBehaviors = {
       numberToString: { bind: (binding, source) => {}, unbind: (binding, source) => {} },
       multiply: { bind: (binding, source) => {}, unbind: (binding, source) => {} }
-    }
+    };
     spyOn(bindingBehaviors.numberToString, 'bind').and.callThrough();
     spyOn(bindingBehaviors.numberToString, 'unbind').and.callThrough();
     spyOn(bindingBehaviors.multiply, 'bind').and.callThrough();

@@ -157,8 +157,6 @@ export class ValueConverter extends Expression {
     if (signals === undefined) {
       return;
     }
-    // support both input type 'signal' & ['signal-1', 'signal-2']
-    signals = Array.isArray(signals) ? signals : [signals];
     i = signals.length;
     while (i--) {
       connectBindingToSignal(binding, signals[i]);
