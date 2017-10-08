@@ -617,6 +617,12 @@ export declare function bindingBehavior(name: string): any;
 export declare const sourceContext: string;
 
 /**
+ * A context used when invoking a binding's callable API to notify
+ * the binding that the context is a "target update".
+ */
+export declare const targetContext: string;
+
+/**
  * An internal API used by Aurelia's array observation components.
  */
 export declare function getChangeRecords(): any;

@@ -1,6 +1,7 @@
 import {bindingMode} from './binding-mode';
-import {connectable, sourceContext} from './connectable-binding';
+import {connectable} from './connectable-binding';
 import {enqueueBindingConnect} from './connect-queue';
+import {sourceContext, targetContext} from './call-context';
 
 export class BindingExpression {
   constructor(observerLocator, targetProperty, sourceExpression,
@@ -25,8 +26,6 @@ export class BindingExpression {
       );
   }
 }
-
-const targetContext = 'Binding:target';
 
 @connectable()
 export class Binding {

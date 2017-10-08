@@ -1,4 +1,5 @@
-export const sourceContext = 'Binding:source';
+import {sourceContext} from './call-context';
+
 const slotNames = [];
 const versionSlotNames = [];
 
