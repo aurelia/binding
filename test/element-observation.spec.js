@@ -267,7 +267,7 @@ describe('element observation', () => {
       ];
       cases.forEach(test => {
         let el = createElement(test.tag);
-        let accessor = locator.getAccessor(el);
+        let accessor = locator.getAccessor(el, test.attr);
         [null, undefined].forEach(val => {
           accessor.setValue(val, el, test.attr);
           expect(el.hasAttributes(test.attr)).toBe(false);

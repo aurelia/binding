@@ -188,11 +188,13 @@ export class ObserverLocator {
         || /^xlink:.+$/.exec(propertyName)) {
         return this.getObserver(obj, propertyName);
       }
-      return dataAttributeAccessor;
-      // if (/^\w+:|^data-|^aria-/.test(propertyName)
-      //   || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
-      //   return dataAttributeAccessor;
-      // }
+      if (/^\w+:|^data-|^aria-/.test(propertyName)
+        || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)
+        || obj.tagName.toLowerCase() === 'img' && propertyName === 'src'
+        || obj.tagName.toLowerCase() === 'a' && propertyName === 'href'
+      ) {
+        return dataAttributeAccessor;
+      }
     }
     return propertyAccessor;
   }

@@ -240,11 +240,8 @@ describe('ObserverLocator', () => {
 
   it('getAccesor returns dataAttributeAccesor for anything else', () => {
     [
-      { tag: 'div', attr: 'role' },
       { tag: 'a', attr: 'href' },
-      { tag: 'img', attr: 'src' },
-      { tag: 'map', attr: 'usemap' }
-      // TODO: find edge cases
+      { tag: 'img', attr: 'src' }
     ].forEach(test => {
       let el = document.createElement(test.tag);
       expect(locator.getAccessor(el, test.attr)).toBe(dataAttributeAccessor);
