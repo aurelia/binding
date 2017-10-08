@@ -25,10 +25,10 @@ Aurelia supports binding HTML and SVG attributes to JavaScript expressions. Attr
 * `attribute`:  an HTML or SVG attribute name.
 * `command`: one of Aurelia's attribute binding commands:
   * `one-time`: flows data one direction: from the view-model to the view, **once**.
-  * `one-way` / `to-view`: flows data one direction: from the view-model to the view.
+  * `to-view`: flows data one direction: from the view-model to the view.
   * `from-view`: flows data one direction: from the view to the view-model.
   * `two-way`: flows data both ways: from view-model to view and from view to view-model.
-  * `bind`: automically chooses the binding mode. Uses two-way binding for form controls and one-way binding for almost everything else.
+  * `bind`: automically chooses the binding mode. Uses two-way binding for form controls and to-view binding for almost everything else.
 * `expression`: a JavaScript expression.
 
 Typically you'll use the `bind` command since it does what you intend most of the time.  Consider using `one-time` in performance critical situations where the data never changes because it skips the overhead of observing the view-model for changes. Below are a few examples.
@@ -40,12 +40,12 @@ Typically you'll use the `bind` command since it does what you intend most of th
     <input type="text" value.from-view="middleName">
 
     <a class="external-link" href.bind="profile.blogUrl">Blog</a>
-    <a class="external-link" href.one-way="profile.twitterUrl">Twitter</a>
+    <a class="external-link" href.to-view="profile.twitterUrl">Twitter</a>
     <a class="external-link" href.one-time="profile.linkedInUrl">LinkedIn</a>
   </source-code>
 </code-listing>
 
-The first input uses the `bind` command which will automatically create `two-way` bindings for input value attribute bindings. The second and third input uses the `two-way` / `from-view` commands which explicitly set the binding modes. For the first and second inputs, their value will be updated whenever the bound view-model `firstName` / `lastName` properties are updated, and the those properties will also be updated whenever the inputs change. For the third input, changes in the bound view-model `middleName` property will not update the input value, however, changes in the input will update the view-model. The first anchor element uses the `bind` command which will automatically create a `one-way` binding for anchor href attributes. The other two anchor elements use the `one-way` and `one-time` commands to explicitly set the binding's mode.
+The first input uses the `bind` command which will automatically create `two-way` bindings for input value attribute bindings. The second and third input uses the `two-way` / `from-view` commands which explicitly set the binding modes. For the first and second inputs, their value will be updated whenever the bound view-model `firstName` / `lastName` properties are updated, and the those properties will also be updated whenever the inputs change. For the third input, changes in the bound view-model `middleName` property will not update the input value, however, changes in the input will update the view-model. The first anchor element uses the `bind` command which will automatically create a `to-view` binding for anchor href attributes. The other two anchor elements use the `to-view` and `one-time` commands to explicitly set the binding's mode.
 
 ## [DOM Events](aurelia-doc://section/3/version/1.0.0)
 
@@ -61,13 +61,13 @@ The binding system supports binding to DOM events.  A DOM event binding will exe
 Below are a few examples.
 
 <code-listing heading="DOM Event Binding Examples">
-  <source-code lang="HTML">    
+  <source-code lang="HTML">
     <button type="button" click.trigger="cancel()">Cancel</button>
 
     <button type="button" click.delegate="select('yes')">Yes</button>
     <button type="button" click.delegate="select('no')">No</button>
 
-    <input type="text" blur.trigger="elementBlurred($event.target)">    
+    <input type="text" blur.trigger="elementBlurred($event.target)">
     <input type="text" change.delegate="lastName = $event.target.value">
   </source-code>
 </code-listing>
@@ -131,7 +131,7 @@ String interpolation expressions enable interpolating (surprise!) the result of 
 
 The first span uses the `bind` command. The second uses string interpolation.  The interpolated version is much easier to read and easy to remember because the syntax matches the [template literal](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals) syntax standardized in ES2015/ES6.
 
-String interpolation can be used within html attributes as an alternative to one-way binding. By default, the mode of an interpolation binding is `one-way` and the result of the expression is always coerced to a string. Results that are `null` or `undefined` will result in empty string.
+String interpolation can be used within html attributes as an alternative to to-view binding. By default, the mode of an interpolation binding is `to-view` and the result of the expression is always coerced to a string. Results that are `null` or `undefined` will result in empty string.
 
 ## [Element Content](aurelia-doc://section/7/version/1.0.0)
 

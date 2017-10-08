@@ -651,7 +651,7 @@ describe('SelectValueObserver', () => {
         </select>`);
       document.body.appendChild(el);
       binding = getBinding(observerLocator, obj, 'selectedItem', el, 'value', bindingMode.twoWay).binding;
-      binding2 = getBinding(observerLocator, obj, 'optionB', el.options.item(1), 'value', bindingMode.oneWay).binding;
+      binding2 = getBinding(observerLocator, obj, 'optionB', el.options.item(1), 'value', bindingMode.toView).binding;
     });
 
     it('binds', done => {

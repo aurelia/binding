@@ -271,7 +271,7 @@ describe('CheckedObserver', () => {
       el = createElement('<input type="checkbox" />');
       document.body.appendChild(el);
       binding = getBinding(observerLocator, obj, 'selectedItems', el, 'checked', bindingMode.twoWay).binding;
-      binding2 = getBinding(observerLocator, obj, 'value', el, 'value', bindingMode.oneWay).binding;
+      binding2 = getBinding(observerLocator, obj, 'value', el, 'value', bindingMode.toView).binding;
     });
 
     it('binds', done => {

@@ -20,7 +20,7 @@ describe('CompositeObserver', () => {
     let obj = { condition: true, yes: 'yes', 'no': 'no' };
     let el = createElement('<div></div>');
     document.body.appendChild(el);
-    let binding = getBinding(observerLocator, obj, 'condition ? yes : no', el, 'textContent', bindingMode.oneWay).binding;
+    let binding = getBinding(observerLocator, obj, 'condition ? yes : no', el, 'textContent', bindingMode.toView).binding;
 
     let conditionObserver = observerLocator.getObserver(obj, 'condition');
     let yesObserver = observerLocator.getObserver(obj, 'yes');
@@ -66,7 +66,7 @@ describe('CompositeObserver', () => {
     let obj = { a: false, b: false, c: 1 };
     let el = createElement('<div></div>');
     document.body.appendChild(el);
-    let binding = getBinding(observerLocator, obj, 'a && b || c', el, 'textContent', bindingMode.oneWay).binding;
+    let binding = getBinding(observerLocator, obj, 'a && b || c', el, 'textContent', bindingMode.toView).binding;
 
     let aObserver = observerLocator.getObserver(obj, 'a');
     let bObserver = observerLocator.getObserver(obj, 'b');
@@ -109,7 +109,7 @@ describe('CompositeObserver', () => {
     let obj = { condition: true };
     let el = createElement('<div></div>');
     document.body.appendChild(el);
-    let binding = getBinding(observerLocator, obj, '!condition', el, 'textContent', bindingMode.oneWay).binding;
+    let binding = getBinding(observerLocator, obj, '!condition', el, 'textContent', bindingMode.toView).binding;
 
     let conditionObserver = observerLocator.getObserver(obj, 'condition');
     expect(conditionObserver.hasSubscribers()).toBe(false);
@@ -133,7 +133,7 @@ describe('CompositeObserver', () => {
     let obj = { a: 'a', b: 'b', test: (a, b) => a + b };
     let el = createElement('<div></div>');
     document.body.appendChild(el);
-    let binding = getBinding(observerLocator, obj, 'test(a, b)', el, 'textContent', bindingMode.oneWay).binding;
+    let binding = getBinding(observerLocator, obj, 'test(a, b)', el, 'textContent', bindingMode.toView).binding;
 
     let aObserver = observerLocator.getObserver(obj, 'a');
     let bObserver = observerLocator.getObserver(obj, 'b');
@@ -168,7 +168,7 @@ describe('CompositeObserver', () => {
     let obj = foo.obj;
     let el = createElement('<div></div>');
     document.body.appendChild(el);
-    let binding = getBinding(observerLocator, foo, 'obj.test(obj.a, obj.b)', el, 'textContent', bindingMode.oneWay).binding;
+    let binding = getBinding(observerLocator, foo, 'obj.test(obj.a, obj.b)', el, 'textContent', bindingMode.toView).binding;
 
     let aObserver = observerLocator.getObserver(obj, 'a');
     let bObserver = observerLocator.getObserver(obj, 'b');
@@ -203,7 +203,7 @@ describe('CompositeObserver', () => {
     let obj = foo.obj;
     let el = createElement('<div></div>');
     document.body.appendChild(el);
-    let binding = getBinding(observerLocator, foo, 'obj[\'test\'](obj.a, obj.b)', el, 'textContent', bindingMode.oneWay).binding;
+    let binding = getBinding(observerLocator, foo, 'obj[\'test\'](obj.a, obj.b)', el, 'textContent', bindingMode.toView).binding;
 
     let aObserver = observerLocator.getObserver(obj, 'a');
     let bObserver = observerLocator.getObserver(obj, 'b');
@@ -238,7 +238,7 @@ describe('CompositeObserver', () => {
     let obj = foo.obj;
     let el = createElement('<div></div>');
     document.body.appendChild(el);
-    let binding = getBinding(observerLocator, foo, 'obj[\'test\'](obj.a, obj.b) && obj.test(obj.a, obj.b) && obj.yes && !!obj.x.y.z || obj.no', el, 'textContent', bindingMode.oneWay).binding;
+    let binding = getBinding(observerLocator, foo, 'obj[\'test\'](obj.a, obj.b) && obj.test(obj.a, obj.b) && obj.yes && !!obj.x.y.z || obj.no', el, 'textContent', bindingMode.toView).binding;
 
     let objObserver = observerLocator.getObserver(foo, 'obj');
     let aObserver = observerLocator.getObserver(obj, 'a');
