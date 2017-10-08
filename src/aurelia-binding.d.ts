@@ -146,6 +146,14 @@ export declare enum bindingMode {
    */
   toView = 1,
   /**
+   * Updates the binding target (target) property when the binding source (source) changes.
+   * This type of binding is appropriate if the element being bound is implicitly read-only.
+   * If there is no need to monitor the changes of the target property, using the one-way
+   * binding mode avoids the overhead of the two-way binding mode.
+   * @deprecated Use `toView` instead.
+   */
+  oneWay = 1,
+  /**
    * Causes changes to either the source property or the target property to automatically update
    * the other. This type of binding is appropriate for editable forms or other fully-interactive
    * UI scenarios.

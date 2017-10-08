@@ -25,7 +25,7 @@ Aurelia supports binding HTML and SVG attributes to JavaScript expressions. Attr
 * `attribute`:  an HTML or SVG attribute name.
 * `command`: one of Aurelia's attribute binding commands:
   * `one-time`: flows data one direction: from the view-model to the view, **once**.
-  * `to-view`: flows data one direction: from the view-model to the view.
+  * `to-view` / `one-way`: flows data one direction: from the view-model to the view.
   * `from-view`: flows data one direction: from the view to the view-model.
   * `two-way`: flows data both ways: from view-model to view and from view to view-model.
   * `bind`: automically chooses the binding mode. Uses two-way binding for form controls and to-view binding for almost everything else.
