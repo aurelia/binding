@@ -565,7 +565,7 @@ There are a couple of advantages to this approach: you don't need to remember th
 
 ## [Bi-directional Value Converters](aurelia-doc://section/8/version/1.0.0)
 
-So far we've been using converters with one-way bindings. The data flows in a single direction, from the model to the view.  When using a converter in an input element's `value` binding, we need a way to convert the user's data entry to the format expected by the view-model. This is where the value converter's `fromView` method comes into play, taking the element's value and converting it to the format expected by the view-model.
+So far we've been using converters with to-view bindings. The data flows in a single direction, from the model to the view.  When using a converter in an input element's `value` binding, we need a way to convert the user's data entry to the format expected by the view-model. This is where the value converter's `fromView` method comes into play, taking the element's value and converting it to the format expected by the view-model.
 
 In the example below, we have a view-model that exposes colors in an object format, with properties for the red, green and blue components. In the view, we want to bind this color object to an HTML5 color input. The color input expects hex format text, so we'll use an `RgbToHexValueConverter` to facilitate the binding.
 

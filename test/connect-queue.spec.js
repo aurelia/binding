@@ -40,7 +40,7 @@ describe('connect-queue', () => {
   });
 
   it('connects 100 bindings immediately before queueing rest', done => {
-    let expression = bindingEngine.createBindingExpression('value', 'foo', bindingMode.oneWay);
+    let expression = bindingEngine.createBindingExpression('value', 'foo', bindingMode.toView);
     let source = { bindingContext: { foo: 'bar' } };
     source.overrideContext = createOverrideContext(source.bindingContext);
     let targets = [];
@@ -68,7 +68,7 @@ describe('connect-queue', () => {
   });
 
   it('handles bindings that unbind before queue flushes', done => {
-    let expression = bindingEngine.createBindingExpression('value', 'foo', bindingMode.oneWay);
+    let expression = bindingEngine.createBindingExpression('value', 'foo', bindingMode.toView);
     let source = { bindingContext: { foo: 'bar' } };
     source.overrideContext = createOverrideContext(source.bindingContext);
     for (let i = 1; i <= 100; i++) {

@@ -100,7 +100,7 @@ export class Binding {
       this.updateTarget(value);
     }
 
-    if (mode === bindingMode.oneWay) {
+    if (mode === bindingMode.toView) {
       enqueueBindingConnect(this);
     } else if (mode === bindingMode.twoWay) {
       this.sourceExpression.connect(this, source);

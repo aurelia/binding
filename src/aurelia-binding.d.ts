@@ -134,15 +134,23 @@ export declare interface CollectionObserver {
  */
 export declare enum bindingMode {
   /**
-   * Updates the binding target once. This is essentially a simpler form of one-way binding
+   * Updates the binding target once. This is essentially a simpler form of to-view binding
    * that provides better performance in cases where the source value does not change.
    */
   oneTime = 0,
   /**
    * Updates the binding target (target) property when the binding source (source) changes.
    * This type of binding is appropriate if the element being bound is implicitly read-only.
-   * If there is no need to monitor the changes of the target property, using the OneWay
+   * If there is no need to monitor the changes of the target property, using the to-view
    * binding mode avoids the overhead of the two-way binding mode.
+   */
+  toView = 1,
+  /**
+   * Updates the binding target (target) property when the binding source (source) changes.
+   * This type of binding is appropriate if the element being bound is implicitly read-only.
+   * If there is no need to monitor the changes of the target property, using the one-way
+   * binding mode avoids the overhead of the two-way binding mode.
+   * @deprecated Use `toView` instead.
    */
   oneWay = 1,
   /**
@@ -266,11 +274,11 @@ export declare interface InternalCollectionObserver {
 /**
  * Provides high-level access to the definition of a binding, which connects the properties of
  * binding target objects (typically, HTML elements), and any data source.
- * 
- * There are several implementations of this interface, depending on the type of 
- * binding (attribute, event, interpolation). 
- * 
- * The `updateSource`, `updateTarget` and `callSource` are methods that may or may not be defined 
+ *
+ * There are several implementations of this interface, depending on the type of
+ * binding (attribute, event, interpolation).
+ *
+ * The `updateSource`, `updateTarget` and `callSource` are methods that may or may not be defined
  * depending on the type of binding.
  */
 export declare interface Binding {
@@ -429,7 +437,7 @@ export declare class AccessKeyed extends Expression {
    * The property name.
    */
   key: Expression;
-  
+
   constructor(object: Expression, key: Expression)
 }
 

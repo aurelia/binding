@@ -23,7 +23,7 @@ The additional "access" afforded to binding behaviors gives them the ability to 
 
 ## [throttle](aurelia-doc://section/2/version/1.0.0)
 
-Aurelia ships with a handful of behaviors out of the box to enable common scenarios.  The first is the throttle binding behavior which limits the rate at which the view-model is updated in two-way bindings or the rate at which the view is updated in one-way binding scenarios.  
+Aurelia ships with a handful of behaviors out of the box to enable common scenarios.  The first is the throttle binding behavior which limits the rate at which the view-model is updated in two-way bindings or the rate at which the view is updated in to-view binding scenarios.
 
 By default `throttle` will only allow updates every 200ms. You can customize the rate of course.  Here are a few examples.
 
@@ -61,7 +61,7 @@ The throttle behavior is particularly useful when binding events to methods on y
 
 ## [debounce](aurelia-doc://section/3/version/1.0.0)
 
-The debounce binding behavior is another rate limiting binding behavior. Debounce prevents the binding from being updated until a specified interval has passed without any changes.  
+The debounce binding behavior is another rate limiting binding behavior. Debounce prevents the binding from being updated until a specified interval has passed without any changes.
 
 A common use case is a search input that triggers searching automatically.  You wouldn't want to make a search API on every change (every keystroke).  It's more efficient to wait until the user has paused typing to invoke the search logic.
 
@@ -91,7 +91,7 @@ Like throttle, the `debounce` binding behavior really shines in event binding. H
 
 ## [updateTrigger](aurelia-doc://section/4/version/1.0.0)
 
-Update trigger allows you to override the input events that cause the element's value to be written to the view-model. The default events are `change` and `input`.  
+Update trigger allows you to override the input events that cause the element's value to be written to the view-model. The default events are `change` and `input`.
 
 Here's how you would tell the binding to only update the model on `blur`:
 
@@ -185,12 +185,12 @@ With the `oneTime` binding behavior you can specify that string interpolated bin
 
 This is an important feature to expose. One-time bindings are the most efficient type of binding because they don't incur any property observation overhead.
 
-There are also binding behaviors for `oneWay` and `twoWay` which you could use like this:
+There are also binding behaviors for `toView` and `twoWay` which you could use like this:
 
-<code-listing heading="One-way and two-way binding behaviours">
+<code-listing heading="To-view and two-way binding behaviours">
   <source-code lang="HTML">
-    <input value.bind="foo & oneWay">
-    <input value.one-way="foo">
+    <input value.bind="foo & toView">
+    <input value.to-view="foo">
 
     <input value.bind="foo & twoWay">
     <input value.two-way="foo">
