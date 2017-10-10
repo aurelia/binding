@@ -140,14 +140,16 @@ export declare enum bindingMode {
   oneTime = 0,
   /**
    * Updates the binding target (target) property when the binding source (source) changes.
-   * This type of binding is appropriate if the element being bound is implicitly read-only.
+   * This type of binding is appropriate if the element being bound (target) 
+   * is implicitly read-only - serves only as an output.
    * If there is no need to monitor the changes of the target property, using the to-view
    * binding mode avoids the overhead of the two-way binding mode.
    */
   toView = 1,
   /**
    * Updates the binding target (target) property when the binding source (source) changes.
-   * This type of binding is appropriate if the element being bound is implicitly read-only.
+   * This type of binding is appropriate if the element being bound (target) 
+   * is implicitly read-only - serves only as an output.
    * If there is no need to monitor the changes of the target property, using the one-way
    * binding mode avoids the overhead of the two-way binding mode.
    * @deprecated Use `toView` instead.
@@ -158,7 +160,13 @@ export declare enum bindingMode {
    * the other. This type of binding is appropriate for editable forms or other fully-interactive
    * UI scenarios.
    */
-  twoWay = 2
+  twoWay = 2,
+  /**
+   * Updates the binding source (source) when the binding target (target) property changes.
+   * This type of binding is appropriate if the element being bound (target) 
+   * is implicitly write-only - serves only as an intput.
+   */
+  fromView = 3
 }
 
 /**
