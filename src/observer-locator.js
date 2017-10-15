@@ -189,7 +189,10 @@ export class ObserverLocator {
         return this.getObserver(obj, propertyName);
       }
       if (/^\w+:|^data-|^aria-/.test(propertyName)
-        || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
+        || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)
+        || obj.tagName.toLowerCase() === 'img' && propertyName === 'src'
+        || obj.tagName.toLowerCase() === 'a' && propertyName === 'href'
+      ) {
         return dataAttributeAccessor;
       }
     }

@@ -33,18 +33,18 @@ describe('CompositeObserver', () => {
     expect(conditionObserver.hasSubscribers()).toBe(true);
     expect(yesObserver.hasSubscribers()).toBe(true);
     expect(noObserver.hasSubscribers()).toBe(false);
-    expect(el.textContent).toBe(obj.yes);
+    expect(el.id).toBe(obj.yes);
 
     obj.condition = false;
     setTimeout(() => {
       expect(conditionObserver.hasSubscribers()).toBe(true);
       expect(yesObserver.hasSubscribers()).toBe(false);
       expect(noObserver.hasSubscribers()).toBe(true);
-      expect(el.textContent).toBe(obj.no);
+      expect(el.id).toBe(obj.no);
       obj.no = 'noooo';
 
       setTimeout(() => {
-        expect(el.textContent).toBe(obj.no);
+        expect(el.id).toBe(obj.no);
         binding.unbind();
         expect(conditionObserver.hasSubscribers()).toBe(false);
         expect(yesObserver.hasSubscribers()).toBe(false);
@@ -64,6 +64,7 @@ describe('CompositeObserver', () => {
 
   it('handles Binary expressions', done => {
     let obj = { a: false, b: false, c: 1 };
+    /**@type {Element} */
     let el = createElement('<div></div>');
     document.body.appendChild(el);
     let binding = getBinding(observerLocator, obj, 'a && b || c', el, 'textContent', bindingMode.toView).binding;
@@ -79,18 +80,18 @@ describe('CompositeObserver', () => {
     expect(aObserver.hasSubscribers()).toBe(true);
     expect(bObserver.hasSubscribers()).toBe(false);
     expect(cObserver.hasSubscribers()).toBe(true);
-    expect(el.textContent).toBe(obj.c.toString());
+    expect(el.id).toBe(obj.c.toString());
 
     obj.a = true;
     setTimeout(() => {
       expect(aObserver.hasSubscribers()).toBe(true);
       expect(bObserver.hasSubscribers()).toBe(true);
       expect(cObserver.hasSubscribers()).toBe(true);
-      expect(el.textContent).toBe(obj.c.toString());
+      expect(el.id).toBe(obj.c.toString());
       obj.b = true;
 
       setTimeout(() => {
-        expect(el.textContent).toBe(obj.a.toString());
+        expect(el.id).toBe(obj.a.toString());
         expect(aObserver.hasSubscribers()).toBe(true);
         expect(bObserver.hasSubscribers()).toBe(true);
         expect(cObserver.hasSubscribers()).toBe(false);
@@ -116,12 +117,12 @@ describe('CompositeObserver', () => {
 
     binding.bind(createScopeForTest(obj));
     expect(conditionObserver.hasSubscribers()).toBe(true);
-    expect(el.textContent).toBe((!obj.condition).toString());
+    expect(el.id).toBe((!obj.condition).toString());
 
     obj.condition = false;
     setTimeout(() => {
       expect(conditionObserver.hasSubscribers()).toBe(true);
-      expect(el.textContent).toBe((!obj.condition).toString());
+      expect(el.id).toBe((!obj.condition).toString());
       binding.unbind();
       expect(conditionObserver.hasSubscribers()).toBe(false);
       document.body.removeChild(el);
@@ -146,13 +147,13 @@ describe('CompositeObserver', () => {
     expect(aObserver.hasSubscribers()).toBe(true);
     expect(bObserver.hasSubscribers()).toBe(true);
     //expect(testObserver.hasSubscribers()).toBe(true);
-    expect(el.textContent).toBe('ab');
+    expect(el.id).toBe('ab');
     obj.a = 'aa';
     setTimeout(() => {
       expect(aObserver.hasSubscribers()).toBe(true);
       expect(bObserver.hasSubscribers()).toBe(true);
       //expect(testObserver.hasSubscribers()).toBe(true);
-      expect(el.textContent).toBe('aab');
+      expect(el.id).toBe('aab');
 
       binding.unbind();
       expect(aObserver.hasSubscribers()).toBe(false);
@@ -181,13 +182,13 @@ describe('CompositeObserver', () => {
     expect(aObserver.hasSubscribers()).toBe(true);
     expect(bObserver.hasSubscribers()).toBe(true);
     //expect(testObserver.hasSubscribers()).toBe(true);
-    expect(el.textContent).toBe('ab');
+    expect(el.id).toBe('ab');
     obj.a = 'aa';
     setTimeout(() => {
       expect(aObserver.hasSubscribers()).toBe(true);
       expect(bObserver.hasSubscribers()).toBe(true);
       //expect(testObserver.hasSubscribers()).toBe(true);
-      expect(el.textContent).toBe('aab');
+      expect(el.id).toBe('aab');
 
       binding.unbind();
       expect(aObserver.hasSubscribers()).toBe(false);
@@ -216,13 +217,13 @@ describe('CompositeObserver', () => {
     expect(aObserver.hasSubscribers()).toBe(true);
     expect(bObserver.hasSubscribers()).toBe(true);
     expect(testObserver.hasSubscribers()).toBe(true);
-    expect(el.textContent).toBe('ab');
+    expect(el.id).toBe('ab');
     obj.a = 'aa';
     setTimeout(() => {
       expect(aObserver.hasSubscribers()).toBe(true);
       expect(bObserver.hasSubscribers()).toBe(true);
       expect(testObserver.hasSubscribers()).toBe(true);
-      expect(el.textContent).toBe('aab');
+      expect(el.id).toBe('aab');
 
       binding.unbind();
       expect(aObserver.hasSubscribers()).toBe(false);
@@ -269,7 +270,7 @@ describe('CompositeObserver', () => {
     expect(xObserver.hasSubscribers()).toBe(true);
     expect(yObserver.hasSubscribers()).toBe(true);
     expect(zObserver.hasSubscribers()).toBe(true);
-    expect(el.textContent).toBe('true');
+    expect(el.id).toBe('true');
     obj.a = 0;
     obj.b = 0;
     setTimeout(() => {
@@ -282,7 +283,7 @@ describe('CompositeObserver', () => {
       expect(xObserver.hasSubscribers()).toBe(false);
       expect(yObserver.hasSubscribers()).toBe(false);
       expect(zObserver.hasSubscribers()).toBe(false);
-      expect(el.textContent).toBe('false');
+      expect(el.id).toBe('false');
       obj.a = true;
       obj.b = true;
       obj.x = null;
@@ -297,7 +298,7 @@ describe('CompositeObserver', () => {
         expect(xObserver.hasSubscribers()).toBe(true);
         expect(yObserver.hasSubscribers()).toBe(false);
         expect(zObserver.hasSubscribers()).toBe(false);
-        expect(el.textContent).toBe('hello world');
+        expect(el.id).toBe('hello world');
 
         binding.unbind();
         expect(objObserver.hasSubscribers()).toBe(false);

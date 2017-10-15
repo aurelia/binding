@@ -25,7 +25,13 @@ export class XLinkAttributeObserver {
 
 export const dataAttributeAccessor = {
   getValue: (obj, propertyName) => obj.getAttribute(propertyName),
-  setValue: (value, obj, propertyName) => obj.setAttribute(propertyName, value)
+  setValue: (value, obj, propertyName) => {
+    if (value === null || value === undefined) {
+      obj.removeAttribute(propertyName);
+    } else {
+      obj.setAttribute(propertyName, value);
+    }
+  }
 };
 
 export class DataAttributeObserver {
@@ -39,6 +45,9 @@ export class DataAttributeObserver {
   }
 
   setValue(newValue) {
+    if (newValue === null || newValue === undefined) {
+      return this.element.removeAttribute(this.propertyName);
+    }
     return this.element.setAttribute(this.propertyName, newValue);
   }
 
