@@ -27,6 +27,7 @@ var paths = {
 };
 
 paths.files = [
+  'call-context.js',
   'camel-case.js',
   'scope.js',
   'connectable-binding.js',

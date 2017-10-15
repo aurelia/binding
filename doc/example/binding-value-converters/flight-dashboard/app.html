@@ -1,0 +1,32 @@
+<template>
+  <require from='./clock.html'></require>
+
+  <div>
+    Change locale to
+    <div>
+      <button
+        repeat.for='locale of locales'
+        click.delegate='changeLocale(locale.locale)'>${locale.name}</button>
+    </div>
+  </div>
+
+  <div>
+    <h2>Flights</h2>
+    <table repeat.for='flight of flights' style='margin-bottom: 15px'>
+      <tr>
+        <th>From ${flight.from}</th>
+        <th style='width: 10px'></th>
+        <th>To ${flight.to}</th>
+      </tr>
+      <tr>
+        <td>
+          <clock time.bind='flight.depart'></clock>
+        </td>
+        <td style='width: 10px'></td>
+        <td>
+          <clock time.bind='flight.arrive'></clock>
+        </td>
+      </tr>
+    </table>
+  </div>
+</template>

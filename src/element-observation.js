@@ -163,10 +163,14 @@ export class ValueAttributeObserver {
     this.oldValue = newValue;
   }
 
+  handleEvent() {
+    this.notify();
+  }
+
   subscribe(context, callable) {
     if (!this.hasSubscribers()) {
       this.oldValue = this.getValue();
-      this.disposeHandler = this.handler.subscribe(this.element, this.notify.bind(this));
+      this.disposeHandler = this.handler.subscribe(this.element, this);
     }
 
     this.addSubscriber(context, callable);

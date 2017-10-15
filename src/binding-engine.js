@@ -18,7 +18,7 @@ export class BindingEngine {
     this.parser = parser;
   }
 
-  createBindingExpression(targetProperty, sourceExpression, mode = bindingMode.oneWay, lookupFunctions = LookupFunctions) {
+  createBindingExpression(targetProperty, sourceExpression, mode = bindingMode.toView, lookupFunctions = LookupFunctions) {
     return new BindingExpression(
       this.observerLocator,
       targetProperty,

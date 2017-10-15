@@ -225,13 +225,20 @@ function removeSubscriber(context, callable) {
     this._callable2 = null;
     return true;
   }
-  let rest = this._contextsRest;
-  let index;
-  if (!rest || !rest.length || (index = rest.indexOf(context)) === -1 || this._callablesRest[index] !== callable) {
+  const callables = this._callablesRest;
+  if (callables === undefined || callables.length === 0) {
     return false;
   }
-  rest.splice(index, 1);
-  this._callablesRest.splice(index, 1);
+  const contexts = this._contextsRest;
+  let i = 0;
+  while (!(callables[i] === callable && contexts[i] === context) && callables.length > i) {
+    i++;
+  }
+  if (i >= callables.length) {
+    return false;
+  }
+  contexts.splice(i, 1);
+  callables.splice(i, 1);
   return true;
 }
 
@@ -2045,7 +2052,9 @@ export function cloneExpression(expression) {
 export const bindingMode = {
   oneTime: 0,
   oneWay: 1,
-  twoWay: 2
+  twoWay: 2,
+  toView: 1,
+  fromView: 3
 };
 
 export let Token = class Token {
@@ -2752,7 +2761,7 @@ export let ParserImplementation = class ParserImplementation {
       if (this.optional('.')) {
         name = this.peek.key;
         this.advance();
-      } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === ')' || this.peek.text === '[' || this.peek.text === '}' || this.peek.text === ',') {
+      } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === ')' || this.peek.text === '[' || this.peek.text === '}' || this.peek.text === ',' || this.peek.text === '|' || this.peek.text === '&') {
         return new AccessThis(ancestor);
       } else {
         this.error(`Unexpected token ${ this.peek.text }`);
@@ -2949,7 +2958,11 @@ function handleCapturedEvent(event) {
   }
   for (let i = orderedCallbacks.length - 1; i >= 0; i--) {
     let orderedCallback = orderedCallbacks[i];
-    orderedCallback(event);
+    if ('handleEvent' in orderedCallback) {
+      orderedCallback.handleEvent(event);
+    } else {
+      orderedCallback(event);
+    }
     if (event.propagationStopped) {
       break;
     }
@@ -2993,7 +3006,11 @@ function handleDelegatedEvent(event) {
           interceptStopPropagation(event);
           interceptInstalled = true;
         }
-        callback(event);
+        if ('handleEvent' in callback) {
+          callback.handleEvent(event);
+        } else {
+          callback(event);
+        }
       }
     }
 
@@ -3187,8 +3204,8 @@ export let EventManager = class EventManager {
     return null;
   }
 
-  addEventListener(target, targetEvent, callback, delegate) {
-    return (this.eventStrategyLookup[targetEvent] || this.defaultEventStrategy).subscribe(target, targetEvent, callback, delegate);
+  addEventListener(target, targetEvent, callbackOrListener, delegate) {
+    return (this.eventStrategyLookup[targetEvent] || this.defaultEventStrategy).subscribe(target, targetEvent, callbackOrListener, delegate);
   }
 };
 
@@ -4447,20 +4464,24 @@ export let Binding = (_dec10 = connectable(), _dec10(_class12 = class Binding {
 
     let mode = this.mode;
     if (!this.targetObserver) {
-      let method = mode === bindingMode.twoWay ? 'getObserver' : 'getAccessor';
+      let method = mode === bindingMode.twoWay || mode === bindingMode.fromView ? 'getObserver' : 'getAccessor';
       this.targetObserver = this.observerLocator[method](this.target, this.targetProperty);
     }
 
     if ('bind' in this.targetObserver) {
       this.targetObserver.bind();
     }
-    let value = this.sourceExpression.evaluate(source, this.lookupFunctions);
-    this.updateTarget(value);
+    if (this.mode !== bindingMode.fromView) {
+      let value = this.sourceExpression.evaluate(source, this.lookupFunctions);
+      this.updateTarget(value);
+    }
 
     if (mode === bindingMode.oneWay) {
       enqueueBindingConnect(this);
     } else if (mode === bindingMode.twoWay) {
       this.sourceExpression.connect(this, source);
+      this.targetObserver.subscribe(targetContext, this);
+    } else if (mode === bindingMode.fromView) {
       this.targetObserver.subscribe(targetContext, this);
     }
   }
@@ -4661,6 +4682,10 @@ export let Listener = class Listener {
     return result;
   }
 
+  handleEvent(event) {
+    this.callSource(event);
+  }
+
   bind(source) {
     if (this.isBound) {
       if (this.source === source) {
@@ -4674,7 +4699,7 @@ export let Listener = class Listener {
     if (this.sourceExpression.bind) {
       this.sourceExpression.bind(this, source, this.lookupFunctions);
     }
-    this._disposeListener = this.eventManager.addEventListener(this.target, this.targetEvent, event => this.callSource(event), this.delegationStrategy);
+    this._disposeListener = this.eventManager.addEventListener(this.target, this.targetEvent, this, this.delegationStrategy);
   }
 
   unbind() {

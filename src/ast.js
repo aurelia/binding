@@ -1,5 +1,6 @@
 import {Unparser} from './unparser';
 import {getContextFor} from './scope';
+import {connectBindingToSignal} from './signals';
 
 export class Expression {
   constructor() {
@@ -147,6 +148,18 @@ export class ValueConverter extends Expression {
     let i = expressions.length;
     while (i--) {
       expressions[i].connect(binding, scope);
+    }
+    let converter = binding.lookupFunctions.valueConverters(this.name);
+    if (!converter) {
+      throw new Error(`No ValueConverter named "${this.name}" was found!`);
+    }
+    let signals = converter.signals;
+    if (signals === undefined) {
+      return;
+    }
+    i = signals.length;
+    while (i--) {
+      connectBindingToSignal(binding, signals[i]);
     }
   }
 }

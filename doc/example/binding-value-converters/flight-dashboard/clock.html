@@ -1,0 +1,11 @@
+<template bindable='time'
+  style='display: inline-block;
+  width: 200px;
+  padding: 4px 6px;
+  border-radius: 10px;
+  border: 2px solid #1e1e1e;
+  font-size: 16px;
+  text-align: center;'>
+  <require from='./flight-time-value-converter'></require>
+  ${time | flightTime}
+</template>

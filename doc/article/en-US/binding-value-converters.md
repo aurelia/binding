@@ -114,6 +114,7 @@ If you've used value converters in other languages such as Xaml, you'll find Aur
 2. In Aurelia, converter parameters can be data-bound.  This is something that was missing in Xaml and enables more advanced binding scenarios.
 3. Aurelia value converter methods can accept multiple parameters.
 4. Multiple value converters can be composed using pipes (`|`).
+5. Aurelia value converter can have a class field named `signals`, which accepts an array of string that will be used to manually trigger updating the view. This is to handle the situations where the value converter relies on variables that are defined outside of Aurelia application, such as language, locale etc.
 
 ## [Simple Converters](aurelia-doc://section/3/version/1.0.0)
 
@@ -565,7 +566,7 @@ There are a couple of advantages to this approach: you don't need to remember th
 
 ## [Bi-directional Value Converters](aurelia-doc://section/8/version/1.0.0)
 
-So far we've been using converters with one-way bindings. The data flows in a single direction, from the model to the view.  When using a converter in an input element's `value` binding, we need a way to convert the user's data entry to the format expected by the view-model. This is where the value converter's `fromView` method comes into play, taking the element's value and converting it to the format expected by the view-model.
+So far we've been using converters with to-view bindings. The data flows in a single direction, from the model to the view.  When using a converter in an input element's `value` binding, we need a way to convert the user's data entry to the format expected by the view-model. This is where the value converter's `fromView` method comes into play, taking the element's value and converting it to the format expected by the view-model.
 
 In the example below, we have a view-model that exposes colors in an object format, with properties for the red, green and blue components. In the view, we want to bind this color object to an HTML5 color input. The color input expects hex format text, so we'll use an `RgbToHexValueConverter` to facilitate the binding.
 
@@ -625,3 +626,97 @@ In the example below, we have a view-model that exposes colors in an object form
 ## [Globally Accessible Value Converters](aurelia-doc://section/9/version/1.0.0)
 
 In all of our examples, we've been using the `require` element to import converters we need into our view.  There's an easier way.  If you have some commonly used value converters that you'd like to make globally available, use Aurelia's `globalResources` function to register them.  This will eliminate the need for `require` elements at the top of every view.
+
+## [Signalable Value Converters](aurelia-doc://section/10/version/1.0.0)
+
+In some scenarios, a global parameter that is unobservable by Aurelia is used inside a value converter, such as timezone, or a new USB was connected to the device etc. In some other scenarios, we need to update all bindings that use a certain value converter at once, for example: language translation value converters when application language has changed. Aurelia value converters have an API to trigger the bindings, with value converters that have signals property declared on it, to update.
+
+In the example below, we have a view-model that exposes a list of flights with information of each flight. In the view, we want to bind display each of those flights, as a `clock`, with correct date format based on global variable name `currentLocale`. We can trigger all of the flight display to change based on `signals` of the value converter. We do this via export `signalBindings` of the framework.
+
+<code-listing heading="How To Signal Bindings">
+  <source-code lang="ES 2015/ES 2016/TypeScript">
+    import {signalBindings} from 'aurelia-framework';
+
+    signalBindings('locale-changed');
+  </source-code>
+</code-listing>
+
+Following is the example code
+
+<code-listing heading="flight-time-value-converter${context.language.fileExtension}">
+  <source-code lang="ES 2015/ES 2016/TypeScript">
+    export class FlightTimeValueConverter {
+      signals = ['locale-changed'];
+
+      toView(date) {
+        return date.toLocaleString(window.currentLocale);
+      }
+    }
+  </source-code>
+</code-listing>
+
+<code-listing heading="flight-dashboard${context.language.fileExtension}">
+  <source-code lang="ES 2015">
+    export class FlightDashboard {
+      constructor() {
+        this.flights = [
+          { from: 'Los Angeles', to: 'San Fran', depart: new Date('2017-10-09'), arrive: new Date('2017-10-10') },
+          { from: 'Melbourne', to: 'Sydney', depart: new Date('2017-10-11'), arrive: new Date('2017-10-12') },
+          { from: 'Hawaii', to: 'Crescent', depart: new Date('2017-10-13'), arrive: new Date('2017-10-14') }
+        ];
+      }
+    }
+  </source-code>
+</code-listing>
+
+<code-listing heading="clock.html">
+  <source-code lang="HTML">
+    <template bindable='time'
+      style='display: inline-block;
+      width: 200px;
+      padding: 4px 6px;
+      border-radius: 10px;
+      border: 2px solid #1e1e1e;
+      font-size: 16px;
+      text-align: center;'>
+      <require from='./flight-time-value-converter'></require>
+      ${time | flightTime}
+    </template>
+  </source-code>
+</code-listing>
+
+<code-listing heading="flight-dashboard.html">
+  <source-code lang="HTML">
+    <template>
+      <require from="./clock.html"></require>
+
+      <div>
+        <h2>Flights</h2>
+        <table repeat.for='flight of flights' style='margin-bottom: 15px'>
+          <tr>
+            <th>
+            From ${flight.from}
+            </th>
+            <th style='width: 10px'></th>
+            <th>
+              To ${flight.to}
+            </th>
+          </tr>
+          <tr>
+            <td>
+              <clock time.bind='flight.depart'></clock>
+            </td>
+            <td style='width: 10px'></td>
+            <td>
+              <clock time.bind='flight.arrive'></clock>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </template>
+  </source-code>
+</code-listing>
+
+<au-demo heading="Flight Dashboard with Signalable Value Converter Demo">
+  <source-code src="example/binding-value-converters/flight-dashboard/app.js"></source-code>
+</au-demo>
