@@ -15,7 +15,14 @@ export const coerceFunctions = {
     return !!a;
   },
   date(a) {
-    return new Date(a);
+    // Invalid date instances are quite problematic
+    // so we need to deal with it properly by default
+    if (val === null || val === undefined) {
+      return null;
+    }
+    const d = new Date(val);
+    const t = d.getTime(); // to deal with invalid date
+    return t === t ? d : null;
   }
 };
 
@@ -30,7 +37,7 @@ export const coerceFunctionMap: Map<{new(): any}, string> = new Map([
  * Map a class to a string for typescript property coerce
  * @param type the property class to register
  * @param strType the string that represents class in the lookup
- * @param coerceFunction coerce function to register with @param strType
+ * @param coerceFunction coerce function to register with param strType
  */
 export function mapCoerceFunction(type: {new(): any, coerce?: (val: any) => any}, strType: string, coerceFunction: (val: any) => any) {
   coerceFunction = coerceFunction || type.coerce;
