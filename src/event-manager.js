@@ -218,15 +218,14 @@ export class EventManager {
   }
 
   registerElementConfig(config) {
-    let tagName = config.tagName.toLowerCase();
     let properties = config.properties;
     let propertyName;
 
-    this.elementHandlerLookup[tagName] = {};
+    this.elementHandlerLookup[config.tagName.toLowerCase()] = {};
 
     for (propertyName in properties) {
       if (properties.hasOwnProperty(propertyName)) {
-        this.registerElementPropertyConfig(tagName, propertyName, properties[propertyName]);
+        this.registerElementPropertyConfig(config.tagName.toLowerCase(), propertyName, properties[propertyName]);
       }
     }
   }
@@ -260,14 +259,11 @@ export class EventManager {
   }
 
   getElementHandler(target, propertyName) {
-    let tagName;
     let lookup = this.elementHandlerLookup;
 
     if (target.tagName) {
-      tagName = target.tagName.toLowerCase();
-
-      if (lookup[tagName] && lookup[tagName][propertyName]) {
-        return lookup[tagName][propertyName];
+      if (lookup[target.tagName.toLowerCase()] && lookup[target.tagName.toLowerCase()][propertyName]) {
+        return lookup[target.tagName.toLowerCase()][propertyName];
       }
 
       if (propertyName === 'textContent' || propertyName === 'innerHTML') {
