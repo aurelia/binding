@@ -14,7 +14,7 @@ export const coerceFunctions = {
   boolean(a) {
     return !!a;
   },
-  date(a) {
+  date(val) {
     // Invalid date instances are quite problematic
     // so we need to deal with it properly by default
     if (val === null || val === undefined) {

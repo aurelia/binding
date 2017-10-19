@@ -307,6 +307,22 @@ describe('observable decorator', () => {
           expect(test.satisfy(instance.prop)).toBe(true);
         });
       });
+
+      it('works with inheritance', () => {
+        cases.forEach(test => {
+          const deco = observable[test.type];
+          class MyClassBase {
+            @deco prop
+          }
+
+          class MyClass extends MyClassBase {}
+          
+          const instance = new MyClass();
+          instance.prop = test.baseValue;
+
+          expect(test.satisfy(instance.prop)).toBe(true);
+        });
+      });
     });
 
     describe('with property type via metadata', () => {
@@ -394,6 +410,24 @@ describe('observable decorator', () => {
           prop
         }
         expect(Logger.prototype.warn).not.toHaveBeenCalled();
+      });
+
+      it('works with inheritance when using property type', () => {
+        cases.forEach(test => {
+          observable.usePropType(true);
+          class MyClassBase {
+            @observable
+            @Reflect.metadata(metadata.propertyType, test.propType)
+            prop
+          }
+
+          class MyClass extends MyClassBase {}
+          
+          const instance = new MyClass();
+          instance.prop = test.baseValue;
+
+          expect(test.satisfy(instance.prop)).toBe(true);
+        });
       });
     });
   });
