@@ -21,8 +21,7 @@ export const coerceFunctions = {
       return null;
     }
     const d = new Date(val);
-    const t = d.getTime(); // to deal with invalid date
-    return t === t ? d : null;
+    return isNaN(d.getTime()) ? null : d;
   }
 };
 
