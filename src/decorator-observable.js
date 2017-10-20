@@ -35,7 +35,7 @@ export function observable(targetOrConfig: string | Function | ObservableConfig,
       if (coerceFunction === undefined) {
         observableLogger.warn(`Invalid coerce instruction. Should be either one of ${Object.keys(coerceFunctions)} or a function.`);
       }
-    } else if (_usePropType) {
+    } else if (_usePropertyType) {
       propType = metadata.getOwn(metadata.propertyType, target, key);
       if (propType) {
         coerceFunction = coerceFunctions[coerceFunctionMap.get(propType)];
@@ -164,15 +164,15 @@ class     | config           | config
 /**
  * Internal flag to turn on / off auto pickup property type from metadata
  */
-let _usePropType = false;
+let _usePropertyType = false;
 
 /**
  * Toggle the flag for observable to auto pickup property type from metadata
  * The reason is sometimes we may want to use prop type on bindable, but not observable
  * and vice versa
  */
-observable.usePropType = (shouldUsePropType: boolean) => {
-  _usePropType = shouldUsePropType;
+observable.usePropertyType = (shouldUsePropType: boolean) => {
+  _usePropertyType = shouldUsePropType;
 };
 
 /**

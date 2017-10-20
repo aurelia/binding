@@ -334,7 +334,7 @@ describe('observable decorator', () => {
       ];
 
       it('respects the property type flag to intialize value correctly', () => {
-        observable.usePropType(true);
+        observable.usePropertyType(true);
         cases.forEach(test => {
           class MyClass {
             @observable
@@ -344,7 +344,7 @@ describe('observable decorator', () => {
           expect(test.satisfy(new MyClass()._prop)).toBe(true);
         });
 
-        observable.usePropType(false);
+        observable.usePropertyType(false);
         cases.forEach(test => {
           class MyClass {
             @observable
@@ -356,7 +356,7 @@ describe('observable decorator', () => {
       });
 
       it('respects the property type flag to set value correctly', () => {
-        observable.usePropType(true);
+        observable.usePropertyType(true);
         cases.forEach(test => {
           class MyClass {
             @observable
@@ -370,7 +370,7 @@ describe('observable decorator', () => {
           expect(test.satisfy(instance.prop)).toBe(true);
         });
 
-        observable.usePropType(false);
+        observable.usePropertyType(false);
         cases.forEach(test => {
           class MyClass {
             @observable
@@ -386,7 +386,7 @@ describe('observable decorator', () => {
       });
 
       it('should warn when using unknown property type', () => {
-        observable.usePropType(true);
+        observable.usePropertyType(true);
         spyOn(Logger.prototype, 'warn');
 
         class MyClass {
@@ -401,7 +401,7 @@ describe('observable decorator', () => {
         class PropertyType {}
         coerceFunctionMap.set(PropertyType, 'string');
 
-        observable.usePropType(true);
+        observable.usePropertyType(true);
         spyOn(Logger.prototype, 'warn');
 
         class MyClass {
@@ -414,7 +414,7 @@ describe('observable decorator', () => {
 
       it('works with inheritance when using property type', () => {
         cases.forEach(test => {
-          observable.usePropType(true);
+          observable.usePropertyType(true);
           class MyClassBase {
             @observable
             @Reflect.metadata(metadata.propertyType, test.propType)
