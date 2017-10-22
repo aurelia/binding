@@ -113,10 +113,10 @@ export class ObserverLocator {
         return new StyleObserver(obj, propertyName);
       }
       handler = this.eventManager.getElementHandler(obj, propertyName);
-      if (propertyName === 'value' && obj.tagName.toLowerCase() === 'select') {
+      if (propertyName === 'value' && obj.tagName === 'SELECT') {
         return new SelectValueObserver(obj, handler, this);
       }
-      if (propertyName === 'checked' && obj.tagName.toLowerCase() === 'input') {
+      if (propertyName === 'checked' && obj.tagName === 'INPUT') {
         return new CheckedObserver(obj, handler, this);
       }
       if (handler) {
@@ -182,16 +182,16 @@ export class ObserverLocator {
     if (obj instanceof DOM.Element) {
       if (propertyName === 'class'
         || propertyName === 'style' || propertyName === 'css'
-        || propertyName === 'value' && (obj.tagName.toLowerCase() === 'input' || obj.tagName.toLowerCase() === 'select')
-        || propertyName === 'checked' && obj.tagName.toLowerCase() === 'input'
-        || propertyName === 'model' && obj.tagName.toLowerCase() === 'input'
+        || propertyName === 'value' && (obj.tagName === 'INPUT' || obj.tagName === 'SELECT')
+        || propertyName === 'checked' && obj.tagName === 'INPUT'
+        || propertyName === 'model' && obj.tagName === 'INPUT'
         || /^xlink:.+$/.exec(propertyName)) {
         return this.getObserver(obj, propertyName);
       }
       if (/^\w+:|^data-|^aria-/.test(propertyName)
         || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)
-        || obj.tagName.toLowerCase() === 'img' && propertyName === 'src'
-        || obj.tagName.toLowerCase() === 'a' && propertyName === 'href'
+        || obj.tagName === 'IMG' && propertyName === 'src'
+        || obj.tagName === 'A' && propertyName === 'href'
       ) {
         return dataAttributeAccessor;
       }
