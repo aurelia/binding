@@ -63,7 +63,8 @@ paths.files = [
   'name-expression.js',
   'binding-engine.js',
   'set-observation.js',
-  'decorator-observable.js'
+  'decorator-observable.js',
+  'signals.js'
 ].map(function(file){
   return paths.root + file;
 });
