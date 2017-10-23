@@ -1,3 +1,14 @@
+<a name="1.4.0"></a>
+# [1.4.0](https://github.com/aurelia/binding/compare/1.3.0...v1.4.0) (2017-10-23)
+
+
+### Features
+
+* **ObserverLocator:** special handling for src and href ([1c231ee](https://github.com/aurelia/binding/commit/1c231ee))
+* **ValueConverter:** enable signal ([f6ad52a](https://github.com/aurelia/binding/commit/f6ad52a)), closes [#353](https://github.com/aurelia/binding/issues/353)
+
+
+
 <a name="1.3.0"></a>
 # [1.3.0](https://github.com/aurelia/binding/compare/1.2.2...v1.3.0) (2017-10-01)
 

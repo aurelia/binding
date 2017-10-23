@@ -5,6 +5,9 @@ import { PLATFORM, DOM } from 'aurelia-pal';
 import { TaskQueue } from 'aurelia-task-queue';
 import { metadata } from 'aurelia-metadata';
 
+export const targetContext = 'Binding:target';
+export const sourceContext = 'Binding:source';
+
 const map = Object.create(null);
 
 export function camelCase(name) {
@@ -60,7 +63,6 @@ export function createScopeForTest(bindingContext, parentBindingContext) {
   };
 }
 
-export const sourceContext = 'Binding:source';
 const slotNames = [];
 const versionSlotNames = [];
 
@@ -1201,6 +1203,18 @@ export let ValueConverter = class ValueConverter extends Expression {
     while (i--) {
       expressions[i].connect(binding, scope);
     }
+    let converter = binding.lookupFunctions.valueConverters(this.name);
+    if (!converter) {
+      throw new Error(`No ValueConverter named "${ this.name }" was found!`);
+    }
+    let signals = converter.signals;
+    if (signals === undefined) {
+      return;
+    }
+    i = signals.length;
+    while (i--) {
+      connectBindingToSignal(binding, signals[i]);
+    }
   }
 };
 
@@ -2051,9 +2065,9 @@ export function cloneExpression(expression) {
 
 export const bindingMode = {
   oneTime: 0,
+  toView: 1,
   oneWay: 1,
   twoWay: 2,
-  toView: 1,
   fromView: 3
 };
 
@@ -3159,14 +3173,14 @@ export let EventManager = class EventManager {
 
   createElementHandler(events) {
     return {
-      subscribe(target, callback) {
+      subscribe(target, callbackOrListener) {
         events.forEach(changeEvent => {
-          target.addEventListener(changeEvent, callback, false);
+          target.addEventListener(changeEvent, callbackOrListener, false);
         });
 
         return function () {
           events.forEach(changeEvent => {
-            target.removeEventListener(changeEvent, callback);
+            target.removeEventListener(changeEvent, callbackOrListener, false);
           });
         };
       }
@@ -3421,7 +3435,13 @@ export let XLinkAttributeObserver = class XLinkAttributeObserver {
 
 export const dataAttributeAccessor = {
   getValue: (obj, propertyName) => obj.getAttribute(propertyName),
-  setValue: (value, obj, propertyName) => obj.setAttribute(propertyName, value)
+  setValue: (value, obj, propertyName) => {
+    if (value === null || value === undefined) {
+      obj.removeAttribute(propertyName);
+    } else {
+      obj.setAttribute(propertyName, value);
+    }
+  }
 };
 
 export let DataAttributeObserver = class DataAttributeObserver {
@@ -3435,6 +3455,9 @@ export let DataAttributeObserver = class DataAttributeObserver {
   }
 
   setValue(newValue) {
+    if (newValue === null || newValue === undefined) {
+      return this.element.removeAttribute(this.propertyName);
+    }
     return this.element.setAttribute(this.propertyName, newValue);
   }
 
@@ -3550,10 +3573,14 @@ export let ValueAttributeObserver = (_dec7 = subscriberCollection(), _dec7(_clas
     this.oldValue = newValue;
   }
 
+  handleEvent() {
+    this.notify();
+  }
+
   subscribe(context, callable) {
     if (!this.hasSubscribers()) {
       this.oldValue = this.getValue();
-      this.disposeHandler = this.handler.subscribe(this.element, this.notify.bind(this));
+      this.disposeHandler = this.handler.subscribe(this.element, this);
     }
 
     this.addSubscriber(context, callable);
@@ -3670,9 +3697,13 @@ export let CheckedObserver = (_dec8 = subscriberCollection(), _dec8(_class9 = cl
     this.callSubscribers(newValue, oldValue);
   }
 
+  handleEvent() {
+    this.synchronizeValue();
+  }
+
   subscribe(context, callable) {
     if (!this.hasSubscribers()) {
-      this.disposeHandler = this.handler.subscribe(this.element, this.synchronizeValue.bind(this, false));
+      this.disposeHandler = this.handler.subscribe(this.element, this);
     }
     this.addSubscriber(context, callable);
   }
@@ -3823,9 +3854,13 @@ export let SelectValueObserver = (_dec9 = subscriberCollection(), _dec9(_class10
     this.callSubscribers(newValue, oldValue);
   }
 
+  handleEvent() {
+    this.synchronizeValue();
+  }
+
   subscribe(context, callable) {
     if (!this.hasSubscribers()) {
-      this.disposeHandler = this.handler.subscribe(this.element, this.synchronizeValue.bind(this, false));
+      this.disposeHandler = this.handler.subscribe(this.element, this);
     }
     this.addSubscriber(context, callable);
   }
@@ -4360,7 +4395,7 @@ export let ObserverLocator = (_temp = _class11 = class ObserverLocator {
       if (propertyName === 'class' || propertyName === 'style' || propertyName === 'css' || propertyName === 'value' && (obj.tagName.toLowerCase() === 'input' || obj.tagName.toLowerCase() === 'select') || propertyName === 'checked' && obj.tagName.toLowerCase() === 'input' || propertyName === 'model' && obj.tagName.toLowerCase() === 'input' || /^xlink:.+$/.exec(propertyName)) {
         return this.getObserver(obj, propertyName);
       }
-      if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
+      if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName) || obj.tagName.toLowerCase() === 'img' && propertyName === 'src' || obj.tagName.toLowerCase() === 'a' && propertyName === 'href') {
         return dataAttributeAccessor;
       }
     }
@@ -4401,8 +4436,6 @@ export let BindingExpression = class BindingExpression {
     return new Binding(this.observerLocator, this.sourceExpression, target, this.targetProperty, this.mode, this.lookupFunctions);
   }
 };
-
-const targetContext = 'Binding:target';
 
 export let Binding = (_dec10 = connectable(), _dec10(_class12 = class Binding {
   constructor(observerLocator, sourceExpression, target, targetProperty, mode, lookupFunctions) {
@@ -4476,7 +4509,7 @@ export let Binding = (_dec10 = connectable(), _dec10(_class12 = class Binding {
       this.updateTarget(value);
     }
 
-    if (mode === bindingMode.oneWay) {
+    if (mode === bindingMode.toView) {
       enqueueBindingConnect(this);
     } else if (mode === bindingMode.twoWay) {
       this.sourceExpression.connect(this, source);
@@ -4810,7 +4843,7 @@ export let BindingEngine = (_temp2 = _class13 = class BindingEngine {
     this.parser = parser;
   }
 
-  createBindingExpression(targetProperty, sourceExpression, mode = bindingMode.oneWay, lookupFunctions = LookupFunctions) {
+  createBindingExpression(targetProperty, sourceExpression, mode = bindingMode.toView, lookupFunctions = LookupFunctions) {
     return new BindingExpression(this.observerLocator, targetProperty, this.parser.parse(sourceExpression), mode, lookupFunctions);
   }
 

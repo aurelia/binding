@@ -4,7 +4,7 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
-  exports.getSetObserver = exports.BindingEngine = exports.NameExpression = exports.Listener = exports.ListenerExpression = exports.BindingBehaviorResource = exports.ValueConverterResource = exports.Call = exports.CallExpression = exports.Binding = exports.BindingExpression = exports.ObjectObservationAdapter = exports.ObserverLocator = exports.SVGAnalyzer = exports.presentationAttributes = exports.presentationElements = exports.elements = exports.ComputedExpression = exports.ClassObserver = exports.SelectValueObserver = exports.CheckedObserver = exports.ValueAttributeObserver = exports.StyleObserver = exports.DataAttributeObserver = exports.dataAttributeAccessor = exports.XLinkAttributeObserver = exports.SetterObserver = exports.PrimitiveObserver = exports.propertyAccessor = exports.DirtyCheckProperty = exports.DirtyChecker = exports.EventManager = exports.delegationStrategy = exports.getMapObserver = exports.ParserImplementation = exports.Parser = exports.Scanner = exports.Lexer = exports.Token = exports.bindingMode = exports.ExpressionCloner = exports.Unparser = exports.LiteralObject = exports.LiteralArray = exports.LiteralString = exports.LiteralPrimitive = exports.PrefixNot = exports.Binary = exports.CallFunction = exports.CallMember = exports.CallScope = exports.AccessKeyed = exports.AccessMember = exports.AccessScope = exports.AccessThis = exports.Conditional = exports.Assign = exports.ValueConverter = exports.BindingBehavior = exports.Chain = exports.Expression = exports.getArrayObserver = exports.CollectionLengthObserver = exports.ModifyCollectionObserver = exports.ExpressionObserver = exports.sourceContext = undefined;
+  exports.getSetObserver = exports.BindingEngine = exports.NameExpression = exports.Listener = exports.ListenerExpression = exports.BindingBehaviorResource = exports.ValueConverterResource = exports.Call = exports.CallExpression = exports.Binding = exports.BindingExpression = exports.ObjectObservationAdapter = exports.ObserverLocator = exports.SVGAnalyzer = exports.presentationAttributes = exports.presentationElements = exports.elements = exports.ComputedExpression = exports.ClassObserver = exports.SelectValueObserver = exports.CheckedObserver = exports.ValueAttributeObserver = exports.StyleObserver = exports.DataAttributeObserver = exports.dataAttributeAccessor = exports.XLinkAttributeObserver = exports.SetterObserver = exports.PrimitiveObserver = exports.propertyAccessor = exports.DirtyCheckProperty = exports.DirtyChecker = exports.EventManager = exports.delegationStrategy = exports.getMapObserver = exports.ParserImplementation = exports.Parser = exports.Scanner = exports.Lexer = exports.Token = exports.bindingMode = exports.ExpressionCloner = exports.Unparser = exports.LiteralObject = exports.LiteralArray = exports.LiteralString = exports.LiteralPrimitive = exports.PrefixNot = exports.Binary = exports.CallFunction = exports.CallMember = exports.CallScope = exports.AccessKeyed = exports.AccessMember = exports.AccessScope = exports.AccessThis = exports.Conditional = exports.Assign = exports.ValueConverter = exports.BindingBehavior = exports.Chain = exports.Expression = exports.getArrayObserver = exports.CollectionLengthObserver = exports.ModifyCollectionObserver = exports.ExpressionObserver = exports.sourceContext = exports.targetContext = undefined;
   exports.camelCase = camelCase;
   exports.createOverrideContext = createOverrideContext;
   exports.getContextFor = getContextFor;
@@ -96,6 +96,9 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
 
   var _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class5, _dec6, _class7, _dec7, _class8, _dec8, _class9, _dec9, _class10, _class12, _temp, _dec10, _class13, _class14, _temp2;
 
+  var targetContext = exports.targetContext = 'Binding:target';
+  var sourceContext = exports.sourceContext = 'Binding:source';
+
   var map = Object.create(null);
 
   function camelCase(name) {
@@ -153,7 +156,6 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
     };
   }
 
-  var sourceContext = exports.sourceContext = 'Binding:source';
   var slotNames = [];
   var versionSlotNames = [];
 
@@ -1338,6 +1340,18 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
       while (i--) {
         expressions[i].connect(binding, scope);
       }
+      var converter = binding.lookupFunctions.valueConverters(this.name);
+      if (!converter) {
+        throw new Error('No ValueConverter named "' + this.name + '" was found!');
+      }
+      var signals = converter.signals;
+      if (signals === undefined) {
+        return;
+      }
+      i = signals.length;
+      while (i--) {
+        connectBindingToSignal(binding, signals[i]);
+      }
     };
 
     return ValueConverter;
@@ -2307,9 +2321,9 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
 
   var bindingMode = exports.bindingMode = {
     oneTime: 0,
+    toView: 1,
     oneWay: 1,
     twoWay: 2,
-    toView: 1,
     fromView: 3
   };
 
@@ -3477,14 +3491,14 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
 
     EventManager.prototype.createElementHandler = function createElementHandler(events) {
       return {
-        subscribe: function subscribe(target, callback) {
+        subscribe: function subscribe(target, callbackOrListener) {
           events.forEach(function (changeEvent) {
-            target.addEventListener(changeEvent, callback, false);
+            target.addEventListener(changeEvent, callbackOrListener, false);
           });
 
           return function () {
             events.forEach(function (changeEvent) {
-              target.removeEventListener(changeEvent, callback);
+              target.removeEventListener(changeEvent, callbackOrListener, false);
             });
           };
         }
@@ -3770,7 +3784,11 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
       return obj.getAttribute(propertyName);
     },
     setValue: function setValue(value, obj, propertyName) {
-      return obj.setAttribute(propertyName, value);
+      if (value === null || value === undefined) {
+        obj.removeAttribute(propertyName);
+      } else {
+        obj.setAttribute(propertyName, value);
+      }
     }
   };
 
@@ -3787,6 +3805,9 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
     };
 
     DataAttributeObserver.prototype.setValue = function setValue(newValue) {
+      if (newValue === null || newValue === undefined) {
+        return this.element.removeAttribute(this.propertyName);
+      }
       return this.element.setAttribute(this.propertyName, newValue);
     };
 
@@ -3912,10 +3933,14 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
       this.oldValue = newValue;
     };
 
+    ValueAttributeObserver.prototype.handleEvent = function handleEvent() {
+      this.notify();
+    };
+
     ValueAttributeObserver.prototype.subscribe = function subscribe(context, callable) {
       if (!this.hasSubscribers()) {
         this.oldValue = this.getValue();
-        this.disposeHandler = this.handler.subscribe(this.element, this.notify.bind(this));
+        this.disposeHandler = this.handler.subscribe(this.element, this);
       }
 
       this.addSubscriber(context, callable);
@@ -4045,9 +4070,13 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
       this.callSubscribers(newValue, oldValue);
     };
 
+    CheckedObserver.prototype.handleEvent = function handleEvent() {
+      this.synchronizeValue();
+    };
+
     CheckedObserver.prototype.subscribe = function subscribe(context, callable) {
       if (!this.hasSubscribers()) {
-        this.disposeHandler = this.handler.subscribe(this.element, this.synchronizeValue.bind(this, false));
+        this.disposeHandler = this.handler.subscribe(this.element, this);
       }
       this.addSubscriber(context, callable);
     };
@@ -4238,9 +4267,13 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
       this.callSubscribers(newValue, oldValue);
     };
 
+    SelectValueObserver.prototype.handleEvent = function handleEvent() {
+      this.synchronizeValue();
+    };
+
     SelectValueObserver.prototype.subscribe = function subscribe(context, callable) {
       if (!this.hasSubscribers()) {
-        this.disposeHandler = this.handler.subscribe(this.element, this.synchronizeValue.bind(this, false));
+        this.disposeHandler = this.handler.subscribe(this.element, this);
       }
       this.addSubscriber(context, callable);
     };
@@ -4807,7 +4840,7 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
         if (propertyName === 'class' || propertyName === 'style' || propertyName === 'css' || propertyName === 'value' && (obj.tagName.toLowerCase() === 'input' || obj.tagName.toLowerCase() === 'select') || propertyName === 'checked' && obj.tagName.toLowerCase() === 'input' || propertyName === 'model' && obj.tagName.toLowerCase() === 'input' || /^xlink:.+$/.exec(propertyName)) {
           return this.getObserver(obj, propertyName);
         }
-        if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof _aureliaPal.DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
+        if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof _aureliaPal.DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName) || obj.tagName.toLowerCase() === 'img' && propertyName === 'src' || obj.tagName.toLowerCase() === 'a' && propertyName === 'href') {
           return dataAttributeAccessor;
         }
       }
@@ -4860,8 +4893,6 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
 
     return BindingExpression;
   }();
-
-  var targetContext = 'Binding:target';
 
   var Binding = exports.Binding = (_dec10 = connectable(), _dec10(_class13 = function () {
     function Binding(observerLocator, sourceExpression, target, targetProperty, mode, lookupFunctions) {
@@ -4937,7 +4968,7 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
         this.updateTarget(value);
       }
 
-      if (mode === bindingMode.oneWay) {
+      if (mode === bindingMode.toView) {
         enqueueBindingConnect(this);
       } else if (mode === bindingMode.twoWay) {
         this.sourceExpression.connect(this, source);
@@ -5314,7 +5345,7 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
     }
 
     BindingEngine.prototype.createBindingExpression = function createBindingExpression(targetProperty, sourceExpression) {
-      var mode = arguments.length <= 2 || arguments[2] === undefined ? bindingMode.oneWay : arguments[2];
+      var mode = arguments.length <= 2 || arguments[2] === undefined ? bindingMode.toView : arguments[2];
       var lookupFunctions = arguments.length <= 3 || arguments[3] === undefined ? LookupFunctions : arguments[3];
 
       return new BindingExpression(this.observerLocator, targetProperty, this.parser.parse(sourceExpression), mode, lookupFunctions);

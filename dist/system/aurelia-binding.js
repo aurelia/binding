@@ -3,7 +3,7 @@
 System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], function (_export, _context) {
   "use strict";
 
-  var LogManager, PLATFORM, DOM, TaskQueue, metadata, _typeof, _createClass, _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class5, _dec6, _class7, _dec7, _class8, _dec8, _class9, _dec9, _class10, _class12, _temp, _dec10, _class13, _class14, _temp2, map, sourceContext, slotNames, versionSlotNames, i, queue, queued, nextId, minimumImmediate, frameBudget, isFlushRequested, immediate, arrayPool1, arrayPool2, poolUtilization, ExpressionObserver, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, pop, push, reverse, shift, sort, splice, unshift, ModifyArrayObserver, Expression, Chain, BindingBehavior, ValueConverter, Assign, Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, PrefixNot, LiteralPrimitive, LiteralString, LiteralArray, LiteralObject, _Unparser, ExpressionCloner, bindingMode, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP, EOF, Parser, ParserImplementation, mapProto, ModifyMapObserver, CapturedHandlerEntry, DelegateHandlerEntry, DefaultEventStrategy, delegationStrategy, EventManager, DirtyChecker, DirtyCheckProperty, logger, propertyAccessor, PrimitiveObserver, SetterObserver, XLinkAttributeObserver, dataAttributeAccessor, DataAttributeObserver, StyleObserver, ValueAttributeObserver, checkedArrayContext, checkedValueContext, CheckedObserver, selectArrayContext, SelectValueObserver, ClassObserver, ComputedExpression, svgElements, svgPresentationElements, svgPresentationAttributes, svgAnalyzer, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, targetContext, Binding, CallExpression, Call, ValueConverterResource, BindingBehaviorResource, ListenerExpression, Listener, NameExpression, NameBinder, LookupFunctions, BindingEngine, setProto, ModifySetObserver;
+  var LogManager, PLATFORM, DOM, TaskQueue, metadata, _typeof, _createClass, _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class5, _dec6, _class7, _dec7, _class8, _dec8, _class9, _dec9, _class10, _class12, _temp, _dec10, _class13, _class14, _temp2, targetContext, sourceContext, map, slotNames, versionSlotNames, i, queue, queued, nextId, minimumImmediate, frameBudget, isFlushRequested, immediate, arrayPool1, arrayPool2, poolUtilization, ExpressionObserver, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, pop, push, reverse, shift, sort, splice, unshift, ModifyArrayObserver, Expression, Chain, BindingBehavior, ValueConverter, Assign, Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, PrefixNot, LiteralPrimitive, LiteralString, LiteralArray, LiteralObject, _Unparser, ExpressionCloner, bindingMode, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP, EOF, Parser, ParserImplementation, mapProto, ModifyMapObserver, CapturedHandlerEntry, DelegateHandlerEntry, DefaultEventStrategy, delegationStrategy, EventManager, DirtyChecker, DirtyCheckProperty, logger, propertyAccessor, PrimitiveObserver, SetterObserver, XLinkAttributeObserver, dataAttributeAccessor, DataAttributeObserver, StyleObserver, ValueAttributeObserver, checkedArrayContext, checkedValueContext, CheckedObserver, selectArrayContext, SelectValueObserver, ClassObserver, ComputedExpression, svgElements, svgPresentationElements, svgPresentationAttributes, svgAnalyzer, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, Binding, CallExpression, Call, ValueConverterResource, BindingBehaviorResource, ListenerExpression, Listener, NameExpression, NameBinder, LookupFunctions, BindingEngine, setProto, ModifySetObserver;
 
   function _possibleConstructorReturn(self, call) {
     if (!self) {
@@ -958,12 +958,15 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         };
       }();
 
-      map = Object.create(null);
+      _export('targetContext', targetContext = 'Binding:target');
+
+      _export('targetContext', targetContext);
 
       _export('sourceContext', sourceContext = 'Binding:source');
 
       _export('sourceContext', sourceContext);
 
+      map = Object.create(null);
       slotNames = [];
       versionSlotNames = [];
 
@@ -1695,6 +1698,18 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
           var i = expressions.length;
           while (i--) {
             expressions[i].connect(binding, scope);
+          }
+          var converter = binding.lookupFunctions.valueConverters(this.name);
+          if (!converter) {
+            throw new Error('No ValueConverter named "' + this.name + '" was found!');
+          }
+          var signals = converter.signals;
+          if (signals === undefined) {
+            return;
+          }
+          i = signals.length;
+          while (i--) {
+            connectBindingToSignal(binding, signals[i]);
           }
         };
 
@@ -2623,9 +2638,9 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
 
       _export('bindingMode', bindingMode = {
         oneTime: 0,
+        toView: 1,
         oneWay: 1,
         twoWay: 2,
-        toView: 1,
         fromView: 3
       });
 
@@ -3677,14 +3692,14 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
 
         EventManager.prototype.createElementHandler = function createElementHandler(events) {
           return {
-            subscribe: function subscribe(target, callback) {
+            subscribe: function subscribe(target, callbackOrListener) {
               events.forEach(function (changeEvent) {
-                target.addEventListener(changeEvent, callback, false);
+                target.addEventListener(changeEvent, callbackOrListener, false);
               });
 
               return function () {
                 events.forEach(function (changeEvent) {
-                  target.removeEventListener(changeEvent, callback);
+                  target.removeEventListener(changeEvent, callbackOrListener, false);
                 });
               };
             }
@@ -3983,7 +3998,11 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
           return obj.getAttribute(propertyName);
         },
         setValue: function setValue(value, obj, propertyName) {
-          return obj.setAttribute(propertyName, value);
+          if (value === null || value === undefined) {
+            obj.removeAttribute(propertyName);
+          } else {
+            obj.setAttribute(propertyName, value);
+          }
         }
       });
 
@@ -4002,6 +4021,9 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         };
 
         DataAttributeObserver.prototype.setValue = function setValue(newValue) {
+          if (newValue === null || newValue === undefined) {
+            return this.element.removeAttribute(this.propertyName);
+          }
           return this.element.setAttribute(this.propertyName, newValue);
         };
 
@@ -4131,10 +4153,14 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
           this.oldValue = newValue;
         };
 
+        ValueAttributeObserver.prototype.handleEvent = function handleEvent() {
+          this.notify();
+        };
+
         ValueAttributeObserver.prototype.subscribe = function subscribe(context, callable) {
           if (!this.hasSubscribers()) {
             this.oldValue = this.getValue();
-            this.disposeHandler = this.handler.subscribe(this.element, this.notify.bind(this));
+            this.disposeHandler = this.handler.subscribe(this.element, this);
           }
 
           this.addSubscriber(context, callable);
@@ -4265,9 +4291,13 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
           this.callSubscribers(newValue, oldValue);
         };
 
+        CheckedObserver.prototype.handleEvent = function handleEvent() {
+          this.synchronizeValue();
+        };
+
         CheckedObserver.prototype.subscribe = function subscribe(context, callable) {
           if (!this.hasSubscribers()) {
-            this.disposeHandler = this.handler.subscribe(this.element, this.synchronizeValue.bind(this, false));
+            this.disposeHandler = this.handler.subscribe(this.element, this);
           }
           this.addSubscriber(context, callable);
         };
@@ -4459,9 +4489,13 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
           this.callSubscribers(newValue, oldValue);
         };
 
+        SelectValueObserver.prototype.handleEvent = function handleEvent() {
+          this.synchronizeValue();
+        };
+
         SelectValueObserver.prototype.subscribe = function subscribe(context, callable) {
           if (!this.hasSubscribers()) {
-            this.disposeHandler = this.handler.subscribe(this.element, this.synchronizeValue.bind(this, false));
+            this.disposeHandler = this.handler.subscribe(this.element, this);
           }
           this.addSubscriber(context, callable);
         };
@@ -5012,7 +5046,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
             if (propertyName === 'class' || propertyName === 'style' || propertyName === 'css' || propertyName === 'value' && (obj.tagName.toLowerCase() === 'input' || obj.tagName.toLowerCase() === 'select') || propertyName === 'checked' && obj.tagName.toLowerCase() === 'input' || propertyName === 'model' && obj.tagName.toLowerCase() === 'input' || /^xlink:.+$/.exec(propertyName)) {
               return this.getObserver(obj, propertyName);
             }
-            if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
+            if (/^\w+:|^data-|^aria-/.test(propertyName) || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName) || obj.tagName.toLowerCase() === 'img' && propertyName === 'src' || obj.tagName.toLowerCase() === 'a' && propertyName === 'href') {
               return dataAttributeAccessor;
             }
           }
@@ -5071,8 +5105,6 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
       }());
 
       _export('BindingExpression', BindingExpression);
-
-      targetContext = 'Binding:target';
 
       _export('Binding', Binding = (_dec10 = connectable(), _dec10(_class13 = function () {
         function Binding(observerLocator, sourceExpression, target, targetProperty, mode, lookupFunctions) {
@@ -5148,7 +5180,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
             this.updateTarget(value);
           }
 
-          if (mode === bindingMode.oneWay) {
+          if (mode === bindingMode.toView) {
             enqueueBindingConnect(this);
           } else if (mode === bindingMode.twoWay) {
             this.sourceExpression.connect(this, source);
@@ -5511,7 +5543,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         }
 
         BindingEngine.prototype.createBindingExpression = function createBindingExpression(targetProperty, sourceExpression) {
-          var mode = arguments.length <= 2 || arguments[2] === undefined ? bindingMode.oneWay : arguments[2];
+          var mode = arguments.length <= 2 || arguments[2] === undefined ? bindingMode.toView : arguments[2];
           var lookupFunctions = arguments.length <= 3 || arguments[3] === undefined ? LookupFunctions : arguments[3];
 
           return new BindingExpression(this.observerLocator, targetProperty, this.parser.parse(sourceExpression), mode, lookupFunctions);

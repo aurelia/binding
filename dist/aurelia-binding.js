@@ -3,6 +3,9 @@ import {PLATFORM,DOM} from 'aurelia-pal';
 import {TaskQueue} from 'aurelia-task-queue';
 import {metadata} from 'aurelia-metadata';
 
+export const targetContext = 'Binding:target';
+export const sourceContext = 'Binding:source';
+
 const map = Object.create(null);
 
 export function camelCase(name) {
@@ -73,7 +76,6 @@ export function createScopeForTest(bindingContext: any, parentBindingContext?: a
   };
 }
 
-export const sourceContext = 'Binding:source';
 const slotNames = [];
 const versionSlotNames = [];
 
@@ -1302,6 +1304,18 @@ export class ValueConverter extends Expression {
     while (i--) {
       expressions[i].connect(binding, scope);
     }
+    let converter = binding.lookupFunctions.valueConverters(this.name);
+    if (!converter) {
+      throw new Error(`No ValueConverter named "${this.name}" was found!`);
+    }
+    let signals = converter.signals;
+    if (signals === undefined) {
+      return;
+    }
+    i = signals.length;
+    while (i--) {
+      connectBindingToSignal(binding, signals[i]);
+    }
   }
 }
 
@@ -2160,9 +2174,9 @@ export function cloneExpression(expression) {
 
 export const bindingMode = {
   oneTime: 0,
+  toView: 1,
   oneWay: 1,
   twoWay: 2,
-  toView: 1,
   fromView: 3
 };
 
@@ -3325,14 +3339,14 @@ export class EventManager {
 
   createElementHandler(events) {
     return {
-      subscribe(target, callback) {
+      subscribe(target, callbackOrListener) {
         events.forEach(changeEvent => {
-          target.addEventListener(changeEvent, callback, false);
+          target.addEventListener(changeEvent, callbackOrListener, false);
         });
 
         return function() {
           events.forEach(changeEvent => {
-            target.removeEventListener(changeEvent, callback);
+            target.removeEventListener(changeEvent, callbackOrListener, false);
           });
         };
       }
@@ -3593,7 +3607,13 @@ export class XLinkAttributeObserver {
 
 export const dataAttributeAccessor = {
   getValue: (obj, propertyName) => obj.getAttribute(propertyName),
-  setValue: (value, obj, propertyName) => obj.setAttribute(propertyName, value)
+  setValue: (value, obj, propertyName) => {
+    if (value === null || value === undefined) {
+      obj.removeAttribute(propertyName);
+    } else {
+      obj.setAttribute(propertyName, value);
+    }
+  }
 };
 
 export class DataAttributeObserver {
@@ -3607,6 +3627,9 @@ export class DataAttributeObserver {
   }
 
   setValue(newValue) {
+    if (newValue === null || newValue === undefined) {
+      return this.element.removeAttribute(this.propertyName);
+    }
     return this.element.setAttribute(this.propertyName, newValue);
   }
 
@@ -3722,10 +3745,14 @@ export class ValueAttributeObserver {
     this.oldValue = newValue;
   }
 
+  handleEvent() {
+    this.notify();
+  }
+
   subscribe(context, callable) {
     if (!this.hasSubscribers()) {
       this.oldValue = this.getValue();
-      this.disposeHandler = this.handler.subscribe(this.element, this.notify.bind(this));
+      this.disposeHandler = this.handler.subscribe(this.element, this);
     }
 
     this.addSubscriber(context, callable);
@@ -3850,9 +3877,13 @@ export class CheckedObserver {
     this.callSubscribers(newValue, oldValue);
   }
 
+  handleEvent() {
+    this.synchronizeValue();
+  }
+
   subscribe(context, callable) {
     if (!this.hasSubscribers()) {
-      this.disposeHandler = this.handler.subscribe(this.element, this.synchronizeValue.bind(this, false));
+      this.disposeHandler = this.handler.subscribe(this.element, this);
     }
     this.addSubscriber(context, callable);
   }
@@ -4007,9 +4038,13 @@ export class SelectValueObserver {
     this.callSubscribers(newValue, oldValue);
   }
 
+  handleEvent() {
+    this.synchronizeValue();
+  }
+
   subscribe(context, callable) {
     if (!this.hasSubscribers()) {
-      this.disposeHandler = this.handler.subscribe(this.element, this.synchronizeValue.bind(this, false));
+      this.disposeHandler = this.handler.subscribe(this.element, this);
     }
     this.addSubscriber(context, callable);
   }
@@ -4558,7 +4593,10 @@ export class ObserverLocator {
         return this.getObserver(obj, propertyName);
       }
       if (/^\w+:|^data-|^aria-/.test(propertyName)
-        || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)) {
+        || obj instanceof DOM.SVGElement && this.svgAnalyzer.isStandardSvgAttribute(obj.nodeName, propertyName)
+        || obj.tagName.toLowerCase() === 'img' && propertyName === 'src'
+        || obj.tagName.toLowerCase() === 'a' && propertyName === 'href'
+      ) {
         return dataAttributeAccessor;
       }
     }
@@ -4607,8 +4645,6 @@ export class BindingExpression {
       );
   }
 }
-
-const targetContext = 'Binding:target';
 
 @connectable()
 export class Binding {
@@ -4683,7 +4719,7 @@ export class Binding {
       this.updateTarget(value);
     }
 
-    if (mode === bindingMode.oneWay) {
+    if (mode === bindingMode.toView) {
       enqueueBindingConnect(this);
     } else if (mode === bindingMode.twoWay) {
       this.sourceExpression.connect(this, source);
@@ -5035,7 +5071,7 @@ export class BindingEngine {
     this.parser = parser;
   }
 
-  createBindingExpression(targetProperty, sourceExpression, mode = bindingMode.oneWay, lookupFunctions = LookupFunctions) {
+  createBindingExpression(targetProperty, sourceExpression, mode = bindingMode.toView, lookupFunctions = LookupFunctions) {
     return new BindingExpression(
       this.observerLocator,
       targetProperty,
