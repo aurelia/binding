@@ -30,6 +30,8 @@ exports.createComputedObserver = createComputedObserver;
 exports.valueConverter = valueConverter;
 exports.bindingBehavior = bindingBehavior;
 exports.observable = observable;
+exports.connectBindingToSignal = connectBindingToSignal;
+exports.signalBindings = signalBindings;
 
 var _aureliaLogging = require('aurelia-logging');
 
@@ -5511,4 +5513,19 @@ function observable(targetOrConfig, key, descriptor) {
     };
   }
   return deco(targetOrConfig, key, descriptor);
+}
+
+var signals = {};
+
+function connectBindingToSignal(binding, name) {
+  if (!signals.hasOwnProperty(name)) {
+    signals[name] = 0;
+  }
+  binding.observeProperty(signals, name);
+}
+
+function signalBindings(name) {
+  if (signals.hasOwnProperty(name)) {
+    signals[name]++;
+  }
 }

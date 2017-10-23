@@ -1,3 +1,8 @@
+<a name="1.5.0"></a>
+# [1.5.0](https://github.com/aurelia/binding/compare/1.4.0...v1.5.0) (2017-10-23)
+
+
+
 <a name="1.4.0"></a>
 # [1.4.0](https://github.com/aurelia/binding/compare/1.3.0...v1.4.0) (2017-10-23)
 
