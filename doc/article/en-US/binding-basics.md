@@ -163,3 +163,40 @@ The binding system makes several properties available for binding in your templa
 * `$last` - In a repeat template, is true if the item is the last item in the array.
 * `$even` - In a repeat template, is true if the item has an even numbered index.
 * `$odd` - In a repeat template, is true if the item has an odd numbered index.
+
+## [Non-ASCII Characters in Identifiers](aurelia-doc://section/9/version/1.0.0)
+
+When writing JavaScript, developers can choose from [a huge character set](https://codepoints.net/search?IDC=1) to name things:
+[This blog post](https://mathiasbynens.be/notes/javascript-identifiers-es6) elaborates on what makes a variable name valid in ES5 and ES6. In non-english domains, [it might even be best practice](https://www.webfactory.de/blog/ubiquitous-language-in-a-non-english-domain) to use actual business terms instead of translations in order to minimize any mental overhead when reading or writing code. 
+
+For performance reasons, Aurelia's binding parser only supports ASCII identifiers by default. Though, if you need to bind any fancy characters, you can globally configure the parser:
+
+<code-listing heading="Add non-ASCII identifier characters">
+  <source-code lang="ES 2015">
+    // boot.js
+    import {addIdentifierCharacters} from 'aurelia-binding';
+
+    export function configure(aurelia) {
+      addIdentifierCharacters("äöüÄÖÜß");
+      (...)
+    }
+  </source-code>
+  <source-code lang="ES 2016">
+    // boot.js
+    import {addIdentifierCharacters} from 'aurelia-binding';
+
+    export function configure(aurelia) {
+      addIdentifierCharacters("äöüÄÖÜß");
+      (...)
+    }
+  </source-code>
+  <source-code lang="TypeScript">
+    // boot.ts
+    import {addIdentifierCharacters} from 'aurelia-binding';
+
+    export async function configure(aurelia: Aurelia) {
+      addIdentifierCharacters("äöüÄÖÜß");
+      (...)
+    }
+  </source-code>
+</code-listing>
