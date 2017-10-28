@@ -1,4 +1,5 @@
 import { Parser } from '../src/parser';
+import { addIdentifierCharacters } from '../src/lexer';
 import {
   LiteralString,
   LiteralPrimitive,
@@ -15,6 +16,8 @@ import {
   AccessAncestor,
   Assign
 } from '../src/ast';
+
+addIdentifierCharacters("äöüÄÖÜß");
 
 describe('Parser', () => {
   let parser;
@@ -99,6 +102,12 @@ describe('Parser', () => {
     let expression = parser.parse('foo');
     expect(expression instanceof AccessScope).toBe(true);
     expect(expression.name).toBe('foo');
+  });
+
+  it('parses additional identifier characters', () => {
+    let expression = parser.parse('öä');
+    expect(expression instanceof AccessScope).toBe(true);
+    expect(expression.name).toBe('öä');
   });
 
   it('parses AccessMember', () => {

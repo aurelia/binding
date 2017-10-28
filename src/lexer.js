@@ -292,6 +292,24 @@ export class Scanner {
   }
 }
 
+export function addIdentifierCharacters(chars) {
+  const codes = new Set();
+  for (var i = 0; i < chars.length; i++) {
+    codes.add(chars.codePointAt(i));
+  }
+
+  const _isIdentifierStart = isIdentifierStart;
+  const _isIdentifierPart = isIdentifierPart;
+
+  isIdentifierStart = function (code) {
+    return _isIdentifierStart(code) || codes.has(code);
+  }
+
+  isIdentifierPart = function (code) {
+    return _isIdentifierPart(code) || codes.has(code);
+  }
+}
+
 const OPERATORS = {
   'undefined': 1,
   'null': 1,
@@ -380,14 +398,14 @@ function isWhitespace(code) {
   return (code >= $TAB && code <= $SPACE) || (code === $NBSP);
 }
 
-function isIdentifierStart(code) {
+let isIdentifierStart = function(code) {
   return ($a <= code && code <= $z)
       || ($A <= code && code <= $Z)
       || (code === $_)
       || (code === $$);
 }
 
-function isIdentifierPart(code) {
+let isIdentifierPart = function(code) {
   return ($a <= code && code <= $z)
       || ($A <= code && code <= $Z)
       || ($0 <= code && code <= $9)
