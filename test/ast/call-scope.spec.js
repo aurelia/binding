@@ -1,4 +1,4 @@
-import {CallScope, AccessScope} from '../../src/ast';
+import {CallScope, AccessScope, Spread, LiteralPrimitive} from '../../src/ast';
 import {createOverrideContext, createScopeForTest} from '../../src/scope';
 
 describe('CallScope', () => {
@@ -133,5 +133,22 @@ describe('CallScope', () => {
     expect(binding.observeProperty).not.toHaveBeenCalled();
     hello.connect(binding, scope);
     expect(binding.observeProperty).toHaveBeenCalledWith(scope.overrideContext.parentOverrideContext, 'arg');
+  });
+  
+  it('evaluates with rest parameters', () => {
+    let expression = new CallScope(
+      'bar',
+      [new Spread([new AccessScope('baz', 0), new LiteralPrimitive(5), new LiteralPrimitive(6)], true)],
+      0
+    );
+    let callResult;
+    let scope = createScopeForTest({
+      baz: 4,
+      bar() {
+        callResult = [].slice.call(arguments);
+      }
+    });
+    expression.evaluate(scope);
+    expect(callResult.toString()).toBe('4,5,6');
   });
 });

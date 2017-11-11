@@ -351,42 +351,77 @@ export class ParserImplementation {
   parseObject() {
     let keys = [];
     let values = [];
-
+    
     this.expect('{');
-
+  
     if (this.peek.text !== '}') {
       do {
         // TODO(kasperl): Stricter checking. Only allow identifiers
         // and strings as keys. Maybe also keywords?
         let peek = this.peek;
         let value = peek.value;
-        keys.push(typeof value === 'string' ? value : peek.text);
-
-        this.advance();
-        if (peek.key && (this.peek.text === ',' || this.peek.text === '}')) {
-          --this.index;
-          values.push(this.parseAccessOrCallScope());
+        let key = typeof value === 'string' ? value : peek.text;
+  
+        // In spread
+        if (key === '...') {
+          let object = this.parseSpreadObject();
+          keys.push(object);
+          values.push(null);
         } else {
-          this.expect(':');
-          values.push(this.parseExpression());
+          /**
+           * Value is string when object key is declared as string
+           */
+          keys.push(key);
+  
+          this.advance();
+          if (peek.key && (this.peek.text === ',' || this.peek.text === '}')) {
+            --this.index;
+            values.push(this.parseAccessOrCallScope());
+          } else {
+            this.expect(':');
+            values.push(this.parseExpression());
+          }
         }
       } while (this.optional(','));
     }
-
+  
     this.expect('}');
-
+  
     return new LiteralObject(keys, values);
+  }
+
+  parseSpreadObject() {
+    this.expect('...');
+    if (this.peek.text === '{') {
+      // Spread literal
+      let object = this.parseObject();
+      return new Spread(object);
+    } else {
+      // Spread Access scope / member
+      let object = this.parseAccessOrCallMember();
+      return new Spread(object);
+    }
   }
 
   parseExpressionList(terminator) {
     let result = [];
-
+    
     if (this.peek.text !== terminator) {
       do {
-        result.push(this.parseExpression());
+        if (this.optional('...')) {
+          if (this.peek.key === undefined) {
+            this.expect('[');
+            result.push(new Spread(this.parseExpressionList(']'), true));
+            this.expect(']');
+          } else {
+            result.push(new Spread(this.parseAccessOrCallMember(), true));
+          }
+        } else {
+          result.push(this.parseExpression());
+        }
       } while (this.optional(','));
     }
-
+  
     return result;
   }
 
