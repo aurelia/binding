@@ -1,4 +1,4 @@
-import {CallMember, AccessScope} from '../../src/ast';
+import {CallMember, AccessScope, Spread, LiteralPrimitive} from '../../src/ast';
 import {createScopeForTest} from '../../src/scope';
 
 describe('CallMember', () => {
@@ -25,5 +25,24 @@ describe('CallMember', () => {
     expect(() => expression.evaluate(createScopeForTest({ foo: {} }), null, mustEvaluate)).toThrow();
     expect(() => expression.evaluate(createScopeForTest({ foo: { bar: undefined } }), null, mustEvaluate)).toThrow();
     expect(() => expression.evaluate(createScopeForTest({ foo: { bar: null } }), null, mustEvaluate)).toThrow();
+  });
+
+  it('evaluates with rest parameters', () => {
+    let expression = new CallMember(
+      new AccessScope('foo', 0),
+      'bar',
+      [new Spread([new AccessScope('baz', 0), new LiteralPrimitive(5), new LiteralPrimitive(6)], true)]
+    );
+    let callResult;
+    let scope = createScopeForTest({
+      baz: 4,
+      foo: {
+        bar() {
+          callResult = [].slice.call(arguments);
+        }
+      }
+    });
+    expression.evaluate(scope);
+    expect(callResult.toString()).toBe('4,5,6');
   });
 });

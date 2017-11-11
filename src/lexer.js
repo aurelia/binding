@@ -74,7 +74,11 @@ export class Scanner {
     switch (this.peek) {
     case $PERIOD:
       this.advance();
-      return isDigit(this.peek) ? this.scanNumber(start) : new Token(start, '.');
+      return isDigit(this.peek)
+        ? this.scanNumber(start)
+        : this.peek === $PERIOD
+          ? this.scanComplexOperator(start, $PERIOD, '..', '.')
+          : new Token(start, '.');
     case $LPAREN:
     case $RPAREN:
     case $LBRACE:
@@ -317,7 +321,8 @@ const OPERATORS = [
   '&',
   '|',
   '!',
-  '?'
+  '?',
+  '...'
 ];
 
 const $EOF = 0;

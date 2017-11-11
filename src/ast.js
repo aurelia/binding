@@ -598,12 +598,23 @@ export class LiteralArray extends Expression {
 
   evaluate(scope, lookupFunctions) {
     let elements = this.elements;
+    let length = elements.length;
     let result = [];
-
-    for (let i = 0, length = elements.length; i < length; ++i) {
-      result[i] = elements[i].evaluate(scope, lookupFunctions);
+  
+    for (let i = 0, eli = 0; eli < length; ++eli) {
+      let element = elements[eli];
+      if (element.isSpread === true) {
+        let value = element.evaluate(scope, lookupFunctions);
+        let jj = value.length;
+        for (let j = 0; j < jj; ++j) {
+          result[i + j] = value[j];
+        }
+        i += jj;
+      } else {
+        result[i++] = element.evaluate(scope, lookupFunctions);
+      }
     }
-
+  
     return result;
   }
 
@@ -631,11 +642,19 @@ export class LiteralObject extends Expression {
     let instance = {};
     let keys = this.keys;
     let values = this.values;
-
+  
     for (let i = 0, length = keys.length; i < length; ++i) {
-      instance[keys[i]] = values[i].evaluate(scope, lookupFunctions);
+      let key = keys[i];
+      if (key.isSpread === true) {
+        let value = key.evaluate(scope, lookupFunctions);
+        for (let prop in value) {
+          instance[prop] = value[prop];
+        }
+      } else {
+        instance[key] = values[i].evaluate(scope, lookupFunctions);
+      }
     }
-
+  
     return instance;
   }
 
@@ -644,9 +663,47 @@ export class LiteralObject extends Expression {
   }
 
   connect(binding, scope) {
-    let length = this.keys.length;
+    let keys = this.keys;
+    let length = keys.length;
     for (let i = 0; i < length; i++) {
-      this.values[i].connect(binding, scope);
+      let key = keys[i];
+      if (key.isSpread === true) {
+        key.connect(binding, scope);
+      } else {
+        this.values[i].connect(binding, scope);
+      } 
+    }
+  }
+}
+
+export class Spread extends Expression {
+  constructor(object, isIterable) {
+    super();
+    this.object = object;
+    this.isSpread = true;
+    this.isIterable = !!isIterable;
+  }
+
+  evaluate(scope, lookupFunctions) {
+    if (this.isIterable) {
+      return evalList(scope, this.object, lookupFunctions);
+    }
+    return this.object.evaluate(scope, lookupFunctions);
+  }
+
+  accept(visitor) {
+    return visitor.visitSpread(this);
+  }
+
+  connect(binding, scope) {
+    if (this.isIterable) {
+      let elements = this.object;
+      let length = elements.length;
+      for (let i = 0; i < length; i++) {
+        elements[i].connect(binding, scope);
+      }
+    } else {
+      this.object.connect(binding, scope);
     }
   }
 }
@@ -655,8 +712,18 @@ export class LiteralObject extends Expression {
 function evalList(scope, list, lookupFunctions) {
   const length = list.length;
   const result = [];
-  for (let i = 0; i < length; i++) {
-    result[i] = list[i].evaluate(scope, lookupFunctions);
+  for (let i = 0, eli = 0; eli < length; ++eli) {
+    let item = list[eli];
+    if (item.isSpread === true) {
+      let value = item.evaluate(scope, lookupFunctions);
+      let jj = value.length;
+      for (let j = 0; j < jj; ++j) {
+        result[i + j] = value[j];
+      }
+      i += jj;
+    } else {
+      result[i++] = item.evaluate(scope, lookupFunctions);
+    }
   }
   return result;
 }
