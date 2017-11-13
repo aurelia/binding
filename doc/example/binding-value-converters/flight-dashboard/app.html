@@ -4,15 +4,13 @@
   <div>
     Change locale to
     <div>
-      <button
-        repeat.for='locale of locales'
-        click.delegate='changeLocale(locale.locale)'>${locale.name}</button>
+      <button repeat.for='locale of locales' click.delegate='changeLocale(locale.locale)' style="margin-right: 5px">${locale.name}</button>
     </div>
   </div>
 
   <div>
     <h2>Flights</h2>
-    <table repeat.for='flight of flights' style='margin-bottom: 15px'>
+    <table repeat.for='flight of flights' style='margin-bottom: 15px; color: #5B5B5B'>
       <tr>
         <th>From ${flight.from}</th>
         <th style='width: 10px'></th>
