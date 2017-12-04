@@ -2805,7 +2805,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
 
         Scanner.prototype.scanOperator = function scanOperator(start, text) {
           assert(this.peek === text.charCodeAt(0));
-          assert(OPERATORS.indexOf(text) !== -1);
+          assert(OPERATORS[text] === 1);
           this.advance();
           return new Token(start, text).withOp(text);
         };
@@ -2826,7 +2826,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
             text += two;
           }
 
-          assert(OPERATORS.indexOf(text) !== -1);
+          assert(OPERATORS[text] === 1);
 
           return new Token(start, text).withOp(text);
         };
@@ -2844,7 +2844,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
           var text = this.input.substring(start, this.index);
           var result = new Token(start, text);
 
-          if (OPERATORS.indexOf(text) !== -1) {
+          if (OPERATORS[text] === 1) {
             result.withOp(text);
           } else {
             result.withGetterSetter(text);
@@ -2969,7 +2969,33 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
 
       _export('Scanner', Scanner);
 
-      OPERATORS = ['undefined', 'null', 'true', 'false', '+', '-', '*', '/', '%', '^', '=', '==', '===', '!=', '!==', '<', '>', '<=', '>=', '&&', '||', '&', '|', '!', '?'];
+      OPERATORS = {
+        'undefined': 1,
+        'null': 1,
+        'true': 1,
+        'false': 1,
+        '+': 1,
+        '-': 1,
+        '*': 1,
+        '/': 1,
+        '%': 1,
+        '^': 1,
+        '=': 1,
+        '==': 1,
+        '===': 1,
+        '!=': 1,
+        '!==': 1,
+        '<': 1,
+        '>': 1,
+        '<=': 1,
+        '>=': 1,
+        '&&': 1,
+        '||': 1,
+        '&': 1,
+        '|': 1,
+        '!': 1,
+        '?': 1
+      };
       $EOF = 0;
       $TAB = 9;
       $LF = 10;
@@ -5197,7 +5223,9 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
             this.updateTarget(value);
           }
 
-          if (mode === bindingMode.toView) {
+          if (mode === bindingMode.oneTime) {
+            return;
+          } else if (mode === bindingMode.toView) {
             enqueueBindingConnect(this);
           } else if (mode === bindingMode.twoWay) {
             this.sourceExpression.connect(this, source);

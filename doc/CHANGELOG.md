@@ -1,3 +1,19 @@
+<a name="1.6.0"></a>
+# [1.6.0](https://github.com/aurelia/binding/compare/1.5.0...v1.6.0) (2017-12-04)
+
+
+### Bug Fixes
+
+* **typescript:** add definition for DirtyCheckProperty ([2c29855](https://github.com/aurelia/binding/commit/2c29855)), closes [#648](https://github.com/aurelia/binding/issues/648)
+* Improve internal binding expression implementation to better support SSR scenarios.
+
+
+### Performance Improvements
+
+* **Lexer:** operators array -> map ([3431ec2](https://github.com/aurelia/binding/commit/3431ec2))
+
+
+
 <a name="1.5.0"></a>
 # [1.5.0](https://github.com/aurelia/binding/compare/1.4.0...v1.5.0) (2017-10-23)
 

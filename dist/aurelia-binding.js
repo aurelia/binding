@@ -2309,7 +2309,7 @@ export class Scanner {
 
   scanOperator(start, text) {
     assert(this.peek === text.charCodeAt(0));
-    assert(OPERATORS.indexOf(text) !== -1);
+    assert(OPERATORS[text] === 1);
     this.advance();
     return new Token(start, text).withOp(text);
   }
@@ -2330,7 +2330,7 @@ export class Scanner {
       text += two;
     }
 
-    assert(OPERATORS.indexOf(text) !== -1);
+    assert(OPERATORS[text] === 1);
 
     return new Token(start, text).withOp(text);
   }
@@ -2350,7 +2350,7 @@ export class Scanner {
 
     // TODO(kasperl): Deal with null, undefined, true, and false in
     // a cleaner and faster way.
-    if (OPERATORS.indexOf(text) !== -1) {
+    if (OPERATORS[text] === 1) {
       result.withOp(text);
     } else {
       result.withGetterSetter(text);
@@ -2474,33 +2474,33 @@ export class Scanner {
   }
 }
 
-const OPERATORS = [
-  'undefined',
-  'null',
-  'true',
-  'false',
-  '+',
-  '-',
-  '*',
-  '/',
-  '%',
-  '^',
-  '=',
-  '==',
-  '===',
-  '!=',
-  '!==',
-  '<',
-  '>',
-  '<=',
-  '>=',
-  '&&',
-  '||',
-  '&',
-  '|',
-  '!',
-  '?'
-];
+const OPERATORS = {
+  'undefined': 1,
+  'null': 1,
+  'true': 1,
+  'false': 1,
+  '+': 1,
+  '-': 1,
+  '*': 1,
+  '/': 1,
+  '%': 1,
+  '^': 1,
+  '=': 1,
+  '==': 1,
+  '===': 1,
+  '!=': 1,
+  '!==': 1,
+  '<': 1,
+  '>': 1,
+  '<=': 1,
+  '>=': 1,
+  '&&': 1,
+  '||': 1,
+  '&': 1,
+  '|': 1,
+  '!': 1,
+  '?': 1
+};
 
 const $EOF = 0;
 const $TAB = 9;
@@ -4719,7 +4719,9 @@ export class Binding {
       this.updateTarget(value);
     }
 
-    if (mode === bindingMode.toView) {
+    if (mode === bindingMode.oneTime) {
+      return;
+    } else if (mode === bindingMode.toView) {
       enqueueBindingConnect(this);
     } else if (mode === bindingMode.twoWay) {
       this.sourceExpression.connect(this, source);
