@@ -28,6 +28,17 @@ export declare interface Scope {
 }
 
 /**
+ * Gets the binding context for the specified property name by looking for the property
+ * on the scope.bindingContext, then on the scope.overrideContext before repeating on
+ * the ancestor scopes until the property is found. If the property is not found anywhere
+ * in the scope then the root binding context is returned.
+ * @param name The property name.
+ * @param scope The scope.
+ * @param ancestor The number of ancestor scopes to skip back to (used in $parent bindings).
+ */
+export declare function getContextFor(name: string, scope: Scope, ancestor?: number): any;
+
+/**
  * Provides a mechanism for releasing resources.
  */
 export declare interface Disposable {
