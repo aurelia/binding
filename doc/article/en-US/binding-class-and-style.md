@@ -4,7 +4,7 @@ description: Data-binding class and style attributes with Aurelia.
 author: Jeremy Danyow (http://danyow.net)
 ---
 
-## [Class](aurelia-doc://section/1/version/1.0.0)
+## Class
 
 You can bind an element's `class` attribute using string interpolation or with `.bind`/`.one-time`.
 
@@ -20,7 +20,7 @@ You can bind an element's `class` attribute using string interpolation or with `
 
 To ensure maximum interoperability with other JavaScript libraries, the binding system will only add or remove classes specified in the binding expression. This ensures classes added by other code (eg via `classList.add(...)`) are preserved. This "safe by default" behavior comes at a small cost but can be noticeable in benchmarks or other performance critical situations like repeats with lots of elements. You can opt out of the default behavior by binding directly to the element's [`className`](https://developer.mozilla.org/en-US/docs/Web/API/Element/className) property using `class-name.bind="...."` or `class-name.one-time="..."`. This will be marginally faster but can add up over a lot of bindings.
 
-## [Style](aurelia-doc://section/2/version/1.0.0)
+## Style
 
 You can bind a css string or object to an element's `style` attribute. Use the `style` attribute's alias, `css` when doing string interpolation to ensure your application is compatible with Internet Explorer and Edge.
 

@@ -3,7 +3,7 @@ name: "Binding: Value Converters"
 description: An overview of the Aurelia binding engine's value converter functionality. Value converters are used to transform data during the data-binding process, both to and from the view.
 author: Jeremy Danyow (http://danyow.net)
 ---
-## [Introduction](aurelia-doc://section/1/version/1.0.0)
+## Introduction
 
 In Aurelia, user interface elements are composed of view and view-model pairs. The view is written with HTML and is rendered into the DOM. The view-model is written with JavaScript and provides data and behavior to the view. Aurelia's powerful data-binding links the two pieces together, allowing changes in your data to be reflected in the view and vice versa.
 
@@ -92,7 +92,7 @@ Sometimes the raw data exposed by your view-model isn't in a format that's ideal
 
 Ideally, the date would be in a more readable format and the amount would be formatted as currency. One solution to this problem would be to compute the formatted values and expose them as properties of the view-model. This is certainly a valid approach; however, defining extra properties and methods in your models can get messy, especially when you need to keep the formatted values in sync when the original property value change. Fortunately, Aurelia has a feature that makes solving this problem quite easy.
 
-## [Value Converters](aurelia-doc://section/2/version/1.0.0)
+## Value Converters
 
 > A value converter is a class whose responsibility is to convert view-model values into values that are appropriate to display in the view *and vice versa*.
 
@@ -106,7 +106,7 @@ If you've used value converters in other languages such as Xaml, you'll find Aur
 4. Multiple value converters can be composed using pipes (`|`).
 5. Aurelia value converter can have a class field named `signals`, which accepts an array of string that will be used to manually trigger updating the view. This is to handle the situations where the value converter relies on variables that are defined outside of Aurelia application, such as language, locale etc.
 
-## [Simple Converters](aurelia-doc://section/3/version/1.0.0)
+## Simple Converters
 
 Before we get too far into the details, let's rework the previous example to use a couple of basic value converters.  Aurelia and the popular [Moment](http://momentjs.com/) and [Numeral](http://numeraljs.com/) libraries will take care of the heavy lifting, we just need to wire things up...
 
@@ -212,7 +212,7 @@ Finally, we applied the converter in the binding using the pipe `|` syntax:
 > Info: Conventional Names
 > The name that a resource is referenced by in a view derives from its export name. For Value Converters and Binding Behaviors, the export name is converted to camel case (think of it as a variable name). For Custom Elements and Custom Attributes the export name is lower-cased and hyphenated (to comply with HTML element and attribute specifications).
 
-## [Converter Parameters](aurelia-doc://section/4/version/1.0.0)
+## Converter Parameters
 
 The converters in the previous example worked great, but what if we needed to display dates and numbers in multiple formats?  It would be quite repetitive to define a converter for each format we needed to display.  A better approach would be to modify the converters to accept a `format` parameter.  Then we'd be able to specify the format in the binding and get maximum reuse out of our format converters.
 
@@ -301,7 +301,7 @@ With the `format` parameter added to the `toView` methods, we are able to specif
   </source-code>
 </code-listing>
 
-## [Binding Converter Parameters](aurelia-doc://section/5/version/1.0.0)
+## Binding Converter Parameters
 
 Converter parameters needn't be literal values.  You can bind parameter values to achieve dynamic results:
 
@@ -367,7 +367,7 @@ Converter parameters needn't be literal values.  You can bind parameter values t
   <source-code src="example/binding-value-converters/binding-converter-parameters/app.js"></source-code>
 </au-demo>
 
-## [Multiple Parameters / Composing Converters](aurelia-doc://section/6/version/1.0.0)
+## Multiple Parameters / Composing Converters
 
 Value converters can accept multiple parameters and multiple converters can be composed in the same binding expression, providing a lot of flexibility and opportunity for reuse.
 
@@ -483,7 +483,7 @@ Here's the full example:
   <source-code src="example/binding-value-converters/multiple-parameters-and-converters/app.js"></source-code>
 </au-demo>
 
-## [Object Parameters](aurelia-doc://section/7/version/1.0.0)
+## Object Parameters
 
 Aurelia supports object converter parameters. An alternate implementation of the `SortValueConverter` using a single `config` parameter would look like this:
 
@@ -554,7 +554,7 @@ Aurelia supports object converter parameters. An alternate implementation of the
 
 There are a couple of advantages to this approach: you don't need to remember the order of the converter parameter arguments, and anyone reading the markup can easily tell what each converter parameter represents.
 
-## [Bi-directional Value Converters](aurelia-doc://section/8/version/1.0.0)
+## Bi-directional Value Converters
 
 So far we've been using converters with to-view bindings. The data flows in a single direction, from the model to the view.  When using a converter in an input element's `value` binding, we need a way to convert the user's data entry to the format expected by the view-model. This is where the value converter's `fromView` method comes into play, taking the element's value and converting it to the format expected by the view-model.
 
@@ -613,11 +613,11 @@ In the example below, we have a view-model that exposes colors in an object form
   <source-code src="example/binding-value-converters/bi-directional-value-converters/app.js"></source-code>
 </au-demo>
 
-## [Globally Accessible Value Converters](aurelia-doc://section/9/version/1.0.0)
+## Globally Accessible Value Converters
 
 In all of our examples, we've been using the `require` element to import converters we need into our view.  There's an easier way.  If you have some commonly used value converters that you'd like to make globally available, use Aurelia's `globalResources` function to register them.  This will eliminate the need for `require` elements at the top of every view.
 
-## [Signalable Value Converters](aurelia-doc://section/10/version/1.0.0)
+## Signalable Value Converters
 
 In some scenarios, a global parameter that is unobservable by Aurelia is used inside a value converter, such as timezone, or a new USB was connected to the device etc. In some other scenarios, we need to update all bindings that use a certain value converter at once, for example: language translation value converters when application language has changed. Aurelia value converters have an API to trigger the bindings, with value converters that have signals property declared on it, to update.
 

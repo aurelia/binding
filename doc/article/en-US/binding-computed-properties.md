@@ -4,7 +4,7 @@ description: Data-binding computed properties with Aurelia.
 author: Jeremy Danyow (http://danyow.net)
 ---
 
-## [Introduction](aurelia-doc://section/1/version/1.0.0)
+## Introduction
 
 Sometimes it is desirable to return a dynamically computed value when accessing a property, or you may want to reflect the status of an internal variable without requiring the use of explicit method calls. In JavaScript, this can be accomplished with the use of a getter.
 

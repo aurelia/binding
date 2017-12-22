@@ -4,7 +4,7 @@ description: Data-binding observable properties with Aurelia.
 author: Fabio Luz
 ---
 
-## [Introduction](aurelia-doc://section/1/version/1.0.0)
+## Introduction
 
 Have you ever needed to perform an action when a property is changed? If you have, that's a great use of property observation.
 

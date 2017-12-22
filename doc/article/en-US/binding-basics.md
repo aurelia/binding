@@ -4,11 +4,11 @@ description: The basics of data-binding with Aurelia.
 author: Jeremy Danyow (http://danyow.net)
 ---
 
-## [Introduction](aurelia-doc://section/1/version/1.0.0)
+## Introduction
 
 This article covers the basics of data-binding with Aurelia. You'll learn how to bind to HTML attributes, DOM Events and element content. You'll also see how to give your view-models references to DOM elements, making it easy work with elements directly.
 
-## [HTML and SVG Attributes](aurelia-doc://section/2/version/1.0.0)
+## HTML and SVG Attributes
 
 Aurelia supports binding HTML and SVG attributes to JavaScript expressions. Attribute binding declarations have three parts: `attribute.command="expression"`.
 
@@ -37,7 +37,7 @@ Typically you'll use the `bind` command since it does what you intend most of th
 
 The first input uses the `bind` command which will automatically create `two-way` bindings for input value attribute bindings. The second and third input uses the `two-way` / `from-view` commands which explicitly set the binding modes. For the first and second inputs, their value will be updated whenever the bound view-model `firstName` / `lastName` properties are updated, and the those properties will also be updated whenever the inputs change. For the third input, changes in the bound view-model `middleName` property will not update the input value, however, changes in the input will update the view-model. The first anchor element uses the `bind` command which will automatically create a `to-view` binding for anchor href attributes. The other two anchor elements use the `to-view` and `one-time` commands to explicitly set the binding's mode.
 
-## [DOM Events](aurelia-doc://section/3/version/1.0.0)
+## DOM Events
 
 The binding system supports binding to DOM events.  A DOM event binding will execute a JavaScript expression whenever the specified DOM event occurs. Event binding declarations have three parts: `event.command="expression"`.
 
@@ -66,7 +66,7 @@ The cancel button uses the `trigger` command to attach an event listener to the 
 
 Aurelia will automatically call [`preventDefault()`](https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault) on events handled with `delegate` or `trigger` binding. Most of the time this is the behavior you want. To turn this off, return `true` from your event handler function.
 
-## [Function References](aurelia-doc://section/4/version/1.0.0)
+## Function References
 
 While developing custom elements or custom attributes you may encounter a situation where you have a `@bindable` property that expects a reference to a function. Use the `call` binding command to declare and pass a function to the bindable property. The `call` command is superior to the `bind` command for this use-case because it will execute the function in the correct context, ensuring `this` is what you expect it to be.
 
@@ -87,7 +87,7 @@ Your custom element or attribute can invoke the function that was passed to the 
   </source-code>
 </code-listing>
 
-## [Referencing Elements](aurelia-doc://section/5/version/1.0.0)
+## Referencing Elements
 
 Use the `ref` binding command to create a reference to a DOM element. The ref command's most basic syntax is `ref="expression"`. When the view is data-bound the specified expression will be assigned the DOM element.
 
@@ -107,7 +107,7 @@ The `ref` command has several qualifiers you can use in conjunction with custom 
 * `view.ref="expression"`: create a reference to a custom element's view instance (not an HTML Element).
 * `controller.ref="expression"`: create a reference to a custom element's controller instance.
 
-## [String Interpolation](aurelia-doc://section/6/version/1.0.0)
+## String Interpolation
 
 String interpolation expressions enable interpolating (surprise!) the result of an expression with text.  The best way to demonstrate this capability is with an example. Below are two span elements with data-bound textcontent:
 
@@ -123,7 +123,7 @@ The first span uses the `bind` command. The second uses string interpolation.  T
 
 String interpolation can be used within html attributes as an alternative to to-view binding. By default, the mode of an interpolation binding is `to-view` and the result of the expression is always coerced to a string. Results that are `null` or `undefined` will result in empty string.
 
-## [Element Content](aurelia-doc://section/7/version/1.0.0)
+## Element Content
 
 The previous example compared string interpolation binding with `textcontent.bind`. Interpolation is easier to read but `textcontent.bind` can come in handy when you need to two-bind a `contenteditable` element:
 
@@ -151,7 +151,7 @@ You may also need to bind html text to an element's `innerHTML` property:
 > Warning
 > Binding using the `innerhtml` attribute simply sets the element's `innerHTML` property.  The markup does not pass through Aurelia's templating system.  Binding expressions and require elements will not be evaluated.
 
-## [Contextual Properties](aurelia-doc://section/8/version/1.0.0)
+## Contextual Properties
 
 The binding system makes several properties available for binding in your templates, depending on the context.
 

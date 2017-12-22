@@ -3,7 +3,7 @@ name: "Binding: Binding Behaviors"
 description: An overview of the Aurelia binding engine's binding behavior functionality. Binding Behaviors are used to plug into a binding instance's lifecycle and change the way it operates.
 author: Jeremy Danyow (http://danyow.net)
 ---
-## [Introduction](aurelia-doc://section/1/version/1.0.0)
+## Introduction
 
 Binding behaviors are a category of view resource, just like value converters, custom attributes and custom elements.  Binding behaviors are most like [value converters](http://www.danyow.net/aurelia-value-converters/) in that you use them declaratively in binding expressions to affect the binding.
 
@@ -11,7 +11,7 @@ The primary difference between a binding behavior and a value converter is *bind
 
 The additional "access" afforded to binding behaviors gives them the ability to change the behavior of the binding, enabling a lot of interesting scenarios which you'll see below.
 
-## [throttle](aurelia-doc://section/2/version/1.0.0)
+## throttle
 
 Aurelia ships with a handful of behaviors out of the box to enable common scenarios.  The first is the throttle binding behavior which limits the rate at which the view-model is updated in two-way bindings or the rate at which the view is updated in to-view binding scenarios.
 
@@ -49,7 +49,7 @@ The throttle behavior is particularly useful when binding events to methods on y
   <source-code src="example/binding-binding-behaviors/throttle/app.js"></source-code>
 </au-demo>
 
-## [debounce](aurelia-doc://section/3/version/1.0.0)
+## debounce
 
 The debounce binding behavior is another rate limiting binding behavior. Debounce prevents the binding from being updated until a specified interval has passed without any changes.
 
@@ -79,7 +79,7 @@ Like throttle, the `debounce` binding behavior really shines in event binding. H
   <source-code src="example/binding-binding-behaviors/debounce/app.js"></source-code>
 </au-demo>
 
-## [updateTrigger](aurelia-doc://section/4/version/1.0.0)
+## updateTrigger
 
 Update trigger allows you to override the input events that cause the element's value to be written to the view-model. The default events are `change` and `input`.
 
@@ -103,7 +103,7 @@ Multiple events are supported:
   <source-code src="example/binding-binding-behaviors/update-trigger/app.js"></source-code>
 </au-demo>
 
-## [signal](aurelia-doc://section/5/version/1.0.0)
+## signal
 
 The signal binding behavior enables you to "signal" the binding to refresh. This is especially useful when a binding result is impacted by global changes that are outside of the observation path.
 
@@ -163,7 +163,7 @@ Here's how we can use the `BindingSignaler` to signal the bindings periodically:
   <source-code src="example/binding-binding-behaviors/signal/app.js"></source-code>
 </au-demo>
 
-## [oneTime](aurelia-doc://section/6/version/1.0.0)
+## oneTime
 
 With the `oneTime` binding behavior you can specify that string interpolated bindings should happen once. Simply write:
 
@@ -190,7 +190,7 @@ There are also binding behaviors for `toView` and `twoWay` which you could use l
 > Warning: Binding Mode Casing
 > The casing for binding modes is different depending on whether they appear as a **binding command** or as a **binding behavior**. Because HTML is case-insensitive, binding commands cannot use capitals. Thus, the binding modes, when specified in this place, use lowercase, dashed names. However, when used within a binding expression as a binding behavior, they must not use a dash because that is not a valid symbol for variable names in JavaScript. So, in this case, camel casing is used.
 
-## [self](aurelia-doc://section/7/version/1.0.0)
+## self
 
 With the `self` binding behavior, you can specify that event handler will only response to the target where listener was attached to, not its descendants.
 
@@ -250,7 +250,7 @@ you achieve the same goal without filling up your methods with unnecessary code:
   </source-code>
 </code-listing>
 
-## [Custom binding behaviors](aurelia-doc://section/8/version/1.0.0)
+## Custom binding behaviors
 
 You can build custom binding behaviors just like you can build value converters. Instead of `toView` and `fromView` methods you'll create `bind(binding, scope, [...args])` and `unbind(binding, scope)` methods. In the bind method you'll add your behavior to the binding and in the unbind method you should cleanup whatever you did in the bind method to restore the binding instance to it's original state. The `binding` argument is the binding instance whose behavior you want to change. It's an implementation of the `Binding` interface. The `scope` argument is the binding's data-context. It provides access to the model the binding will be bound to via it's `bindingContext` and `overrideContext` properties.
 

@@ -4,7 +4,7 @@ description: How data-binding works in Aurelia.
 author: Jeremy Danyow (http://danyow.net)
 ---
 
-## [End to End](aurelia-doc://section/1/version/1.0.0)
+## End to End
 
 This article explains how the binding system works. There is a lot to cover here, and to start we're actually going to look at a component outside of the binding system so you can gain a full understanding of the process. A good place to start is in the templating module, with a component called the [`ViewCompiler`](https://github.com/aurelia/templating/blob/master/src/view-compiler.js). The ViewCompiler's job is to compile views into a `ViewFactory` which will be used to instantiate instances of your templates, called Views. Some view factories will be used to instantiate only one instance of a particular template. The ViewFactory that resulted from compiling your `app.html` template typically falls into this category. Other view factories for templates used with `repeat.for` may be used to instantiate tens, hundreds or even thousands of View instances.
 
@@ -24,7 +24,7 @@ The view's `bind` method loops through all of its binding instances and calls th
 
 At this point the view and view-model are data-bound. When changes occur in the model, the property observers created when the AST was `connect`ed will fire change events, triggering the binding to update the target by calling `targetObserver.setValue`. When changes occur in the view the property observer known as the `targetObserver` will trigger the binding to update the source by calling `sourceExpression.assign(scope, value)`. All that remains is for the Controller to `attach` the view to the DOM. Later, when the view is no longer needed it will be `detached` from the DOM and `unbind` will be invoked, unbinding all the views, which will unsubscribe all the property observers.
 
-## [Abstract Syntax Tree](aurelia-doc://section/2/version/1.0.0)
+## Abstract Syntax Tree
 
 The abstract syntax tree is a key part of the binding system, we've discussed how it is used but it is easier to understand if you can visualize it. Below is a demo where you can enter any binding expression and see the AST resulting from parsing the expression. Click on the buttons to view some example expressions we put together or enter your own.
 
@@ -32,7 +32,7 @@ The abstract syntax tree is a key part of the binding system, we've discussed ho
   <source-code src="example/binding-how-it-works/ast/app.js"></source-code>
 </au-demo>
 
-## [Binding Context / Scope](aurelia-doc://section/3/version/1.0.0)
+## Binding Context / Scope
 
 The "scope" in aurelia is made up of two objects: the `bindingContext` (almost always a view-model instance) and the `overrideContext` which can be thought of as an "overlay" of the bindingContext. Properties on the overrideContext "override" corresponding properties on the bindingContext. It is actually rare for there to be a property on the overrideContext that is "hiding" a property on the bindingContext beneath. Most of the time the overrideContext is storing extra contextual properties such as `$index`, `$first`, `$last`, `$odd`, `$even` in the case of the repeat, `$event` when event bindings are firing, etc. The other purpose of the overrideContext is to enable scope traversal. The overrideContext also has a reference to the parent overrideContext and to its corresponding bindingContext which enables the binding system to traverse the scope as-needed when it evaluates a binding expression. If you've been using Aurelia for a while you might remember needing to use `$parent` to access the outer scope. It is not needed anymore because the binding system knows how to traverse the scope (read: traverse the bindingContext/overrideContext hierarchy) automatically.
 

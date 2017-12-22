@@ -4,7 +4,7 @@ description: Data-binding select elements with Aurelia.
 author: Jeremy Danyow (http://danyow.net)
 ---
 
-## [Introduction](aurelia-doc://section/1/version/1.0.0)
+## Introduction
 
 A `<select>` element can serve as a single-select or multiple-select "picker" depending on whether the `multiple` attribute is present. The binding system supports both use cases. The samples below demonstrate a variety scenarios, all use a common series of steps to configure the select element:
 
@@ -15,7 +15,7 @@ A `<select>` element can serve as a single-select or multiple-select "picker" de
   `<option model.bind="product.id">${product.name}</option>`
    *You can use the standard `value` attribute instead of `model`, just remember- it will coerce anything it's assigned to a string.*
 
-## [Select Number](aurelia-doc://section/2/version/1.0.0)
+## Select Number
 
 <code-listing heading="app${context.language.fileExtension}">
   <source-code lang="ES 2015">
@@ -81,7 +81,7 @@ A `<select>` element can serve as a single-select or multiple-select "picker" de
   <source-code src="example/binding-selects/single/numbers/app.js"></source-code>
 </au-demo>
 
-## [Select Object](aurelia-doc://section/3/version/1.0.0)
+## Select Object
 
 <code-listing heading="app${context.language.fileExtension}">
   <source-code lang="ES 2015">
@@ -148,7 +148,7 @@ A `<select>` element can serve as a single-select or multiple-select "picker" de
   <source-code src="example/binding-selects/single/objects/app.js"></source-code>
 </au-demo>
 
-## [Select Object with Matcher](aurelia-doc://section/4/version/1.0.0)
+## Select Object with Matcher
 
 You may run into situations where the object your select element's value is bound does not have reference equality with any of the objects your option element model properties are bound to. The select's value object might "match" one of the option objects by id, but they may not be the same object instance. To support this scenario you can override Aurelia's default "matcher" which is a equality comparison function that looks like this: `(a, b) => a === b`. You can substitute a function of your choosing that has the right logic to compare your objects.
 
@@ -224,7 +224,7 @@ You may run into situations where the object your select element's value is boun
 </au-demo>
 
 
-## [Select Boolean](aurelia-doc://section/5/version/1.0.0)
+## Select Boolean
 
 <code-listing heading="app${context.language.fileExtension}">
   <source-code lang="ES 2015">
@@ -265,7 +265,7 @@ You may run into situations where the object your select element's value is boun
   <source-code src="example/binding-selects/single/booleans/app.js"></source-code>
 </au-demo>
 
-## [Select String](aurelia-doc://section/6/version/1.0.0)
+## Select String
 
 <code-listing heading="app${context.language.fileExtension}">
   <source-code lang="ES 2015">
@@ -311,7 +311,7 @@ You may run into situations where the object your select element's value is boun
   <source-code src="example/binding-selects/single/strings/app.js"></source-code>
 </au-demo>
 
-## [Multiple Select Numbers](aurelia-doc://section/7/version/1.0.0)
+## Multiple Select Numbers
 
 <code-listing heading="app${context.language.fileExtension}">
   <source-code lang="ES 2015">
@@ -377,7 +377,7 @@ You may run into situations where the object your select element's value is boun
   <source-code src="example/binding-selects/multiple/numbers/app.js"></source-code>
 </au-demo>
 
-## [Multiple Select Objects](aurelia-doc://section/8/version/1.0.0)
+## Multiple Select Objects
 
 <code-listing heading="app${context.language.fileExtension}">
   <source-code lang="ES 2015">
@@ -447,7 +447,7 @@ You may run into situations where the object your select element's value is boun
   <source-code src="example/binding-selects/multiple/objects/app.js"></source-code>
 </au-demo>
 
-## [Multiple Select Strings](aurelia-doc://section/9/version/1.0.0)
+## Multiple Select Strings
 
 <code-listing heading="app${context.language.fileExtension}">
   <source-code lang="ES 2015">

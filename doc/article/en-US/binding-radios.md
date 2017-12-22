@@ -4,7 +4,7 @@ description: Data-binding radio inputs with Aurelia.
 author: Jeremy Danyow (http://danyow.net)
 ---
 
-## [Introduction](aurelia-doc://section/1/version/1.0.0)
+## Introduction
 
 A group of radio inputs is a type of "single select" interface. Aurelia supports two-way binding any type of property to a group of radio inputs. The examples below illustrate binding number, object, string and boolean properties to sets of radio inputs. In each of the examples there's a common set of steps:
 
@@ -12,7 +12,7 @@ A group of radio inputs is a type of "single select" interface. Aurelia supports
 2. Define each radio's value using the `model` property.
 3. Two-way bind each radio's `checked` attribute to a "selected item" property on the view-model.
 
-## [Numbers](aurelia-doc://section/2/version/1.0.0)
+## Numbers
 
 Let's start with an example that uses a numeric "selected item" property. In this example each radio input will be assigned a number value via the model property. Selecting a radio will cause it's model value to be assigned to the `selectedProductId` property.
 
@@ -81,7 +81,7 @@ Let's start with an example that uses a numeric "selected item" property. In thi
   <source-code src="example/binding-radios/numbers/app.js"></source-code>
 </au-demo>
 
-## [Objects](aurelia-doc://section/3/version/1.0.0)
+## Objects
 
 The binding system supports binding all types to radios, including objects. Here's an example that binds a group of radios to a `selectedProduct` object property.
 
@@ -149,7 +149,7 @@ The binding system supports binding all types to radios, including objects. Here
   <source-code src="example/binding-radios/objects/app.js"></source-code>
 </au-demo>
 
-## [Objects with Matcher](aurelia-doc://section/4/version/1.0.0)
+## Objects with Matcher
 
 You may run into situations where the object your input element's model is bound to does not have reference equality to any of the object in your checked attribute is bound to. The objects might match by id, but they may not be the same object instance. To support this scenario you can override Aurelia's default "matcher" which is a equality comparison function that looks like this: `(a, b) => a === b`. You can substitute a function of your choosing that has the right logic to compare your objects.
 
@@ -221,7 +221,7 @@ You may run into situations where the object your input element's model is bound
   <source-code src="example/binding-radios/objects-matcher/app.js"></source-code>
 </au-demo>
 
-## [Booleans](aurelia-doc://section/5/version/1.0.0)
+## Booleans
 
 In this example each radio input is assigned one of three literal values: `null`, `true` and `false`. Selecting one of the radios will assign it's value to the `likesCake` property.
 
@@ -276,7 +276,7 @@ In this example each radio input is assigned one of three literal values: `null`
   <source-code src="example/binding-radios/booleans/app.js"></source-code>
 </au-demo>
 
-## [Strings](aurelia-doc://section/6/version/1.0.0)
+## Strings
 
 Finally, here's an example using strings. This is example is unique because it does not use `model.bind` to assign each radio's value. Instead the input's standard `value` attribute is used. Normally we cannot use the standard `value` attribute in conjunction with checked binding because it coerces anything it's assigned to a string.
 
