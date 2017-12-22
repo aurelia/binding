@@ -1,17 +1,7 @@
 ---
-{
-  "name": "Binding: How it Works",
-  "culture": "en-US",
-  "description": "How data-binding works in Aurelia.",
-  "engines" : { "aurelia-doc" : "^1.0.0" },
-  "author": {
-    "name": "Jeremy Danyow",
-    "url": "http://danyow.net"
-  },
-  "contributors": [],
-  "translators": [],
-  "keywords": ["JavaScript", "Data Binding"]
-}
+name: "Binding: How it Works"
+description: How data-binding works in Aurelia.
+author: Jeremy Danyow (http://danyow.net)
 ---
 
 ## [End to End](aurelia-doc://section/1/version/1.0.0)

@@ -1,16 +1,7 @@
 ---
-{
-  "name": "Binding: Observable Properties",
-  "culture": "en-US",
-  "description": "Data-binding observable properties with Aurelia.",
-  "engines" : { "aurelia-doc" : "^1.0.0" },
-  "author": {
-    "name": "Fabio Luz"
-  },
-  "contributors": [],
-  "translators": [],
-  "keywords": ["JavaScript", "Data Binding", "Observable"]
-}
+name: "Binding: Observable Properties"
+description: Data-binding observable properties with Aurelia.
+author: Fabio Luz
 ---
 
 ## [Introduction](aurelia-doc://section/1/version/1.0.0)

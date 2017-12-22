@@ -1,17 +1,7 @@
 ---
-{
-  "name": "Binding: Binding Behaviors",
-  "culture": "en-US",
-  "description": "An overview of the Aurelia binding engine's binding behavior functionality. Binding Behaviors are used to plug into a binding instance's lifecycle and change the way it operates.",
-  "engines" : { "aurelia-doc" : "^1.0.0" },
-  "author": {
-  	"name": "Jeremy Danyow",
-  	"url": "http://danyow.net"
-  },
-  "contributors": [],
-  "translators": [],
-  "keywords": ["JavaScript", "Data Binding", "Binding Behaviors"]
-}
+name: "Binding: Binding Behaviors"
+description: An overview of the Aurelia binding engine's binding behavior functionality. Binding Behaviors are used to plug into a binding instance's lifecycle and change the way it operates.
+author: Jeremy Danyow (http://danyow.net)
 ---
 ## [Introduction](aurelia-doc://section/1/version/1.0.0)
 

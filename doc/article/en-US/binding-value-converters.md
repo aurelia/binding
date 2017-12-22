@@ -1,17 +1,7 @@
 ---
-{
-  "name": "Binding: Value Converters",
-  "culture": "en-US",
-  "description": "An overview of the Aurelia binding engine's value converter functionality. Value converters are used to transform data during the data-binding process, both to and from the view.",
-  "engines" : { "aurelia-doc" : "^1.0.0" },
-  "author": {
-  	"name": "Jeremy Danyow",
-  	"url": "http://danyow.net"
-  },
-  "contributors": [],
-  "translators": [],
-  "keywords": ["JavaScript", "Data Binding", "Value Converters"]
-}
+name: "Binding: Value Converters"
+description: An overview of the Aurelia binding engine's value converter functionality. Value converters are used to transform data during the data-binding process, both to and from the view.
+author: Jeremy Danyow (http://danyow.net)
 ---
 ## [Introduction](aurelia-doc://section/1/version/1.0.0)
 

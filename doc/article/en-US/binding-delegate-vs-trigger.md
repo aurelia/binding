@@ -1,17 +1,7 @@
 ---
-{
-  "name": "Binding: Delegate vs Trigger",
-  "culture": "en-US",
-  "description": "When to use delegate and when to use trigger.",
-  "engines" : { "aurelia-doc" : "^1.0.0" },
-  "author": {
-    "name": "Jeremy Danyow",
-  	"url": "http://danyow.net"
-  },
-  "contributors": [],
-  "translators": [],
-  "keywords": ["JavaScript", "Data Binding"]
-}
+name: "Binding: Delegate vs Trigger"
+description: When to use delegate and when to use trigger.
+author: Jeremy Danyow (http://danyow.net)
 ---
 
 ## [Delegate vs Trigger](aurelia-doc://section/1/version/1.0.0)

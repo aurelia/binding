@@ -1,17 +1,7 @@
 ---
-{
-  "name": "Binding: Radios",
-  "culture": "en-US",
-  "description": "Data-binding radio inputs with Aurelia.",
-  "engines" : { "aurelia-doc" : "^1.0.0" },
-  "author": {
-    "name": "Jeremy Danyow",
-  	"url": "http://danyow.net"
-  },
-  "contributors": [],
-  "translators": [],
-  "keywords": ["JavaScript", "Data Binding"]
-}
+name: "Binding: Radios"
+description: Data-binding radio inputs with Aurelia.
+author: Jeremy Danyow (http://danyow.net)
 ---
 
 ## [Introduction](aurelia-doc://section/1/version/1.0.0)

@@ -1,17 +1,7 @@
 ---
-{
-  "name": "Binding: Class and Style",
-  "culture": "en-US",
-  "description": "Data-binding class and style attributes with Aurelia.",
-  "engines" : { "aurelia-doc" : "^1.0.0" },
-  "author": {
-    "name": "Jeremy Danyow",
-  	"url": "http://danyow.net"
-  },
-  "contributors": [],
-  "translators": [],
-  "keywords": ["JavaScript", "Data Binding"]
-}
+name: "Binding: Class and Style"
+description: Data-binding class and style attributes with Aurelia.
+author: Jeremy Danyow (http://danyow.net)
 ---
 
 ## [Class](aurelia-doc://section/1/version/1.0.0)
