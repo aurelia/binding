@@ -1,4 +1,4 @@
-import {Container} from 'aurelia-dependency-injection';
+import { Container } from 'aurelia-dependency-injection';
 
 /**
  * The "parallel" or "artificial" aspect of the binding scope. Provides access to the parent binding
@@ -97,7 +97,7 @@ export declare enum delegationStrategy {
  * This is an internal API and is subject to change without notice in future releases.
  */
 export declare class EventManager {
-  registerElementConfig(config: { tagName: string; properties: { (s: string): string[] }; }): void;
+  registerElementConfig(config: { tagName: string; properties: { [propertyName: string]: string[] }; }): void;
   /**
    * Subscribes to specified event on the target element.
    * @param target Target element.
@@ -395,7 +395,7 @@ export declare interface NameExpression {
 /**
  * An expression AST visitor.
  */
-export interface ExpressionVisitor {}
+export interface ExpressionVisitor { }
 
 /**
  * Visits an expression AST and returns the string equivalent.
@@ -407,7 +407,7 @@ export class Unparser implements ExpressionVisitor {
 /**
  * Clones an expression AST.
  */
-export class ExpressionCloner implements ExpressionVisitor {}
+export class ExpressionCloner implements ExpressionVisitor { }
 
 /**
  * Provides the base class from which the classes that represent expression tree nodes are derived.
