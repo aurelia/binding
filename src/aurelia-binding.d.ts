@@ -137,7 +137,28 @@ export declare interface CollectionObserver {
   /**
    * Subscribe to collection mutation events.
    */
-  subscribe(callback: (changeRecords: any) => void): Disposable;
+  subscribe(callback: (changeRecords: Array<ICollectionObserverSplice<any>>) => void): Disposable;
+}
+
+/**
+ * The change record of a collection mutation. 
+ */
+export declare interface ICollectionObserverSplice<T = any> {
+
+  /**
+   * Number of items added to the collection.
+   */
+  addedCount: number;
+
+  /**
+   * The position at which the items were added.
+   */
+  index: number;
+
+  /**
+   * A collection of items that were removed from the collection.
+   */
+  removed: Array<T>;
 }
 
 /**
