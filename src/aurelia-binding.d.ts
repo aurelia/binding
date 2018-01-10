@@ -218,6 +218,13 @@ export declare interface Callable {
 }
 
 /**
+ * Event subscription handler for observers
+ */
+export declare interface ObserverEventHandler {
+  subscribe(target: Element, callbackOrlistener: EventListenerOrEventListenerObject): Function
+}
+
+/**
  * Observes property changes.
  */
 export declare interface InternalPropertyObserver {
@@ -255,9 +262,10 @@ export declare interface InternalPropertyObserver {
  * Checked observer for checkboxes
  */
 export declare class CheckedObserver implements InternalPropertyObserver {
+
   constructor(
     element: Element,
-    handler: { subscribe(target: Element, callbackOrlistener: EventListenerOrEventListenerObject): { (): void } },
+    handler: ObserverEventHandler,
     observerLocator: ObserverLocator
   );
 
@@ -294,9 +302,10 @@ export declare class CheckedObserver implements InternalPropertyObserver {
  * Select observer for select
  */
 export declare class SelectValueObserver implements InternalPropertyObserver {
+
   constructor(
     element: Element,
-    handler: { subscribe(target: Element, callbackOrlistener: EventListenerOrEventListenerObject): { (): void } },
+    handler: ObserverEventHandler,
     observerLocator: ObserverLocator
   );
 
