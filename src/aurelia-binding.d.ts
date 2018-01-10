@@ -1,4 +1,4 @@
-import {Container} from 'aurelia-dependency-injection';
+import { Container } from 'aurelia-dependency-injection';
 
 /**
  * The "parallel" or "artificial" aspect of the binding scope. Provides access to the parent binding
@@ -108,7 +108,7 @@ export declare enum delegationStrategy {
  * This is an internal API and is subject to change without notice in future releases.
  */
 export declare class EventManager {
-  registerElementConfig(config: { tagName: string; properties: { (s: string): string[] }; }): void;
+  registerElementConfig(config: { tagName: string; properties: { [propertyName: string]: string[] }; }): void;
   /**
    * Subscribes to specified event on the target element.
    * @param target Target element.
@@ -229,6 +229,84 @@ export declare interface InternalPropertyObserver {
    * Sets the property value.
    */
   setValue(newValue: any): void;
+  /**
+   * Subscribe to property changes with a callback function.
+   */
+  subscribe(callback: (newValue: any, oldValue: any) => void): void;
+  /**
+   * Subscribe a callable object to property changes.
+   * @param context A value to be passed to the callable object's call function when a property change occurs.
+   * @param callable A callable object.
+   */
+  subscribe(context: any, callable: Callable): void;
+  /**
+   * Unsubscribes a callback function from property changes.
+   */
+  unsubscribe(callback: (newValue: any, oldValue: any) => void): void;
+  /**
+   * Unsubscribes a callable object from property changes.
+   * @param context A value to be passed to the callable object's call function when a property change occurs.
+   * @param callable A callable object.
+   */
+  unsubscribe(context: any, callable: Callable): void;
+}
+
+/**
+ * Checked observer for checkboxes
+ */
+export declare class CheckedObserver implements InternalPropertyObserver {
+  constructor(
+    element: Element,
+    handler: { subscribe(target: Element, callbackOrlistener: EventListenerOrEventListenerObject): { (): void } },
+    observerLocator: ObserverLocator
+  );
+
+  getValue(): any;
+
+  setValue(newValue: any): void;
+  /**
+   * Handle underlying checkbox element change events
+   */
+  handleEvent(): any;
+  /**
+   * Subscribe to property changes with a callback function.
+   */
+  subscribe(callback: (newValue: any, oldValue: any) => void): void;
+  /**
+   * Subscribe a callable object to property changes.
+   * @param context A value to be passed to the callable object's call function when a property change occurs.
+   * @param callable A callable object.
+   */
+  subscribe(context: any, callable: Callable): void;
+  /**
+   * Unsubscribes a callback function from property changes.
+   */
+  unsubscribe(callback: (newValue: any, oldValue: any) => void): void;
+  /**
+   * Unsubscribes a callable object from property changes.
+   * @param context A value to be passed to the callable object's call function when a property change occurs.
+   * @param callable A callable object.
+   */
+  unsubscribe(context: any, callable: Callable): void;
+}
+
+/**
+ * Select observer for select
+ */
+export declare class SelectValueObserver implements InternalPropertyObserver {
+  constructor(
+    element: Element,
+    handler: { subscribe(target: Element, callbackOrlistener: EventListenerOrEventListenerObject): { (): void } },
+    observerLocator: ObserverLocator
+  );
+
+  getValue(): any;
+
+  setValue(newValue: any): void;
+  /**
+   * Handle underlying checkbox element change events
+   */
+  handleEvent(): any;
   /**
    * Subscribe to property changes with a callback function.
    */
@@ -427,7 +505,7 @@ export declare interface NameExpression {
 /**
  * An expression AST visitor.
  */
-export interface ExpressionVisitor {}
+export interface ExpressionVisitor { }
 
 /**
  * Visits an expression AST and returns the string equivalent.
@@ -439,7 +517,7 @@ export class Unparser implements ExpressionVisitor {
 /**
  * Clones an expression AST.
  */
-export class ExpressionCloner implements ExpressionVisitor {}
+export class ExpressionCloner implements ExpressionVisitor { }
 
 /**
  * Provides the base class from which the classes that represent expression tree nodes are derived.
