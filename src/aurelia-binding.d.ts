@@ -680,7 +680,7 @@ export declare class Parser {
  * Provides efficient property observers for properties that would otherwise require dirty-checking.
  */
 export declare interface ObjectObservationAdapter {
-  getObserver(object: any, propertyName: string, descriptor: PropertyDescriptor): InternalPropertyObserver;
+  getObserver(object: any, propertyName: string, descriptor: PropertyDescriptor): InternalPropertyObserver | null | undefined;
 }
 
 /**
