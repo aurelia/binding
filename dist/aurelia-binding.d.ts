@@ -186,6 +186,13 @@ export declare interface Callable {
 }
 
 /**
+ * Event subscription handler for observers
+ */
+export declare interface ObserverEventHandler {
+  subscribe(target: Element, callbackOrlistener: EventListenerOrEventListenerObject): Function
+}
+
+/**
  * Observes property changes.
  */
 export declare interface InternalPropertyObserver {
@@ -220,14 +227,55 @@ export declare interface InternalPropertyObserver {
 }
 
 /**
+ * Value observer for elements
+ */
+export declare class ValueAttributeObserver implements InternalPropertyObserver {
+
+  constructor(
+    element: Element,
+    propertyName: string,
+    handler: ObserverEventHandler
+  );
+
+  getValue(): any;
+
+  setValue(newValue: any): void;
+  /**
+   * Handle underlying checkbox element change events
+   */
+  handleEvent(): any;
+  /**
+   * Subscribe to property changes with a callback function.
+   */
+  subscribe(callback: (newValue: any, oldValue: any) => void): void;
+  /**
+   * Subscribe a callable object to property changes.
+   * @param context A value to be passed to the callable object's call function when a property change occurs.
+   * @param callable A callable object.
+   */
+  subscribe(context: any, callable: Callable): void;
+  /**
+   * Unsubscribes a callback function from property changes.
+   */
+  unsubscribe(callback: (newValue: any, oldValue: any) => void): void;
+  /**
+   * Unsubscribes a callable object from property changes.
+   * @param context A value to be passed to the callable object's call function when a property change occurs.
+   * @param callable A callable object.
+   */
+  unsubscribe(context: any, callable: Callable): void;
+}
+
+/**
  * Checked observer for checkboxes
  */
 export declare class CheckedObserver implements InternalPropertyObserver {
-  new(
+
+  constructor(
     element: Element,
-    handler: { subscribe(target: Element, callbackOrlistener: EventListenerOrEventListenerObject): { (): void } },
+    handler: ObserverEventHandler,
     observerLocator: ObserverLocator
-  ): CheckedObserver;
+  );
 
   getValue(): any;
 
@@ -262,11 +310,12 @@ export declare class CheckedObserver implements InternalPropertyObserver {
  * Select observer for select
  */
 export declare class SelectValueObserver implements InternalPropertyObserver {
-  new(
+
+  constructor(
     element: Element,
-    handler: { subscribe(target: Element, callbackOrlistener: EventListenerOrEventListenerObject): { (): void } },
+    handler: ObserverEventHandler,
     observerLocator: ObserverLocator
-  ): CheckedObserver;
+  );
 
   getValue(): any;
 
