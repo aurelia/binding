@@ -1,10 +1,10 @@
 ---
-name: "Binding: Observable Properties"
-description: Data-binding observable properties with Aurelia.
-author: Fabio Luz
+name: "Binding: Observables"
+description: Using observables with Aurelia.
+authors: Fabio Luz, Jonathan Eckman
 ---
 
-## Introduction
+## Observable Properties
 
 Have you ever needed to perform an action when a property is changed? If you have, that's a great use of property observation.
 
@@ -158,3 +158,11 @@ If you prefer, can also put the `@observable` on classes:
 
 > Info
 > The `@observable` _only_ tracks changes to the value of a property, _not_ changes _in_ the value itself. This means that if the property is an array, the change handler will not fire when adding, removing or editing items.
+
+
+## Observing Arrays
+
+- Describe the Aurelia Collection Observer
+- Example of using the collection observer to detect additions and removals from an array.
+- Describe ICollectionObserverSplice
+- Using it with Set and Map
