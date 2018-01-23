@@ -160,9 +160,86 @@ If you prefer, can also put the `@observable` on classes:
 > The `@observable` _only_ tracks changes to the value of a property, _not_ changes _in_ the value itself. This means that if the property is an array, the change handler will not fire when adding, removing or editing items.
 
 
-## Observing Arrays
+## Observing Collections
 
-- Describe the Aurelia Collection Observer
-- Example of using the collection observer to detect additions and removals from an array.
-- Describe ICollectionObserverSplice
-- Using it with Set and Map
+To observe changes to a collection, such as an array or Map, use the Collection Observer. The subscription is created by simply providing the collection to observe and a callback function.
+
+<code-listing heading="Configuring a Collection Observer">
+  <source-code lang="ES 2015">
+  </source-code>
+  <source-code lang="ES 2016">
+  </source-code>
+  <source-code lang="TypeScript">
+    import {BindingEngine, autoinject, ICollectionObserverSplice} from 'aurelia-framework';
+
+    @autoinject
+    export class App {
+
+      myCollection: Array<string> = ["foo"];
+
+      constructor(private bindingEngine: BindingEngine) {
+        let subscription = this.bindingEngine.collectionObserver(this.myCollection)
+          .subscribe(this.collectionChanged.bind(this));
+      }
+
+      collectionChanged(splices: Array<ICollectionObserverSplice<string>>) {
+          // This will fire any time the collection is modified. 
+      }
+    }
+  </source-code>
+</code-listing>  
+
+The Collection Observer provides an array of ICollectionObserverSplice to the callback function which you may use to determine exactly what was changed in the collection. Lets update the example above to write to the console what items were added or removed from the collection.
+
+<code-listing heading="Using Splices">
+  <source-code lang="ES 2015">
+  </source-code>
+  <source-code lang="ES 2016">
+  </source-code>
+  <source-code lang="TypeScript">
+    collectionChanged(splices: Array<ICollectionObserverSplice<string>>) {
+        for (var i = 0; i < splices.length; i++) {
+          var splice: ICollectionObserverSplice<string> = splices[i];
+
+          // Output the values that were added.
+          var valuesAdded = this.myCollection.slice(splice.index, splice.index + splice.addedCount);
+          console.log(valuesAdded);
+
+          // Output the values that were removed.
+          console.log(splice.removed);
+        }
+    }
+  </source-code>
+</code-listing>
+
+If we now push two items into the array, in the console we would see an array that contained 2 values, then a second empty array because no removed items were detected.
+
+<code-listing heading="Using Splices">
+  <source-code lang="ES 2015">
+  </source-code>
+  <source-code lang="ES 2016">
+  </source-code>
+  <source-code lang="TypeScript">
+    this.myCollection.push("hello", "world");
+    // (2) ["hello", "world"]
+    // []
+  </source-code>
+</code-listing>
+
+If we remove two items, we would see first an empty array because we added no items, then an array that contained the two items that were removed.
+
+<code-listing heading="Using Splices">
+  <source-code lang="ES 2015">
+  </source-code>
+  <source-code lang="ES 2016">
+  </source-code>
+  <source-code lang="TypeScript">
+    this.myCollection.splice(1, 2);
+    // []
+    // (2) ["hello", "world"]
+  </source-code>
+</code-listing>
+
+
+- TODO: Link to ICollectionObserverSplice
+- TODO: Using it with Set and Map
