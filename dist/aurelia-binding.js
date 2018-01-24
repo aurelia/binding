@@ -3112,13 +3112,7 @@ function stopPropagation() {
   this.propagationStopped = true;
 }
 
-function interceptStopPropagation(event) {
-  event.standardStopPropagation = event.stopPropagation;
-  event.stopPropagation = stopPropagation;
-}
-
 function handleCapturedEvent(event) {
-  let interceptInstalled = false;
   event.propagationStopped = false;
   let target = findOriginalEventTarget(event);
 
@@ -3130,24 +3124,21 @@ function handleCapturedEvent(event) {
     if (target.capturedCallbacks) {
       let callback = target.capturedCallbacks[event.type];
       if (callback) {
-        if (!interceptInstalled) {
-          interceptStopPropagation(event);
-          interceptInstalled = true;
+        if (event.stopPropagation !== stopPropagation) {
+          event.standardStopPropagation = event.stopPropagation;
+          event.stopPropagation = stopPropagation;
         }
         orderedCallbacks.push(callback);
       }
     }
     target = target.parentNode;
   }
-  for (let i = orderedCallbacks.length - 1; i >= 0; i--) {
+  for (let i = orderedCallbacks.length - 1; i >= 0 && !event.propagationStopped; i--) {
     let orderedCallback = orderedCallbacks[i];
     if ('handleEvent' in orderedCallback) {
       orderedCallback.handleEvent(event);
     } else {
       orderedCallback(event);
-    }
-    if (event.propagationStopped) {
-      break;
     }
   }
 }
@@ -3176,7 +3167,6 @@ class CapturedHandlerEntry {
 }
 
 function handleDelegatedEvent(event) {
-  let interceptInstalled = false;
   event.propagationStopped = false;
   let target = findOriginalEventTarget(event);
 
@@ -3184,9 +3174,9 @@ function handleDelegatedEvent(event) {
     if (target.delegatedCallbacks) {
       let callback = target.delegatedCallbacks[event.type];
       if (callback) {
-        if (!interceptInstalled) {
-          interceptStopPropagation(event);
-          interceptInstalled = true;
+        if (event.stopPropagation !== stopPropagation) {
+          event.standardStopPropagation = event.stopPropagation;
+          event.stopPropagation = stopPropagation;
         }
         if ('handleEvent' in callback) {
           callback.handleEvent(event);
