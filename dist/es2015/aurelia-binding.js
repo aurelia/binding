@@ -67,8 +67,8 @@ const slotNames = [];
 const versionSlotNames = [];
 
 for (let i = 0; i < 100; i++) {
-  slotNames.push(`_observer${ i }`);
-  versionSlotNames.push(`_observerVersion${ i }`);
+  slotNames.push(`_observer${i}`);
+  versionSlotNames.push(`_observerVersion${i}`);
 }
 
 function addObserver(observer) {
@@ -1065,11 +1065,11 @@ export let Expression = class Expression {
   }
 
   evaluate(scope, lookupFunctions, args) {
-    throw new Error(`Binding expression "${ this }" cannot be evaluated.`);
+    throw new Error(`Binding expression "${this}" cannot be evaluated.`);
   }
 
   assign(scope, value, lookupFunctions) {
-    throw new Error(`Binding expression "${ this }" cannot be assigned to.`);
+    throw new Error(`Binding expression "${this}" cannot be assigned to.`);
   }
 
   toString() {
@@ -1137,18 +1137,18 @@ export let BindingBehavior = class BindingBehavior extends Expression {
     }
     let behavior = lookupFunctions.bindingBehaviors(this.name);
     if (!behavior) {
-      throw new Error(`No BindingBehavior named "${ this.name }" was found!`);
+      throw new Error(`No BindingBehavior named "${this.name}" was found!`);
     }
-    let behaviorKey = `behavior-${ this.name }`;
+    let behaviorKey = `behavior-${this.name}`;
     if (binding[behaviorKey]) {
-      throw new Error(`A binding behavior named "${ this.name }" has already been applied to "${ this.expression }"`);
+      throw new Error(`A binding behavior named "${this.name}" has already been applied to "${this.expression}"`);
     }
     binding[behaviorKey] = behavior;
     behavior.bind.apply(behavior, [binding, scope].concat(evalList(scope, this.args, binding.lookupFunctions)));
   }
 
   unbind(binding, scope) {
-    let behaviorKey = `behavior-${ this.name }`;
+    let behaviorKey = `behavior-${this.name}`;
     binding[behaviorKey].unbind(binding, scope);
     binding[behaviorKey] = null;
     if (this.expression.expression && this.expression.unbind) {
@@ -1170,7 +1170,7 @@ export let ValueConverter = class ValueConverter extends Expression {
   evaluate(scope, lookupFunctions) {
     let converter = lookupFunctions.valueConverters(this.name);
     if (!converter) {
-      throw new Error(`No ValueConverter named "${ this.name }" was found!`);
+      throw new Error(`No ValueConverter named "${this.name}" was found!`);
     }
 
     if ('toView' in converter) {
@@ -1183,7 +1183,7 @@ export let ValueConverter = class ValueConverter extends Expression {
   assign(scope, value, lookupFunctions) {
     let converter = lookupFunctions.valueConverters(this.name);
     if (!converter) {
-      throw new Error(`No ValueConverter named "${ this.name }" was found!`);
+      throw new Error(`No ValueConverter named "${this.name}" was found!`);
     }
 
     if ('fromView' in converter) {
@@ -1205,7 +1205,7 @@ export let ValueConverter = class ValueConverter extends Expression {
     }
     let converter = binding.lookupFunctions.valueConverters(this.name);
     if (!converter) {
-      throw new Error(`No ValueConverter named "${ this.name }" was found!`);
+      throw new Error(`No ValueConverter named "${this.name}" was found!`);
     }
     let signals = converter.signals;
     if (signals === undefined) {
@@ -1483,7 +1483,7 @@ export let CallFunction = class CallFunction extends Expression {
     if (!mustEvaluate && (func === null || func === undefined)) {
       return undefined;
     }
-    throw new Error(`${ this.func } is not a function`);
+    throw new Error(`${this.func} is not a function`);
   }
 
   accept(visitor) {
@@ -1573,7 +1573,7 @@ export let Binary = class Binary extends Expression {
         return left ^ right;
     }
 
-    throw new Error(`Internal error [${ this.operation }] not handled`);
+    throw new Error(`Internal error [${this.operation}] not handled`);
   }
 
   accept(visitor) {
@@ -1750,7 +1750,7 @@ function getFunction(obj, name, mustExist) {
   if (!mustExist && (func === null || func === undefined)) {
     return null;
   }
-  throw new Error(`${ name } is not a function`);
+  throw new Error(`${name} is not a function`);
 }
 
 function getKeyed(obj, key) {
@@ -1832,7 +1832,7 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
       let args = behavior.args;
 
       behavior.expression.accept(this);
-      this.write(`&${ behavior.name }`);
+      this.write(`&${behavior.name}`);
 
       for (let i = 0, length = args.length; i < length; ++i) {
         this.write(':');
@@ -1844,7 +1844,7 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
       let args = converter.args;
 
       converter.expression.accept(this);
-      this.write(`|${ converter.name }`);
+      this.write(`|${converter.name}`);
 
       for (let i = 0, length = args.length; i < length; ++i) {
         this.write(':');
@@ -1888,7 +1888,7 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
 
     visitAccessMember(access) {
       access.object.accept(this);
-      this.write(`.${ access.name }`);
+      this.write(`.${access.name}`);
     }
 
     visitAccessKeyed(access) {
@@ -1914,12 +1914,12 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
 
     visitCallMember(call) {
       call.object.accept(this);
-      this.write(`.${ call.name }`);
+      this.write(`.${call.name}`);
       this.writeArgs(call.args);
     }
 
     visitPrefix(prefix) {
-      this.write(`(${ prefix.operation }`);
+      this.write(`(${prefix.operation}`);
       prefix.expression.accept(this);
       this.write(')');
     }
@@ -1931,7 +1931,7 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
     }
 
     visitLiteralPrimitive(literal) {
-      this.write(`${ literal.value }`);
+      this.write(`${literal.value}`);
     }
 
     visitLiteralArray(literal) {
@@ -1961,7 +1961,7 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
           this.write(',');
         }
 
-        this.write(`'${ keys[i] }':`);
+        this.write(`'${keys[i]}':`);
         values[i].accept(this);
       }
 
@@ -1970,7 +1970,7 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
 
     visitLiteralString(literal) {
       let escaped = literal.value.replace(/'/g, "\'");
-      this.write(`'${ escaped }'`);
+      this.write(`'${escaped}'`);
     }
   };
 }
@@ -2093,7 +2093,7 @@ export let Token = class Token {
   }
 
   toString() {
-    return `Token(${ this.text })`;
+    return `Token(${this.text})`;
   }
 };
 
@@ -2185,7 +2185,7 @@ export let Scanner = class Scanner {
     }
 
     let character = String.fromCharCode(this.peek);
-    this.error(`Unexpected character [${ character }]`);
+    this.error(`Unexpected character [${character}]`);
     return null;
   }
 
@@ -2305,7 +2305,7 @@ export let Scanner = class Scanner {
           let hex = this.input.substring(this.index + 1, this.index + 5);
 
           if (!/[A-Z0-9]{4}/.test(hex)) {
-            this.error(`Invalid unicode escape [\\u${ hex }]`);
+            this.error(`Invalid unicode escape [\\u${hex}]`);
           }
 
           unescaped = parseInt(hex, 16);
@@ -2351,7 +2351,7 @@ export let Scanner = class Scanner {
 
   error(message, offset = 0) {
     let position = this.index + offset;
-    throw new Error(`Lexer Error: ${ message } at column ${ position } in expression [${ this.input }]`);
+    throw new Error(`Lexer Error: ${message} at column ${position} in expression [${this.input}]`);
   }
 };
 
@@ -2522,7 +2522,7 @@ export let ParserImplementation = class ParserImplementation {
 
     while (this.index < this.tokens.length) {
       if (this.peek.text === ')' || this.peek.text === '}' || this.peek.text === ']') {
-        this.error(`Unconsumed token ${ this.peek.text }`);
+        this.error(`Unconsumed token ${this.peek.text}`);
       }
 
       let expr = this.parseBindingBehavior();
@@ -2587,7 +2587,7 @@ export let ParserImplementation = class ParserImplementation {
         let end = this.index < this.tokens.length ? this.peek.index : this.input.length;
         let expression = this.input.substring(start, end);
 
-        this.error(`Expression ${ expression } is not assignable`);
+        this.error(`Expression ${expression} is not assignable`);
       }
 
       this.expect('=');
@@ -2608,7 +2608,7 @@ export let ParserImplementation = class ParserImplementation {
         let end = this.index < this.tokens.length ? this.peek.index : this.input.length;
         let expression = this.input.substring(start, end);
 
-        this.error(`Conditional expression ${ expression } requires all 3 expressions`);
+        this.error(`Conditional expression ${expression} requires all 3 expressions`);
       }
 
       let no = this.parseExpression();
@@ -2780,9 +2780,9 @@ export let ParserImplementation = class ParserImplementation {
       this.advance();
       return value instanceof String || typeof value === 'string' ? new LiteralString(value) : new LiteralPrimitive(value);
     } else if (this.index >= this.tokens.length) {
-      throw new Error(`Unexpected end of expression: ${ this.input }`);
+      throw new Error(`Unexpected end of expression: ${this.input}`);
     } else {
-      this.error(`Unexpected token ${ this.peek.text }`);
+      this.error(`Unexpected token ${this.peek.text}`);
     }
   }
 
@@ -2804,7 +2804,7 @@ export let ParserImplementation = class ParserImplementation {
       } else if (this.peek === EOF || this.peek.text === '(' || this.peek.text === ')' || this.peek.text === '[' || this.peek.text === '}' || this.peek.text === ',' || this.peek.text === '|' || this.peek.text === '&') {
         return new AccessThis(ancestor);
       } else {
-        this.error(`Unexpected token ${ this.peek.text }`);
+        this.error(`Unexpected token ${this.peek.text}`);
       }
     }
 
@@ -2870,7 +2870,7 @@ export let ParserImplementation = class ParserImplementation {
     if (this.peek.text === text) {
       this.advance();
     } else {
-      this.error(`Missing expected ${ text }`);
+      this.error(`Missing expected ${text}`);
     }
   }
 
@@ -2879,9 +2879,9 @@ export let ParserImplementation = class ParserImplementation {
   }
 
   error(message) {
-    let location = this.index < this.tokens.length ? `at column ${ this.tokens[this.index].index + 1 } in` : 'at the end of the expression';
+    let location = this.index < this.tokens.length ? `at column ${this.tokens[this.index].index + 1} in` : 'at the end of the expression';
 
-    throw new Error(`Parser Error: ${ message } ${ location } [${ this.input }]`);
+    throw new Error(`Parser Error: ${message} ${location} [${this.input}]`);
   }
 };
 
@@ -2971,13 +2971,7 @@ function stopPropagation() {
   this.propagationStopped = true;
 }
 
-function interceptStopPropagation(event) {
-  event.standardStopPropagation = event.stopPropagation;
-  event.stopPropagation = stopPropagation;
-}
-
 function handleCapturedEvent(event) {
-  let interceptInstalled = false;
   event.propagationStopped = false;
   let target = findOriginalEventTarget(event);
 
@@ -2987,24 +2981,21 @@ function handleCapturedEvent(event) {
     if (target.capturedCallbacks) {
       let callback = target.capturedCallbacks[event.type];
       if (callback) {
-        if (!interceptInstalled) {
-          interceptStopPropagation(event);
-          interceptInstalled = true;
+        if (event.stopPropagation !== stopPropagation) {
+          event.standardStopPropagation = event.stopPropagation;
+          event.stopPropagation = stopPropagation;
         }
         orderedCallbacks.push(callback);
       }
     }
     target = target.parentNode;
   }
-  for (let i = orderedCallbacks.length - 1; i >= 0; i--) {
+  for (let i = orderedCallbacks.length - 1; i >= 0 && !event.propagationStopped; i--) {
     let orderedCallback = orderedCallbacks[i];
     if ('handleEvent' in orderedCallback) {
       orderedCallback.handleEvent(event);
     } else {
       orderedCallback(event);
-    }
-    if (event.propagationStopped) {
-      break;
     }
   }
 }
@@ -3034,7 +3025,6 @@ let CapturedHandlerEntry = class CapturedHandlerEntry {
 
 
 function handleDelegatedEvent(event) {
-  let interceptInstalled = false;
   event.propagationStopped = false;
   let target = findOriginalEventTarget(event);
 
@@ -3042,9 +3032,9 @@ function handleDelegatedEvent(event) {
     if (target.delegatedCallbacks) {
       let callback = target.delegatedCallbacks[event.type];
       if (callback) {
-        if (!interceptInstalled) {
-          interceptStopPropagation(event);
-          interceptInstalled = true;
+        if (event.stopPropagation !== stopPropagation) {
+          event.standardStopPropagation = event.stopPropagation;
+          event.stopPropagation = stopPropagation;
         }
         if ('handleEvent' in callback) {
           callback.handleEvent(event);
@@ -3359,7 +3349,7 @@ export let PrimitiveObserver = class PrimitiveObserver {
 
   setValue() {
     let type = typeof this.primitive;
-    throw new Error(`The ${ this.propertyName } property of a ${ type } (${ this.primitive }) cannot be assigned.`);
+    throw new Error(`The ${this.propertyName} property of a ${type} (${this.primitive}) cannot be assigned.`);
   }
 
   subscribe() {}
@@ -3434,7 +3424,7 @@ export let SetterObserver = (_dec6 = subscriberCollection(), _dec6(_class7 = cla
       get: this.getValue.bind(this),
       set: this.setValue.bind(this)
     })) {
-      logger.warn(`Cannot observe property '${ this.propertyName }' of object`, this.obj);
+      logger.warn(`Cannot observe property '${this.propertyName}' of object`, this.obj);
     }
   }
 }) || _class7);
@@ -3455,7 +3445,7 @@ export let XLinkAttributeObserver = class XLinkAttributeObserver {
   }
 
   subscribe() {
-    throw new Error(`Observation of a "${ this.element.nodeName }" element\'s "${ this.propertyName }" property is not supported.`);
+    throw new Error(`Observation of a "${this.element.nodeName}" element\'s "${this.propertyName}" property is not supported.`);
   }
 };
 
@@ -3488,7 +3478,7 @@ export let DataAttributeObserver = class DataAttributeObserver {
   }
 
   subscribe() {
-    throw new Error(`Observation of a "${ this.element.nodeName }" element\'s "${ this.propertyName }" property is not supported.`);
+    throw new Error(`Observation of a "${this.element.nodeName}" element\'s "${this.propertyName}" property is not supported.`);
   }
 };
 
@@ -3564,7 +3554,7 @@ export let StyleObserver = class StyleObserver {
   }
 
   subscribe() {
-    throw new Error(`Observation of a "${ this.element.nodeName }" element\'s "${ this.propertyName }" property is not supported.`);
+    throw new Error(`Observation of a "${this.element.nodeName}" element\'s "${this.propertyName}" property is not supported.`);
   }
 };
 
@@ -3965,7 +3955,7 @@ export let ClassObserver = class ClassObserver {
   }
 
   subscribe() {
-    throw new Error(`Observation of a "${ this.element.nodeName }" element\'s "class" property is not supported.`);
+    throw new Error(`Observation of a "${this.element.nodeName}" element\'s "class" property is not supported.`);
   }
 };
 
@@ -4504,7 +4494,7 @@ export let Binding = (_dec10 = connectable(), _dec10(_class12 = class Binding {
       }
       return;
     }
-    throw new Error(`Unexpected call context ${ context }`);
+    throw new Error(`Unexpected call context ${context}`);
   }
 
   bind(source) {
@@ -4781,7 +4771,7 @@ function getAU(element) {
   let au = element.au;
 
   if (au === undefined) {
-    throw new Error(`No Aurelia APIs are defined for the element: "${ element.tagName }".`);
+    throw new Error(`No Aurelia APIs are defined for the element: "${element.tagName}".`);
   }
 
   return au;
@@ -4813,7 +4803,7 @@ export let NameExpression = class NameExpression {
         let target = getAU(element)[apiName];
 
         if (target === undefined) {
-          throw new Error(`Attempted to reference "${ apiName }", but it was not found amongst the target's API.`);
+          throw new Error(`Attempted to reference "${apiName}", but it was not found amongst the target's API.`);
         }
 
         return target.viewModel;
@@ -5005,14 +4995,14 @@ export function observable(targetOrConfig, key, descriptor) {
       key = typeof config === 'string' ? config : config.name;
     }
 
-    let innerPropertyName = `_${ key }`;
+    let innerPropertyName = `_${key}`;
     const innerPropertyDescriptor = {
       configurable: true,
       enumerable: false,
       writable: true
     };
 
-    const callbackName = config && config.changeHandler || `${ key }Changed`;
+    const callbackName = config && config.changeHandler || `${key}Changed`;
 
     if (descriptor) {
       if (typeof descriptor.initializer === 'function') {

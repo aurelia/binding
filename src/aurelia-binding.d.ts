@@ -137,7 +137,29 @@ export declare interface CollectionObserver {
   /**
    * Subscribe to collection mutation events.
    */
-  subscribe(callback: (changeRecords: Array<IArrayObserverSplice> | Array<IMapObserverSplice>) => void): Disposable;
+  subscribe(callback: (changeRecords: Array<IArrayObserverSplice> | Array<IMapObserverSplice> | Array<ISetObserverSplice>) => void): Disposable;
+}
+
+/**
+ * The splice type to expect when observing a Set collection.
+ * @template T The value type of the map being observed.
+ */
+export interface ISetObserverSplice<T = any> {
+
+  /**
+   * The observed Set after the change.
+   */
+  object: Set<T>;
+
+  /**
+   * The value that was either added or removed.
+   */
+  value: T
+
+  /**
+   * The type of change that has taken place. Valid options are "add" and "delete".
+   */
+  type: "add" | "delete"
 }
 
 /**
@@ -153,7 +175,7 @@ export interface IMapObserverSplice<K = any, V = any> {
   key: K;
 
   /**
-   * The observed map after the change.
+   * The observed Map after the change.
    */
   object: Map<K, V>;
 
@@ -674,7 +696,7 @@ export declare class BindingEngine {
   /**
    * Gets an observer for collection mutation.
    */
-  collectionObserver(collection: Array<any> | Map<any, any>): CollectionObserver;
+  collectionObserver(collection: Array<any> | Map<any, any> | Set<any>): CollectionObserver;
   /**
    * Gets an observer for a javascript expression that accesses a property on the binding context.
    * @param bindingContext The binding context (view-model)
