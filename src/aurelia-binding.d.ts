@@ -137,14 +137,42 @@ export declare interface CollectionObserver {
   /**
    * Subscribe to collection mutation events.
    */
-  subscribe(callback: (changeRecords: Array<ICollectionObserverSplice<any>>) => void): Disposable;
+  subscribe(callback: (changeRecords: Array<IArrayObserverSplice> | Array<IMapObserverSplice>) => void): Disposable;
 }
 
 /**
- * The change record of a collection mutation. 
+ * The splice type to expect when observing a Map collection.
+ * @template K The key type of the map being observed.
+ * @template V The value type of the map being observed.
  */
-export declare interface ICollectionObserverSplice<T = any> {
+export interface IMapObserverSplice<K = any, V = any> {
 
+  /**
+   * The key of the item that was changed.
+   */
+  key: K;
+
+  /**
+   * The observed map after the change.
+   */
+  object: Map<K, V>;
+
+  /**
+   * The value of the item prior to the change.
+   */
+  oldValue: V
+
+  /**
+   * The type of change that has taken place. Valid options are "add", "delete", and "update".
+   */
+  type: "add" | "delete" | "update"
+}
+
+/**
+ * The splice type to expect when observing an Array collection.
+ * @template T The type of the contents stored in the array.
+ */
+export interface IArrayObserverSplice<T = any> {
   /**
    * Number of items added to the collection.
    */
