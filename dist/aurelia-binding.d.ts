@@ -28,6 +28,17 @@ export declare interface Scope {
 }
 
 /**
+ * Gets the binding context for the specified property name by looking for the property
+ * on the scope.bindingContext, then on the scope.overrideContext before repeating on
+ * the ancestor scopes until the property is found. If the property is not found anywhere
+ * in the scope then the root binding context is returned.
+ * @param name The property name.
+ * @param scope The scope.
+ * @param ancestor The number of ancestor scopes to skip back to (used in $parent bindings).
+ */
+export declare function getContextFor(name: string, scope: Scope, ancestor?: number): any;
+
+/**
  * Provides a mechanism for releasing resources.
  */
 export declare interface Disposable {
@@ -97,7 +108,7 @@ export declare enum delegationStrategy {
  * This is an internal API and is subject to change without notice in future releases.
  */
 export declare class EventManager {
-  registerElementConfig(config: { tagName: string; properties: { [propertyName: string]: string[] }; }): void;
+  registerElementConfig(config: { tagName: string; properties: { (s: string): string[] }; }): void;
   /**
    * Subscribes to specified event on the target element.
    * @param target Target element.
@@ -126,7 +137,78 @@ export declare interface CollectionObserver {
   /**
    * Subscribe to collection mutation events.
    */
-  subscribe(callback: (changeRecords: any) => void): Disposable;
+  subscribe(callback: (changeRecords: Array<IArrayObserverSplice> | Array<IMapObserverSplice> | Array<ISetObserverSplice>) => void): Disposable;
+}
+
+/**
+ * The splice type to expect when observing a Set collection.
+ * @template T The value type of the map being observed.
+ */
+export interface ISetObserverSplice<T = any> {
+
+  /**
+   * The observed Set after the change.
+   */
+  object: Set<T>;
+
+  /**
+   * The value that was either added or removed.
+   */
+  value: T
+
+  /**
+   * The type of change that has taken place. Valid options are "add" and "delete".
+   */
+  type: "add" | "delete"
+}
+
+/**
+ * The splice type to expect when observing a Map collection.
+ * @template K The key type of the map being observed.
+ * @template V The value type of the map being observed.
+ */
+export interface IMapObserverSplice<K = any, V = any> {
+
+  /**
+   * The key of the item that was changed.
+   */
+  key: K;
+
+  /**
+   * The observed Map after the change.
+   */
+  object: Map<K, V>;
+
+  /**
+   * The value of the item prior to the change.
+   */
+  oldValue: V
+
+  /**
+   * The type of change that has taken place. Valid options are "add", "delete", and "update".
+   */
+  type: "add" | "delete" | "update"
+}
+
+/**
+ * The splice type to expect when observing an Array collection.
+ * @template T The type of the contents stored in the array.
+ */
+export interface IArrayObserverSplice<T = any> {
+  /**
+   * Number of items added to the collection.
+   */
+  addedCount: number;
+
+  /**
+   * The position at which the items were added.
+   */
+  index: number;
+
+  /**
+   * A collection of items that were removed from the collection.
+   */
+  removed: Array<T>;
 }
 
 /**
@@ -395,7 +477,7 @@ export declare interface NameExpression {
 /**
  * An expression AST visitor.
  */
-export interface ExpressionVisitor { }
+export interface ExpressionVisitor {}
 
 /**
  * Visits an expression AST and returns the string equivalent.
@@ -407,7 +489,7 @@ export class Unparser implements ExpressionVisitor {
 /**
  * Clones an expression AST.
  */
-export class ExpressionCloner implements ExpressionVisitor { }
+export class ExpressionCloner implements ExpressionVisitor {}
 
 /**
  * Provides the base class from which the classes that represent expression tree nodes are derived.
@@ -614,7 +696,7 @@ export declare class BindingEngine {
   /**
    * Gets an observer for collection mutation.
    */
-  collectionObserver(collection: Array<any> | Map<any, any>): CollectionObserver;
+  collectionObserver(collection: Array<any> | Map<any, any> | Set<any>): CollectionObserver;
   /**
    * Gets an observer for a javascript expression that accesses a property on the binding context.
    * @param bindingContext The binding context (view-model)
