@@ -162,15 +162,31 @@ If you prefer, can also put the `@observable` on classes:
 
 ## Observing Collections
 
-To observe changes to a collection, such as an array or Map, use the Collection Observer. The subscription is created by simply providing the collection to observe and a callback function.
+Use the Collection Observer to observe changes to a collection. Collection types that can be observed are [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array), [Map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map), and [Set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set). Create a subscription by providing the collection to observe and a callback function.
 
 <code-listing heading="Configuring a Collection Observer">
   <source-code lang="ES 2015">
   </source-code>
   <source-code lang="ES 2016">
+    import {BindingEngine, autoinject} from 'aurelia-framework';
+
+    @inject(BindingEngine)
+    export class App {
+
+      myCollection = ["foo"];
+
+      constructor(private bindingEngine) {
+        let subscription = this.bindingEngine.collectionObserver(this.myCollection)
+          .subscribe(this.collectionChanged.bind(this));
+      }
+
+      collectionChanged(splices) {
+          // This will fire any time the collection is modified. 
+      }
+    }
   </source-code>
   <source-code lang="TypeScript">
-    import {BindingEngine, autoinject, ICollectionObserverSplice} from 'aurelia-framework';
+    import {BindingEngine, autoinject, IArrayObserverSplice} from 'aurelia-framework';
 
     @autoinject
     export class App {
@@ -182,64 +198,135 @@ To observe changes to a collection, such as an array or Map, use the Collection 
           .subscribe(this.collectionChanged.bind(this));
       }
 
-      collectionChanged(splices: Array<ICollectionObserverSplice<string>>) {
+      collectionChanged(splices: Array<IArrayObserverSplice<string>>) {
           // This will fire any time the collection is modified. 
       }
     }
   </source-code>
 </code-listing>  
 
-The Collection Observer provides an array of ICollectionObserverSplice to the callback function which you may use to determine exactly what was changed in the collection. Lets update the example above to write to the console what items were added or removed from the collection.
+The callback will receive an array of splices which provides information about the change that was detcted. The properties of the splice may vary depending on the type of collection being observed. Here you can see example callback functions used to observe each of the different collection types.
 
-<code-listing heading="Using Splices">
+<code-listing heading="Array Splice">
   <source-code lang="ES 2015">
   </source-code>
   <source-code lang="ES 2016">
+    collectionChanged(splices) {
+      for (var i = 0; i < splices.length; i++) {
+        var splice = splices[i];
+
+        var valuesAdded = this.myCollection.slice(splice.index, splice.index + splice.addedCount);
+        if (valuesAdded.length > 0) {
+          console.log(`The following values were inserted at ${splice.index}: ${JSON.stringify(valuesAdded)}`);
+        }
+
+        if (splice.removed.length > 0) {
+          console.log(`The following values were removed from ${splice.index}: ${JSON.stringify(splice.removed)}`);
+        }
+      }
+    }
   </source-code>
   <source-code lang="TypeScript">
-    collectionChanged(splices: Array<ICollectionObserverSplice<string>>) {
-        for (var i = 0; i < splices.length; i++) {
-          var splice: ICollectionObserverSplice<string> = splices[i];
+    collectionChanged(splices: Array<IArrayObserverSplice<string>>) {
+      for (var i = 0; i < splices.length; i++) {
+        var splice: IArrayObserverSplice<string> = splices[i];
 
-          // Output the values that were added.
-          var valuesAdded = this.myCollection.slice(splice.index, splice.index + splice.addedCount);
-          console.log(valuesAdded);
-
-          // Output the values that were removed.
-          console.log(splice.removed);
+        var valuesAdded = this.myCollection.slice(splice.index, splice.index + splice.addedCount);
+        if (valuesAdded.length > 0) {
+          console.log(`The following values were inserted at ${splice.index}: ${JSON.stringify(valuesAdded)}`);
         }
+
+        if (splice.removed.length > 0) {
+          console.log(`The following values were removed from ${splice.index}: ${JSON.stringify(splice.removed)}`);
+        }
+      }
     }
   </source-code>
 </code-listing>
 
-If we now push two items into the array, in the console we would see an array that contained 2 values, then a second empty array because no removed items were detected.
-
-<code-listing heading="Using Splices">
+<code-listing heading="Map Splice">
   <source-code lang="ES 2015">
   </source-code>
   <source-code lang="ES 2016">
+    collectionChanged(splices) {
+      for (var i = 0; i < splices.length; i++) {
+        var splice = splices[i];
+
+        if(splice.type == "add"){
+          var valuesAdded = this.myCollection.get(splice.key);
+          console.log(`'${valuesAdded}' was added to position ${splice.key}`);
+        }
+        
+        if(splice.type == "update"){
+          var newValue = splice.object.get(splice.key);
+          console.log(`Position ${splice.key} changed from '${splice.oldValue}' to '${newValue}'`);
+        }
+
+        if(splice.type == "delete"){
+          console.log(`'${splice.oldValue}' was deleted from position ${splice.key}`);
+        }
+      
+      }
+    }
   </source-code>
   <source-code lang="TypeScript">
-    this.myCollection.push("hello", "world");
-    // (2) ["hello", "world"]
-    // []
+    collectionChanged(splices: Array<IMapObserverSplice<number, string>>) {
+      for (var i = 0; i < splices.length; i++) {
+        var splice: IMapObserverSplice<number, string> = splices[i];
+
+        if(splice.type == "add"){
+          var valuesAdded = this.myCollection.get(splice.key);
+          console.log(`'${valuesAdded}' was added to position ${splice.key}`);
+        }
+        
+        if(splice.type == "update"){
+          var newValue = splice.object.get(splice.key);
+          console.log(`Position ${splice.key} changed from '${splice.oldValue}' to '${newValue}'`);
+        }
+
+        if(splice.type == "delete"){
+          console.log(`'${splice.oldValue}' was deleted from position ${splice.key}`);
+        }
+      
+      }
+    }
   </source-code>
 </code-listing>
 
-If we remove two items, we would see first an empty array because we added no items, then an array that contained the two items that were removed.
-
-<code-listing heading="Using Splices">
+<code-listing heading="Set Splice">
   <source-code lang="ES 2015">
   </source-code>
   <source-code lang="ES 2016">
+    collectionChanged(splices) {
+      for (var i = 0; i < splices.length; i++) {
+        var splice = splices[i];
+
+        if(splice.type == "add"){
+          console.log(`'${splice.value}' was added to the set`);
+        }
+
+        if(splice.type == "delete"){
+          console.log(`'${splice.value}' was removed from the set`);
+        }
+      }
+    }
   </source-code>
   <source-code lang="TypeScript">
-    this.myCollection.splice(1, 2);
-    // []
-    // (2) ["hello", "world"]
+    collectionChanged(splices: Array<ISetObserverSplice<number>>) {
+      for (var i = 0; i < splices.length; i++) {
+        var splice: ISetObserverSplice<number> = splices[i];
+
+        if(splice.type == "add"){
+          console.log(`'${splice.value}' was added to the set`);
+        }
+
+        if(splice.type == "delete"){
+          console.log(`'${splice.value}' was removed from the set`);
+        }
+      }
+    }
   </source-code>
 </code-listing>
 
-
-- TODO: Link to ICollectionObserverSplice
-- TODO: Using it with Set and Map
+> Warning
+> If you were to overwrite the value of the collection after the subscription has been created, changes wil no longer be detected. For example, running `this.myCollection = []` after `this.bindingEngine.collectionObserver(this.myCollection)` will fail to observe changes to `myCollection`.
