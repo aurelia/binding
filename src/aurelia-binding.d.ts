@@ -1,4 +1,4 @@
-import {Container} from 'aurelia-dependency-injection';
+import { Container } from 'aurelia-dependency-injection';
 
 /**
  * The "parallel" or "artificial" aspect of the binding scope. Provides access to the parent binding
@@ -108,7 +108,7 @@ export declare enum delegationStrategy {
  * This is an internal API and is subject to change without notice in future releases.
  */
 export declare class EventManager {
-  registerElementConfig(config: { tagName: string; properties: { (s: string): string[] }; }): void;
+  registerElementConfig(config: { tagName: string; properties: { [propertyName: string]: string[] }; }): void;
   /**
    * Subscribes to specified event on the target element.
    * @param target Target element.
@@ -218,6 +218,13 @@ export declare interface Callable {
 }
 
 /**
+ * Event subscription handler for observers
+ */
+export declare interface ObserverEventHandler {
+  subscribe(target: Element, callbackOrlistener: EventListenerOrEventListenerObject): Function
+}
+
+/**
  * Observes property changes.
  */
 export declare interface InternalPropertyObserver {
@@ -229,6 +236,126 @@ export declare interface InternalPropertyObserver {
    * Sets the property value.
    */
   setValue(newValue: any): void;
+  /**
+   * Subscribe to property changes with a callback function.
+   */
+  subscribe(callback: (newValue: any, oldValue: any) => void): void;
+  /**
+   * Subscribe a callable object to property changes.
+   * @param context A value to be passed to the callable object's call function when a property change occurs.
+   * @param callable A callable object.
+   */
+  subscribe(context: any, callable: Callable): void;
+  /**
+   * Unsubscribes a callback function from property changes.
+   */
+  unsubscribe(callback: (newValue: any, oldValue: any) => void): void;
+  /**
+   * Unsubscribes a callable object from property changes.
+   * @param context A value to be passed to the callable object's call function when a property change occurs.
+   * @param callable A callable object.
+   */
+  unsubscribe(context: any, callable: Callable): void;
+}
+
+/**
+ * Value observer for elements
+ */
+export declare class ValueAttributeObserver implements InternalPropertyObserver {
+
+  constructor(
+    element: Element,
+    propertyName: string,
+    handler: ObserverEventHandler
+  );
+
+  getValue(): any;
+
+  setValue(newValue: any): void;
+  /**
+   * Handle underlying checkbox element change events
+   */
+  handleEvent(): any;
+  /**
+   * Subscribe to property changes with a callback function.
+   */
+  subscribe(callback: (newValue: any, oldValue: any) => void): void;
+  /**
+   * Subscribe a callable object to property changes.
+   * @param context A value to be passed to the callable object's call function when a property change occurs.
+   * @param callable A callable object.
+   */
+  subscribe(context: any, callable: Callable): void;
+  /**
+   * Unsubscribes a callback function from property changes.
+   */
+  unsubscribe(callback: (newValue: any, oldValue: any) => void): void;
+  /**
+   * Unsubscribes a callable object from property changes.
+   * @param context A value to be passed to the callable object's call function when a property change occurs.
+   * @param callable A callable object.
+   */
+  unsubscribe(context: any, callable: Callable): void;
+}
+
+/**
+ * Checked observer for checkboxes
+ */
+export declare class CheckedObserver implements InternalPropertyObserver {
+
+  constructor(
+    element: Element,
+    handler: ObserverEventHandler,
+    observerLocator: ObserverLocator
+  );
+
+  getValue(): any;
+
+  setValue(newValue: any): void;
+  /**
+   * Handle underlying checkbox element change events
+   */
+  handleEvent(): any;
+  /**
+   * Subscribe to property changes with a callback function.
+   */
+  subscribe(callback: (newValue: any, oldValue: any) => void): void;
+  /**
+   * Subscribe a callable object to property changes.
+   * @param context A value to be passed to the callable object's call function when a property change occurs.
+   * @param callable A callable object.
+   */
+  subscribe(context: any, callable: Callable): void;
+  /**
+   * Unsubscribes a callback function from property changes.
+   */
+  unsubscribe(callback: (newValue: any, oldValue: any) => void): void;
+  /**
+   * Unsubscribes a callable object from property changes.
+   * @param context A value to be passed to the callable object's call function when a property change occurs.
+   * @param callable A callable object.
+   */
+  unsubscribe(context: any, callable: Callable): void;
+}
+
+/**
+ * Select observer for select
+ */
+export declare class SelectValueObserver implements InternalPropertyObserver {
+
+  constructor(
+    element: Element,
+    handler: ObserverEventHandler,
+    observerLocator: ObserverLocator
+  );
+
+  getValue(): any;
+
+  setValue(newValue: any): void;
+  /**
+   * Handle underlying checkbox element change events
+   */
+  handleEvent(): any;
   /**
    * Subscribe to property changes with a callback function.
    */
@@ -427,7 +554,7 @@ export declare interface NameExpression {
 /**
  * An expression AST visitor.
  */
-export interface ExpressionVisitor {}
+export interface ExpressionVisitor { }
 
 /**
  * Visits an expression AST and returns the string equivalent.
@@ -439,7 +566,7 @@ export class Unparser implements ExpressionVisitor {
 /**
  * Clones an expression AST.
  */
-export class ExpressionCloner implements ExpressionVisitor {}
+export class ExpressionCloner implements ExpressionVisitor { }
 
 /**
  * Provides the base class from which the classes that represent expression tree nodes are derived.
@@ -602,7 +729,7 @@ export declare class Parser {
  * Provides efficient property observers for properties that would otherwise require dirty-checking.
  */
 export declare interface ObjectObservationAdapter {
-  getObserver(object: any, propertyName: string, descriptor: PropertyDescriptor): InternalPropertyObserver;
+  getObserver(object: any, propertyName: string, descriptor: PropertyDescriptor): InternalPropertyObserver | null | undefined;
 }
 
 /**
