@@ -36,7 +36,7 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
     visitChain(chain) {
       let expressions = chain.expressions;
 
-      for (let i = 0, length = expression.length; i < length; ++i) {
+      for (let i = 0, length = expressions.length; i < length; ++i) {
         if (i !== 0) {
           this.write(';');
         }
