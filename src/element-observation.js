@@ -170,7 +170,7 @@ export class ValueAttributeObserver {
   subscribe(context, callable) {
     if (!this.hasSubscribers()) {
       this.oldValue = this.getValue();
-      this.disposeHandler = this.handler.subscribe(this.element, this);
+      this.handler.subscribe(this.element, this);
     }
 
     this.addSubscriber(context, callable);
@@ -178,8 +178,7 @@ export class ValueAttributeObserver {
 
   unsubscribe(context, callable) {
     if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
-      this.disposeHandler();
-      this.disposeHandler = null;
+      this.handler.dispose();
     }
   }
 }

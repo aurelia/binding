@@ -31,12 +31,20 @@ import {SVGAnalyzer} from './svg';
 export class ObserverLocator {
   static inject = [TaskQueue, EventManager, DirtyChecker, SVGAnalyzer, Parser];
 
+  /**
+   * @param {TaskQueue} taskQueue
+   * @param {EventManager} eventManager
+   * @param {DirtyChecker} dirtyChecker
+   * @param {SVGAnalyzer} svgAnalyzer
+   * @param {Parser} parser
+   */
   constructor(taskQueue, eventManager, dirtyChecker, svgAnalyzer, parser) {
     this.taskQueue = taskQueue;
     this.eventManager = eventManager;
     this.dirtyChecker = dirtyChecker;
     this.svgAnalyzer = svgAnalyzer;
     this.parser = parser;
+    /**@type {ObjectObservationAdapter[]} */
     this.adapters = [];
     this.logger = LogManager.getLogger('observer-locator');
   }
@@ -81,7 +89,8 @@ export class ObserverLocator {
     return value;
   }
 
-  addAdapter(adapter: ObjectObservationAdapter) {
+  /**@param {ObjectObservationAdapter} adapter */
+  addAdapter(adapter) {
     this.adapters.push(adapter);
   }
 
