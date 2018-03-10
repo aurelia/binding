@@ -6,7 +6,7 @@ author: Jeremy Danyow (http://danyow.net)
 
 ## Class
 
-You can bind an element's `class` attribute using string interpolation or with `.bind`/`.one-time`.
+You can bind an element's `class` attribute using string interpolation or with `.bind`/`.to-view`.
 
 <code-listing heading="Class Binding">
   <source-code lang="HTML">
@@ -22,7 +22,8 @@ To ensure maximum interoperability with other JavaScript libraries, the binding 
 
 ## Style
 
-You can bind a css string or object to an element's `style` attribute. Use the `style` attribute's alias, `css` when doing string interpolation to ensure your application is compatible with Internet Explorer and Edge.
+You can bind a css string or object to an element's `style` attribute. Use `css` custom attribute when doing string interpolation in your view to ensure your application is compatible with Internet Explorer and Edge.
+If you don't use interpolation in `css` - it won't get processed, so if you are just using inline style - use the proper style attribute of HTMLElement.
 
 <code-listing heading="Style Binding Data">
   <source-code lang="ES 2015/2016">
@@ -75,6 +76,14 @@ You can bind a css string or object to an element's `style` attribute. Use the `
   <source-code lang="HTML">
     <template>
       <div css="width: ${width}px; height: ${height}px;"></div>
+    </template>
+  </source-code>
+</code-listing>
+
+<code-listing heading="Won't Work Without Interpolation">
+  <source-code lang="HTML">
+    <template>
+      <div css="width: 100px; height: 100px;"></div>
     </template>
   </source-code>
 </code-listing>
