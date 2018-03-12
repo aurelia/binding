@@ -115,8 +115,10 @@ export declare class EventManager {
    * @param targetEvent Name of event to subscribe.
    * @param callback Event listener callback.
    * @param delegate True to use event delegation mechanism.
+   * @param diposable True to return a disposable object with dispose() method instead of a function
    * @returns function wich removes event listener.
    */
+  addEventListener(target: Element, targetEvent: string, callback: (event: Event) => any, delegate: delegationStrategy, disposable: true): Disposable;
   addEventListener(target: Element, targetEvent: string, callback: (event: Event) => any, delegate: delegationStrategy): () => void;
 }
 
@@ -604,7 +606,7 @@ export declare interface NameExpression {
 /**
  * An expression AST visitor.
  */
-export interface ExpressionVisitor {}
+export interface ExpressionVisitor { }
 
 /**
  * Visits an expression AST and returns the string equivalent.
@@ -616,7 +618,7 @@ export class Unparser implements ExpressionVisitor {
 /**
  * Clones an expression AST.
  */
-export class ExpressionCloner implements ExpressionVisitor {}
+export class ExpressionCloner implements ExpressionVisitor { }
 
 /**
  * Provides the base class from which the classes that represent expression tree nodes are derived.

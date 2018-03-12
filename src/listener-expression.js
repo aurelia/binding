@@ -62,11 +62,13 @@ export class Listener {
     if (this.sourceExpression.bind) {
       this.sourceExpression.bind(this, source, this.lookupFunctions);
     }
-    this._disposeListener = this.eventManager.addEventListener(
+    this._handler = this.eventManager.addEventListener(
       this.target,
       this.targetEvent,
       this,
-      this.delegationStrategy);
+      this.delegationStrategy,
+      true
+    );
   }
 
   unbind() {
@@ -78,7 +80,7 @@ export class Listener {
       this.sourceExpression.unbind(this, this.source);
     }
     this.source = null;
-    this._disposeListener();
-    this._disposeListener = null;
+    this._handler.dispose();
+    this._handler = null;
   }
 }

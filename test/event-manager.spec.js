@@ -1,6 +1,6 @@
 import './setup';
 import {DOM} from 'aurelia-pal';
-import {EventManager} from '../src/event-manager';
+import {EventManager, delegationStrategy} from '../src/event-manager';
 
 describe('EventManager', () => {
   describe('getElementHandler', () => {
@@ -81,10 +81,10 @@ describe('EventManager', () => {
       one.appendChild(two);
       two.appendChild(three);
 
-      em.addEventListener(one, 'click', oneClick, false);
-      em.addEventListener(three, 'click', threeClick, false);
-      em.addEventListener(one, 'delegate', oneDelegate, true);
-      em.addEventListener(three, 'delegate', threeDelegate, true);
+      em.addEventListener(one, 'click', oneClick, delegationStrategy.none);
+      em.addEventListener(three, 'click', threeClick, delegationStrategy.none);
+      em.addEventListener(one, 'delegate', oneDelegate, delegationStrategy.bubbling);
+      em.addEventListener(three, 'delegate', threeDelegate, delegationStrategy.bubbling);
     });
 
     afterEach(() => {
@@ -143,8 +143,8 @@ describe('EventManager', () => {
         event.stopPropagation();
         wasCalled = true;
       };
-      em.addEventListener(one, 'delegate', oneDelegate, true);
-      em.addEventListener(three, 'delegate', stopDelegate, true);
+      em.addEventListener(one, 'delegate', oneDelegate, delegationStrategy.bubbling);
+      em.addEventListener(three, 'delegate', stopDelegate, delegationStrategy.bubbling);
 
       const threeDelegateEvent = DOM.createCustomEvent('delegate', { bubbles: true });
       three.dispatchEvent(threeDelegateEvent);
@@ -164,6 +164,78 @@ describe('EventManager', () => {
 
       one.dispatchEvent(DOM.createCustomEvent('any'));
       expect(wasCalled).toBe(true);
+    });
+  });
+
+  describe('addEventListener using disposable', () => {
+    const em = new EventManager();
+    const one = document.createElement('div');
+    const two = document.createElement('div');
+    const three = document.createElement('div');
+
+    let handlers = [];
+
+    it('dispose', () => {
+      document.body.appendChild(one);
+      one.appendChild(two);
+      two.appendChild(three);
+
+      const oneClick = jasmine.createSpy('one-click');
+      const threeClick = jasmine.createSpy('three-click');
+      const oneDelegate = jasmine.createSpy('one-delegate');
+      const threeDelegate = jasmine.createSpy('three-delegate');
+      const oneCapture = jasmine.createSpy('one-capture');
+      const threeCapture = jasmine.createSpy('three-capture');
+
+      handlers = [
+        em.addEventListener(one, 'click', oneClick, delegationStrategy.none, true),
+        em.addEventListener(three, 'click', threeClick, delegationStrategy.none, true),
+        em.addEventListener(one, 'delegate', oneDelegate, delegationStrategy.bubbling, true),
+        em.addEventListener(three, 'delegate', threeDelegate, delegationStrategy.bubbling, true),
+        em.addEventListener(one, 'delegate', oneCapture, delegationStrategy.capturing, true),
+        em.addEventListener(three, 'delegate', threeCapture, delegationStrategy.capturing, true),
+      ];
+
+      let threeClickEvent = DOM.createCustomEvent('click', { bubbles: true });
+      three.dispatchEvent(threeClickEvent);
+      expect(threeClick).toHaveBeenCalledWith(threeClickEvent);
+      expect(oneClick).toHaveBeenCalledWith(threeClickEvent);
+      oneClick.calls.reset();
+      threeClick.calls.reset();
+
+      handlers[0].dispose();
+      handlers[1].dispose();
+
+      threeClickEvent = DOM.createCustomEvent('click', { bubbles: true });
+      three.dispatchEvent(threeClickEvent);
+      expect(threeClick).not.toHaveBeenCalled();
+      expect(oneClick).not.toHaveBeenCalled();
+
+      // With strategy
+      let threeDelegateEvent = DOM.createCustomEvent('delegate', { bubbles: true });
+      three.dispatchEvent(threeDelegateEvent);
+      expect(threeDelegate).toHaveBeenCalledWith(threeDelegateEvent);
+      expect(oneDelegate).toHaveBeenCalledWith(threeDelegateEvent);
+
+      expect(threeCapture).toHaveBeenCalledWith(threeDelegateEvent);
+      expect(oneCapture).toHaveBeenCalledWith(threeDelegateEvent);
+      oneDelegate.calls.reset();
+      threeDelegate.calls.reset();
+      threeCapture.calls.reset();
+      oneCapture.calls.reset();
+
+      handlers[2].dispose();
+      handlers[3].dispose();
+      handlers[4].dispose();
+      handlers[5].dispose();
+
+      threeDelegateEvent = DOM.createCustomEvent('delegate', { bubbles: true });
+      three.dispatchEvent(threeDelegateEvent);
+      expect(threeDelegate).not.toHaveBeenCalled();
+      expect(oneDelegate).not.toHaveBeenCalled();
+
+      expect(threeCapture).not.toHaveBeenCalled();
+      expect(oneCapture).not.toHaveBeenCalled();
     });
   });
 });
