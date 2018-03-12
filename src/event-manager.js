@@ -146,7 +146,6 @@ class EventHandler {
     this.target = target;
     this.targetEvent = targetEvent;
     this.callback = callback;
-    target.addEventListener(targetEvent, callback);
   }
 
   dispose() {
@@ -179,7 +178,7 @@ class DefaultEventStrategy {
       handlerEntry.increment();
       delegatedCallbacks[targetEvent] = callback;
 
-      if (disposable) {
+      if (disposable === true) {
         return new DelegationEntryHandler(handlerEntry, delegatedCallbacks, targetEvent);
       }
 
@@ -196,7 +195,7 @@ class DefaultEventStrategy {
       handlerEntry.increment();
       capturedCallbacks[targetEvent] = callback;
 
-      if (disposable) {
+      if (disposable === true) {
         return new DelegationEntryHandler(handlerEntry, capturedCallbacks, targetEvent);
       }
 
@@ -206,11 +205,11 @@ class DefaultEventStrategy {
       };
     }
 
-    if (disposable) {
+    target.addEventListener(targetEvent, callback);
+
+    if (disposable === true) {
       return new EventHandler(target, targetEvent, callback);
     }
-
-    target.addEventListener(targetEvent, callback);
 
     return function() {
       target.removeEventListener(targetEvent, callback);
