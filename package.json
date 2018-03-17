@@ -1,6 +1,6 @@
 {
   "name": "aurelia-binding",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "A modern databinding library for JavaScript and HTML.",
   "keywords": [
     "aurelia",
@@ -93,8 +93,8 @@
     "require-dir": "^0.3.0",
     "run-sequence": "^1.2.2",
     "through2": "^2.0.1",
-    "typedoc": "^0.4.4",
-    "typescript": "^1.9.0-dev.20160622-1.0",
+    "typedoc": "^0.11.1",
+    "typescript": "^2.7.2",
     "vinyl": "^1.1.1",
     "vinyl-paths": "^2.1.0",
     "yargs": "^4.8.1"

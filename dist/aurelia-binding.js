@@ -1919,7 +1919,7 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
     visitChain(chain) {
       let expressions = chain.expressions;
 
-      for (let i = 0, length = expression.length; i < length; ++i) {
+      for (let i = 0, length = expressions.length; i < length; ++i) {
         if (i !== 0) {
           this.write(';');
         }
@@ -3102,6 +3102,7 @@ class ModifyMapObserver extends ModifyCollectionObserver {
   }
 }
 
+// @ts-check
 //Note: path and deepPath are designed to handle v0 and v1 shadow dom specs respectively
 function findOriginalEventTarget(event) {
   return (event.path && event.path[0]) || (event.deepPath && event.deepPath[0]) || event.target;
@@ -3112,13 +3113,7 @@ function stopPropagation() {
   this.propagationStopped = true;
 }
 
-function interceptStopPropagation(event) {
-  event.standardStopPropagation = event.stopPropagation;
-  event.stopPropagation = stopPropagation;
-}
-
 function handleCapturedEvent(event) {
-  let interceptInstalled = false;
   event.propagationStopped = false;
   let target = findOriginalEventTarget(event);
 
@@ -3130,24 +3125,21 @@ function handleCapturedEvent(event) {
     if (target.capturedCallbacks) {
       let callback = target.capturedCallbacks[event.type];
       if (callback) {
-        if (!interceptInstalled) {
-          interceptStopPropagation(event);
-          interceptInstalled = true;
+        if (event.stopPropagation !== stopPropagation) {
+          event.standardStopPropagation = event.stopPropagation;
+          event.stopPropagation = stopPropagation;
         }
         orderedCallbacks.push(callback);
       }
     }
     target = target.parentNode;
   }
-  for (let i = orderedCallbacks.length - 1; i >= 0; i--) {
+  for (let i = orderedCallbacks.length - 1; i >= 0 && !event.propagationStopped; i--) {
     let orderedCallback = orderedCallbacks[i];
     if ('handleEvent' in orderedCallback) {
       orderedCallback.handleEvent(event);
     } else {
       orderedCallback(event);
-    }
-    if (event.propagationStopped) {
-      break;
     }
   }
 }
@@ -3176,7 +3168,6 @@ class CapturedHandlerEntry {
 }
 
 function handleDelegatedEvent(event) {
-  let interceptInstalled = false;
   event.propagationStopped = false;
   let target = findOriginalEventTarget(event);
 
@@ -3184,9 +3175,9 @@ function handleDelegatedEvent(event) {
     if (target.delegatedCallbacks) {
       let callback = target.delegatedCallbacks[event.type];
       if (callback) {
-        if (!interceptInstalled) {
-          interceptStopPropagation(event);
-          interceptInstalled = true;
+        if (event.stopPropagation !== stopPropagation) {
+          event.standardStopPropagation = event.stopPropagation;
+          event.stopPropagation = stopPropagation;
         }
         if ('handleEvent' in callback) {
           callback.handleEvent(event);
@@ -3218,8 +3209,51 @@ class DelegateHandlerEntry {
     this.count--;
 
     if (this.count === 0) {
-      DOM.removeEventListener(this.eventName, handleDelegatedEvent);
+      DOM.removeEventListener(this.eventName, handleDelegatedEvent, false);
     }
+  }
+}
+
+/**
+ * Enable dispose() pattern for `delegate` & `capture` commands
+ */
+class DelegationEntryHandler {
+  /**
+   * @param {DelegateHandlerEntry | CapturedHandlerEntry} entry
+   * @param {Record<string, Function>} lookup
+   * @param {string} targetEvent
+   */
+  constructor(entry, lookup, targetEvent) {
+    this.entry = entry;
+    this.lookup = lookup;
+    this.targetEvent = targetEvent;
+  }
+
+  dispose() {
+    this.entry.decrement();
+    this.lookup[this.targetEvent] = null;
+    this.entry = this.lookup = this.targetEvent = null;
+  }
+}
+
+/**
+ * Enable dispose() pattern for addEventListener for `trigger`
+ */
+class EventHandler {
+  /**
+   * @param {Element} target
+   * @param {string} targetEvent
+   * @param {EventListenerOrEventListenerObject} callback
+   */
+  constructor(target, targetEvent, callback) {
+    this.target = target;
+    this.targetEvent = targetEvent;
+    this.callback = callback;
+  }
+
+  dispose() {
+    this.target.removeEventListener(this.targetEvent, this.callback);
+    this.target = this.targetEvent = this.callback = null;
   }
 }
 
@@ -3227,7 +3261,14 @@ class DefaultEventStrategy {
   delegatedHandlers = {};
   capturedHandlers = {};
 
-  subscribe(target, targetEvent, callback, strategy) {
+  /**
+   * @param {Element} target
+   * @param {string} targetEvent
+   * @param {EventListenerOrEventListenerObject} callback
+   * @param {delegationStrategy} strategy
+   * @param {boolean} disposable
+   */
+  subscribe(target, targetEvent, callback, strategy, disposable) {
     let delegatedHandlers;
     let capturedHandlers;
     let handlerEntry;
@@ -3239,6 +3280,10 @@ class DefaultEventStrategy {
 
       handlerEntry.increment();
       delegatedCallbacks[targetEvent] = callback;
+
+      if (disposable === true) {
+        return new DelegationEntryHandler(handlerEntry, delegatedCallbacks, targetEvent);
+      }
 
       return function() {
         handlerEntry.decrement();
@@ -3253,13 +3298,21 @@ class DefaultEventStrategy {
       handlerEntry.increment();
       capturedCallbacks[targetEvent] = callback;
 
+      if (disposable === true) {
+        return new DelegationEntryHandler(handlerEntry, capturedCallbacks, targetEvent);
+      }
+
       return function() {
         handlerEntry.decrement();
         capturedCallbacks[targetEvent] = null;
       };
     }
 
-    target.addEventListener(targetEvent, callback, false);
+    target.addEventListener(targetEvent, callback);
+
+    if (disposable === true) {
+      return new EventHandler(target, targetEvent, callback);
+    }
 
     return function() {
       target.removeEventListener(targetEvent, callback);
@@ -3324,43 +3377,23 @@ export class EventManager {
     let properties = config.properties;
     let propertyName;
 
-    this.elementHandlerLookup[tagName] = {};
+    let lookup = this.elementHandlerLookup[tagName] = {};
 
     for (propertyName in properties) {
       if (properties.hasOwnProperty(propertyName)) {
-        this.registerElementPropertyConfig(tagName, propertyName, properties[propertyName]);
+        lookup[propertyName] = properties[propertyName];
       }
     }
-  }
-
-  registerElementPropertyConfig(tagName, propertyName, events) {
-    this.elementHandlerLookup[tagName][propertyName] = this.createElementHandler(events);
-  }
-
-  createElementHandler(events) {
-    return {
-      subscribe(target, callbackOrListener) {
-        events.forEach(changeEvent => {
-          target.addEventListener(changeEvent, callbackOrListener, false);
-        });
-
-        return function() {
-          events.forEach(changeEvent => {
-            target.removeEventListener(changeEvent, callbackOrListener, false);
-          });
-        };
-      }
-    };
-  }
-
-  registerElementHandler(tagName, handler) {
-    this.elementHandlerLookup[tagName.toLowerCase()] = handler;
   }
 
   registerEventStrategy(eventName, strategy) {
     this.eventStrategyLookup[eventName] = strategy;
   }
 
+  /**
+   * @param {Element | object} target
+   * @param {string} propertyName
+   */
   getElementHandler(target, propertyName) {
     let tagName;
     let lookup = this.elementHandlerLookup;
@@ -3369,24 +3402,66 @@ export class EventManager {
       tagName = target.tagName.toLowerCase();
 
       if (lookup[tagName] && lookup[tagName][propertyName]) {
-        return lookup[tagName][propertyName];
+        return new EventSubscriber(lookup[tagName][propertyName]);
       }
 
       if (propertyName === 'textContent' || propertyName === 'innerHTML') {
-        return lookup['content editable'].value;
+        return new EventSubscriber(lookup['content editable'].value);
       }
 
       if (propertyName === 'scrollTop' || propertyName === 'scrollLeft') {
-        return lookup['scrollable element'][propertyName];
+        return new EventSubscriber(lookup['scrollable element'][propertyName]);
       }
     }
 
     return null;
   }
 
-  addEventListener(target, targetEvent, callbackOrListener, delegate) {
+  /**
+   * @param {EventTarget} target
+   * @param {string} targetEvent
+   * @param {EventListenerOrEventListenerObject} callbackOrListener
+   * @param {delegationStrategy} delegate
+   * @param {boolean} disposable
+   */
+  addEventListener(target, targetEvent, callbackOrListener, delegate, disposable) {
     return (this.eventStrategyLookup[targetEvent] || this.defaultEventStrategy)
-      .subscribe(target, targetEvent, callbackOrListener, delegate);
+      .subscribe(target, targetEvent, callbackOrListener, delegate, disposable);
+  }
+}
+
+export class EventSubscriber {
+  /**
+   * @param {string[]} events
+   */
+  constructor(events) {
+    this.events = events;
+    this.element = null;
+    this.handler = null;
+  }
+
+  /**
+   * @param {Element} element
+   * @param {EventListenerOrEventListenerObject} callbackOrListener
+   */
+  subscribe(element, callbackOrListener) {
+    this.element = element;
+    this.handler = callbackOrListener;
+
+    let events = this.events;
+    for (let i = 0, ii = events.length; ii > i; ++i) {
+      element.addEventListener(events[i], callbackOrListener);
+    }
+  }
+
+  dispose() {
+    let element = this.element;
+    let callbackOrListener = this.handler;
+    let events = this.events;
+    for (let i = 0, ii = events.length; ii > i; ++i) {
+      element.removeEventListener(events[i], callbackOrListener);
+    }
+    this.element = this.handler = null;
   }
 }
 
@@ -3752,7 +3827,7 @@ export class ValueAttributeObserver {
   subscribe(context, callable) {
     if (!this.hasSubscribers()) {
       this.oldValue = this.getValue();
-      this.disposeHandler = this.handler.subscribe(this.element, this);
+      this.handler.subscribe(this.element, this);
     }
 
     this.addSubscriber(context, callable);
@@ -3760,8 +3835,7 @@ export class ValueAttributeObserver {
 
   unsubscribe(context, callable) {
     if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
-      this.disposeHandler();
-      this.disposeHandler = null;
+      this.handler.dispose();
     }
   }
 }
@@ -3883,15 +3957,14 @@ export class CheckedObserver {
 
   subscribe(context, callable) {
     if (!this.hasSubscribers()) {
-      this.disposeHandler = this.handler.subscribe(this.element, this);
+      this.handler.subscribe(this.element, this);
     }
     this.addSubscriber(context, callable);
   }
 
   unsubscribe(context, callable) {
     if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
-      this.disposeHandler();
-      this.disposeHandler = null;
+      this.handler.dispose();
     }
   }
 
@@ -4044,15 +4117,14 @@ export class SelectValueObserver {
 
   subscribe(context, callable) {
     if (!this.hasSubscribers()) {
-      this.disposeHandler = this.handler.subscribe(this.element, this);
+      this.handler.subscribe(this.element, this);
     }
     this.addSubscriber(context, callable);
   }
 
   unsubscribe(context, callable) {
     if (this.removeSubscriber(context, callable) && !this.hasSubscribers()) {
-      this.disposeHandler();
-      this.disposeHandler = null;
+      this.handler.dispose();
     }
   }
 
@@ -4435,12 +4507,20 @@ export const SVGAnalyzer = svgAnalyzer || class { isStandardSvgAttribute() { ret
 export class ObserverLocator {
   static inject = [TaskQueue, EventManager, DirtyChecker, SVGAnalyzer, Parser];
 
+  /**
+   * @param {TaskQueue} taskQueue
+   * @param {EventManager} eventManager
+   * @param {DirtyChecker} dirtyChecker
+   * @param {SVGAnalyzer} svgAnalyzer
+   * @param {Parser} parser
+   */
   constructor(taskQueue, eventManager, dirtyChecker, svgAnalyzer, parser) {
     this.taskQueue = taskQueue;
     this.eventManager = eventManager;
     this.dirtyChecker = dirtyChecker;
     this.svgAnalyzer = svgAnalyzer;
     this.parser = parser;
+    /**@type {ObjectObservationAdapter[]} */
     this.adapters = [];
     this.logger = LogManager.getLogger('observer-locator');
   }
@@ -4485,7 +4565,8 @@ export class ObserverLocator {
     return value;
   }
 
-  addAdapter(adapter: ObjectObservationAdapter) {
+  /**@param {ObjectObservationAdapter} adapter */
+  addAdapter(adapter) {
     this.adapters.push(adapter);
   }
 
@@ -4958,11 +5039,13 @@ export class Listener {
     if (this.sourceExpression.bind) {
       this.sourceExpression.bind(this, source, this.lookupFunctions);
     }
-    this._disposeListener = this.eventManager.addEventListener(
+    this._handler = this.eventManager.addEventListener(
       this.target,
       this.targetEvent,
       this,
-      this.delegationStrategy);
+      this.delegationStrategy,
+      true
+    );
   }
 
   unbind() {
@@ -4974,8 +5057,8 @@ export class Listener {
       this.sourceExpression.unbind(this, this.source);
     }
     this.source = null;
-    this._disposeListener();
-    this._disposeListener = null;
+    this._handler.dispose();
+    this._handler = null;
   }
 }
 

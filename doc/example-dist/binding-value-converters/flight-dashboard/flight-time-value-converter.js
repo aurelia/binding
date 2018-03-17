@@ -15,7 +15,7 @@ define(['exports'], function (exports) {
     function FlightTimeValueConverter() {
       _classCallCheck(this, FlightTimeValueConverter);
 
-      this.signals = 'locale-changed';
+      this.signals = ['locale-changed'];
     }
 
     FlightTimeValueConverter.prototype.toView = function toView(val) {

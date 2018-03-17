@@ -68,8 +68,8 @@ define(['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
     }
 
     Expression.prototype.valueChanged = function valueChanged(_ref) {
-      var role = _ref.role;
-      var expression = _ref.expression;
+      var role = _ref.role,
+          expression = _ref.expression;
 
       if (expression instanceof _aureliaFramework.AccessThis) {
         this.type = 'AccessThis';

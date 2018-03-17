@@ -1,3 +1,29 @@
+<a name="1.7.0"></a>
+# [1.7.0](https://github.com/aurelia/binding/compare/1.6.0...1.7.0) (2018-03-17)
+
+
+### Bug Fixes
+
+* **doc:** css-attribute without interpolation explained ([3dcea9d](https://github.com/aurelia/binding/commit/3dcea9d))
+* **EventManager:** prevent stopPropagation stack overflow ([011eca0](https://github.com/aurelia/binding/commit/011eca0)), closes [#649](https://github.com/aurelia/binding/issues/649)
+* **EventManager:** typing ([cb63a87](https://github.com/aurelia/binding/commit/cb63a87))
+* **typings:** add SelectValue/Checked Observers  ([b06cbc2](https://github.com/aurelia/binding/commit/b06cbc2))
+* **typings:** ICollectionObserverSplice support for Map and Set ([49f46ce](https://github.com/aurelia/binding/commit/49f46ce))
+* **Unparser:** fix typo in visitChain ([a90216c](https://github.com/aurelia/binding/commit/a90216c))
+
+
+### Features
+
+* **typescript:** add getContextFor definition ([c7ab819](https://github.com/aurelia/binding/commit/c7ab819))
+* **typescript:** add ICollectionObserverSplice definition ([4e1244e](https://github.com/aurelia/binding/commit/4e1244e))
+
+
+### Performance Improvements
+
+* **EventManager:** enable dispose() pattern for addEventListener ([e60ea16](https://github.com/aurelia/binding/commit/e60ea16))
+
+
+
 <a name="1.6.0"></a>
 # [1.6.0](https://github.com/aurelia/binding/compare/1.5.0...v1.6.0) (2017-12-04)
 

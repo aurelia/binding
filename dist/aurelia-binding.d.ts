@@ -108,15 +108,15 @@ export declare enum delegationStrategy {
  * This is an internal API and is subject to change without notice in future releases.
  */
 export declare class EventManager {
-  registerElementConfig(config: { tagName: string; properties: { (s: string): string[] }; }): void;
+  registerElementConfig(config: { tagName: string; properties: { [propertyName: string]: string[] }; }): void;
   /**
    * Subscribes to specified event on the target element.
    * @param target Target element.
    * @param targetEvent Name of event to subscribe.
    * @param callback Event listener callback.
    * @param delegate True to use event delegation mechanism.
-   * @param diposable True to return a disposable object with dispose() method instead of a function
-   * @returns function wich removes event listener.
+   * @param disposable True to return a disposable object with dispose() method instead of a function
+   * @returns function which removes event listener.
    */
   addEventListener(target: Element, targetEvent: string, callback: (event: Event) => any, delegate: delegationStrategy, disposable: true): Disposable;
   addEventListener(target: Element, targetEvent: string, callback: (event: Event) => any, delegate: delegationStrategy): () => void;
@@ -139,64 +139,14 @@ export declare interface CollectionObserver {
   /**
    * Subscribe to collection mutation events.
    */
-  subscribe(callback: (changeRecords: Array<IArrayObserverSplice> | Array<IMapObserverSplice> | Array<ISetObserverSplice>) => void): Disposable;
+  subscribe(callback: (changeRecords: Array<ICollectionObserverSplice<any>>) => void): Disposable;
 }
 
 /**
- * The splice type to expect when observing a Set collection.
- * @template T The value type of the map being observed.
+ * The change record of a collection mutation. 
  */
-export interface ISetObserverSplice<T = any> {
+export declare interface ICollectionObserverSplice<T = any> {
 
-  /**
-   * The observed Set after the change.
-   */
-  object: Set<T>;
-
-  /**
-   * The value that was either added or removed.
-   */
-  value: T
-
-  /**
-   * The type of change that has taken place. Valid options are "add" and "delete".
-   */
-  type: "add" | "delete"
-}
-
-/**
- * The splice type to expect when observing a Map collection.
- * @template K The key type of the map being observed.
- * @template V The value type of the map being observed.
- */
-export interface IMapObserverSplice<K = any, V = any> {
-
-  /**
-   * The key of the item that was changed.
-   */
-  key: K;
-
-  /**
-   * The observed Map after the change.
-   */
-  object: Map<K, V>;
-
-  /**
-   * The value of the item prior to the change.
-   */
-  oldValue: V
-
-  /**
-   * The type of change that has taken place. Valid options are "add", "delete", and "update".
-   */
-  type: "add" | "delete" | "update"
-}
-
-/**
- * The splice type to expect when observing an Array collection.
- * @template T The type of the contents stored in the array.
- */
-export interface IArrayObserverSplice<T = any> {
   /**
    * Number of items added to the collection.
    */
@@ -785,7 +735,7 @@ export declare class Parser {
  * Provides efficient property observers for properties that would otherwise require dirty-checking.
  */
 export declare interface ObjectObservationAdapter {
-  getObserver(object: any, propertyName: string, descriptor: PropertyDescriptor): InternalPropertyObserver;
+  getObserver(object: any, propertyName: string, descriptor: PropertyDescriptor): InternalPropertyObserver | null | undefined;
 }
 
 /**
@@ -829,7 +779,7 @@ export declare class BindingEngine {
   /**
    * Gets an observer for collection mutation.
    */
-  collectionObserver(collection: Array<any> | Map<any, any> | Set<any>): CollectionObserver;
+  collectionObserver(collection: Array<any> | Map<any, any>): CollectionObserver;
   /**
    * Gets an observer for a javascript expression that accesses a property on the binding context.
    * @param bindingContext The binding context (view-model)
