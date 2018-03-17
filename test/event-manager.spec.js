@@ -55,13 +55,18 @@ describe('EventManager', () => {
       element.value = 'foo';
       expect(handler).toBeDefined();
       expect(handler.subscribe).toBeDefined();
+      expect(handler.element).toBe(null);
+      expect(handler.handler).toBe(null);
 
-      dispose = handler.subscribe(element, callback);
+      handler.subscribe(element, callback);
       element.dispatchEvent(inputEvent);
       expect(callback).toHaveBeenCalledWith(inputEvent);
 
-      expect(dispose).toBeDefined();
-      dispose();
+      expect(handler.element).toBeDefined();
+      expect(handler.handler).toBeDefined();
+      handler.dispose();
+      expect(handler.element).toBe(null);
+      expect(handler.handler).toBe(null);
     });
   });
 

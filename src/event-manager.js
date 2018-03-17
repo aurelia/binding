@@ -1,3 +1,4 @@
+// @ts-check
 import {DOM} from 'aurelia-pal';
 
 //Note: path and deepPath are designed to handle v0 and v1 shadow dom specs respectively
@@ -106,7 +107,7 @@ class DelegateHandlerEntry {
     this.count--;
 
     if (this.count === 0) {
-      DOM.removeEventListener(this.eventName, handleDelegatedEvent);
+      DOM.removeEventListener(this.eventName, handleDelegatedEvent, false);
     }
   }
 }
@@ -212,43 +213,23 @@ export class EventManager {
     let properties = config.properties;
     let propertyName;
 
-    this.elementHandlerLookup[tagName] = {};
+    let lookup = this.elementHandlerLookup[tagName] = {};
 
     for (propertyName in properties) {
       if (properties.hasOwnProperty(propertyName)) {
-        this.registerElementPropertyConfig(tagName, propertyName, properties[propertyName]);
+        lookup[propertyName] = properties[propertyName];
       }
     }
-  }
-
-  registerElementPropertyConfig(tagName, propertyName, events) {
-    this.elementHandlerLookup[tagName][propertyName] = this.createElementHandler(events);
-  }
-
-  createElementHandler(events) {
-    return {
-      subscribe(target, callbackOrListener) {
-        events.forEach(changeEvent => {
-          target.addEventListener(changeEvent, callbackOrListener, false);
-        });
-
-        return function() {
-          events.forEach(changeEvent => {
-            target.removeEventListener(changeEvent, callbackOrListener, false);
-          });
-        };
-      }
-    };
-  }
-
-  registerElementHandler(tagName, handler) {
-    this.elementHandlerLookup[tagName.toLowerCase()] = handler;
   }
 
   registerEventStrategy(eventName, strategy) {
     this.eventStrategyLookup[eventName] = strategy;
   }
 
+  /**
+   * @param {Element | object} target
+   * @param {string} propertyName
+   */
   getElementHandler(target, propertyName) {
     let tagName;
     let lookup = this.elementHandlerLookup;
@@ -257,15 +238,15 @@ export class EventManager {
       tagName = target.tagName.toLowerCase();
 
       if (lookup[tagName] && lookup[tagName][propertyName]) {
-        return lookup[tagName][propertyName];
+        return new EventSubscriber(lookup[tagName][propertyName]);
       }
 
       if (propertyName === 'textContent' || propertyName === 'innerHTML') {
-        return lookup['content editable'].value;
+        return new EventSubscriber(lookup['content editable'].value);
       }
 
       if (propertyName === 'scrollTop' || propertyName === 'scrollLeft') {
-        return lookup['scrollable element'][propertyName];
+        return new EventSubscriber(lookup['scrollable element'][propertyName]);
       }
     }
 
@@ -275,5 +256,40 @@ export class EventManager {
   addEventListener(target, targetEvent, callbackOrListener, delegate) {
     return (this.eventStrategyLookup[targetEvent] || this.defaultEventStrategy)
       .subscribe(target, targetEvent, callbackOrListener, delegate);
+  }
+}
+
+export class EventSubscriber {
+  /**
+   * @param {string[]} events
+   */
+  constructor(events) {
+    this.events = events;
+    this.element = null;
+    this.handler = null;
+  }
+
+  /**
+   * @param {Element} element
+   * @param {EventListenerOrEventListenerObject} callbackOrListener
+   */
+  subscribe(element, callbackOrListener) {
+    this.element = element;
+    this.handler = callbackOrListener;
+
+    let events = this.events;
+    for (let i = 0, ii = events.length; ii > i; ++i) {
+      element.addEventListener(events[i], callbackOrListener);
+    }
+  }
+
+  dispose() {
+    let element = this.element;
+    let callbackOrListener = this.handler;
+    let events = this.events;
+    for (let i = 0, ii = events.length; ii > i; ++i) {
+      element.removeEventListener(events[i], callbackOrListener);
+    }
+    this.element = this.handler = null;
   }
 }

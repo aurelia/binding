@@ -220,8 +220,12 @@ export declare interface Callable {
 /**
  * Event subscription handler for observers
  */
-export declare interface ObserverEventHandler {
-  subscribe(target: Element, callbackOrlistener: EventListenerOrEventListenerObject): Function
+export declare class EventSubscriber {
+  constructor(events: string[]);
+
+  subscribe(element: Element, handler: EventListenerOrEventListenerObject): void;
+
+  dispose(): void;
 }
 
 /**
@@ -266,7 +270,7 @@ export declare class ValueAttributeObserver implements InternalPropertyObserver 
   constructor(
     element: Element,
     propertyName: string,
-    handler: ObserverEventHandler
+    handler: EventSubscriber
   );
 
   getValue(): any;
@@ -305,7 +309,7 @@ export declare class CheckedObserver implements InternalPropertyObserver {
 
   constructor(
     element: Element,
-    handler: ObserverEventHandler,
+    handler: EventSubscriber,
     observerLocator: ObserverLocator
   );
 
@@ -345,7 +349,7 @@ export declare class SelectValueObserver implements InternalPropertyObserver {
 
   constructor(
     element: Element,
-    handler: ObserverEventHandler,
+    handler: EventSubscriber,
     observerLocator: ObserverLocator
   );
 

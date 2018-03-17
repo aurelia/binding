@@ -270,8 +270,12 @@ export declare interface Callable {
 /**
  * Event subscription handler for observers
  */
-export declare interface ObserverEventHandler {
-  subscribe(target: Element, callbackOrlistener: EventListenerOrEventListenerObject): Function
+export declare class EventSubscriber {
+  constructor(events: string[]);
+
+  subscribe(element: Element, handler: EventListenerOrEventListenerObject): void;
+
+  dispose(): void;
 }
 
 /**
@@ -316,7 +320,7 @@ export declare class ValueAttributeObserver implements InternalPropertyObserver 
   constructor(
     element: Element,
     propertyName: string,
-    handler: ObserverEventHandler
+    handler: EventSubscriber
   );
 
   getValue(): any;
@@ -355,7 +359,7 @@ export declare class CheckedObserver implements InternalPropertyObserver {
 
   constructor(
     element: Element,
-    handler: ObserverEventHandler,
+    handler: EventSubscriber,
     observerLocator: ObserverLocator
   );
 
@@ -395,7 +399,7 @@ export declare class SelectValueObserver implements InternalPropertyObserver {
 
   constructor(
     element: Element,
-    handler: ObserverEventHandler,
+    handler: EventSubscriber,
     observerLocator: ObserverLocator
   );
 
@@ -604,7 +608,7 @@ export declare interface NameExpression {
 /**
  * An expression AST visitor.
  */
-export interface ExpressionVisitor {}
+export interface ExpressionVisitor { }
 
 /**
  * Visits an expression AST and returns the string equivalent.
@@ -616,7 +620,7 @@ export class Unparser implements ExpressionVisitor {
 /**
  * Clones an expression AST.
  */
-export class ExpressionCloner implements ExpressionVisitor {}
+export class ExpressionCloner implements ExpressionVisitor { }
 
 /**
  * Provides the base class from which the classes that represent expression tree nodes are derived.
