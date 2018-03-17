@@ -353,6 +353,10 @@ export class EventSubscriber {
   }
 
   dispose() {
+    if (this.element === null) {
+      // already disposed
+      return;
+    }
     let element = this.element;
     let callbackOrListener = this.handler;
     let events = this.events;
