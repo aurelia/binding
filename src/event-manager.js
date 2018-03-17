@@ -112,11 +112,61 @@ class DelegateHandlerEntry {
   }
 }
 
+/**
+ * Enable dispose() pattern for `delegate` & `capture` commands
+ */
+class DelegationEntryHandler {
+  /**
+   * @param {DelegateHandlerEntry | CapturedHandlerEntry} entry
+   * @param {Record<string, Function>} lookup
+   * @param {string} targetEvent
+   */
+  constructor(entry, lookup, targetEvent) {
+    this.entry = entry;
+    this.lookup = lookup;
+    this.targetEvent = targetEvent;
+  }
+
+  dispose() {
+    this.entry.decrement();
+    this.lookup[this.targetEvent] = null;
+    this.entry = this.lookup = this.targetEvent = null;
+  }
+}
+
+/**
+ * Enable dispose() pattern for addEventListener for `trigger`
+ */
+class EventHandler {
+  /**
+   * @param {Element} target
+   * @param {string} targetEvent
+   * @param {EventListenerOrEventListenerObject} callback
+   */
+  constructor(target, targetEvent, callback) {
+    this.target = target;
+    this.targetEvent = targetEvent;
+    this.callback = callback;
+  }
+
+  dispose() {
+    this.target.removeEventListener(this.targetEvent, this.callback);
+    this.target = this.targetEvent = this.callback = null;
+  }
+}
+
 class DefaultEventStrategy {
   delegatedHandlers = {};
   capturedHandlers = {};
 
-  subscribe(target, targetEvent, callback, strategy) {
+  /**
+   * @param {Element} target
+   * @param {string} targetEvent
+   * @param {EventListenerOrEventListenerObject} callback
+   * @param {delegationStrategy} strategy
+   * @param {boolean} disposable
+   */
+  subscribe(target, targetEvent, callback, strategy, disposable) {
     let delegatedHandlers;
     let capturedHandlers;
     let handlerEntry;
@@ -128,6 +178,10 @@ class DefaultEventStrategy {
 
       handlerEntry.increment();
       delegatedCallbacks[targetEvent] = callback;
+
+      if (disposable === true) {
+        return new DelegationEntryHandler(handlerEntry, delegatedCallbacks, targetEvent);
+      }
 
       return function() {
         handlerEntry.decrement();
@@ -142,13 +196,21 @@ class DefaultEventStrategy {
       handlerEntry.increment();
       capturedCallbacks[targetEvent] = callback;
 
+      if (disposable === true) {
+        return new DelegationEntryHandler(handlerEntry, capturedCallbacks, targetEvent);
+      }
+
       return function() {
         handlerEntry.decrement();
         capturedCallbacks[targetEvent] = null;
       };
     }
 
-    target.addEventListener(targetEvent, callback, false);
+    target.addEventListener(targetEvent, callback);
+
+    if (disposable === true) {
+      return new EventHandler(target, targetEvent, callback);
+    }
 
     return function() {
       target.removeEventListener(targetEvent, callback);
@@ -253,9 +315,16 @@ export class EventManager {
     return null;
   }
 
-  addEventListener(target, targetEvent, callbackOrListener, delegate) {
+  /**
+   * @param {EventTarget} target
+   * @param {string} targetEvent
+   * @param {EventListenerOrEventListenerObject} callbackOrListener
+   * @param {delegationStrategy} delegate
+   * @param {boolean} disposable
+   */
+  addEventListener(target, targetEvent, callbackOrListener, delegate, disposable) {
     return (this.eventStrategyLookup[targetEvent] || this.defaultEventStrategy)
-      .subscribe(target, targetEvent, callbackOrListener, delegate);
+      .subscribe(target, targetEvent, callbackOrListener, delegate, disposable);
   }
 }
 
