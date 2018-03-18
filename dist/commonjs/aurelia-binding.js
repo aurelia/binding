@@ -3543,6 +3543,9 @@ var EventSubscriber = exports.EventSubscriber = function () {
   };
 
   EventSubscriber.prototype.dispose = function dispose() {
+    if (this.element === null) {
+      return;
+    }
     var element = this.element;
     var callbackOrListener = this.handler;
     var events = this.events;

@@ -3270,6 +3270,9 @@ export let EventSubscriber = class EventSubscriber {
   }
 
   dispose() {
+    if (this.element === null) {
+      return;
+    }
     let element = this.element;
     let callbackOrListener = this.handler;
     let events = this.events;

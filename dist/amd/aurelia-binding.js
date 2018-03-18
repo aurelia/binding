@@ -3590,6 +3590,9 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
     };
 
     EventSubscriber.prototype.dispose = function dispose() {
+      if (this.element === null) {
+        return;
+      }
       var element = this.element;
       var callbackOrListener = this.handler;
       var events = this.events;

@@ -118,8 +118,8 @@ export declare class EventManager {
    * @param disposable True to return a disposable object with dispose() method instead of a function
    * @returns function which removes event listener.
    */
-  addEventListener(target: Element, targetEvent: string, callback: EventListenerOrEventListenerObject, delegate: delegationStrategy, disposable: true): Disposable;
-  addEventListener(target: Element, targetEvent: string, callback: EventListenerOrEventListenerObject, delegate: delegationStrategy): () => void;
+  addEventListener(target: EventTarget, targetEvent: string, callback: EventListenerOrEventListenerObject, delegate: delegationStrategy, disposable: true): Disposable;
+  addEventListener(target: EventTarget, targetEvent: string, callback: EventListenerOrEventListenerObject, delegate: delegationStrategy): () => void;
 }
 
 /**
