@@ -1,8 +1,10 @@
 import './setup';
 import {observable} from '../src/decorator-observable.js';
+import {mapCoerceFunction, coerceFunctionMap} from '../src/coerce-functions';
 import {decorators} from 'aurelia-metadata';
 import {SetterObserver} from '../src/property-observation';
 import {Logger} from 'aurelia-logging';
+import {metadata} from 'aurelia-metadata';
 
 describe('observable decorator', () => {
   const oldValue = 'old';
@@ -245,6 +247,188 @@ describe('observable decorator', () => {
 
       instance1.value = newValue;
       expect(instance2.value).toBe(oldValue);
+    });
+  });
+
+  describe('coerce', () => {
+    it('initializes value correctly', () => {
+      class MyClass {
+        @observable({ coerce: 'string' }) value = 5
+      }
+      expect(new MyClass()._value).toBe('5');
+    });
+
+    it('coerces value correctly', () => {
+      @observable({ name: 'value1', coerce: 'boolean' })
+      class MyClass {
+        @observable({ coerce: 'number' }) value2
+      }
+      const instance = new MyClass();
+      instance.value1 = 0;
+      expect(instance.value1).toBe(false);
+      instance.value2 = '123';
+      expect(instance.value2).toBe(123);
+    });
+
+    it('warns when using unknown coerce', () => {
+      spyOn(Logger.prototype, 'warn');
+      class MyClass {
+        @observable({ coerce: 'name' }) prop
+      }
+      expect(Logger.prototype.warn).toHaveBeenCalled();
+    });
+
+    describe('with built in fluent syntax', () => {
+      const cases = [
+        { type: 'number', baseValue: '123', satisfy: val => val === 123 },
+        { type: 'boolean', baseValue: 1, satisfy: val => val === true },
+        { type: 'date', baseValue: '2017-09-26', satisfy: val => val instanceof Date && val.getDate() === 26 && val.getMonth() === 8 && val.getFullYear() === 2017 },
+        { type: 'string', baseValue: 123, satisfy: val => val === '123' }
+      ];
+
+      it('initializes value correctly', () => {
+        cases.forEach(test => {
+          class MyClass {
+            @observable[test.type] prop = test.baseValue
+          }
+          expect(test.satisfy(new MyClass()._prop)).toBe(true);
+        });
+      });
+
+      it('sets value correctly', () => {
+        cases.forEach(test => {
+          class MyClass {
+            @observable[test.type] prop
+          }
+
+          const instance = new MyClass();
+          instance.prop = test.baseValue;
+
+          expect(test.satisfy(instance.prop)).toBe(true);
+        });
+      });
+
+      it('works with inheritance', () => {
+        cases.forEach(test => {
+          const deco = observable[test.type];
+          class MyClassBase {
+            @deco prop
+          }
+
+          class MyClass extends MyClassBase {}
+          
+          const instance = new MyClass();
+          instance.prop = test.baseValue;
+
+          expect(test.satisfy(instance.prop)).toBe(true);
+        });
+      });
+    });
+
+    describe('with property type via metadata', () => {
+      const cases = [
+        { propType: Number, baseValue: '123', satisfy: val => val === 123 },
+        { propType: Boolean, baseValue: 1, satisfy: val => val === true },
+        { propType: Date, baseValue: '2017-09-26', satisfy: val => val instanceof Date && val.getDate() === 26 && val.getMonth() === 8 && val.getFullYear() === 2017 },
+        { propType: String, baseValue: 123, satisfy: val => val === '123' }
+      ];
+
+      it('respects the property type flag to intialize value correctly', () => {
+        observable.usePropertyType(true);
+        cases.forEach(test => {
+          class MyClass {
+            @observable
+            @Reflect.metadata(metadata.propertyType, test.propType)
+            prop = test.baseValue
+          }
+          expect(test.satisfy(new MyClass()._prop)).toBe(true);
+        });
+
+        observable.usePropertyType(false);
+        cases.forEach(test => {
+          class MyClass {
+            @observable
+            @Reflect.metadata(metadata.propertyType, test.propType)
+            prop = test.baseValue
+          }
+          expect(test.satisfy(new MyClass()._prop)).toBe(false);
+        });
+      });
+
+      it('respects the property type flag to set value correctly', () => {
+        observable.usePropertyType(true);
+        cases.forEach(test => {
+          class MyClass {
+            @observable
+            @Reflect.metadata(metadata.propertyType, test.propType)
+            prop
+          }
+
+          const instance = new MyClass();
+          instance.prop = test.baseValue;
+
+          expect(test.satisfy(instance.prop)).toBe(true);
+        });
+
+        observable.usePropertyType(false);
+        cases.forEach(test => {
+          class MyClass {
+            @observable
+            @Reflect.metadata(metadata.propertyType, test.propType)
+            prop
+          }
+
+          const instance = new MyClass();
+          instance.prop = test.baseValue;
+
+          expect(test.satisfy(instance.prop)).toBe(false);
+        });
+      });
+
+      it('should warn when using unknown property type', () => {
+        observable.usePropertyType(true);
+        spyOn(Logger.prototype, 'warn');
+
+        class MyClass {
+          @observable
+          @Reflect.metadata(metadata.propertyType, class PropertyType {})
+          prop
+        }
+        expect(Logger.prototype.warn).toHaveBeenCalled();
+      });
+
+      it('should not warn when using registered property type', () => {
+        class PropertyType {}
+        coerceFunctionMap.set(PropertyType, 'string');
+
+        observable.usePropertyType(true);
+        spyOn(Logger.prototype, 'warn');
+
+        class MyClass {
+          @observable
+          @Reflect.metadata(metadata.propertyType, PropertyType)
+          prop
+        }
+        expect(Logger.prototype.warn).not.toHaveBeenCalled();
+      });
+
+      it('works with inheritance when using property type', () => {
+        cases.forEach(test => {
+          observable.usePropertyType(true);
+          class MyClassBase {
+            @observable
+            @Reflect.metadata(metadata.propertyType, test.propType)
+            prop
+          }
+
+          class MyClass extends MyClassBase {}
+          
+          const instance = new MyClass();
+          instance.prop = test.baseValue;
+
+          expect(test.satisfy(instance.prop)).toBe(true);
+        });
+      });
     });
   });
 });

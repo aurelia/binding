@@ -1,6 +1,56 @@
-export function observable(targetOrConfig: any, key: string, descriptor?: PropertyDescriptor) {
-  function deco(target, key, descriptor, config) { // eslint-disable-line no-shadow
-    // class decorator?
+import { coerceFunctions, coerceFunctionMap } from './coerce-functions';
+import { metadata } from 'aurelia-metadata';
+import * as LogManager from 'aurelia-logging';
+
+/**
+ * @typedef ObservableConfig
+ * @prop {string} name
+ * @prop {string} changeHandler
+ * @prop {string | {(val: any): any}} coerce
+ */
+
+const observableLogger = LogManager.getLogger('aurelia-observable-decorator');
+
+export function observable(targetOrConfig: string | Function | ObservableConfig, key?: string, descriptor?: PropertyDescriptor) {
+  /**
+   * @param target The class decorated
+   * @param key The target class field of the decorator
+   * @param descriptor class field descriptor
+   * @param config user's config
+   */
+  function deco(target: Function, key?: string, descriptor?: PropertyDescriptor & { initializer(): any }, config?: ObservableConfig) { // eslint-disable-line no-shadow
+    // Used to check if we should pickup the type from metadata
+    const userDidDefineCoerce = config !== undefined && config.coerce !== undefined;
+    let propType;
+    let coerceFunction;
+
+    if (userDidDefineCoerce) {
+      switch (typeof config.coerce) {
+      case 'string':
+        coerceFunction = coerceFunctions[config.coerce]; break;
+      case 'function':
+        coerceFunction = config.coerce; break;
+      default: break;
+      }
+      if (coerceFunction === undefined) {
+        observableLogger.warn(`Invalid coerce instruction. Should be either one of ${Object.keys(coerceFunctions)} or a function.`);
+      }
+    } else if (_usePropertyType) {
+      propType = metadata.getOwn(metadata.propertyType, target, key);
+      if (propType) {
+        coerceFunction = coerceFunctions[coerceFunctionMap.get(propType)];
+        if (coerceFunction === undefined) {
+          observableLogger.warn(`Unable to find coerce function for type ${propType.name}.`);
+        }
+      }
+    }
+
+    /**
+     * class decorator?
+     * @example
+     * @observable('firstName') MyClass {}
+     * @observable({ name: 'firstName' }) MyClass {}
+     */
     const isClassDecorator = key === undefined;
     if (isClassDecorator) {
       target = target.prototype;
@@ -8,7 +58,7 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
     }
 
     // use a convention to compute the inner property name
-    let innerPropertyName = `_${key}`;
+    const innerPropertyName = `_${key}`;
     const innerPropertyDescriptor: PropertyDescriptor = {
       configurable: true,
       enumerable: false,
@@ -22,8 +72,10 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
       // babel passes in the property descriptor with a method to get the initial value.
 
       // set the initial value of the property if it is defined.
+      // also make sure it's coerced
       if (typeof descriptor.initializer === 'function') {
-        innerPropertyDescriptor.value = descriptor.initializer();
+        const initValue = descriptor.initializer();
+        innerPropertyDescriptor.value = coerceFunction === undefined ? initValue : coerceFunction(initValue);
       }
     } else {
       // there is no descriptor if the target was a field in TS (although Babel provides one),
@@ -48,16 +100,17 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
     descriptor.get = function() { return this[innerPropertyName]; };
     descriptor.set = function(newValue) {
       let oldValue = this[innerPropertyName];
-      if (newValue === oldValue) {
+      let coercedValue = coerceFunction === undefined ? newValue : coerceFunction(newValue);
+      if (coercedValue === oldValue) {
         return;
       }
 
       // Add the inner property on the instance and make it nonenumerable.
-      this[innerPropertyName] = newValue;
+      this[innerPropertyName] = coercedValue;
       Reflect.defineProperty(this, innerPropertyName, { enumerable: false });
 
       if (this[callbackName]) {
-        this[callbackName](newValue, oldValue, key);
+        this[callbackName](coercedValue, oldValue, key);
       }
     };
 
@@ -72,10 +125,26 @@ export function observable(targetOrConfig: any, key: string, descriptor?: Proper
     }
   }
 
+  /**
+   * Decorating with parens
+   * @example
+   * @observable MyClass {} <----- this breaks, but will go into this condition
+   * @observable('firstName') MyClass {}
+   * @observable({ name: 'firstName' }) MyClass {}
+   * class MyClass {
+   *   @observable() prop
+   * }
+   */
   if (key === undefined) {
-    // parens...
     return (t, k, d) => deco(t, k, d, targetOrConfig);
   }
+  /**
+   * Decorating on class field
+   * @example
+   * class MyClass {
+   *   @observable prop
+   * }
+   */
   return deco(targetOrConfig, key, descriptor);
 }
 
@@ -91,3 +160,63 @@ no parens | n/a              | n/a
 class     | config           | config
           | target           | target
 */
+
+/**
+ * Internal flag to turn on / off auto pickup property type from metadata
+ */
+let _usePropertyType = false;
+
+/**
+ * Toggle the flag for observable to auto pickup property type from metadata
+ * The reason is sometimes we may want to use prop type on bindable, but not observable
+ * and vice versa
+ */
+observable.usePropertyType = (shouldUsePropType: boolean) => {
+  _usePropertyType = shouldUsePropType;
+};
+
+/**
+ * Decorator: Creates a new observable decorator that can be used for fluent syntax purpose
+ * @param type the type name that will be assign to observable decorator. `createTypedObservable('point') -> observable.point`
+ */
+export function createTypeObservable(type: string) {
+  return observable[type] = function(targetOrConfig: string | Function | ObservableConfig, key?: string, descriptor?: PropertyDescriptor & {initializer():any}) {
+    if (targetOrConfig === undefined) {
+      /**
+       * MyClass {
+       *   @observable.number() num
+       * }
+       *
+       * This will breaks so need to check for proper error
+       * @observable.number()
+       * class MyClass {}
+       */
+      return observable({ coerce: type });
+    }
+    if (key === undefined) {
+      /**
+       * @observable.number('num')
+       * class MyClass {}
+       *
+       * @observable.number({...})
+       * class MyClass
+       *
+       * class MyClass {
+       *   @observable.number({...})
+       *   num
+       * }
+       */
+      targetOrConfig = typeof targetOrConfig === 'string' ? { name: targetOrConfig } : targetOrConfig;
+      targetOrConfig.coerce = type;
+      return observable(targetOrConfig);
+    }
+    /**
+     * class MyClass {
+     *   @observable.number num
+     * }
+     */
+    return observable({ coerce: type })(targetOrConfig, key, descriptor);
+  };
+}
+
+['string', 'number', 'boolean', 'date'].forEach(createTypeObservable);
