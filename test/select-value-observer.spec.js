@@ -1,13 +1,8 @@
 import './setup';
-import {DOM} from 'aurelia-pal';
-import {bindingMode} from '../src/binding-mode';
-import {
-  createElement,
-  checkDelay,
-  createObserverLocator,
-  getBinding
-} from './shared';
-import {createScopeForTest} from '../src/scope';
+import { DOM } from 'aurelia-pal';
+import { bindingMode } from '../src/binding-mode';
+import { createElement, checkDelay, createObserverLocator, getBinding } from './shared';
+import { createScopeForTest } from '../src/scope';
 
 describe('SelectValueObserver', () => {
   var observerLocator;
@@ -16,10 +11,10 @@ describe('SelectValueObserver', () => {
     observerLocator = createObserverLocator();
   });
 
-  function getElementValue(element) {
+  function getElementValue (element) {
     var options = element.options, option, i, ii, count = 0, value = [];
 
-    for(i = 0, ii = options.length; i < ii; i++) {
+    for (i = 0, ii = options.length; i < ii; i++) {
       option = options.item(i);
       if (!option.selected) {
         continue;
@@ -669,6 +664,100 @@ describe('SelectValueObserver', () => {
 
     afterAll(() => {
       document.body.removeChild(el);
+    });
+  });
+
+  describe('hierarchical select', () => {
+    var obj;
+    /**@type {HTMLSelectElement} */
+    var select1;
+    /**@type {HTMLSelectElement} */
+    var select2;
+    var binding1;
+    var binding2;
+
+    beforeEach(() => {
+      class Car {
+        constructor (name, models, selectedModelIndex) {
+          this.name = name;
+          this.models = models;
+          this.selectedModelIndex = selectedModelIndex;
+          this.selectedModel = this.models[selectedModelIndex];
+        }
+      }
+
+      let cars = [
+        new Car('Audi', ['Child11', 'Child12', 'Child13'], 2),
+        new Car('BMW', ['Child21', 'Child22', 'Child23'], 1),
+        new Car('Buick', ['Child31', 'Child32', 'Child33'], 2)
+      ];
+      obj = {
+        cars: cars,
+        selectedCar: cars[2]
+      };
+      select1 = createElement(
+        `<select>
+          <option>Audi</option>
+          <option>BMW</option>
+          <option>Buick</option>
+        </select>`
+      );
+      select2 = createElement(
+        `<select>
+          <option>Child31</option>
+          <option>Child32</option>
+          <option>Child33</option>
+        </select>`
+      );
+      document.body.appendChild(select1);
+      document.body.appendChild(select2);
+
+      for (let i = 0; i < select1.options.length; ++i) {
+        observerLocator.getObserver(select1.options[i], 'model').setValue(cars[i]);
+      }
+      binding1 = getBinding(observerLocator, obj, 'selectedCar', select1, 'value', bindingMode.twoWay).binding;
+      binding2 = getBinding(observerLocator, obj, 'selectedCar.selectedModel', select2, 'value', bindingMode.twoWay).binding;
+    // binding2 = getBinding(observerLocator, obj, 'optionB', select1.options.item(1), 'value', bindingMode.toView).binding
+    });
+
+    it('binds', done => {
+      var targetObserver = observerLocator.getObserver(select1, 'value');
+      binding1.bind(createScopeForTest(obj));
+      expect(select1.options.item(2).selected).toBe(true);
+      binding2.bind(createScopeForTest(obj));
+      setTimeout(() => {
+        expect(select2.value).toBe('Child33');
+        done();
+      }, 80);
+    });
+
+    it('changes child select value correctly', done => {
+      var targetObserver = observerLocator.getObserver(select1, 'value');
+      binding1.bind(createScopeForTest(obj));
+      expect(select1.options.item(2).selected).toBe(true);
+      binding2.bind(createScopeForTest(obj));
+      obj.selectedCar.selectedModel = obj.selectedCar.models[1];
+      setTimeout(() => {
+        expect(select2.value).toBe('Child32');
+        obj.selectedCar = obj.cars[1];
+        setTimeout(() => {
+          expect(select1.options.item(1).selected).toBe(true);
+          for (let i = 0, ii = select2.options.length; ii > i; ++i) {
+            select2.options[i].textContent = obj.selectedCar.models[i];
+          }
+          setTimeout(() => {
+            expect(select2.options.item(1).selected).toBe(true);
+            done();
+          }, 80);
+        }, 80);
+      }, 80);
+    });
+
+    afterEach(() => {
+      binding1.unbind();
+      binding2.unbind();
+      document.body.removeChild(select1);
+      document.body.removeChild(select2);
     });
   });
 });
