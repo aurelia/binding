@@ -186,7 +186,7 @@ Use the Collection Observer to observe changes to a collection. Collection types
     }
   </source-code>
   <source-code lang="TypeScript">
-    import {BindingEngine, autoinject, IArrayObserverSplice} from 'aurelia-framework';
+    import {BindingEngine, autoinject, ICollectionObserverSplice} from 'aurelia-framework';
 
     @autoinject
     export class App {
@@ -198,7 +198,7 @@ Use the Collection Observer to observe changes to a collection. Collection types
           .subscribe(this.collectionChanged.bind(this));
       }
 
-      collectionChanged(splices: Array<IArrayObserverSplice<string>>) {
+      collectionChanged(splices: Array<ICollectionObserverSplice<string>>) {
           // This will fire any time the collection is modified. 
       }
     }
@@ -227,9 +227,9 @@ The callback will receive an array of splices which provides information about t
     }
   </source-code>
   <source-code lang="TypeScript">
-    collectionChanged(splices: Array<IArrayObserverSplice<string>>) {
+    collectionChanged(splices: Array<ICollectionObserverSplice<string>>) {
       for (var i = 0; i < splices.length; i++) {
-        var splice: IArrayObserverSplice<string> = splices[i];
+        var splice: ICollectionObserverSplice<string> = splices[i];
 
         var valuesAdded = this.myCollection.slice(splice.index, splice.index + splice.addedCount);
         if (valuesAdded.length > 0) {
@@ -270,9 +270,9 @@ The callback will receive an array of splices which provides information about t
     }
   </source-code>
   <source-code lang="TypeScript">
-    collectionChanged(splices: Array<IMapObserverSplice<number, string>>) {
+    collectionChanged(splices: Array<ICollectionObserverSplice<Map<number, string>>>) {
       for (var i = 0; i < splices.length; i++) {
-        var splice: IMapObserverSplice<number, string> = splices[i];
+        var splice: ICollectionObserverSplice<Map<number, string>> = splices[i];
 
         if(splice.type == "add"){
           var valuesAdded = this.myCollection.get(splice.key);
@@ -312,9 +312,9 @@ The callback will receive an array of splices which provides information about t
     }
   </source-code>
   <source-code lang="TypeScript">
-    collectionChanged(splices: Array<ISetObserverSplice<number>>) {
+    collectionChanged(splices: Array<ICollectionObserverSplice<Set<number>>>) {
       for (var i = 0; i < splices.length; i++) {
-        var splice: ISetObserverSplice<number> = splices[i];
+        var splice: ICollectionObserverSplice<Set<number>> = splices[i];
 
         if(splice.type == "add"){
           console.log(`'${splice.value}' was added to the set`);
