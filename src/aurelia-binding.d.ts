@@ -887,3 +887,9 @@ export declare function connectBindingToSignal(binding: Binding, name: string): 
  * @param name The signal associated with the binding(s) to refresh.
  */
 export declare function signalBindings(name: string): void;
+
+/**
+ * Globally adds support for parsing identifiers that contain any of the provided unicode characters.
+ * @param characters Any additional unicode characters to be supported for identifiers.
+ */
+export declare function addIdentifierCharacters(characters: string): void;
