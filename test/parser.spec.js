@@ -13,7 +13,9 @@ import {
   CallFunction,
   AccessThis,
   AccessAncestor,
-  Assign
+  Assign,
+  Conditional,
+  Binary
 } from '../src/ast';
 
 describe('Parser', () => {
@@ -49,6 +51,55 @@ describe('Parser', () => {
       let expression = parser.parse(test.expression);
       expect(expression instanceof test.type).toBe(true);
       expect(expression.value).toEqual(test.value);
+    }
+  });
+
+  it('parses conditional', () => {
+    let expression = parser.parse('foo ? bar : baz');
+    expect(expression instanceof Conditional).toBe(true);
+    expect(expression.condition instanceof AccessScope).toBe(true);
+    expect(expression.condition.name).toBe('foo');
+    expect(expression.yes instanceof AccessScope).toBe(true);
+    expect(expression.yes.name).toBe('bar');
+    expect(expression.no instanceof AccessScope).toBe(true);
+    expect(expression.no.name).toBe('baz');
+  });
+
+  it('parses nested conditional', () => {
+    let expression = parser.parse('foo ? bar : foo1 ? bar1 : baz');
+    expect(expression instanceof Conditional).toBe(true);
+    expect(expression.condition instanceof AccessScope).toBe(true);
+    expect(expression.condition.name).toBe('foo');
+    expect(expression.yes instanceof AccessScope).toBe(true);
+    expect(expression.yes.name).toBe('bar');
+    expect(expression.no instanceof Conditional).toBe(true);
+    expect(expression.no.condition instanceof AccessScope).toBe(true);
+    expect(expression.no.condition.name).toBe('foo1');
+    expect(expression.no.yes instanceof AccessScope).toBe(true);
+    expect(expression.no.yes.name).toBe('bar1');
+    expect(expression.no.no instanceof AccessScope).toBe(true);
+    expect(expression.no.no.name).toBe('baz');
+  });
+
+  describe('parses binary', () => {
+    const operators = [
+      '&&', '||',
+      '==', '!=', '===', '!==',
+      '<', '>', '<=', '>=', 
+      '+', '-', 
+      '*', '%', '/'
+    ];
+
+    for (let op of operators) {
+      it(`\"${op}\"`, () => {
+        let expression = parser.parse(`foo ${op} bar`);
+        expect(expression instanceof Binary).toBe(true);
+        expect(expression.operation).toBe(op);
+        expect(expression.left instanceof AccessScope).toBe(true);
+        expect(expression.left.name).toBe('foo');
+        expect(expression.right instanceof AccessScope).toBe(true);
+        expect(expression.right.name).toBe('bar');
+      });
     }
   });
 
