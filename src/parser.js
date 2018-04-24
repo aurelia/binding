@@ -583,7 +583,7 @@ export class ParserImplementation {
           // coverage for this.
           let hex = this.input.slice(this.index + 1, this.index + 5);
 
-          if (!/[A-Z0-9]{4}/.test(hex)) {
+          if (!/[A-Z0-9]{4}/i.test(hex)) {
             this.error(`Invalid unicode escape [\\u${hex}]`);
           }
 

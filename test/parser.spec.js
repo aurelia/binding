@@ -30,6 +30,7 @@ describe('Parser', () => {
     // http://es5.github.io/x7.html#x7.8.4
     const tests = [
       { expression: '\'foo\'', expected: new LiteralString('foo') },
+      { expression: `\'${unicodeEscape('äöüÄÖÜß')}\'`, expected: new LiteralString('äöüÄÖÜß') },
       { expression: '\'\\\\\'', expected: new LiteralString('\\') },
       { expression: '\'\\\'\'', expected: new LiteralString('\'') },
       { expression: '\'"\'', expected: new LiteralString('"') },
@@ -37,6 +38,7 @@ describe('Parser', () => {
       { expression: '\'\\n\'', expected: new LiteralString('\n') },
       { expression: '\'\\r\'', expected: new LiteralString('\r') },
       { expression: '\'\\t\'', expected: new LiteralString('\t') },
+      { expression: '\'\\v\'', expected: new LiteralString('\v') },
       { expression: '\'\\v\'', expected: new LiteralString('\v') },
       { expression: 'true', expected: new LiteralPrimitive(true) },
       { expression: 'false', expected: new LiteralPrimitive(false) },
@@ -483,4 +485,8 @@ function verifyEqual(actual, expected) {
   for (const prop of Object.keys(expected)) {
     verifyEqual(actual[prop], expected[prop]);
   }
+}
+
+function unicodeEscape(str) {
+	return str.replace(/[\s\S]/g, c => `\\u${('0000' + c.charCodeAt().toString(16)).slice(-4)}`);
 }
