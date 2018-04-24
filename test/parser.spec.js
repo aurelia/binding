@@ -48,7 +48,23 @@ describe('Parser', () => {
       { expression: 'undefined', expected: new LiteralPrimitive(undefined) },
       { expression: '0', expected: new LiteralPrimitive(0) },
       { expression: '1', expected: new LiteralPrimitive(1) },
-      { expression: '2.2', expected: new LiteralPrimitive(2.2) }
+      { expression: '-1', expected: new Binary('-', new LiteralPrimitive(0), new LiteralPrimitive(1)) },
+      { expression: '(-1)', expected: new Binary('-', new LiteralPrimitive(0), new LiteralPrimitive(1)) },
+      { expression: '-(-1)', expected: new Binary('-', new LiteralPrimitive(0), new Binary('-', new LiteralPrimitive(0), new LiteralPrimitive(1))) },
+      { expression: '+(-1)', expected: new Binary('-', new LiteralPrimitive(0), new LiteralPrimitive(1)) },
+      { expression: '-(+1)', expected: new Binary('-', new LiteralPrimitive(0), new LiteralPrimitive(1)) },
+      { expression: '+(+1)', expected: new LiteralPrimitive(1) },
+      { expression: '9007199254740992', expected: new LiteralPrimitive(9007199254740992) }, // Number.MAX_SAFE_INTEGER + 1
+      { expression: '1.7976931348623157e+308', expected: new LiteralPrimitive(1.7976931348623157e+308) }, // Number.MAX_VALUE
+      { expression: '1.7976931348623157E+308', expected: new LiteralPrimitive(1.7976931348623157e+308) }, // Number.MAX_VALUE
+      { expression: '-9007199254740992', expected: new Binary('-', new LiteralPrimitive(0), new LiteralPrimitive(9007199254740992)) }, // Number.MIN_SAFE_INTEGER - 1
+      { expression: '5e-324', expected: new LiteralPrimitive(5e-324) }, // Number.MIN_VALUE
+      { expression: '5E-324', expected: new LiteralPrimitive(5e-324) }, // Number.MIN_VALUE
+      { expression: '2.2', expected: new LiteralPrimitive(2.2) },
+      { expression: '2.2e2', expected: new LiteralPrimitive(2.2e2) },
+      { expression: '.42', expected: new LiteralPrimitive(.42) },
+      { expression: '0.42', expected: new LiteralPrimitive(.42) },
+      { expression: '.42E10', expected: new LiteralPrimitive(.42e10) }
     ];
 
     for (const test of tests) {
