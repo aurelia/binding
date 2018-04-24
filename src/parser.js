@@ -96,7 +96,7 @@ export class ParserImplementation {
         args.push(this.parseExpression());
       }
 
-      result = new ValueConverter(result, name, args, [result].concat(args));
+      result = new ValueConverter(result, name, args);
     }
 
     return result;
