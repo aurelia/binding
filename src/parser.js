@@ -574,21 +574,27 @@ export class ParserImplementation {
         }
 
         buffer.push(this.input.slice(marker, this.index));
-        char = this.input.charCodeAt(++this.index)
+        char = this.input.charCodeAt(++this.index);
 
         let unescaped;
 
         if (char === $u) {
-          // todo(kasperl): Check bounds? Make sure we have test
-          // coverage for this.
-          let hex = this.input.slice(this.index + 1, this.index + 5);
+          char = this.input.charCodeAt(++this.index);
+          const index = this.index;
 
-          if (!/[A-Z0-9]{4}/i.test(hex)) {
-            this.error(`Invalid unicode escape [\\u${hex}]`);
+          if (index + 4 < this.length) {
+            let hex = this.input.slice(index, index + 4);
+  
+            if (!/[A-Z0-9]{4}/i.test(hex)) {
+              this.error(`Invalid unicode escape [\\u${hex}]`);
+            }
+  
+            unescaped = parseInt(hex, 16);
+            this.index += 4;
+          } else {
+            const expression = this.input.slice(this.lastIndex, this.index);
+            this.error(`Unexpected token ${expression}`);
           }
-
-          unescaped = parseInt(hex, 16);
-          this.index += 5;
         } else {
           unescaped = unescape(this.input.charCodeAt(this.index));
           this.index++;

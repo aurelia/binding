@@ -31,6 +31,7 @@ describe('Parser', () => {
     const tests = [
       { expression: '\'foo\'', expected: new LiteralString('foo') },
       { expression: `\'${unicodeEscape('äöüÄÖÜß')}\'`, expected: new LiteralString('äöüÄÖÜß') },
+      { expression: `\'${unicodeEscape('ಠ_ಠ')}\'`, expected: new LiteralString('ಠ_ಠ') },
       { expression: '\'\\\\\'', expected: new LiteralString('\\') },
       { expression: '\'\\\'\'', expected: new LiteralString('\'') },
       { expression: '\'"\'', expected: new LiteralString('"') },
