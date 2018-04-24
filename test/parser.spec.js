@@ -16,7 +16,8 @@ import {
   Assign,
   Conditional,
   Binary,
-  Expression
+  Expression,
+  PrefixNot
 } from '../src/ast';
 
 describe('Parser', () => {
@@ -105,6 +106,113 @@ describe('Parser', () => {
         );
       });
     }
+  });
+
+  it('parses binary in the correct order', () => {
+    const expression = parser.parse('a || b && c ^ d == e != f === g !== h < i > j <= k >= l + m - n * o % p / !q');
+    verifyEqual(
+      expression,
+      new Binary(
+        '||',
+        new AccessScope('a', 0),
+        new Binary(
+          '&&',
+          new AccessScope('b', 0),
+          new Binary(
+            '^',
+            new AccessScope('c', 0),
+            new Binary(
+              '==',
+              new AccessScope('d', 0),
+              new Binary(
+                '!=',
+                new AccessScope('e', 0),
+                new Binary(
+                  '===',
+                  new AccessScope('f', 0),
+                  new Binary(
+                    '!==',
+                    new AccessScope('g', 0),
+                    new Binary(
+                      '<',
+                      new AccessScope('h', 0),
+                      new Binary(
+                        '>',
+                        new AccessScope('i', 0),
+                        new Binary(
+                          '<=',
+                          new AccessScope('j', 0),
+                          new Binary(
+                            '>=',
+                            new AccessScope('k', 0),
+                            new Binary(
+                              '+',
+                              new AccessScope('l', 0),
+                              new Binary(
+                                '-',
+                                new AccessScope('m', 0),
+                                new Binary(
+                                  '*',
+                                  new AccessScope('n', 0),
+                                  new Binary(
+                                    '%',
+                                    new AccessScope('o', 0),
+                                    new Binary(
+                                      '/',
+                                      new AccessScope('p', 0),
+                                      new PrefixNot(
+                                        '!',
+                                        new AccessScope('q', 0)
+                                      )
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  });
+
+  it('reorders binary expression', () => {
+    const expression = parser.parse('a * b || c === d / e + f && g');
+    verifyEqual(
+      expression,
+      new Binary(
+        '||',
+        new Binary(
+          '*',
+          new AccessScope('a', 0),
+          new AccessScope('b', 0)
+        ),
+        new Binary(
+          '&&',
+          new Binary(
+            '===',
+            new AccessScope('c', 0),
+            new Binary(
+              '+',
+              new Binary(
+                '/',
+                new AccessScope('d', 0),
+                new AccessScope('e', 0)
+              ),
+              new AccessScope('f', 0)
+            ),
+          ),
+          new AccessScope('g', 0)
+        )
+      )
+    )
   });
 
   it('parses binding behavior', () => {
