@@ -786,6 +786,8 @@ const T_UnaryOperator       = 1 << 16;
 /** ''' */const T_SingleQuote  = 17;
 /** '"' */const T_DoubleQuote  = 18;
 
+// Operator precedence: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_Precedence#Table
+
 /** '&' */  const T_BindingBehavior    = 19 | T_AccessScopeTerminal;
 /** '|' */  const T_ValueConverter     = 20 | T_AccessScopeTerminal;
 /** '||' */ const T_LogicalOr          = 21 | T_BinaryOperator  |  1 << T_PrecedenceShift;
