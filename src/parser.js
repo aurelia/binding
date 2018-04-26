@@ -36,7 +36,7 @@ export class ParserImplementation {
     this.startIndex = 0;
     this.input = input;
     this.length = input.length;
-    this.currentToken = T_EndOfSource;
+    this.currentToken = T_EOF;
     this.tokenValue = undefined;
   }
 
@@ -46,7 +46,7 @@ export class ParserImplementation {
     let isChain = false;
     let expressions = [];
 
-    while (this.currentToken !== T_EndOfSource) {
+    while (this.currentToken !== T_EOF) {
       while (this.optional(T_Semicolon)) {
         isChain = true;
       }
@@ -73,7 +73,7 @@ export class ParserImplementation {
   parseBindingBehavior() {
     let result = this.parseValueConverter();
 
-    while (this.optional(T_BindingBehavior)) {
+    while (this.optional(T_Ampersand)) {
       let name = this.tokenValue;
       let args = [];
 
@@ -92,7 +92,7 @@ export class ParserImplementation {
   parseValueConverter() {
     let result = this.parseExpression();
 
-    while (this.optional(T_ValueConverter)) {
+    while (this.optional(T_Bar)) {
       let name = this.tokenValue;
       let args = [];
 
@@ -113,7 +113,7 @@ export class ParserImplementation {
     let start = this.index;
     let result = this.parseConditional();
 
-    while (this.currentToken === T_Assign) {
+    while (this.currentToken === T_Eq) {
       if (!result.isAssignable) {
         let end = (this.index < this.length) ? this.index : this.length;
         let expression = this.input.slice(start, end);
@@ -121,7 +121,7 @@ export class ParserImplementation {
         this.error(`Expression ${expression} is not assignable`);
       }
 
-      this.expect(T_Assign);
+      this.expect(T_Eq);
       result = new Assign(result, this.parseConditional());
     }
 
@@ -132,7 +132,7 @@ export class ParserImplementation {
     let start = this.index;
     let result = this.parseBinary(0);
 
-    if (this.optional(T_QuestionMark)) {
+    if (this.optional(T_Question)) {
       let yes = this.parseExpression();
 
       if (!this.optional(T_Colon)) {
@@ -173,11 +173,11 @@ export class ParserImplementation {
     if ((opToken & T_UnaryOperator) === T_UnaryOperator) {
       this.nextToken();
       switch(opToken) {
-        case T_Add:
+        case T_Plus:
           return this.parseUnary();
-        case T_Subtract:
+        case T_Minus:
           return new Binary('-', new LiteralPrimitive(0), this.parseUnary());
-        case T_LogicalNot:
+        case T_Bang:
           return new PrefixNot('!', this.parseUnary());
       }
     }
@@ -193,9 +193,9 @@ export class ParserImplementation {
 
         this.nextToken();
 
-        if (this.optional(T_LeftParen)) {
-          let args = this.parseExpressionList(T_RightParen);
-          this.expect(T_RightParen);
+        if (this.optional(T_LParen)) {
+          let args = this.parseExpressionList(T_RParen);
+          this.expect(T_RParen);
           if (result instanceof AccessThis) {
             result = new CallScope(name, args, result.ancestor);
           } else {
@@ -208,13 +208,13 @@ export class ParserImplementation {
             result = new AccessMember(result, name);
           }
         }
-      } else if (this.optional(T_LeftBracket)) {
+      } else if (this.optional(T_LBracket)) {
         let key = this.parseExpression();
-        this.expect(T_RightBracket);
+        this.expect(T_RBracket);
         result = new AccessKeyed(result, key);
-      } else if (this.optional(T_LeftParen)) {
-        let args = this.parseExpressionList(T_RightParen);
-        this.expect(T_RightParen);
+      } else if (this.optional(T_LParen)) {
+        let args = this.parseExpressionList(T_RParen);
+        this.expect(T_RParen);
         result = new CallFunction(result, args);
       } else {
         return result;
@@ -231,17 +231,17 @@ export class ParserImplementation {
       case T_ThisScope:
         this.nextToken();
         return new AccessThis(0);
-      case T_LeftParen:
+      case T_LParen:
         this.nextToken();
         const result = this.parseExpression();
-        this.expect(T_RightParen);
+        this.expect(T_RParen);
         return result;
-      case T_LeftBracket:
+      case T_LBracket:
         this.nextToken();
-        const elements = this.parseExpressionList(T_RightBracket);
-        this.expect(T_RightBracket);
+        const elements = this.parseExpressionList(T_RBracket);
+        this.expect(T_RBracket);
         return new LiteralArray(elements);
-      case T_LeftBrace:
+      case T_LBrace :
         return this.parseObject();
       case T_StringLiteral:
       {
@@ -290,9 +290,9 @@ export class ParserImplementation {
       }
     }
 
-    if (this.optional(T_LeftParen)) {
-      let args = this.parseExpressionList(T_RightParen);
-      this.expect(T_RightParen);
+    if (this.optional(T_LParen)) {
+      let args = this.parseExpressionList(T_RParen);
+      this.expect(T_RParen);
       return new CallScope(name, args, ancestor);
     }
 
@@ -303,9 +303,9 @@ export class ParserImplementation {
     let keys = [];
     let values = [];
 
-    this.expect(T_LeftBrace);
+    this.expect(T_LBrace);
 
-    if (this.currentToken !== T_RightBrace) {
+    if (this.currentToken !== T_RBrace) {
       do {
         // todo(kasperl): Stricter checking. Only allow identifiers
         // and strings as keys. Maybe also keywords?
@@ -313,7 +313,7 @@ export class ParserImplementation {
         const prevToken = this.currentToken;
         keys.push(this.tokenValue);
         this.nextToken();
-        if (prevToken === T_Identifier && (this.currentToken === T_Comma || this.currentToken === T_RightBrace)) {
+        if (prevToken === T_Identifier && (this.currentToken === T_Comma || this.currentToken === T_RBrace)) {
           this.index = prevIndex;
           values.push(this.parseAccessOrCallScope());
         } else {
@@ -323,7 +323,7 @@ export class ParserImplementation {
       } while (this.optional(T_Comma));
     }
 
-    this.expect(T_RightBrace);
+    this.expect(T_RBrace);
 
     return new LiteralObject(keys, values);
   }
@@ -379,22 +379,22 @@ export class ParserImplementation {
         }
         case $LPAREN:
           this.nextChar();
-          return T_LeftParen;
+          return T_LParen;
         case $RPAREN:
           this.nextChar();
-          return T_RightParen;
+          return T_RParen;
         case $LBRACE:
           this.nextChar();
-          return T_LeftBrace;
+          return T_LBrace;
         case $RBRACE:
           this.nextChar();
-          return T_RightBrace;
+          return T_RBrace;
         case $LBRACKET:
           this.nextChar();
-          return T_LeftBracket;
+          return T_LBracket;
         case $RBRACKET:
           this.nextChar();
-          return T_RightBracket;
+          return T_RBracket;
         case $COMMA:
           this.nextChar();
           return T_Comma;
@@ -409,42 +409,42 @@ export class ParserImplementation {
           return this.scanString();
         case $PLUS:
           this.nextChar();
-          return T_Add;
+          return T_Plus;
         case $MINUS:
           this.nextChar();
-          return T_Subtract;
+          return T_Minus;
         case $STAR:
           this.nextChar();
-          return T_Multiply;
+          return T_Star;
         case $SLASH:
           this.nextChar();
-          return T_Divide;
+          return T_Slash;
         case $PERCENT:
           this.nextChar();
-          return T_Modulo;
+          return T_Percent;
         case $CARET:
           this.nextChar();
-          return T_BitwiseXor;
+          return T_Caret;
         case $QUESTION:
           this.nextChar();
-          return T_QuestionMark;
+          return T_Question;
         case $LT:
         {
           this.nextChar();
           if (this.currentChar === $EQ) {
             this.nextChar();
-            return T_LessThanOrEqual;
+            return T_LtEq;
           }
-          return T_LessThan;
+          return T_Lt;
         }
         case $GT:
         {
           this.nextChar();
           if (this.currentChar === $EQ) {
             this.nextChar();
-            return T_GreaterThanOrEqual;
+            return T_GtEq;
           }
-          return T_GreaterThan;
+          return T_Gt;
         }
         case $BANG:
         {
@@ -453,11 +453,11 @@ export class ParserImplementation {
             this.nextChar();
             if (this.currentChar === $EQ) {
               this.nextChar();
-              return T_StrictNotEqual;
+              return T_BangEqEq;
             }
-            return T_LooseNotEqual;
+            return T_BangEq;
           }
-          return T_LogicalNot;
+          return T_Bang;
         }
         case $EQ:
         {
@@ -466,29 +466,29 @@ export class ParserImplementation {
             this.nextChar();
             if (this.currentChar === $EQ) {
               this.nextChar();
-              return T_StrictEqual;
+              return T_EqEqEq;
             }
-            return T_LooseEqual;
+            return T_EqEq;
           }
-          return T_Assign;
+          return T_Eq;
         }
         case $AMPERSAND:
         {
           this.nextChar();
           if (this.currentChar === $AMPERSAND) {
             this.nextChar();
-            return T_LogicalAnd;
+            return T_AmpersandAmpersand;
           }
-          return T_BindingBehavior;
+          return T_Ampersand;
         }
         case $BAR:
         {
           this.nextChar();
           if (this.currentChar === $BAR) {
             this.nextChar();
-            return T_LogicalOr;
+            return T_BarBar;
           }
-          return T_ValueConverter;
+          return T_Bar;
         }
         case $NBSP:
           this.nextChar();
@@ -500,7 +500,7 @@ export class ParserImplementation {
       return null;
     }
 
-    return T_EndOfSource;
+    return T_EOF;
   }
 
   scanIdentifier() {
@@ -763,7 +763,7 @@ const T_Precedence = 7 << T_PrecedenceShift;
 const T_ClosingToken        = 1 << 9;
 /** EndOfSource | '(' | '}' | ')' | ',' | '[' | '&' | '|' */
 const T_AccessScopeTerminal = 1 << 10;
-const T_EndOfSource         = 1 << 11 | T_AccessScopeTerminal;
+const T_EOF                 = 1 << 11 | T_AccessScopeTerminal;
 const T_Identifier          = 1 << 12;
 const T_NumericLiteral      = 1 << 13;
 const T_StringLiteral       = 1 << 14;
@@ -777,42 +777,42 @@ const T_UnaryOperator       = 1 << 16;
 /** '$this' */    const T_ThisScope        = 4;
 /** '$parent' */  const T_ParentScope      = 5;
 
-/** '(' */const T_LeftParen    =  6 | T_AccessScopeTerminal;
-/** '{' */const T_LeftBrace    =  7;
+/** '(' */const T_LParen       =  6 | T_AccessScopeTerminal;
+/** '{' */const T_LBrace       =  7;
 /** '.' */const T_Period       =  8;
-/** '}' */const T_RightBrace   =  9 | T_ClosingToken | T_AccessScopeTerminal;
-/** ')' */const T_RightParen   = 10 | T_ClosingToken | T_AccessScopeTerminal;
+/** '}' */const T_RBrace       =  9 | T_ClosingToken | T_AccessScopeTerminal;
+/** ')' */const T_RParen       = 10 | T_ClosingToken | T_AccessScopeTerminal;
 /** ';' */const T_Semicolon    = 11;
 /** ',' */const T_Comma        = 12 | T_AccessScopeTerminal;
-/** '[' */const T_LeftBracket  = 13 | T_AccessScopeTerminal;
-/** ']' */const T_RightBracket = 14 | T_ClosingToken;
+/** '[' */const T_LBracket     = 13 | T_AccessScopeTerminal;
+/** ']' */const T_RBracket     = 14 | T_ClosingToken;
 /** ':' */const T_Colon        = 15;
-/** '?' */const T_QuestionMark = 16;
-/** ''' */const T_SingleQuote  = 17;
-/** '"' */const T_DoubleQuote  = 18;
+/** '?' */const T_Question     = 16;
+/** ''' */const T_SQ           = 17;
+/** '"' */const T_DQ           = 18;
 
 // Operator precedence: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_Precedence#Table
 
-/** '&' */  const T_BindingBehavior    = 19 | T_AccessScopeTerminal;
-/** '|' */  const T_ValueConverter     = 20 | T_AccessScopeTerminal;
-/** '||' */ const T_LogicalOr          = 21 | T_BinaryOperator  |  1 << T_PrecedenceShift;
-/** '&&' */ const T_LogicalAnd         = 22 | T_BinaryOperator  |  2 << T_PrecedenceShift;
-/** '^' */  const T_BitwiseXor         = 23 | T_BinaryOperator  |  3 << T_PrecedenceShift;
-/** '==' */ const T_LooseEqual         = 24 | T_BinaryOperator  |  4 << T_PrecedenceShift;
-/** '!=' */ const T_LooseNotEqual      = 25 | T_BinaryOperator  |  4 << T_PrecedenceShift;
-/** '===' */const T_StrictEqual        = 26 | T_BinaryOperator  |  4 << T_PrecedenceShift;
-/** '!== '*/const T_StrictNotEqual     = 27 | T_BinaryOperator  |  4 << T_PrecedenceShift;
-/** '<' */  const T_LessThan           = 28 | T_BinaryOperator  |  5 << T_PrecedenceShift;
-/** '>' */  const T_GreaterThan        = 29 | T_BinaryOperator  |  5 << T_PrecedenceShift;
-/** '<=' */ const T_LessThanOrEqual    = 30 | T_BinaryOperator  |  5 << T_PrecedenceShift;
-/** '>=' */ const T_GreaterThanOrEqual = 31 | T_BinaryOperator  |  5 << T_PrecedenceShift;
-/** '+' */  const T_Add                = 32 | T_UnaryOperator   | T_BinaryOperator | 6 << T_PrecedenceShift;
-/** '-' */  const T_Subtract           = 33 | T_UnaryOperator   | T_BinaryOperator | 6 << T_PrecedenceShift;
-/** '*' */  const T_Multiply           = 34 | T_BinaryOperator  | 7 << T_PrecedenceShift;
-/** '%' */  const T_Modulo             = 35 | T_BinaryOperator  | 7 << T_PrecedenceShift;
-/** '/' */  const T_Divide             = 36 | T_BinaryOperator  | 7 << T_PrecedenceShift;
-/** '=' */  const T_Assign             = 37;
-/** '!' */  const T_LogicalNot         = 38 | T_UnaryOperator;
+/** '&' */  const T_Ampersand          = 19 | T_AccessScopeTerminal;
+/** '|' */  const T_Bar                = 20 | T_AccessScopeTerminal;
+/** '||' */ const T_BarBar             = 21 | T_BinaryOperator  |  1 << T_PrecedenceShift;
+/** '&&' */ const T_AmpersandAmpersand = 22 | T_BinaryOperator  |  2 << T_PrecedenceShift;
+/** '^' */  const T_Caret              = 23 | T_BinaryOperator  |  3 << T_PrecedenceShift;
+/** '==' */ const T_EqEq               = 24 | T_BinaryOperator  |  4 << T_PrecedenceShift;
+/** '!=' */ const T_BangEq             = 25 | T_BinaryOperator  |  4 << T_PrecedenceShift;
+/** '===' */const T_EqEqEq             = 26 | T_BinaryOperator  |  4 << T_PrecedenceShift;
+/** '!== '*/const T_BangEqEq           = 27 | T_BinaryOperator  |  4 << T_PrecedenceShift;
+/** '<' */  const T_Lt                 = 28 | T_BinaryOperator  |  5 << T_PrecedenceShift;
+/** '>' */  const T_Gt                 = 29 | T_BinaryOperator  |  5 << T_PrecedenceShift;
+/** '<=' */ const T_LtEq               = 30 | T_BinaryOperator  |  5 << T_PrecedenceShift;
+/** '>=' */ const T_GtEq               = 31 | T_BinaryOperator  |  5 << T_PrecedenceShift;
+/** '+' */  const T_Plus               = 32 | T_UnaryOperator   | T_BinaryOperator | 6 << T_PrecedenceShift;
+/** '-' */  const T_Minus              = 33 | T_UnaryOperator   | T_BinaryOperator | 6 << T_PrecedenceShift;
+/** '*' */  const T_Star               = 34 | T_BinaryOperator  | 7 << T_PrecedenceShift;
+/** '%' */  const T_Percent            = 35 | T_BinaryOperator  | 7 << T_PrecedenceShift;
+/** '/' */  const T_Slash              = 36 | T_BinaryOperator  | 7 << T_PrecedenceShift;
+/** '=' */  const T_Eq                = 37;
+/** '!' */  const T_Bang               = 38 | T_UnaryOperator;
 
 const KeywordLookup = Object.create(null, {
   true: {value: T_TrueKeyword},
