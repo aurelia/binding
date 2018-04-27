@@ -755,7 +755,7 @@ const T_TokenMask = (1 << 6) - 1;
 const T_PrecedenceShift = 6; 
 
 /* Performing a bitwise and (&) with this value will return only the
- * precedence bit, which is used to determine the parsing order of bitwise
+ * precedence bit, which is used to determine the parsing order of binary
  * expressions */
 const T_Precedence = 7 << T_PrecedenceShift;
 
