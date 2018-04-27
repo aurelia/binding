@@ -21,9 +21,6 @@ export class Parser {
 }
 
 export class ParserImplementation {
-  get currentChar() {
-    return this.input.charCodeAt(this.index);
-  }
   get hasNext() {
     return this.index < this.length;
   }
@@ -38,6 +35,7 @@ export class ParserImplementation {
     this.length = input.length;
     this.currentToken = T_EOF;
     this.tokenValue = undefined;
+    this.currentChar = input.charCodeAt(0);
   }
 
   parseChain() {
@@ -315,6 +313,7 @@ export class ParserImplementation {
         this.nextToken();
         if (prevToken === T_Identifier && (this.currentToken === T_Comma || this.currentToken === T_RBrace)) {
           this.index = prevIndex;
+          this.currentChar = this.input.charCodeAt(this.index);
           values.push(this.parseAccessOrCallScope());
         } else {
           this.expect(T_Colon);
@@ -345,29 +344,28 @@ export class ParserImplementation {
   }
 
   nextChar() {
-    this.index++;
+    return this.currentChar = this.input.charCodeAt(++this.index);
   }
 
   scanToken() {
     while (this.hasNext) {
       this.startIndex = this.index;
-      const char = this.currentChar;
       // skip whitespace.
-      if (char <= $SPACE) {
+      if (this.currentChar <= $SPACE) {
         this.nextChar();
         continue;
       }
   
       // handle identifiers and numbers.
-      if (isIdentifierStart(char)) {
+      if (isIdentifierStart(this.currentChar)) {
         return this.scanIdentifier();
       }
   
-      if (isDigit(char)) {
+      if (isDigit(this.currentChar)) {
         return this.scanNumber();
   
       }
-      switch (char) {
+      switch (this.currentChar) {
         case $PERIOD:
         {
           const nextChar = this.input.charCodeAt(this.index + 1);
@@ -526,7 +524,6 @@ export class ParserImplementation {
   scanNumber() {
     let isFloat = false;
     let value = 0;
-    let char = this.currentChar;
     
     while (isDigit(this.currentChar)) {
       value = value * 10 + (this.currentChar - $0);
@@ -603,6 +600,7 @@ export class ParserImplementation {
   
             unescaped = parseInt(hex, 16);
             this.index += 4;
+            this.currentChar = this.input.charCodeAt(this.index);
           } else {
             this.error(`Unexpected token ${this.tokenRaw}`);
           }
