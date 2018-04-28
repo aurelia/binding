@@ -530,16 +530,22 @@ export class ParserImplementation {
       this.nextChar();
     }
 
-    const nonDigitStart = this.index;
     if (this.currentChar === $PERIOD) {
-      isFloat = true;
       this.nextChar();
 
+      let decimalValue = 0;
+      let decimalPlaces = 0;
+
       while (isDigit(this.currentChar)) {
+        decimalValue = decimalValue * 10 + (this.currentChar - $0);
+        decimalPlaces++;
         this.nextChar();
       }
+
+      value += (decimalValue / Math.pow(10, decimalPlaces));
     }
 
+    const nonDigitStart = this.index;
     if (this.currentChar === $e || this.currentChar === $E) {
       isFloat = true;
       const exponentStart = this.index; // for error reporting in case the exponent is invalid
