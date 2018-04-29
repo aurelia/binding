@@ -7,7 +7,6 @@ import {
 } from './ast';
 
 export class Parser {
-  cache;
   constructor() {
     this.cache = Object.create(null);
   }
@@ -93,7 +92,6 @@ export class ParserImplementation {
       this.nextToken();
 
       while (this.optional(T_Colon)) {
-        // todo(kasperl): Is this really supposed to be expressions?
         args.push(this.parseExpression());
       }
 
@@ -181,7 +179,10 @@ export class ParserImplementation {
 
     while (true) { // eslint-disable-line no-constant-condition
       if (this.optional(T_Period)) {
-        let name = this.tokenValue; // todo(kasperl): Check that this is an identifier. Are keywords okay?
+        if ((this.currentToken ^ T_IdentifierOrKeyword) === T_IdentifierOrKeyword) {
+          this.error(`Unexpected token ${this.tokenRaw}`);
+        }
+        let name = this.tokenValue;
 
         this.nextToken();
 
@@ -262,11 +263,12 @@ export class ParserImplementation {
     }
   }
 
-  parseAccessOrCallScope()  {
-    let name = this.tokenValue;
-    let token = this.currentToken;
-
-    this.nextToken();
+  parseAccessOrCallScope(name, token)  {
+    if (!(name && token)) {
+      name = this.tokenValue;
+      token = this.currentToken;
+      this.nextToken();
+    }
 
     let ancestor = 0;
     while (token === T_ParentScope) {
@@ -296,26 +298,44 @@ export class ParserImplementation {
     let values = [];
 
     this.expect(T_LBrace);
+    let isComputed = false;
 
-    if (this.currentToken !== T_RBrace) {
-      do {
-        // todo(kasperl): Stricter checking. Only allow identifiers
-        // and strings as keys. Maybe also keywords?
-        const prevIndex = this.index;
-        const prevToken = this.currentToken;
-        keys.push(this.tokenValue);
-        this.nextToken();
-        if (prevToken === T_Identifier && (this.currentToken === T_Comma || this.currentToken === T_RBrace)) {
-          this.index = prevIndex;
-          this.currentChar = this.input.charCodeAt(this.index);
-          values.push(this.parseAccessOrCallScope());
-        } else {
+    while (this.currentToken !== T_RBrace) {
+      const token = this.currentToken;
+      const name = this.tokenValue;
+
+      switch(token) {
+        case T_Identifier:
+        // Treat keywords and predefined strings like identifiers
+        case T_FalseKeyword:
+        case T_TrueKeyword:
+        case T_NullKeyword:
+        case T_UndefinedKeyword:
+        case T_ThisScope:
+        case T_ParentScope:
+          keys.push(name);
+          this.nextToken();
+          if (this.optional(T_Colon)) {
+            values.push(this.parseExpression());
+          } else {
+            values.push(this.parseAccessOrCallScope(name, token));
+          }
+          break;
+        case T_StringLiteral:
+        case T_NumericLiteral:
+          keys.push(name);
+          this.nextToken();
           this.expect(T_Colon);
           values.push(this.parseExpression());
-        }
-      } while (this.optional(T_Comma));
+          break;
+        default:
+          this.error(`Unexpected token ${this.tokenRaw}`);
+      }
+      if (this.currentToken !== T_RBrace) {
+        this.expect(T_Comma);
+      }
     }
-
+    
     this.expect(T_RBrace);
 
     return new LiteralObject(keys, values);
@@ -763,18 +783,19 @@ const T_ClosingToken        = 1 << 9;
 /** EndOfSource | '(' | '}' | ')' | ',' | '[' | '&' | '|' */
 const T_AccessScopeTerminal = 1 << 10;
 const T_EOF                 = 1 << 11 | T_AccessScopeTerminal;
-const T_Identifier          = 1 << 12;
+const T_Identifier          = 1 << 12 | T_IdentifierOrKeyword;
 const T_NumericLiteral      = 1 << 13;
 const T_StringLiteral       = 1 << 14;
 const T_BinaryOperator      = 1 << 15;
 const T_UnaryOperator       = 1 << 16;
+const T_IdentifierOrKeyword = 1 << 17;
 
-/** false */      const T_FalseKeyword     = 0;
-/** true */       const T_TrueKeyword      = 1;
-/** null */       const T_NullKeyword      = 2;
-/** undefined */  const T_UndefinedKeyword = 3;
-/** '$this' */    const T_ThisScope        = 4;
-/** '$parent' */  const T_ParentScope      = 5;
+/** false */      const T_FalseKeyword     = 0 | T_IdentifierOrKeyword;
+/** true */       const T_TrueKeyword      = 1 | T_IdentifierOrKeyword;
+/** null */       const T_NullKeyword      = 2 | T_IdentifierOrKeyword;
+/** undefined */  const T_UndefinedKeyword = 3 | T_IdentifierOrKeyword;
+/** '$this' */    const T_ThisScope        = 4 | T_IdentifierOrKeyword;
+/** '$parent' */  const T_ParentScope      = 5 | T_IdentifierOrKeyword;
 
 /** '(' */const T_LParen    =  6 | T_AccessScopeTerminal;
 /** '{' */const T_LBrace    =  7;

@@ -314,6 +314,57 @@ describe('Parser', () => {
     );
   });
 
+  it('parses value converter with Conditional argument', () => {
+    let expression = parser.parse('foo | bar : foo ? bar : baz');
+    verifyEqual(expression,
+      new ValueConverter(
+        new AccessScope('foo', 0),
+        'bar',
+        [
+          new Conditional(
+            new AccessScope('foo', 0),
+            new AccessScope('bar', 0),
+            new AccessScope('baz', 0)
+          )
+        ])
+    );
+  });
+
+  it('parses value converter with Assign argument', () => {
+    let expression = parser.parse('foo | bar : foo = bar');
+    verifyEqual(expression,
+      new ValueConverter(
+        new AccessScope('foo', 0),
+        'bar',
+        [
+          new Assign(
+            new AccessScope('foo', 0),
+            new AccessScope('bar', 0)
+          )
+        ])
+    );
+  });
+
+  describe('parses value converter with Binary argument', () => {
+    for (let op of operators) {
+      it(`\"${op}\"`, () => {
+        let expression = parser.parse(`foo | bar : foo ${op} bar`);
+        verifyEqual(expression,
+          new ValueConverter(
+            new AccessScope('foo', 0),
+            'bar',
+            [
+              new Binary(
+                op,
+                new AccessScope('foo', 0),
+                new AccessScope('bar', 0)
+              )
+            ])
+        );
+      });
+    }
+  });
+
   it('parses AccessScope', () => {
     let expression = parser.parse('foo');
     verifyEqual(expression, new AccessScope('foo', 0));
@@ -323,6 +374,32 @@ describe('Parser', () => {
     let expression = parser.parse('foo.bar');
     verifyEqual(expression, 
       new AccessMember(new AccessScope('foo', 0), 'bar')
+    );
+  });
+
+  it('parses AccessMember with indexed string property', () => {
+    let expression = parser.parse('foo["bar"].baz');
+    verifyEqual(expression, 
+      new AccessMember(
+        new AccessKeyed(
+          new AccessScope('foo', 0),
+          new LiteralString('bar')
+        ),
+        'baz'
+      )
+    );
+  });
+
+  it('parses AccessMember with indexed numeric property', () => {
+    let expression = parser.parse('foo[42].baz');
+    verifyEqual(expression, 
+      new AccessMember(
+        new AccessKeyed(
+          new AccessScope('foo', 0),
+          new LiteralPrimitive(42)
+        ),
+        'baz'
+      )
     );
   });
 
@@ -562,7 +639,17 @@ describe('Parser', () => {
     );
   });
 
-  it('parses es6 shorthand LiteralObject', () => {
+  it('parses es6 shorthand LiteralObject with one property', () => {
+    let expression = parser.parse('{foo}');
+    verifyEqual(expression,
+      new LiteralObject(
+        ['foo'],
+        [new AccessScope('foo', 0)]
+      )
+    );
+  });
+
+  it('parses es6 shorthand LiteralObject with two properties', () => {
     let expression = parser.parse('{ foo, bar }');
     verifyEqual(expression,
       new LiteralObject(
@@ -578,19 +665,76 @@ describe('Parser', () => {
     );
   });
 
-  it('does not parse invalid shorthand properties', () => {
-    let pass = false;
-    try {
-      parser.parse('{ foo.bar, bar.baz }');
-      pass = true;
-    } catch (e) { pass = false; }
-    expect(pass).toBe(false);
+  it('parses empty LiteralObject', () => {
+    let expression = parser.parse('{}');
+    verifyEqual(expression,
+      new LiteralObject([], [])
+    );
+  });
 
-    try {
-      parser.parse('{ "foo.bar" }');
-      pass = true;
-    } catch (e) { pass = false; }
-    expect(pass).toBe(false);
+  it('parses LiteralObject with string literal property', () => {
+    let expression = parser.parse('{"foo": "bar"}');
+    verifyEqual(expression,
+      new LiteralObject(
+        ['foo'],
+        [new LiteralString('bar')]
+      )
+    );
+  });
+
+  it('parses LiteralObject with numeric literal property', () => {
+    let expression = parser.parse('{42: "foo"}');
+    verifyEqual(expression,
+      new LiteralObject(
+        [42],
+        [new LiteralString('foo')]
+      )
+    );
+  });
+
+  describe('does not parse LiteralObject with computed property', () => {
+    const expressions = [
+      '{ []: "foo" }',
+      '{ [42]: "foo" }',
+      '{ ["foo"]: "bar" }',
+      '{ [foo]: "bar" }'
+    ];
+
+    for (const expr of expressions) {
+      it(expr, () => {
+        try {
+          parser.parse(expr);
+          pass = true;
+        } catch (e) {
+          expect(e.message).toContain('Unexpected token [');
+        }
+      });
+    }
+  });
+
+  describe('does not parse invalid shorthand properties', () => {
+    const expressions = [
+      '{ foo.bar }',
+      '{ foo.bar, bar.baz }',
+      '{ "foo" }',
+      '{ "foo.bar" }',
+      '{ 42 }',
+      '{ 42, 42 }',
+      '{ [foo] }',
+      '{ ["foo"] }',
+      '{ [42] }'
+    ];
+
+    for (const expr of expressions) {
+      it(expr, () => {
+        try {
+          parser.parse(expr);
+          pass = true;
+        } catch (e) {
+          expect(e.message).toContain('expected');
+        }
+      });
+    }
   });
 
   describe('does not parse multiple expressions', () => {
@@ -613,21 +757,43 @@ describe('Parser', () => {
   });
 
   describe('throw on extra closing token', () => {
-    const expressions = [
-      ')',
-      ']',
-      '}',
-      'foo())',
-      'foo[x]]',
-      '{foo}}'
+    const tests = [
+      { expr: ')', token: ')' },
+      { expr: ']', token: ']' },
+      { expr: '}', token: '}' },
+      { expr: 'foo())', token: ')' },
+      { expr: 'foo[x]]', token: ']' },
+      { expr: '{foo}}', token: '}' }
     ];
 
-    for (const expr of expressions) {
-      it(expr, () => {
+    for (const test of tests) {
+      it(test.expr, () => {
         try {
-          parser.parse(expr);
+          parser.parse(test.expr);
         } catch(e) {
-          expect(e.message).toContain('Unconsumed token');
+          expect(e.message).toContain(`Unconsumed token ${test.token}`);
+        }
+      });
+    }
+  });
+
+  describe('throw on missing expected token', () => {
+    const tests = [
+      { expr: '(foo', token: ')' },
+      { expr: '[foo', token: ']' },
+      { expr: '{foo', token: ',' },
+      { expr: 'foo(bar', token: ')' },
+      { expr: 'foo[bar', token: ']' },
+      { expr: 'foo.bar(baz', token: ')' },
+      { expr: 'foo.bar[baz', token: ']' }
+    ];
+
+    for (const test of tests) {
+      it(test.expr, () => {
+        try {
+          parser.parse(test.expr);
+        } catch(e) {
+          expect(e.message).toContain(`Missing expected token ${test.token}`);
         }
       });
     }
@@ -641,7 +807,7 @@ describe('Parser', () => {
       'foo.bar() = baz',
       '!foo = bar',
       '-foo = bar',
-      '-foo = bar',
+      '+foo = bar',
       '\'foo\' = bar',
       '42 = foo',
       '[] = foo',
@@ -664,6 +830,24 @@ describe('Parser', () => {
       parser.parse('foo ? bar');
     } catch(e) {
       expect(e.message).toContain('requires all 3 expressions');
+    }
+  });
+
+  describe('throw on invalid primary expression', () => {
+    const expressions = ['.', ',', '&', '|', '=', '<', '>', '*', '%', '/'];
+    expressions.push(...expressions.map(e => e + ' '));
+    for (const expr of expressions) {
+      it(expr, () => {
+        try {
+          parser.parse(expr);
+        } catch(e) {
+          if (expr.length === 1) {
+            expect(e.message).toContain(`Unexpected end of expression`);
+          } else {
+            expect(e.message).toContain(`Unexpected token ${expr.slice(0, 0)}`);
+          }
+        }
+      });
     }
   });
 
