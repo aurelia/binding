@@ -20,6 +20,14 @@ import {
   PrefixNot
 } from '../src/ast';
 
+const operators = [
+  '&&', '||',
+  '==', '!=', '===', '!==',
+  '<', '>', '<=', '>=', 
+  '+', '-', 
+  '*', '%', '/'
+];
+
 describe('Parser', () => {
   let parser;
 
@@ -102,14 +110,6 @@ describe('Parser', () => {
   });
 
   describe('parses binary', () => {
-    const operators = [
-      '&&', '||',
-      '==', '!=', '===', '!==',
-      '<', '>', '<=', '>=', 
-      '+', '-', 
-      '*', '%', '/'
-    ];
-
     for (let op of operators) {
       it(`\"${op}\"`, () => {
         let expression = parser.parse(`foo ${op} bar`);
@@ -591,6 +591,98 @@ describe('Parser', () => {
       pass = true;
     } catch (e) { pass = false; }
     expect(pass).toBe(false);
+  });
+
+  describe('does not parse multiple expressions', () => {
+    const expressions = [
+      ';',
+      'foo;',
+      ';foo',
+      'foo&bar;baz|qux'
+    ];
+
+    for (const expr of expressions) {
+      it(expr, () => {
+        try {
+          parser.parse(expr);
+        } catch(e) {
+          expect(e.message).toContain('Multiple expressions are not allowed');
+        }
+      });
+    }
+  });
+
+  describe('throw on extra closing token', () => {
+    const expressions = [
+      ')',
+      ']',
+      '}',
+      'foo())',
+      'foo[x]]',
+      '{foo}}'
+    ];
+
+    for (const expr of expressions) {
+      it(expr, () => {
+        try {
+          parser.parse(expr);
+        } catch(e) {
+          expect(e.message).toContain('Unconsumed token');
+        }
+      });
+    }
+  });
+
+  describe('throw on assigning unassignable', () => {
+    const expressions = [
+      'foo ? bar : baz = qux',
+      '$this = foo',
+      'foo() = bar',
+      'foo.bar() = baz',
+      '!foo = bar',
+      '-foo = bar',
+      '-foo = bar',
+      '\'foo\' = bar',
+      '42 = foo',
+      '[] = foo',
+      '{} = foo'
+    ].concat(operators.map(op => `foo ${op} bar`));
+
+    for (const expr of expressions) {
+      it(expr, () => {
+        try {
+          parser.parse(expr);
+        } catch(e) {
+          expect(e.message).toContain('is not assignable');
+        }
+      });
+    }
+  });
+
+  it('throw on incomplete conditional', () => {
+    try {
+      parser.parse('foo ? bar');
+    } catch(e) {
+      expect(e.message).toContain('requires all 3 expressions');
+    }
+  });
+
+  describe('throw on invalid exponent', () => {
+    const expressions = [
+      '1e',
+      '1ee',
+      '1e.'
+    ];
+
+    for (const expr of expressions) {
+      it(expr, () => {
+        try {
+          parser.parse(expr);
+        } catch(e) {
+          expect(e.message).toContain('Invalid exponent');
+        }
+      });
+    }
   });
 });
 

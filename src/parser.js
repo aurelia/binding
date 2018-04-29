@@ -31,6 +31,7 @@ export class ParserImplementation {
   constructor(input) {
     this.index = 0;
     this.startIndex = 0;
+    this.lastIndex = 0;
     this.input = input;
     this.length = input.length;
     this.currentToken = T_EOF;
@@ -41,12 +42,11 @@ export class ParserImplementation {
   parseChain() {
     this.nextToken();
 
-    let isChain = false;
     let expressions = [];
 
     while (this.currentToken !== T_EOF) {
-      while (this.optional(T_Semicolon)) {
-        isChain = true;
+      if (this.optional(T_Semicolon)) {
+        this.error('Multiple expressions are not allowed.');
       }
 
       if ((this.currentToken & T_ClosingToken) === T_ClosingToken) {
@@ -56,11 +56,7 @@ export class ParserImplementation {
       const expr = this.parseBindingBehavior();
       expressions.push(expr);
 
-      while (this.optional(T_Semicolon)) {
-        isChain = true;
-      }
-
-      if (isChain) {
+      if (this.optional(T_Semicolon)) {
         this.error('Multiple expressions are not allowed.');
       }
     }
@@ -108,13 +104,11 @@ export class ParserImplementation {
   }
 
   parseExpression() {
-    let start = this.index;
     let result = this.parseConditional();
 
     while (this.currentToken === T_Eq) {
       if (!result.isAssignable) {
-        let end = (this.index < this.length) ? this.index : this.length;
-        let expression = this.input.slice(start, end);
+        let expression = this.input.slice(this.lastIndex, this.startIndex);
 
         this.error(`Expression ${expression} is not assignable`);
       }
@@ -349,12 +343,14 @@ export class ParserImplementation {
 
   scanToken() {
     while (this.hasNext) {
-      this.startIndex = this.index;
       // skip whitespace.
       if (this.currentChar <= $SPACE) {
         this.nextChar();
         continue;
       }
+
+      this.lastIndex = this.startIndex;
+      this.startIndex = this.index;
   
       // handle identifiers and numbers.
       if (isIdentifierStart(this.currentChar)) {
@@ -640,7 +636,7 @@ export class ParserImplementation {
   }
 
   error(message) {
-    throw new Error(`Lexer Error: ${message} at column ${this.index} in expression [${this.input}]`);
+    throw new Error(`Parser Error: ${message} at column ${this.startIndex} in expression [${this.input}]`);
   }
 
   optional(type) {
@@ -652,12 +648,11 @@ export class ParserImplementation {
     return false;
   }
 
-  expect(type) {
-    if (this.currentToken === type) {
+  expect(token) {
+    if (this.currentToken === token) {
       this.nextToken();
     } else {
-      // todo(fkleuver): translate to string value for readable error messages
-      this.error(`Missing expected token type ${type}`);
+      this.error(`Missing expected token ${TokenValues[token & T_TokenMask]}`);
     }
   }
 }
