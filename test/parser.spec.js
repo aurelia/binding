@@ -109,6 +109,20 @@ describe('Parser', () => {
     );
   });
 
+  it('parses conditional with assign', () => {
+    let expression = parser.parse('foo ? bar : baz = qux');
+    verifyEqual(expression,
+      new Conditional(
+        new AccessScope('foo', 0),
+        new AccessScope('bar', 0),
+        new Assign(
+          new AccessScope('baz', 0),
+          new AccessScope('qux', 0)
+        )
+      )
+    );
+  });
+
   describe('parses binary', () => {
     for (let op of operators) {
       it(`\"${op}\"`, () => {
@@ -413,6 +427,16 @@ describe('Parser', () => {
     );
   });
 
+  it('parses Assign to ignored Unary', () => {
+    let expression = parser.parse('+foo = bar');
+    verifyEqual(expression, 
+      new Assign(
+        new AccessScope('foo', 0),
+        new AccessScope('bar', 0)
+      )
+    );
+  });
+
   it('parses chained Assign', () => {
     let expression = parser.parse('foo = bar = baz');
     verifyEqual(expression, 
@@ -702,12 +726,7 @@ describe('Parser', () => {
 
     for (const expr of expressions) {
       it(expr, () => {
-        try {
-          parser.parse(expr);
-          pass = true;
-        } catch (e) {
-          expect(e.message).toContain('Unexpected token [');
-        }
+        verifyError(expr, 'Unexpected token [');
       });
     }
   });
@@ -727,12 +746,7 @@ describe('Parser', () => {
 
     for (const expr of expressions) {
       it(expr, () => {
-        try {
-          parser.parse(expr);
-          pass = true;
-        } catch (e) {
-          expect(e.message).toContain('expected');
-        }
+        verifyError(expr, 'expected');
       });
     }
   });
@@ -747,11 +761,7 @@ describe('Parser', () => {
 
     for (const expr of expressions) {
       it(expr, () => {
-        try {
-          parser.parse(expr);
-        } catch(e) {
-          expect(e.message).toContain('Multiple expressions are not allowed');
-        }
+        verifyError(expr, 'Multiple expressions are not allowed');
       });
     }
   });
@@ -768,11 +778,7 @@ describe('Parser', () => {
 
     for (const test of tests) {
       it(test.expr, () => {
-        try {
-          parser.parse(test.expr);
-        } catch(e) {
-          expect(e.message).toContain(`Unconsumed token ${test.token}`);
-        }
+        verifyError(test.expr, `Unconsumed token ${test.token}`);
       });
     }
   });
@@ -790,47 +796,34 @@ describe('Parser', () => {
 
     for (const test of tests) {
       it(test.expr, () => {
-        try {
-          parser.parse(test.expr);
-        } catch(e) {
-          expect(e.message).toContain(`Missing expected token ${test.token}`);
-        }
+        verifyError(test.expr, `Missing expected token ${test.token}`);
       });
     }
   });
 
   describe('throw on assigning unassignable', () => {
     const expressions = [
-      'foo ? bar : baz = qux',
+      '(foo ? bar : baz) = qux',
       '$this = foo',
       'foo() = bar',
       'foo.bar() = baz',
       '!foo = bar',
       '-foo = bar',
-      '+foo = bar',
       '\'foo\' = bar',
       '42 = foo',
       '[] = foo',
       '{} = foo'
-    ].concat(operators.map(op => `foo ${op} bar`));
+    ].concat(operators.map(op => `foo ${op} bar = baz`));
 
     for (const expr of expressions) {
       it(expr, () => {
-        try {
-          parser.parse(expr);
-        } catch(e) {
-          expect(e.message).toContain('is not assignable');
-        }
+        verifyError(expr, 'is not assignable');
       });
     }
   });
 
   it('throw on incomplete conditional', () => {
-    try {
-      parser.parse('foo ? bar');
-    } catch(e) {
-      expect(e.message).toContain('requires all 3 expressions');
-    }
+    verifyError('foo ? bar', 'requires all 3 expressions');
   });
 
   describe('throw on invalid primary expression', () => {
@@ -838,14 +831,10 @@ describe('Parser', () => {
     expressions.push(...expressions.map(e => e + ' '));
     for (const expr of expressions) {
       it(expr, () => {
-        try {
-          parser.parse(expr);
-        } catch(e) {
-          if (expr.length === 1) {
-            expect(e.message).toContain(`Unexpected end of expression`);
-          } else {
-            expect(e.message).toContain(`Unexpected token ${expr.slice(0, 0)}`);
-          }
+        if (expr.length === 1) {
+          verifyError(expr, `Unexpected end of expression`);
+        } else {
+          verifyError(expr, `Unexpected token ${expr.slice(0, 0)}`);
         }
       });
     }
@@ -860,14 +849,23 @@ describe('Parser', () => {
 
     for (const expr of expressions) {
       it(expr, () => {
-        try {
-          parser.parse(expr);
-        } catch(e) {
-          expect(e.message).toContain('Invalid exponent');
-        }
+        verifyError(expr, 'Invalid exponent');
       });
     }
   });
+
+  function verifyError(expression, errorMessage) {
+    let error = null;
+    try {
+      parser.parse(expression);
+    } catch(e) {
+      error = e;
+    }
+
+    expect(error).not.toBeNull();
+    expect(error.message).toContain(errorMessage);
+  }
+  
 });
 
 function verifyEqual(actual, expected) {
@@ -887,7 +885,6 @@ function verifyEqual(actual, expected) {
     verifyEqual(actual[prop], expected[prop]);
   }
 }
-
 function unicodeEscape(str) {
 	return str.replace(/[\s\S]/g, c => `\\u${('0000' + c.charCodeAt().toString(16)).slice(-4)}`);
 }
