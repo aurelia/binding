@@ -104,13 +104,13 @@ export class BindingBehavior extends Expression {
 }
 
 export class ValueConverter extends Expression {
-  constructor(expression, name, args, allArgs) {
+  constructor(expression, name, args) {
     super();
 
     this.expression = expression;
     this.name = name;
     this.args = args;
-    this.allArgs = allArgs;
+    this.allArgs = [expression].concat(args);
   }
 
   evaluate(scope, lookupFunctions) {
