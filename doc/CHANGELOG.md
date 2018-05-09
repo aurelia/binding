@@ -1,3 +1,14 @@
+<a name="2.0.0"></a>
+# [2.0.0](https://github.com/aurelia/binding/compare/1.7.1...2.0.0) (2018-05-09)
+
+### Breaking Changes
+
+* Removed lexer and merged into Parser. Up to 10x expression parse perf improvements.
+
+### Bug Fixes
+
+* **SelectValueObserver:** observe characterData mutation ([e982ae0](https://github.com/aurelia/binding/commit/e982ae0))
+
 <a name="1.7.1"></a>
 ## [1.7.1](https://github.com/aurelia/binding/compare/1.7.0...1.7.1) (2018-03-18)
 

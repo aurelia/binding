@@ -1259,13 +1259,13 @@ export class BindingBehavior extends Expression {
 }
 
 export class ValueConverter extends Expression {
-  constructor(expression, name, args, allArgs) {
+  constructor(expression, name, args) {
     super();
 
     this.expression = expression;
     this.name = name;
     this.args = args;
-    this.allArgs = allArgs;
+    this.allArgs = [expression].concat(args);
   }
 
   evaluate(scope, lookupFunctions) {
@@ -2180,272 +2180,642 @@ export const bindingMode = {
   fromView: 3
 };
 
-export class Token {
-  constructor(index, text) {
-    this.index = index;
-    this.text = text;
+export class Parser {
+  constructor() {
+    this.cache = Object.create(null);
   }
 
-  withOp(op) {
-    this.opKey = op;
-    return this;
-  }
+  parse(input) {
+    input = input || '';
 
-  withGetterSetter(key) {
-    this.key = key;
-    return this;
-  }
-
-  withValue(value) {
-    this.value = value;
-    return this;
-  }
-
-  toString() {
-    return `Token(${this.text})`;
+    return this.cache[input]
+      || (this.cache[input] = new ParserImplementation(input).parseChain());
   }
 }
 
-export class Lexer {
-  lex(text) {
-    let scanner = new Scanner(text);
-    let tokens = [];
-    let token = scanner.scanToken();
-
-    while (token) {
-      tokens.push(token);
-      token = scanner.scanToken();
-    }
-
-    return tokens;
+export class ParserImplementation {
+  get hasNext() {
+    return this.index < this.length;
   }
-}
+  get tokenRaw() {
+    return this.input.slice(this.startIndex, this.index);
+  }
 
-export class Scanner {
   constructor(input) {
+    this.index = 0;
+    this.startIndex = 0;
+    this.lastIndex = 0;
     this.input = input;
     this.length = input.length;
-    this.peek = 0;
-    this.index = -1;
-
-    this.advance();
+    this.currentToken = T$EOF;
+    this.tokenValue = undefined;
+    this.currentChar = input.charCodeAt(0);
   }
 
-  scanToken() {
-    // Skip whitespace.
-    while (this.peek <= $SPACE) {
-      if (++this.index >= this.length) {
-        this.peek = $EOF;
-        return null;
+  parseChain() {
+    this.nextToken();
+
+    let expressions = [];
+
+    while (this.currentToken !== T$EOF) {
+      if (this.optional(T$Semicolon)) {
+        this.error('Multiple expressions are not allowed.');
       }
 
-      this.peek = this.input.charCodeAt(this.index);
-    }
-
-    // Handle identifiers and numbers.
-    if (isIdentifierStart(this.peek)) {
-      return this.scanIdentifier();
-    }
-
-    if (isDigit(this.peek)) {
-      return this.scanNumber(this.index);
-    }
-
-    let start = this.index;
-
-    switch (this.peek) {
-    case $PERIOD:
-      this.advance();
-      return isDigit(this.peek) ? this.scanNumber(start) : new Token(start, '.');
-    case $LPAREN:
-    case $RPAREN:
-    case $LBRACE:
-    case $RBRACE:
-    case $LBRACKET:
-    case $RBRACKET:
-    case $COMMA:
-    case $COLON:
-    case $SEMICOLON:
-      return this.scanCharacter(start, String.fromCharCode(this.peek));
-    case $SQ:
-    case $DQ:
-      return this.scanString();
-    case $PLUS:
-    case $MINUS:
-    case $STAR:
-    case $SLASH:
-    case $PERCENT:
-    case $CARET:
-    case $QUESTION:
-      return this.scanOperator(start, String.fromCharCode(this.peek));
-    case $LT:
-    case $GT:
-    case $BANG:
-    case $EQ:
-      return this.scanComplexOperator(start, $EQ, String.fromCharCode(this.peek), '=');
-    case $AMPERSAND:
-      return this.scanComplexOperator(start, $AMPERSAND, '&', '&');
-    case $BAR:
-      return this.scanComplexOperator(start, $BAR, '|', '|');
-    case $NBSP:
-      while (isWhitespace(this.peek)) {
-        this.advance();
+      if ((this.currentToken & T$ClosingToken) === T$ClosingToken) {
+        this.error(`Unconsumed token ${this.tokenRaw}`);
       }
 
-      return this.scanToken();
-      // no default
+      const expr = this.parseBindingBehavior();
+      expressions.push(expr);
+
+      if (this.optional(T$Semicolon)) {
+        this.error('Multiple expressions are not allowed.');
+      }
     }
 
-    let character = String.fromCharCode(this.peek);
-    this.error(`Unexpected character [${character}]`);
-    return null;
+    return (expressions.length === 1) ? expressions[0] : new Chain(expressions);
   }
 
-  scanCharacter(start, text) {
-    assert(this.peek === text.charCodeAt(0));
-    this.advance();
-    return new Token(start, text);
-  }
+  parseBindingBehavior() {
+    let result = this.parseValueConverter();
 
-  scanOperator(start, text) {
-    assert(this.peek === text.charCodeAt(0));
-    assert(OPERATORS[text] === 1);
-    this.advance();
-    return new Token(start, text).withOp(text);
-  }
+    while (this.optional(T$Ampersand)) {
+      let name = this.tokenValue;
+      let args = [];
 
-  scanComplexOperator(start, code, one, two) {
-    assert(this.peek === one.charCodeAt(0));
-    this.advance();
+      this.nextToken();
 
-    let text = one;
+      while (this.optional(T$Colon)) {
+        args.push(this.parseExpression());
+      }
 
-    if (this.peek === code) {
-      this.advance();
-      text += two;
-    }
-
-    if (this.peek === code) {
-      this.advance();
-      text += two;
-    }
-
-    assert(OPERATORS[text] === 1);
-
-    return new Token(start, text).withOp(text);
-  }
-
-  scanIdentifier() {
-    assert(isIdentifierStart(this.peek));
-    let start = this.index;
-
-    this.advance();
-
-    while (isIdentifierPart(this.peek)) {
-      this.advance();
-    }
-
-    let text = this.input.substring(start, this.index);
-    let result = new Token(start, text);
-
-    // TODO(kasperl): Deal with null, undefined, true, and false in
-    // a cleaner and faster way.
-    if (OPERATORS[text] === 1) {
-      result.withOp(text);
-    } else {
-      result.withGetterSetter(text);
+      result = new BindingBehavior(result, name, args);
     }
 
     return result;
   }
 
-  scanNumber(start) {
-    assert(isDigit(this.peek));
-    let simple = (this.index === start);
-    this.advance();  // Skip initial digit.
+  parseValueConverter() {
+    let result = this.parseExpression();
 
-    while (true) { // eslint-disable-line no-constant-condition
-      if (!isDigit(this.peek)) {
-        if (this.peek === $PERIOD) {
-          simple = false;
-        } else if (isExponentStart(this.peek)) {
-          this.advance();
+    while (this.optional(T$Bar)) {
+      let name = this.tokenValue;
+      let args = [];
 
-          if (isExponentSign(this.peek)) {
-            this.advance();
-          }
+      this.nextToken();
 
-          if (!isDigit(this.peek)) {
-            this.error('Invalid exponent', -1);
-          }
-
-          simple = false;
-        } else {
-          break;
-        }
+      while (this.optional(T$Colon)) {
+        args.push(this.parseExpression());
       }
 
-      this.advance();
+      result = new ValueConverter(result, name, args);
     }
 
-    let text = this.input.substring(start, this.index);
-    let value = simple ? parseInt(text, 10) : parseFloat(text);
-    return new Token(start, text).withValue(value);
+    return result;
+  }
+
+  parseExpression() {
+    let result = this.parseConditional();
+
+    while (this.currentToken === T$Eq) {
+      if (!result.isAssignable) {
+        let expression = this.input.slice(this.lastIndex, this.startIndex);
+
+        this.error(`Expression ${expression} is not assignable`);
+      }
+
+      this.expect(T$Eq);
+      result = new Assign(result, this.parseConditional());
+    }
+
+    return result;
+  }
+
+  parseConditional() {
+    let start = this.index;
+    let result = this.parseBinary(0);
+
+    if (this.optional(T$Question)) {
+      let yes = this.parseExpression();
+
+      if (!this.optional(T$Colon)) {
+        let end = (this.index < this.length) ? this.index : this.length;
+        let expression = this.input.slice(start, end);
+
+        this.error(`Conditional expression ${expression} requires all 3 expressions`);
+      }
+
+      let no = this.parseExpression();
+      result = new Conditional(result, yes, no);
+    }
+
+    return result;
+  }
+
+  parseBinary(minPrecedence) {
+    let left = this.parseUnary();
+
+    if ((this.currentToken & T$BinaryOperator) !== T$BinaryOperator) {
+      return left;
+    }
+
+    while ((this.currentToken & T$BinaryOperator) === T$BinaryOperator) {
+      const opToken = this.currentToken;
+      const precedence = opToken & T$Precedence;
+      if (precedence < minPrecedence) {
+        break;
+      }
+      this.nextToken();
+      left = new Binary(TokenValues[opToken & T$TokenMask], left, this.parseBinary(precedence));
+    }
+    return left;
+  }
+
+  parseUnary() {
+    const opToken = this.currentToken;
+    if ((opToken & T$UnaryOperator) === T$UnaryOperator) {
+      this.nextToken();
+      switch (opToken) {
+      case T$Plus:
+        return this.parseUnary();
+      case T$Minus:
+        return new Binary('-', new LiteralPrimitive(0), this.parseUnary());
+      case T$Bang:
+        return new PrefixNot('!', this.parseUnary());
+      default:
+      // ignored
+      }
+    }
+    return this.parseAccessOrCallMember();
+  }
+
+  parseAccessOrCallMember() {
+    let result = this.parsePrimary();
+
+    while (true) { // eslint-disable-line no-constant-condition
+      if (this.optional(T$Period)) {
+        if ((this.currentToken ^ T$IdentifierOrKeyword) === T$IdentifierOrKeyword) {
+          this.error(`Unexpected token ${this.tokenRaw}`);
+        }
+        let name = this.tokenValue;
+
+        this.nextToken();
+
+        if (this.optional(T$LParen)) {
+          let args = this.parseExpressionList(T$RParen);
+          this.expect(T$RParen);
+          if (result instanceof AccessThis) {
+            result = new CallScope(name, args, result.ancestor);
+          } else {
+            result = new CallMember(result, name, args);
+          }
+        } else {
+          if (result instanceof AccessThis) {
+            result = new AccessScope(name, result.ancestor);
+          } else {
+            result = new AccessMember(result, name);
+          }
+        }
+      } else if (this.optional(T$LBracket)) {
+        let key = this.parseExpression();
+        this.expect(T$RBracket);
+        result = new AccessKeyed(result, key);
+      } else if (this.optional(T$LParen)) {
+        let args = this.parseExpressionList(T$RParen);
+        this.expect(T$RParen);
+        result = new CallFunction(result, args);
+      } else {
+        return result;
+      }
+    }
+  }
+
+  parsePrimary() {
+    const token = this.currentToken;
+    switch (token) {
+    case T$Identifier:
+    case T$ParentScope:
+      return this.parseAccessOrCallScope();
+    case T$ThisScope:
+      this.nextToken();
+      return new AccessThis(0);
+    case T$LParen:
+      this.nextToken();
+      const result = this.parseExpression();
+      this.expect(T$RParen);
+      return result;
+    case T$LBracket:
+      this.nextToken();
+      const elements = this.parseExpressionList(T$RBracket);
+      this.expect(T$RBracket);
+      return new LiteralArray(elements);
+    case T$LBrace :
+      return this.parseObject();
+    case T$StringLiteral:
+      {
+        const value = this.tokenValue;
+        this.nextToken();
+        return new LiteralString(value);
+      }
+    case T$NumericLiteral:
+      {
+        const value = this.tokenValue;
+        this.nextToken();
+        return new LiteralPrimitive(value);
+      }
+    case T$NullKeyword:
+    case T$UndefinedKeyword:
+    case T$TrueKeyword:
+    case T$FalseKeyword:
+      this.nextToken();
+      return new LiteralPrimitive(TokenValues[token & T$TokenMask]);
+    default:
+      if (this.index >= this.length) {
+        throw new Error(`Unexpected end of expression at column ${this.index} of ${this.input}`);
+      } else {
+        this.error(`Unexpected token ${this.tokenRaw}`);
+      }
+    }
+  }
+
+  parseAccessOrCallScope(name, token)  {
+    if (!(name && token)) {
+      name = this.tokenValue;
+      token = this.currentToken;
+      this.nextToken();
+    }
+
+    let ancestor = 0;
+    while (token === T$ParentScope) {
+      ancestor++;
+      if (this.optional(T$Period)) {
+        name = this.tokenValue;
+        token = this.currentToken;
+        this.nextToken();
+      } else if ((this.currentToken & T$AccessScopeTerminal) === T$AccessScopeTerminal) {
+        return new AccessThis(ancestor);
+      } else {
+        this.error(`Unexpected token ${this.tokenRaw}`);
+      }
+    }
+
+    if (this.optional(T$LParen)) {
+      let args = this.parseExpressionList(T$RParen);
+      this.expect(T$RParen);
+      return new CallScope(name, args, ancestor);
+    }
+
+    return new AccessScope(name, ancestor);
+  }
+
+  parseObject() {
+    let keys = [];
+    let values = [];
+
+    this.expect(T$LBrace);
+
+    while (this.currentToken !== T$RBrace) {
+      const token = this.currentToken;
+      const name = this.tokenValue;
+
+      switch (token) {
+      case T$Identifier:
+      // Treat keywords and predefined strings like identifiers
+      case T$FalseKeyword: // eslint-disable-line no-fallthrough
+      case T$TrueKeyword:
+      case T$NullKeyword:
+      case T$UndefinedKeyword:
+      case T$ThisScope:
+      case T$ParentScope:
+        keys.push(name);
+        this.nextToken();
+        if (this.optional(T$Colon)) {
+          values.push(this.parseExpression());
+        } else {
+          values.push(this.parseAccessOrCallScope(name, token));
+        }
+        break;
+      case T$StringLiteral:
+      case T$NumericLiteral:
+        keys.push(name);
+        this.nextToken();
+        this.expect(T$Colon);
+        values.push(this.parseExpression());
+        break;
+      default:
+        this.error(`Unexpected token ${this.tokenRaw}`);
+      }
+      if (this.currentToken !== T$RBrace) {
+        this.expect(T$Comma);
+      }
+    }
+
+    this.expect(T$RBrace);
+
+    return new LiteralObject(keys, values);
+  }
+
+  parseExpressionList(terminator) {
+    let result = [];
+
+    if (this.currentToken !== terminator) {
+      do {
+        result.push(this.parseExpression());
+      } while (this.optional(T$Comma));
+    }
+
+    return result;
+  }
+
+  nextToken() {
+    return this.currentToken = this.scanToken();
+  }
+
+  nextChar() {
+    return this.currentChar = this.input.charCodeAt(++this.index);
+  }
+
+  scanToken() {
+    while (this.hasNext) {
+      // skip whitespace.
+      if (this.currentChar <= $SPACE) {
+        this.nextChar();
+        continue;
+      }
+
+      this.lastIndex = this.startIndex;
+      this.startIndex = this.index;
+
+      // handle identifiers and numbers.
+      if (isIdentifierStart(this.currentChar)) {
+        return this.scanIdentifier();
+      }
+
+      if (isDigit(this.currentChar)) {
+        return this.scanNumber();
+      }
+      switch (this.currentChar) {
+      case $PERIOD:
+        {
+          const nextChar = this.input.charCodeAt(this.index + 1);
+          if (isDigit(nextChar)) {
+            return this.scanNumber();
+          }
+          this.nextChar();
+          return T$Period;
+        }
+      case $LPAREN:
+        this.nextChar();
+        return T$LParen;
+      case $RPAREN:
+        this.nextChar();
+        return T$RParen;
+      case $LBRACE:
+        this.nextChar();
+        return T$LBrace;
+      case $RBRACE:
+        this.nextChar();
+        return T$RBrace;
+      case $LBRACKET:
+        this.nextChar();
+        return T$LBracket;
+      case $RBRACKET:
+        this.nextChar();
+        return T$RBracket;
+      case $COMMA:
+        this.nextChar();
+        return T$Comma;
+      case $COLON:
+        this.nextChar();
+        return T$Colon;
+      case $SEMICOLON:
+        this.nextChar();
+        return T$Semicolon;
+      case $SQ:
+      case $DQ:
+        return this.scanString();
+      case $PLUS:
+        this.nextChar();
+        return T$Plus;
+      case $MINUS:
+        this.nextChar();
+        return T$Minus;
+      case $STAR:
+        this.nextChar();
+        return T$Star;
+      case $SLASH:
+        this.nextChar();
+        return T$Slash;
+      case $PERCENT:
+        this.nextChar();
+        return T$Percent;
+      case $CARET:
+        this.nextChar();
+        return T$Caret;
+      case $QUESTION:
+        this.nextChar();
+        return T$Question;
+      case $LT:
+        {
+          this.nextChar();
+          if (this.currentChar === $EQ) {
+            this.nextChar();
+            return T$LtEq;
+          }
+          return T$Lt;
+        }
+      case $GT:
+        {
+          this.nextChar();
+          if (this.currentChar === $EQ) {
+            this.nextChar();
+            return T$GtEq;
+          }
+          return T$Gt;
+        }
+      case $BANG:
+        {
+          this.nextChar();
+          if (this.currentChar === $EQ) {
+            this.nextChar();
+            if (this.currentChar === $EQ) {
+              this.nextChar();
+              return T$BangEqEq;
+            }
+            return T$BangEq;
+          }
+          return T$Bang;
+        }
+      case $EQ:
+        {
+          this.nextChar();
+          if (this.currentChar === $EQ) {
+            this.nextChar();
+            if (this.currentChar === $EQ) {
+              this.nextChar();
+              return T$EqEqEq;
+            }
+            return T$EqEq;
+          }
+          return T$Eq;
+        }
+      case $AMPERSAND:
+        {
+          this.nextChar();
+          if (this.currentChar === $AMPERSAND) {
+            this.nextChar();
+            return T$AmpersandAmpersand;
+          }
+          return T$Ampersand;
+        }
+      case $BAR:
+        {
+          this.nextChar();
+          if (this.currentChar === $BAR) {
+            this.nextChar();
+            return T$BarBar;
+          }
+          return T$Bar;
+        }
+      case $NBSP:
+        this.nextChar();
+        continue;
+      // no default
+      }
+
+      this.error(`Unexpected character [${String.fromCharCode(this.currentChar)}]`);
+      return null;
+    }
+
+    return T$EOF;
+  }
+
+  scanIdentifier() {
+    this.nextChar();
+
+    while (isIdentifierPart(this.currentChar)) {
+      this.nextChar();
+    }
+
+    this.tokenValue = this.tokenRaw;
+
+    // true/null have length 4, undefined has length 9
+    if (this.tokenValue.length >= 4 && this.tokenValue.length <= 9) {
+      const token = KeywordLookup[this.tokenValue];
+      if (token !== undefined) {
+        return token;
+      }
+    }
+
+    return T$Identifier;
+  }
+
+  scanNumber() {
+    let isFloat = false;
+    let value = 0;
+
+    while (isDigit(this.currentChar)) {
+      value = value * 10 + (this.currentChar - $0);
+      this.nextChar();
+    }
+
+    if (this.currentChar === $PERIOD) {
+      this.nextChar();
+
+      let decimalValue = 0;
+      let decimalPlaces = 0;
+
+      while (isDigit(this.currentChar)) {
+        decimalValue = decimalValue * 10 + (this.currentChar - $0);
+        decimalPlaces++;
+        this.nextChar();
+      }
+
+      value += (decimalValue / Math.pow(10, decimalPlaces));
+    }
+
+    const nonDigitStart = this.index;
+    if (this.currentChar === $e || this.currentChar === $E) {
+      isFloat = true;
+      const exponentStart = this.index; // for error reporting in case the exponent is invalid
+      this.nextChar();
+
+      if (this.currentChar === $PLUS || this.currentChar === $MINUS) {
+        this.nextChar();
+      }
+
+      if (!isDigit(this.currentChar)) {
+        this.index = exponentStart;
+        this.error('Invalid exponent');
+      }
+
+      while (isDigit(this.currentChar)) {
+        this.nextChar();
+      }
+    }
+
+    if (!isFloat) {
+      this.tokenValue = value;
+      return T$NumericLiteral;
+    }
+
+    const text = value + this.input.slice(nonDigitStart, this.index);
+    this.tokenValue = parseFloat(text);
+    return T$NumericLiteral;
   }
 
   scanString() {
-    assert(this.peek === $SQ || this.peek === $DQ);
-
-    let start = this.index;
-    let quote = this.peek;
-
-    this.advance();  // Skip initial quote.
+    let quote = this.currentChar;
+    this.nextChar(); // Skip initial quote.
 
     let buffer;
     let marker = this.index;
 
-    while (this.peek !== quote) {
-      if (this.peek === $BACKSLASH) {
+    while (this.currentChar !== quote) {
+      if (this.currentChar === $BACKSLASH) {
         if (!buffer) {
           buffer = [];
         }
 
-        buffer.push(this.input.substring(marker, this.index));
-        this.advance();
+        buffer.push(this.input.slice(marker, this.index));
+
+        this.nextChar();
 
         let unescaped;
 
-        if (this.peek === $u) {
-          // TODO(kasperl): Check bounds? Make sure we have test
-          // coverage for this.
-          let hex = this.input.substring(this.index + 1, this.index + 5);
+        if (this.currentChar === $u) {
+          this.nextChar();
 
-          if (!/[A-Z0-9]{4}/.test(hex)) {
-            this.error(`Invalid unicode escape [\\u${hex}]`);
-          }
+          if (this.index + 4 < this.length) {
+            let hex = this.input.slice(this.index, this.index + 4);
 
-          unescaped = parseInt(hex, 16);
+            if (!/[A-Z0-9]{4}/i.test(hex)) {
+              this.error(`Invalid unicode escape [\\u${hex}]`);
+            }
 
-          for (let i = 0; i < 5; ++i) {
-            this.advance();
+            unescaped = parseInt(hex, 16);
+            this.index += 4;
+            this.currentChar = this.input.charCodeAt(this.index);
+          } else {
+            this.error(`Unexpected token ${this.tokenRaw}`);
           }
         } else {
-          unescaped = unescape(this.peek);
-          this.advance();
+          unescaped = unescape(this.currentChar);
+          this.nextChar();
         }
 
         buffer.push(String.fromCharCode(unescaped));
         marker = this.index;
-      } else if (this.peek === $EOF) {
+      } else if (this.currentChar === $EOF) {
         this.error('Unterminated quote');
       } else {
-        this.advance();
+        this.nextChar();
       }
     }
 
-    let last = this.input.substring(marker, this.index);
-    this.advance();  // Skip terminating quote.
-    let text = this.input.substring(start, this.index);
+    let last = this.input.slice(marker, this.index);
+    this.nextChar(); // Skip terminating quote.
 
     // Compute the unescaped string value.
     let unescaped = last;
@@ -2455,52 +2825,31 @@ export class Scanner {
       unescaped = buffer.join('');
     }
 
-    return new Token(start, text).withValue(unescaped);
+    this.tokenValue = unescaped;
+    return T$StringLiteral;
   }
 
-  advance() {
-    if (++this.index >= this.length) {
-      this.peek = $EOF;
+  error(message) {
+    throw new Error(`Parser Error: ${message} at column ${this.startIndex} in expression [${this.input}]`);
+  }
+
+  optional(type) {
+    if (this.currentToken === type) {
+      this.nextToken();
+      return true;
+    }
+
+    return false;
+  }
+
+  expect(token) {
+    if (this.currentToken === token) {
+      this.nextToken();
     } else {
-      this.peek = this.input.charCodeAt(this.index);
+      this.error(`Missing expected token ${TokenValues[token & T$TokenMask]}`);
     }
   }
-
-  error(message, offset = 0) {
-    // TODO(kasperl): Try to get rid of the offset. It is only used to match
-    // the error expectations in the lexer tests for numbers with exponents.
-    let position = this.index + offset;
-    throw new Error(`Lexer Error: ${message} at column ${position} in expression [${this.input}]`);
-  }
 }
-
-const OPERATORS = {
-  'undefined': 1,
-  'null': 1,
-  'true': 1,
-  'false': 1,
-  '+': 1,
-  '-': 1,
-  '*': 1,
-  '/': 1,
-  '%': 1,
-  '^': 1,
-  '=': 1,
-  '==': 1,
-  '===': 1,
-  '!=': 1,
-  '!==': 1,
-  '<': 1,
-  '>': 1,
-  '<=': 1,
-  '>=': 1,
-  '&&': 1,
-  '||': 1,
-  '&': 1,
-  '|': 1,
-  '!': 1,
-  '?': 1
-};
 
 const $EOF = 0;
 const $TAB = 9;
@@ -2558,10 +2907,6 @@ const $BAR = 124;
 const $RBRACE = 125;
 const $NBSP = 160;
 
-function isWhitespace(code) {
-  return (code >= $TAB && code <= $SPACE) || (code === $NBSP);
-}
-
 function isIdentifierStart(code) {
   return ($a <= code && code <= $z)
       || ($A <= code && code <= $Z)
@@ -2581,14 +2926,6 @@ function isDigit(code) {
   return ($0 <= code && code <= $9);
 }
 
-function isExponentStart(code) {
-  return (code === $e || code === $E);
-}
-
-function isExponentSign(code) {
-  return (code === $MINUS || code === $PLUS);
-}
-
 function unescape(code) {
   switch (code) {
   case $n: return $LF;
@@ -2600,424 +2937,99 @@ function unescape(code) {
   }
 }
 
-function assert(condition, message) {
-  if (!condition) {
-    throw message || 'Assertion failed';
-  }
-}
-
-let EOF = new Token(-1, null);
-
-export class Parser {
-  constructor() {
-    this.cache = {};
-    this.lexer = new Lexer();
-  }
-
-  parse(input) {
-    input = input || '';
-
-    return this.cache[input]
-      || (this.cache[input] = new ParserImplementation(this.lexer, input).parseChain());
-  }
-}
-
-export class ParserImplementation {
-  constructor(lexer, input) {
-    this.index = 0;
-    this.input = input;
-    this.tokens = lexer.lex(input);
-  }
-
-  get peek() {
-    return (this.index < this.tokens.length) ? this.tokens[this.index] : EOF;
-  }
-
-  parseChain() {
-    let isChain = false;
-    let expressions = [];
-
-    while (this.optional(';')) {
-      isChain = true;
-    }
-
-    while (this.index < this.tokens.length) {
-      if (this.peek.text === ')' || this.peek.text === '}' || this.peek.text === ']') {
-        this.error(`Unconsumed token ${this.peek.text}`);
-      }
-
-      let expr = this.parseBindingBehavior();
-      expressions.push(expr);
-
-      while (this.optional(';')) {
-        isChain = true;
-      }
-
-      if (isChain) {
-        this.error('Multiple expressions are not allowed.');
-      }
-    }
-
-    return (expressions.length === 1) ? expressions[0] : new Chain(expressions);
-  }
-
-  parseBindingBehavior() {
-    let result = this.parseValueConverter();
-
-    while (this.optional('&')) {
-      let name = this.peek.text;
-      let args = [];
-
-      this.advance();
-
-      while (this.optional(':')) {
-        args.push(this.parseExpression());
-      }
-
-      result = new BindingBehavior(result, name, args);
-    }
-
-    return result;
-  }
-
-  parseValueConverter() {
-    let result = this.parseExpression();
-
-    while (this.optional('|')) {
-      let name = this.peek.text; // TODO(kasperl): Restrict to identifier?
-      let args = [];
-
-      this.advance();
-
-      while (this.optional(':')) {
-        // TODO(kasperl): Is this really supposed to be expressions?
-        args.push(this.parseExpression());
-      }
-
-      result = new ValueConverter(result, name, args, [result].concat(args));
-    }
-
-    return result;
-  }
-
-  parseExpression() {
-    let start = this.peek.index;
-    let result = this.parseConditional();
-
-    while (this.peek.text === '=') {
-      if (!result.isAssignable) {
-        let end = (this.index < this.tokens.length) ? this.peek.index : this.input.length;
-        let expression = this.input.substring(start, end);
-
-        this.error(`Expression ${expression} is not assignable`);
-      }
-
-      this.expect('=');
-      result = new Assign(result, this.parseConditional());
-    }
-
-    return result;
-  }
-
-  parseConditional() {
-    let start = this.peek.index;
-    let result = this.parseLogicalOr();
-
-    if (this.optional('?')) {
-      let yes = this.parseExpression();
-
-      if (!this.optional(':')) {
-        let end = (this.index < this.tokens.length) ? this.peek.index : this.input.length;
-        let expression = this.input.substring(start, end);
-
-        this.error(`Conditional expression ${expression} requires all 3 expressions`);
-      }
-
-      let no = this.parseExpression();
-      result = new Conditional(result, yes, no);
-    }
-
-    return result;
-  }
-
-  parseLogicalOr() {
-    let result = this.parseLogicalAnd();
-
-    while (this.optional('||')) {
-      result = new Binary('||', result, this.parseLogicalAnd());
-    }
-
-    return result;
-  }
-
-  parseLogicalAnd() {
-    let result = this.parseEquality();
-
-    while (this.optional('&&')) {
-      result = new Binary('&&', result, this.parseEquality());
-    }
-
-    return result;
-  }
-
-  parseEquality() {
-    let result = this.parseRelational();
-
-    while (true) { // eslint-disable-line no-constant-condition
-      if (this.optional('==')) {
-        result = new Binary('==', result, this.parseRelational());
-      } else if (this.optional('!=')) {
-        result = new Binary('!=', result, this.parseRelational());
-      } else if (this.optional('===')) {
-        result = new Binary('===', result, this.parseRelational());
-      } else if (this.optional('!==')) {
-        result = new Binary('!==', result, this.parseRelational());
-      } else {
-        return result;
-      }
-    }
-  }
-
-  parseRelational() {
-    let result = this.parseAdditive();
-
-    while (true) { // eslint-disable-line no-constant-condition
-      if (this.optional('<')) {
-        result = new Binary('<', result, this.parseAdditive());
-      } else if (this.optional('>')) {
-        result = new Binary('>', result, this.parseAdditive());
-      } else if (this.optional('<=')) {
-        result = new Binary('<=', result, this.parseAdditive());
-      } else if (this.optional('>=')) {
-        result = new Binary('>=', result, this.parseAdditive());
-      } else {
-        return result;
-      }
-    }
-  }
-
-  parseAdditive() {
-    let result = this.parseMultiplicative();
-
-    while (true) { // eslint-disable-line no-constant-condition
-      if (this.optional('+')) {
-        result = new Binary('+', result, this.parseMultiplicative());
-      } else if (this.optional('-')) {
-        result = new Binary('-', result, this.parseMultiplicative());
-      } else {
-        return result;
-      }
-    }
-  }
-
-  parseMultiplicative() {
-    let result = this.parsePrefix();
-
-    while (true) { // eslint-disable-line no-constant-condition
-      if (this.optional('*')) {
-        result = new Binary('*', result, this.parsePrefix());
-      } else if (this.optional('%')) {
-        result = new Binary('%', result, this.parsePrefix());
-      } else if (this.optional('/')) {
-        result = new Binary('/', result, this.parsePrefix());
-      } else {
-        return result;
-      }
-    }
-  }
-
-  parsePrefix() {
-    if (this.optional('+')) {
-      return this.parsePrefix(); // TODO(kasperl): This is different than the original parser.
-    } else if (this.optional('-')) {
-      return new Binary('-', new LiteralPrimitive(0), this.parsePrefix());
-    } else if (this.optional('!')) {
-      return new PrefixNot('!', this.parsePrefix());
-    }
-
-    return this.parseAccessOrCallMember();
-  }
-
-  parseAccessOrCallMember() {
-    let result = this.parsePrimary();
-
-    while (true) { // eslint-disable-line no-constant-condition
-      if (this.optional('.')) {
-        let name = this.peek.text; // TODO(kasperl): Check that this is an identifier. Are keywords okay?
-
-        this.advance();
-
-        if (this.optional('(')) {
-          let args = this.parseExpressionList(')');
-          this.expect(')');
-          if (result instanceof AccessThis) {
-            result = new CallScope(name, args, result.ancestor);
-          } else {
-            result = new CallMember(result, name, args);
-          }
-        } else {
-          if (result instanceof AccessThis) {
-            result = new AccessScope(name, result.ancestor);
-          } else {
-            result = new AccessMember(result, name);
-          }
-        }
-      } else if (this.optional('[')) {
-        let key = this.parseExpression();
-        this.expect(']');
-        result = new AccessKeyed(result, key);
-      } else if (this.optional('(')) {
-        let args = this.parseExpressionList(')');
-        this.expect(')');
-        result = new CallFunction(result, args);
-      } else {
-        return result;
-      }
-    }
-  }
-
-  parsePrimary() {
-    if (this.optional('(')) {
-      let result = this.parseExpression();
-      this.expect(')');
-      return result;
-    } else if (this.optional('null')) {
-      return new LiteralPrimitive(null);
-    } else if (this.optional('undefined')) {
-      return new LiteralPrimitive(undefined);
-    } else if (this.optional('true')) {
-      return new LiteralPrimitive(true);
-    } else if (this.optional('false')) {
-      return new LiteralPrimitive(false);
-    } else if (this.optional('[')) {
-      let elements = this.parseExpressionList(']');
-      this.expect(']');
-      return new LiteralArray(elements);
-    } else if (this.peek.text === '{') {
-      return this.parseObject();
-    } else if (this.peek.key !== null && this.peek.key !== undefined) {
-      return this.parseAccessOrCallScope();
-    } else if (this.peek.value !== null && this.peek.value !== undefined) {
-      let value = this.peek.value;
-      this.advance();
-      return value instanceof String || typeof value === 'string' ? new LiteralString(value) : new LiteralPrimitive(value);
-    } else if (this.index >= this.tokens.length) {
-      throw new Error(`Unexpected end of expression: ${this.input}`);
-    } else {
-      this.error(`Unexpected token ${this.peek.text}`);
-    }
-  }
-
-  parseAccessOrCallScope()  {
-    let name = this.peek.key;
-
-    this.advance();
-
-    if (name === '$this') {
-      return new AccessThis(0);
-    }
-
-    let ancestor = 0;
-    while (name === '$parent') {
-      ancestor++;
-      if (this.optional('.')) {
-        name = this.peek.key;
-        this.advance();
-      } else if (this.peek === EOF
-        || this.peek.text === '('
-        || this.peek.text === ')'
-        || this.peek.text === '['
-        || this.peek.text === '}'
-        || this.peek.text === ','
-        || this.peek.text === '|'
-        || this.peek.text === '&'
-      ) {
-        return new AccessThis(ancestor);
-      } else {
-        this.error(`Unexpected token ${this.peek.text}`);
-      }
-    }
-
-    if (this.optional('(')) {
-      let args = this.parseExpressionList(')');
-      this.expect(')');
-      return new CallScope(name, args, ancestor);
-    }
-
-    return new AccessScope(name, ancestor);
-  }
-
-  parseObject() {
-    let keys = [];
-    let values = [];
-
-    this.expect('{');
-
-    if (this.peek.text !== '}') {
-      do {
-        // TODO(kasperl): Stricter checking. Only allow identifiers
-        // and strings as keys. Maybe also keywords?
-        let peek = this.peek;
-        let value = peek.value;
-        keys.push(typeof value === 'string' ? value : peek.text);
-
-        this.advance();
-        if (peek.key && (this.peek.text === ',' || this.peek.text === '}')) {
-          --this.index;
-          values.push(this.parseAccessOrCallScope());
-        } else {
-          this.expect(':');
-          values.push(this.parseExpression());
-        }
-      } while (this.optional(','));
-    }
-
-    this.expect('}');
-
-    return new LiteralObject(keys, values);
-  }
-
-  parseExpressionList(terminator) {
-    let result = [];
-
-    if (this.peek.text !== terminator) {
-      do {
-        result.push(this.parseExpression());
-      } while (this.optional(','));
-    }
-
-    return result;
-  }
-
-  optional(text) {
-    if (this.peek.text === text) {
-      this.advance();
-      return true;
-    }
-
-    return false;
-  }
-
-  expect(text) {
-    if (this.peek.text === text) {
-      this.advance();
-    } else {
-      this.error(`Missing expected ${text}`);
-    }
-  }
-
-  advance() {
-    this.index++;
-  }
-
-  error(message) {
-    let location = (this.index < this.tokens.length)
-        ? `at column ${this.tokens[this.index].index + 1} in`
-        : 'at the end of the expression';
-
-    throw new Error(`Parser Error: ${message} ${location} [${this.input}]`);
-  }
-}
+/* Performing a bitwise and (&) with this value (63) will return only the
+ * token bit, which corresponds to the index of the token's value in the
+ * TokenValues array */
+const T$TokenMask = (1 << 6) - 1;
+
+/* Shifting 6 bits to the left gives us a step size of 64 in a range of
+ * 64 (1 << 6) to 448 (7 << 6) for our precedence bit
+ * This is the lowest value which does not overlap with the token bits 0-38. */
+const T$PrecedenceShift = 6;
+
+/* Performing a bitwise and (&) with this value will return only the
+ * precedence bit, which is used to determine the parsing order of binary
+ * expressions */
+const T$Precedence = 7 << T$PrecedenceShift;
+
+/** ')' | '}' | ']' */
+const T$ClosingToken        = 1 << 9;
+/** EndOfSource | '(' | '}' | ')' | ',' | '[' | '&' | '|' */
+const T$AccessScopeTerminal = 1 << 10;
+const T$EOF                 = 1 << 11 | T$AccessScopeTerminal;
+const T$Identifier          = 1 << 12 | T$IdentifierOrKeyword;
+const T$NumericLiteral      = 1 << 13;
+const T$StringLiteral       = 1 << 14;
+const T$BinaryOperator      = 1 << 15;
+const T$UnaryOperator       = 1 << 16;
+const T$IdentifierOrKeyword = 1 << 17;
+
+/** false */      const T$FalseKeyword     = 0 | T$IdentifierOrKeyword;
+/** true */       const T$TrueKeyword      = 1 | T$IdentifierOrKeyword;
+/** null */       const T$NullKeyword      = 2 | T$IdentifierOrKeyword;
+/** undefined */  const T$UndefinedKeyword = 3 | T$IdentifierOrKeyword;
+/** '$this' */    const T$ThisScope        = 4 | T$IdentifierOrKeyword;
+/** '$parent' */  const T$ParentScope      = 5 | T$IdentifierOrKeyword;
+
+/** '(' */const T$LParen    =  6 | T$AccessScopeTerminal;
+/** '{' */const T$LBrace    =  7;
+/** '.' */const T$Period    =  8;
+/** '}' */const T$RBrace    =  9 | T$AccessScopeTerminal | T$ClosingToken;
+/** ')' */const T$RParen    = 10 | T$AccessScopeTerminal | T$ClosingToken;
+/** ';' */const T$Semicolon = 11;
+/** ',' */const T$Comma     = 12 | T$AccessScopeTerminal;
+/** '[' */const T$LBracket  = 13 | T$AccessScopeTerminal;
+/** ']' */const T$RBracket  = 14 | T$ClosingToken;
+/** ':' */const T$Colon     = 15;
+/** '?' */const T$Question  = 16;
+
+// Operator precedence: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_Precedence#Table
+
+/** '&' */  const T$Ampersand          = 19 | T$AccessScopeTerminal;
+/** '|' */  const T$Bar                = 20 | T$AccessScopeTerminal;
+/** '||' */ const T$BarBar             = 21 | 1 << T$PrecedenceShift | T$BinaryOperator;
+/** '&&' */ const T$AmpersandAmpersand = 22 | 2 << T$PrecedenceShift | T$BinaryOperator;
+/** '^' */  const T$Caret              = 23 | 3 << T$PrecedenceShift | T$BinaryOperator;
+/** '==' */ const T$EqEq               = 24 | 4 << T$PrecedenceShift | T$BinaryOperator;
+/** '!=' */ const T$BangEq             = 25 | 4 << T$PrecedenceShift | T$BinaryOperator;
+/** '===' */const T$EqEqEq             = 26 | 4 << T$PrecedenceShift | T$BinaryOperator;
+/** '!== '*/const T$BangEqEq           = 27 | 4 << T$PrecedenceShift | T$BinaryOperator;
+/** '<' */  const T$Lt                 = 28 | 5 << T$PrecedenceShift | T$BinaryOperator;
+/** '>' */  const T$Gt                 = 29 | 5 << T$PrecedenceShift | T$BinaryOperator;
+/** '<=' */ const T$LtEq               = 30 | 5 << T$PrecedenceShift | T$BinaryOperator;
+/** '>=' */ const T$GtEq               = 31 | 5 << T$PrecedenceShift | T$BinaryOperator;
+/** '+' */  const T$Plus               = 32 | 6 << T$PrecedenceShift | T$BinaryOperator | T$UnaryOperator;
+/** '-' */  const T$Minus              = 33 | 6 << T$PrecedenceShift | T$BinaryOperator | T$UnaryOperator;
+/** '*' */  const T$Star               = 34 | 7 << T$PrecedenceShift | T$BinaryOperator;
+/** '%' */  const T$Percent            = 35 | 7 << T$PrecedenceShift | T$BinaryOperator;
+/** '/' */  const T$Slash              = 36 | 7 << T$PrecedenceShift | T$BinaryOperator;
+/** '=' */  const T$Eq                 = 37;
+/** '!' */  const T$Bang               = 38 | T$UnaryOperator;
+
+const KeywordLookup = Object.create(null, {
+  true: {value: T$TrueKeyword},
+  null: {value: T$NullKeyword},
+  false: {value: T$FalseKeyword},
+  undefined: {value: T$UndefinedKeyword},
+  $this: {value: T$ThisScope},
+  $parent: {value: T$ParentScope}
+});
+
+/**
+ * Array for mapping tokens to token values. The indices of the values
+ * correspond to the token bits 0-38.
+ * For this to work properly, the values in the array must be kept in
+ * the same order as the token bits.
+ * Usage: TokenValues[token & T$TokenMask]
+ */
+const TokenValues = [
+  false, true, null, undefined, '$this', '$parent',
+
+  '(', '{', '.', '}', ')', ';', ',', '[', ']', ':', '?', '\'', '"',
+
+  '&', '|', '||', '&&', '^', '==', '!=', '===', '!==', '<', '>',
+  '<=', '>=', '+', '-', '*', '%', '/', '=', '!'
+];
 
 let mapProto = Map.prototype;
 
@@ -4137,7 +4149,7 @@ export class SelectValueObserver {
       this.synchronizeOptions();
       this.synchronizeValue();
     });
-    this.domObserver.observe(this.element, { childList: true, subtree: true });
+    this.domObserver.observe(this.element, { childList: true, subtree: true, characterData: true });
   }
 
   unbind() {
