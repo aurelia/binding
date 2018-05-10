@@ -40,23 +40,17 @@ export class ParserImplementation {
 
   parseChain() {
     this.nextToken();
+    const expressions = [];
 
-    let expressions = [];
-
-    while (this.currentToken !== T$EOF) {
+    while ((this.currentToken & T$ExpressionTerminal) !== T$ExpressionTerminal) {
+      expressions.push(this.parseBindingBehavior());
+    }
+    if (this.currentToken !== T$EOF) {
       if (this.optional(T$Semicolon)) {
         this.error('Multiple expressions are not allowed.');
       }
-
       if ((this.currentToken & T$ClosingToken) === T$ClosingToken) {
         this.error(`Unconsumed token ${this.tokenRaw}`);
-      }
-
-      const expr = this.parseBindingBehavior();
-      expressions.push(expr);
-
-      if (this.optional(T$Semicolon)) {
-        this.error('Multiple expressions are not allowed.');
       }
     }
 
@@ -119,7 +113,7 @@ export class ParserImplementation {
   }
 
   parseConditional() {
-    let start = this.index;
+    const start = this.index;
     let result = this.parseBinary(0);
 
     if (this.optional(T$Question)) {
@@ -184,12 +178,12 @@ export class ParserImplementation {
         if ((this.currentToken ^ T$IdentifierOrKeyword) === T$IdentifierOrKeyword) {
           this.error(`Unexpected token ${this.tokenRaw}`);
         }
-        let name = this.tokenValue;
+        const name = this.tokenValue;
 
         this.nextToken();
 
         if (this.optional(T$LParen)) {
-          let args = this.parseExpressionList(T$RParen);
+          const args = this.parseExpressionList(T$RParen);
           this.expect(T$RParen);
           if (result instanceof AccessThis) {
             result = new CallScope(name, args, result.ancestor);
@@ -204,11 +198,11 @@ export class ParserImplementation {
           }
         }
       } else if (this.optional(T$LBracket)) {
-        let key = this.parseExpression();
+        const key = this.parseExpression();
         this.expect(T$RBracket);
         result = new AccessKeyed(result, key);
       } else if (this.optional(T$LParen)) {
-        let args = this.parseExpressionList(T$RParen);
+        const args = this.parseExpressionList(T$RParen);
         this.expect(T$RParen);
         result = new CallFunction(result, args);
       } else {
@@ -363,231 +357,197 @@ export class ParserImplementation {
   }
 
   scanToken() {
+    // https://en.wikibooks.org/wiki/Unicode/Character_reference/0000-0FFF
     while (this.hasNext) {
-      // skip whitespace.
-      if (this.currentChar <= $SPACE) {
-        this.nextChar();
-        continue;
-      }
+      const char = this.currentChar;
 
-      this.lastIndex = this.startIndex;
-      this.startIndex = this.index;
+      // get rid of non-ASCII characters first to speed up subsequent scanning
+      if (char > /*ASCII*/0x7F) {
+        let mask = CharLookup[char];
+        // skip whitespace and controls
+        if (mask & C$Skip) {
+          this.nextChar();
+          continue;
+        }
 
-      // handle identifiers and numbers.
-      if (isIdentifierStart(this.currentChar)) {
-        return this.scanIdentifier();
-      }
+        this.lastIndex = this.startIndex;
+        this.startIndex = this.index;
 
-      if (isDigit(this.currentChar)) {
-        return this.scanNumber();
-      }
-      switch (this.currentChar) {
-      case $PERIOD:
-        {
-          const nextChar = this.input.charCodeAt(this.index + 1);
-          if (isDigit(nextChar)) {
-            return this.scanNumber();
-          }
-          this.nextChar();
-          return T$Period;
+        // handle identifiers
+        if (mask & C$IdStart) {
+          return this.scanIdentifier();
         }
-      case $LPAREN:
-        this.nextChar();
-        return T$LParen;
-      case $RPAREN:
-        this.nextChar();
-        return T$RParen;
-      case $LBRACE:
-        this.nextChar();
-        return T$LBrace;
-      case $RBRACE:
-        this.nextChar();
-        return T$RBrace;
-      case $LBRACKET:
-        this.nextChar();
-        return T$LBracket;
-      case $RBRACKET:
-        this.nextChar();
-        return T$RBracket;
-      case $COMMA:
-        this.nextChar();
-        return T$Comma;
-      case $COLON:
-        this.nextChar();
-        return T$Colon;
-      case $SEMICOLON:
-        this.nextChar();
-        return T$Semicolon;
-      case $SQ:
-      case $DQ:
-        return this.scanString();
-      case $PLUS:
-        this.nextChar();
-        return T$Plus;
-      case $MINUS:
-        this.nextChar();
-        return T$Minus;
-      case $STAR:
-        this.nextChar();
-        return T$Star;
-      case $SLASH:
-        this.nextChar();
-        return T$Slash;
-      case $PERCENT:
-        this.nextChar();
-        return T$Percent;
-      case $CARET:
-        this.nextChar();
-        return T$Caret;
-      case $QUESTION:
-        this.nextChar();
-        return T$Question;
-      case $LT:
-        {
+      } else {
+        // skip whitespace
+        if (char <= /*[SPACE]*/0x20) {
           this.nextChar();
-          if (this.currentChar === $EQ) {
-            this.nextChar();
-            return T$LtEq;
-          }
-          return T$Lt;
+          continue;
         }
-      case $GT:
-        {
-          this.nextChar();
-          if (this.currentChar === $EQ) {
-            this.nextChar();
-            return T$GtEq;
+
+        this.lastIndex = this.startIndex;
+        this.startIndex = this.index;
+
+        // we're splitting up the checks roughly in such a way that the minimum amount of evaluations
+        // need to take place, and the most common ones come first
+
+        // handle a to z and { to }
+        if (char >= /*a*/0x61) {
+          if (char <= /*z*/0x7A) {
+            return this.scanIdentifier();
           }
-          return T$Gt;
-        }
-      case $BANG:
-        {
-          this.nextChar();
-          if (this.currentChar === $EQ) {
-            this.nextChar();
-            if (this.currentChar === $EQ) {
-              this.nextChar();
-              return T$BangEqEq;
-            }
-            return T$BangEq;
+          switch (char) {
+          case /*{*/0x7B: this.nextChar();
+            return T$LBrace;
+          case /*|*/0x7C:
+            if (this.nextChar() !== /*|*/0x7C) return T$Bar;
+            this.nextChar(); return T$BarBar;
+          case /*}*/0x7D:
+            this.nextChar(); return T$RBrace;
+          // no default
           }
-          return T$Bang;
-        }
-      case $EQ:
-        {
-          this.nextChar();
-          if (this.currentChar === $EQ) {
-            this.nextChar();
-            if (this.currentChar === $EQ) {
-              this.nextChar();
-              return T$EqEqEq;
-            }
-            return T$EqEq;
+          // handle A to Z and [ to _
+        } else if (char >= /*A*/0x41) {
+          if (char <= /*Z*/0x5A) {
+            return this.scanIdentifier();
           }
-          return T$Eq;
-        }
-      case $AMPERSAND:
-        {
-          this.nextChar();
-          if (this.currentChar === $AMPERSAND) {
-            this.nextChar();
-            return T$AmpersandAmpersand;
+          switch (char) {
+          case /*[*/0x5B:
+            this.nextChar(); return T$LBracket;
+          case /*]*/0x5D:
+            this.nextChar(); return T$RBracket;
+          case /*^*/0x5E:
+            this.nextChar(); return T$Caret;
+          case /*_*/0x5F:
+            this.nextChar(); return this.scanIdentifier();
+          // no default
           }
-          return T$Ampersand;
-        }
-      case $BAR:
-        {
-          this.nextChar();
-          if (this.currentChar === $BAR) {
-            this.nextChar();
-            return T$BarBar;
+          // handle 0 to 9 and : to ?
+        } else if (char >= /*0*/0x30) {
+          if (char <= /*9*/0x39) {
+            return this.scanNumber(false);
           }
-          return T$Bar;
+          switch (char) {
+          case /*:*/0x3A:
+            this.nextChar(); return T$Colon;
+          case /*;*/0x3B:
+            this.nextChar(); return T$Semicolon;
+          case /*<*/0x3C:
+            if (this.nextChar() !== /*=*/0x3D) return T$Lt;
+            this.nextChar(); return T$LtEq;
+          case /*=*/0x3D:
+            if (this.nextChar() !== /*=*/0x3D) return T$Eq;
+            if (this.nextChar() !== /*=*/0x3D) return T$EqEq;
+            this.nextChar(); return T$EqEqEq;
+          case /*>*/0x3E:
+            if (this.nextChar() !== /*=*/0x3D) return T$Gt;
+            this.nextChar(); return T$GtEq;
+          case /*?*/0x3F:
+            this.nextChar(); return T$Question;
+          // no default
+          }
         }
-      case $NBSP:
-        this.nextChar();
-        continue;
-      // no default
+
+        // handle the remaining symbols
+        switch (char) {
+        case /*!*/0x21:
+          if (this.nextChar() !== /*=*/0x3D) return T$Bang;
+          if (this.nextChar() !== /*=*/0x3D) return T$BangEq;
+          this.nextChar(); return T$BangEqEq;
+        case /*"*/0x22:
+          return this.scanString();
+        case /*$*/0x24:
+          return this.scanIdentifier();
+        case /*%*/0x25:
+          this.nextChar(); return T$Percent;
+        case /*&*/0x26:
+          if (this.nextChar() !== /*&*/0x26) return T$Ampersand;
+          this.nextChar(); return T$AmpersandAmpersand;
+        case /*'*/0x27:
+          return this.scanString();
+        case /*(*/0x28:
+          this.nextChar(); return T$LParen;
+        case /*)*/0x29:
+          this.nextChar(); return T$RParen;
+        case /***/0x2A:
+          this.nextChar(); return T$Star;
+        case /*+*/0x2B:
+          this.nextChar(); return T$Plus;
+        case /*,*/0x2C:
+          this.nextChar(); return T$Comma;
+        case /*-*/0x2D:
+          this.nextChar(); return T$Minus;
+        case /*.*/0x2E:
+          if (this.input.charCodeAt(this.index + 1) <= /*9*/ 0x39
+            && this.input.charCodeAt(this.index + 1) >= /*0*/ 0x30) return this.scanNumber(true);
+          this.nextChar(); return T$Period;
+        case /*/*/0x2F:
+          this.nextChar(); return T$Slash;
+        // no default
+        }
       }
 
       this.error(`Unexpected character [${String.fromCharCode(this.currentChar)}]`);
       return null;
     }
-
     return T$EOF;
   }
 
   scanIdentifier() {
-    this.nextChar();
-
-    while (isIdentifierPart(this.currentChar)) {
-      this.nextChar();
+    // run to the next non-idPart
+    let char = this.nextChar();
+    while ((char >= /*a*/0x61 && char <= /*z*/0x7A)
+      || (char >= /*A*/0x41 && char <= /*Z*/0x5A)
+      || (char >= /*0*/0x30 && char <= /*9*/0x39)
+      || char === /*$*/0x24
+      || char === /*_*/0x5F
+      || (char > /*ASCII*/0x7F && CharLookup[char] & C$IdPart)) {
+      char = this.nextChar();
     }
 
     this.tokenValue = this.tokenRaw;
-
-    // true/null have length 4, undefined has length 9
-    if (this.tokenValue.length >= 4 && this.tokenValue.length <= 9) {
-      const token = KeywordLookup[this.tokenValue];
-      if (token !== undefined) {
-        return token;
-      }
+    const len = this.tokenValue.length;
+    if (len < 4 || len > 9) {
+      return T$Identifier;
     }
-
-    return T$Identifier;
+    return KeywordLookup[this.tokenValue] || T$Identifier;
   }
 
-  scanNumber() {
-    let isFloat = false;
-    let value = 0;
-
-    while (isDigit(this.currentChar)) {
-      value = value * 10 + (this.currentChar - $0);
-      this.nextChar();
+  scanNumber(isFloat) {
+    if (isFloat) {
+      this.tokenValue = 0;
+    } else {
+      this.tokenValue = this.currentChar - /*0*/0x30;
+      while (this.nextChar() <= /*9*/0x39 && this.currentChar >= /*0*/0x30) {
+        this.tokenValue = this.tokenValue * 10 + this.currentChar  - /*0*/0x30;
+      }
     }
 
-    if (this.currentChar === $PERIOD) {
+    if (this.currentChar === /*.*/0x2E) {
       this.nextChar();
+      const start = this.index;
+      let value = this.currentChar - /*0*/0x30;
+      while (this.nextChar() <= /*9*/0x39 && this.currentChar >= /*0*/0x30) {
+        value = value * 10 + this.currentChar  - /*0*/0x30;
+      }
+      this.tokenValue = this.tokenValue + value / 10 ** (this.index - start);
+    }
 
-      let decimalValue = 0;
-      let decimalPlaces = 0;
+    if (this.currentChar === /*e*/0x65 || this.currentChar === /*E*/0x45) {
+      const start = this.index;
 
-      while (isDigit(this.currentChar)) {
-        decimalValue = decimalValue * 10 + (this.currentChar - $0);
-        decimalPlaces++;
+      this.nextChar();
+      if (this.currentChar === /*-*/0x2D || this.currentChar === /*+*/0x2B) {
         this.nextChar();
       }
 
-      value += (decimalValue / Math.pow(10, decimalPlaces));
-    }
-
-    const nonDigitStart = this.index;
-    if (this.currentChar === $e || this.currentChar === $E) {
-      isFloat = true;
-      const exponentStart = this.index; // for error reporting in case the exponent is invalid
-      this.nextChar();
-
-      if (this.currentChar === $PLUS || this.currentChar === $MINUS) {
-        this.nextChar();
-      }
-
-      if (!isDigit(this.currentChar)) {
-        this.index = exponentStart;
+      if (!(this.currentChar >= /*0*/0x30 && this.currentChar <= /*9*/0x39)) {
+        this.index = start;
         this.error('Invalid exponent');
       }
-
-      while (isDigit(this.currentChar)) {
-        this.nextChar();
-      }
+      while (this.nextChar() <= /*9*/0x39 && this.currentChar >= /*0*/0x30) { } // eslint-disable-line no-empty
+      this.tokenValue = parseFloat(this.input.slice(this.startIndex, this.index));
     }
 
-    if (!isFloat) {
-      this.tokenValue = value;
-      return T$NumericLiteral;
-    }
-
-    const text = value + this.input.slice(nonDigitStart, this.index);
-    this.tokenValue = parseFloat(text);
     return T$NumericLiteral;
   }
 
@@ -599,7 +559,7 @@ export class ParserImplementation {
     let marker = this.index;
 
     while (this.currentChar !== quote) {
-      if (this.currentChar === $BACKSLASH) {
+      if (this.currentChar === /*\*/0x5C) {
         if (!buffer) {
           buffer = [];
         }
@@ -610,7 +570,7 @@ export class ParserImplementation {
 
         let unescaped;
 
-        if (this.currentChar === $u) {
+        if (this.currentChar === 0x75) {
           this.nextChar();
 
           if (this.index + 4 < this.length) {
@@ -633,7 +593,7 @@ export class ParserImplementation {
 
         buffer.push(String.fromCharCode(unescaped));
         marker = this.index;
-      } else if (this.currentChar === $EOF) {
+      } else if (this.currentChar === /*EOF*/0) {
         this.error('Unterminated quote');
       } else {
         this.nextChar();
@@ -677,91 +637,18 @@ export class ParserImplementation {
   }
 }
 
-const $EOF = 0;
-const $TAB = 9;
-const $LF = 10;
-const $VTAB = 11;
-const $FF = 12;
-const $CR = 13;
-const $SPACE = 32;
-const $BANG = 33;
-const $DQ = 34;
-const $$ = 36;
-const $PERCENT = 37;
-const $AMPERSAND = 38;
-const $SQ = 39;
-const $LPAREN = 40;
-const $RPAREN = 41;
-const $STAR = 42;
-const $PLUS = 43;
-const $COMMA = 44;
-const $MINUS = 45;
-const $PERIOD = 46;
-const $SLASH = 47;
-const $COLON = 58;
-const $SEMICOLON = 59;
-const $LT = 60;
-const $EQ = 61;
-const $GT = 62;
-const $QUESTION = 63;
-
-const $0 = 48;
-const $9 = 57;
-
-const $A = 65;
-const $E = 69;
-const $Z = 90;
-
-const $LBRACKET = 91;
-const $BACKSLASH = 92;
-const $RBRACKET = 93;
-const $CARET = 94;
-const $_ = 95;
-
-const $a = 97;
-const $e = 101;
-const $f = 102;
-const $n = 110;
-const $r = 114;
-const $t = 116;
-const $u = 117;
-const $v = 118;
-const $z = 122;
-
-const $LBRACE = 123;
-const $BAR = 124;
-const $RBRACE = 125;
-const $NBSP = 160;
-
-function isIdentifierStart(code) {
-  return ($a <= code && code <= $z)
-      || ($A <= code && code <= $Z)
-      || (code === $_)
-      || (code === $$);
-}
-
-function isIdentifierPart(code) {
-  return ($a <= code && code <= $z)
-      || ($A <= code && code <= $Z)
-      || ($0 <= code && code <= $9)
-      || (code === $_)
-      || (code === $$);
-}
-
-function isDigit(code) {
-  return ($0 <= code && code <= $9);
-}
-
 function unescape(code) {
   switch (code) {
-  case $n: return $LF;
-  case $f: return $FF;
-  case $r: return $CR;
-  case $t: return $TAB;
-  case $v: return $VTAB;
+  case /*f*/0x66: return /*[FF]*/0xC;
+  case /*n*/0x6E: return /*[LF]*/0xA;
+  case /*r*/0x72: return /*[CR]*/0xD;
+  case /*t*/0x74: return /*[TAB]*/0x9;
+  case /*v*/0x76: return /*[VTAB]*/0xB;
   default: return code;
   }
 }
+
+// Tokens
 
 /* Performing a bitwise and (&) with this value (63) will return only the
  * token bit, which corresponds to the index of the token's value in the
@@ -778,17 +665,18 @@ const T$PrecedenceShift = 6;
  * expressions */
 const T$Precedence = 7 << T$PrecedenceShift;
 
+const T$ExpressionTerminal  = 1 << 9;
 /** ')' | '}' | ']' */
-const T$ClosingToken        = 1 << 9;
+const T$ClosingToken        = 1 << 10;
 /** EndOfSource | '(' | '}' | ')' | ',' | '[' | '&' | '|' */
-const T$AccessScopeTerminal = 1 << 10;
-const T$EOF                 = 1 << 11 | T$AccessScopeTerminal;
-const T$Identifier          = 1 << 12 | T$IdentifierOrKeyword;
-const T$NumericLiteral      = 1 << 13;
-const T$StringLiteral       = 1 << 14;
-const T$BinaryOperator      = 1 << 15;
-const T$UnaryOperator       = 1 << 16;
-const T$IdentifierOrKeyword = 1 << 17;
+const T$AccessScopeTerminal = 1 << 11;
+const T$EOF                 = 1 << 12 | T$AccessScopeTerminal | T$ExpressionTerminal;
+const T$Identifier          = 1 << 13 | T$IdentifierOrKeyword;
+const T$NumericLiteral      = 1 << 14;
+const T$StringLiteral       = 1 << 15;
+const T$BinaryOperator      = 1 << 16;
+const T$UnaryOperator       = 1 << 17;
+const T$IdentifierOrKeyword = 1 << 18;
 
 /** false */      const T$FalseKeyword     = 0 | T$IdentifierOrKeyword;
 /** true */       const T$TrueKeyword      = 1 | T$IdentifierOrKeyword;
@@ -800,12 +688,12 @@ const T$IdentifierOrKeyword = 1 << 17;
 /** '(' */const T$LParen    =  6 | T$AccessScopeTerminal;
 /** '{' */const T$LBrace    =  7;
 /** '.' */const T$Period    =  8;
-/** '}' */const T$RBrace    =  9 | T$AccessScopeTerminal | T$ClosingToken;
-/** ')' */const T$RParen    = 10 | T$AccessScopeTerminal | T$ClosingToken;
-/** ';' */const T$Semicolon = 11;
+/** '}' */const T$RBrace    =  9 | T$AccessScopeTerminal | T$ClosingToken | T$ExpressionTerminal;
+/** ')' */const T$RParen    = 10 | T$AccessScopeTerminal | T$ClosingToken | T$ExpressionTerminal;
+/** ';' */const T$Semicolon = 11 | T$ExpressionTerminal;
 /** ',' */const T$Comma     = 12 | T$AccessScopeTerminal;
 /** '[' */const T$LBracket  = 13 | T$AccessScopeTerminal;
-/** ']' */const T$RBracket  = 14 | T$ClosingToken;
+/** ']' */const T$RBracket  = 14 | T$ClosingToken | T$ExpressionTerminal;
 /** ':' */const T$Colon     = 15;
 /** '?' */const T$Question  = 16;
 
@@ -856,3 +744,36 @@ const TokenValues = [
   '&', '|', '||', '&&', '^', '==', '!=', '===', '!==', '<', '>',
   '<=', '>=', '+', '-', '*', '%', '/', '=', '!'
 ];
+
+/**
+ * Ranges of code points in pairs of 2 (eg 0x41-0x5B, 0x61-0x7B, ...) where the second value is not inclusive (5-7 means 5 and 6)
+ * Single values are denoted by the second value being a 0
+ *
+ * Copied from output generated with "node build/generate-unicode.js"
+ */
+const codes = {
+  IdStart: /*IdentifierStart*/[0xAA, 0, 0xBA, 0, 0xC0, 0xD7, 0xD8, 0xF7, 0xF8, 0x2B9, 0x2E0, 0x2E5, 0x1D00, 0x1D26, 0x1D2C, 0x1D5D, 0x1D62, 0x1D66, 0x1D6B, 0x1D78, 0x1D79, 0x1DBF, 0x1E00, 0x1F00, 0x2071, 0, 0x207F, 0, 0x2090, 0x209D, 0x212A, 0x212C, 0x2132, 0, 0x214E, 0, 0x2160, 0x2189, 0x2C60, 0x2C80, 0xA722, 0xA788, 0xA78B, 0xA7AF, 0xA7B0, 0xA7B8, 0xA7F7, 0xA800, 0xAB30, 0xAB5B, 0xAB5C, 0xAB65, 0xFB00, 0xFB07, 0xFF21, 0xFF3B, 0xFF41, 0xFF5B],
+  Skip: /*Skippable*/[0x80, 0xA1]
+};
+
+// We can go up to 255 ((1 << 8) - 1) for Uint8Array
+const C$Skip    = 1 << 0;
+const C$IdStart = 1 << 1;
+const C$IdPart  = 1 << 2;
+
+const CharLookup = new Uint8Array(0xFFFF);
+CharLookup.fill(0, 0, 0xFFFF);
+/**
+ * Decompress the ranges into an array of numbers so that the char code
+ * can be used as an index to the lookup
+ */
+function fillCharLookup(codeRanges, mask) {
+  let rangeCount = codeRanges.length;
+  for (let i = 0; i < rangeCount; i += 2) {
+    const start = codeRanges[i];
+    const end = codeRanges[i + 1];
+    CharLookup.fill(mask, start, end > 0 ? end : start + 1);
+  }
+}
+fillCharLookup(codes.Skip, C$Skip);
+fillCharLookup(codes.IdStart, C$IdStart | C$IdPart);

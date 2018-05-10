@@ -1,4 +1,4 @@
-import { Parser } from '../src/parser';
+import { Parser, ParserImplementation } from '../src/parser';
 import {
   LiteralString,
   LiteralPrimitive,
@@ -12,13 +12,13 @@ import {
   CallMember,
   CallFunction,
   AccessThis,
-  AccessAncestor,
   Assign,
   Conditional,
   Binary,
-  Expression,
+  Chain,
   PrefixNot
 } from '../src/ast';
+import { latin1IdentifierStartChars, latin1IdentifierPartChars, otherBMPIdentifierPartChars } from './unicode';
 
 const operators = [
   '&&', '||',
@@ -854,6 +854,38 @@ describe('Parser', () => {
     }
   });
 
+  describe('parses unicode IdentifierStart', () => {
+    for (const char of latin1IdentifierStartChars) {
+      it(char, () => {
+        const expression = parser.parse(char);
+        verifyEqual(expression,
+          new AccessScope(char, 0)
+        );
+      });
+    }
+  });
+
+  describe('parses unicode IdentifierPart', () => {
+    for (const char of latin1IdentifierPartChars) {
+      it(char, () => {
+        const identifier = '$' + char;
+        const expression = parser.parse(identifier);
+        verifyEqual(expression,
+          new AccessScope(identifier, 0)
+        );
+      });
+    }
+  });
+
+  describe('throws on unknown unicode IdentifierPart', () => {
+    for (const char of otherBMPIdentifierPartChars) {
+      it(char, () => {
+        const identifier = '$' + char;
+        verifyError(identifier, `Unexpected character [${char}] at column 1`);
+      });
+    }
+  });
+
   function verifyError(expression, errorMessage) {
     let error = null;
     try {
@@ -865,7 +897,6 @@ describe('Parser', () => {
     expect(error).not.toBeNull();
     expect(error.message).toContain(errorMessage);
   }
-  
 });
 
 function verifyEqual(actual, expected) {
@@ -885,6 +916,7 @@ function verifyEqual(actual, expected) {
     verifyEqual(actual[prop], expected[prop]);
   }
 }
+
 function unicodeEscape(str) {
-	return str.replace(/[\s\S]/g, c => `\\u${('0000' + c.charCodeAt().toString(16)).slice(-4)}`);
+  return str.replace(/[\s\S]/g, c => `\\u${('0000' + c.charCodeAt().toString(16)).slice(-4)}`);
 }
