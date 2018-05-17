@@ -105,7 +105,7 @@ export class ParserImplementation {
   }
 
   parseBinary(minPrecedence) {
-    let left = this.parseLeftHandSideExpression();
+    let left = this.parseLeftHandSideExpression(0);
 
     while (this.currentToken & T$BinaryOp) {
       const opToken = this.currentToken;
@@ -118,20 +118,20 @@ export class ParserImplementation {
     return left;
   }
 
-  parseLeftHandSideExpression(context = 0) {
+  parseLeftHandSideExpression(context) {
     let result;
 
     // Unary + Primary expression
     primary: switch (this.currentToken) {
     case T$Plus:
       this.nextToken();
-      return this.parseLeftHandSideExpression();
+      return this.parseLeftHandSideExpression(0);
     case T$Minus:
       this.nextToken();
-      return new Binary('-', new LiteralPrimitive(0), this.parseLeftHandSideExpression());
+      return new Binary('-', new LiteralPrimitive(0), this.parseLeftHandSideExpression(0));
     case T$Bang:
       this.nextToken();
-      return new PrefixNot('!', this.parseLeftHandSideExpression());
+      return new PrefixNot('!', this.parseLeftHandSideExpression(0));
     case T$ParentScope: // $parent
       {
         do {
@@ -554,7 +554,7 @@ const T$MemberOrCallExpression = 1 << 24;
 /** ',' */  const T$Comma     = 12 | T$AccessScopeTerminal;
 /** '[' */  const T$LBracket  = 13 | T$OpeningToken | T$AccessScopeTerminal | T$MemberExpression | T$MemberOrCallExpression;
 /** ']' */  const T$RBracket  = 14 | T$ClosingToken | T$ExpressionTerminal;
-/** ':' */  const T$Colon     = 15;
+/** ':' */  const T$Colon     = 15 | T$AccessScopeTerminal;
 /** '?' */  const T$Question  = 16;
 
 // Operator precedence: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_Precedence#Table

@@ -276,9 +276,29 @@ describe('Parser', () => {
     )
   });
 
-  describe('parses BindingBehavior', () => {
+  const variadics = [
+    { ctor: BindingBehavior, op: '&' },
+    { ctor: ValueConverter, op: '|' }
+  ];
 
-  });
+  for (const variadic of variadics) {
+    describe(`parses ${variadic.ctor.name} with scope arguments`, () => {
+      const tests = [
+        { expression: `foo${variadic.op}bar:$this:$this`, expected: new variadic.ctor(new AccessScope('foo', 0), 'bar', [new AccessThis(0), new AccessThis(0)]) },
+        { expression: `foo${variadic.op}bar:$this:$parent`, expected: new variadic.ctor(new AccessScope('foo', 0), 'bar', [new AccessThis(0), new AccessThis(1)]) },
+        { expression: `foo${variadic.op}bar:$parent:$this`, expected: new variadic.ctor(new AccessScope('foo', 0), 'bar', [new AccessThis(1), new AccessThis(0)]) },
+        { expression: `foo${variadic.op}bar:$parent.$parent:$parent.$parent`, expected: new variadic.ctor(new AccessScope('foo', 0), 'bar', [new AccessThis(2), new AccessThis(2)]) }
+      ];
+  
+      for (const test of tests) {
+        it(test.expression, () => {
+          let expression = parser.parse(test.expression);
+          verifyEqual(expression, test.expected);
+        });
+      }
+    });
+  }
+
 
   it('parses binding behavior', () => {
     let expression = parser.parse('foo & bar');
