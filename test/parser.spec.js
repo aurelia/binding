@@ -1,4 +1,4 @@
-import { Parser, ParserImplementation } from '../src/parser';
+import { Parser, ParserImplementation, parserConfig } from '../src/parser';
 import {
   LiteralString,
   LiteralPrimitive,
@@ -16,7 +16,8 @@ import {
   Conditional,
   Binary,
   Chain,
-  PrefixNot
+  PrefixNot,
+  LiteralArray
 } from '../src/ast';
 import { latin1IdentifierStartChars, latin1IdentifierPartChars, otherBMPIdentifierPartChars } from './unicode';
 
@@ -35,7 +36,7 @@ describe('Parser', () => {
     parser = new Parser();
   });
 
-  describe('parses literal primitive', () => {
+  describe('parses literal string', () => {
     // http://es5.github.io/x7.html#x7.8.4
     const tests = [
       { expression: '\'foo\'', expected: new LiteralString('foo') },
@@ -49,7 +50,20 @@ describe('Parser', () => {
       { expression: '\'\\r\'', expected: new LiteralString('\r') },
       { expression: '\'\\t\'', expected: new LiteralString('\t') },
       { expression: '\'\\v\'', expected: new LiteralString('\v') },
-      { expression: '\'\\v\'', expected: new LiteralString('\v') },
+      { expression: '\'\\v\'', expected: new LiteralString('\v') }
+    ];
+
+    for (const test of tests) {
+      it(test.expression, () => {
+        let expression = parser.parse(test.expression);
+        verifyEqual(expression, test.expected);
+      });
+    }
+  });
+
+  describe('parses literal primitive', () => {
+    // http://es5.github.io/x7.html#x7.8.4
+    const tests = [
       { expression: 'true', expected: new LiteralPrimitive(true) },
       { expression: 'false', expected: new LiteralPrimitive(false) },
       { expression: 'null', expected: new LiteralPrimitive(null) },
@@ -72,7 +86,7 @@ describe('Parser', () => {
       { expression: '2.2e2', expected: new LiteralPrimitive(2.2e2) },
       { expression: '.42', expected: new LiteralPrimitive(.42) },
       { expression: '0.42', expected: new LiteralPrimitive(.42) },
-      { expression: '.42E10', expected: new LiteralPrimitive(.42e10) }
+      { expression: '.42E10', expected: new LiteralPrimitive(.42e10) },
     ];
 
     for (const test of tests) {
@@ -83,44 +97,61 @@ describe('Parser', () => {
     }
   });
 
-  it('parses conditional', () => {
-    let expression = parser.parse('foo ? bar : baz');
-    verifyEqual(expression,
-      new Conditional(
-        new AccessScope('foo', 0),
-        new AccessScope('bar', 0),
-        new AccessScope('baz', 0)
-      )
-    );
+  describe('parses literal array', () => {
+    const tests = [
+      { expression: '[1 <= 0]', expected: new LiteralArray([new Binary('<=', new LiteralPrimitive(1), new LiteralPrimitive(0))]) },
+      { expression: '[0]', expected: new LiteralArray([new LiteralPrimitive(0)])},
+      { expression: '[]', expected: new LiteralArray([])},
+      { expression: '[[[]]]', expected: new LiteralArray([new LiteralArray([new LiteralArray([])])])},
+      { expression: '[[],[[]]]', expected: new LiteralArray([new LiteralArray([]), new LiteralArray([new LiteralArray([])])])},
+      { expression: '[x()]', expected: new LiteralArray([new CallScope('x', [], 0)]) },
+      { expression: '[1, "z", "a", null]', expected: new LiteralArray([new LiteralPrimitive(1), new LiteralString('z'), new LiteralString('a'), new LiteralPrimitive(null)]) }
+    ];
+
+    for (const test of tests) {
+      it(test.expression, () => {
+        let expression = parser.parse(test.expression);
+        verifyEqual(expression, test.expected);
+      });
+    }
   });
 
-  it('parses nested conditional', () => {
-    let expression = parser.parse('foo ? bar : foo1 ? bar1 : baz');
-    verifyEqual(expression,
-      new Conditional(
-        new AccessScope('foo', 0),
-        new AccessScope('bar', 0),
-        new Conditional(
-          new AccessScope('foo1', 0),
-          new AccessScope('bar1', 0),
-          new AccessScope('baz', 0)
-        )
-      )
-    );
-  });
+  describe('parses conditional', () => {
+    const tests = [
+      { expression: '(false ? true : undefined)', paren: true, expected: new Conditional(new LiteralPrimitive(false), new LiteralPrimitive(true), new LiteralPrimitive(undefined)) },
+      { expression: '("1" ? "" : "1")', paren: true, expected: new Conditional(new LiteralString('1'), new LiteralString(''), new LiteralString('1')) },
+      { expression: '("1" ? foo : "")', paren: true, expected: new Conditional(new LiteralString('1'), new AccessScope('foo', 0), new LiteralString('')) },
+      { expression: '(false ? false : true)', paren: true, expected: new Conditional(new LiteralPrimitive(false), new LiteralPrimitive(false), new LiteralPrimitive(true)) },
+      { expression: '(foo ? foo : true)', paren: true, expected: new Conditional(new AccessScope('foo', 0), new AccessScope('foo', 0), new LiteralPrimitive(true)) },
+      { expression: 'foo() ? 1 : 2', expected: new Conditional(new CallScope('foo', [], 0), new LiteralPrimitive(1), new LiteralPrimitive(2)) },
+      { expression: 'true ? foo : false', expected: new Conditional(new LiteralPrimitive(true), new AccessScope('foo', 0), new LiteralPrimitive(false)) },
+      { expression: '"1" ? "" : "1"', expected: new Conditional(new LiteralString('1'), new LiteralString(''), new LiteralString('1')) },
+      { expression: '"1" ? foo : ""', expected: new Conditional(new LiteralString('1'), new AccessScope('foo', 0), new LiteralString('')) },
+      { expression: 'foo ? foo : "1"', expected: new Conditional(new AccessScope('foo', 0), new AccessScope('foo', 0), new LiteralString('1')) },
+      { expression: 'true ? foo : bar', expected: new Conditional(new LiteralPrimitive(true), new AccessScope('foo', 0), new AccessScope('bar', 0)) }
+    ];
 
-  it('parses conditional with assign', () => {
-    let expression = parser.parse('foo ? bar : baz = qux');
-    verifyEqual(expression,
-      new Conditional(
-        new AccessScope('foo', 0),
-        new AccessScope('bar', 0),
-        new Assign(
-          new AccessScope('baz', 0),
-          new AccessScope('qux', 0)
-        )
-      )
-    );
+    for (const test of tests) {
+      it(test.expression, () => {
+        let expression = parser.parse(test.expression);
+        verifyEqual(expression, test.expected);
+      });
+
+      const nestedTests = [
+        { expression: `${test.expression} ? a : b`, expected: test.paren
+          ? new Conditional(test.expected, new AccessScope('a', 0), new AccessScope('b', 0))
+          : new Conditional(test.expected.condition, test.expected.yes, new Conditional(test.expected.no, new AccessScope('a', 0), new AccessScope('b', 0))) },
+        { expression: `a[b] ? ${test.expression} : a=((b))`, expected: new Conditional(new AccessKeyed(new AccessScope('a', 0), new AccessScope('b', 0)), test.expected, new Assign(new AccessScope('a', 0), new AccessScope('b', 0))) },
+        { expression: `a ? !b===!a : ${test.expression}`, expected: new Conditional(new AccessScope('a', 0), new Binary('===', new PrefixNot('!', new AccessScope('b', 0)), new PrefixNot('!', new AccessScope('a', 0))), test.expected) }
+      ];
+
+      for (const nestedTest of nestedTests) {
+        it(nestedTest.expression, () => {
+          let expression = parser.parse(nestedTest.expression);
+          verifyEqual(expression, nestedTest.expected);
+        });
+      }
+    }
   });
 
   describe('parses binary', () => {
@@ -243,6 +274,10 @@ describe('Parser', () => {
         )
       )
     )
+  });
+
+  describe('parses BindingBehavior', () => {
+
   });
 
   it('parses binding behavior', () => {
@@ -384,6 +419,33 @@ describe('Parser', () => {
     verifyEqual(expression, new AccessScope('foo', 0));
   });
 
+  describe('parses AccessKeyed', () => {
+    const tests = [
+      { expression: 'foo[bar]', expected: new AccessKeyed(new AccessScope('foo', 0), new AccessScope('bar', 0)) },
+      { expression: 'foo[\'bar\']', expected: new AccessKeyed(new AccessScope('foo', 0), new LiteralString('bar')) },
+      { expression: 'foo[0]', expected: new AccessKeyed(new AccessScope('foo', 0), new LiteralPrimitive(0)) },
+      { expression: 'foo[(0)]', expected: new AccessKeyed(new AccessScope('foo', 0), new LiteralPrimitive(0)) },
+      { expression: '(foo)[0]', expected: new AccessKeyed(new AccessScope('foo', 0), new LiteralPrimitive(0)) },
+      { expression: 'foo[null]', expected: new AccessKeyed(new AccessScope('foo', 0), new LiteralPrimitive(null)) },
+      { expression: '\'foo\'[0]', expected: new AccessKeyed(new LiteralString('foo'), new LiteralPrimitive(0)) },
+      { expression: 'foo()[bar]', expected: new AccessKeyed(new CallScope('foo', [], 0), new AccessScope('bar', 0)) },
+      { expression: 'a[b[c]]', expected: new AccessKeyed(new AccessScope('a', 0), new AccessKeyed(new AccessScope('b', 0), new AccessScope('c', 0))) },
+      { expression: 'a[b][c]', expected: new AccessKeyed(new AccessKeyed(new AccessScope('a', 0), new AccessScope('b', 0)), new AccessScope('c', 0)) }
+    ];
+
+    for (const test of tests) {
+      it(test.expression, () => {
+        let expression = parser.parse(test.expression);
+        verifyEqual(expression, test.expected);
+      });
+
+      it(`(${test.expression})`, () => {
+        let expression = parser.parse(`(${test.expression})`);
+        verifyEqual(expression, test.expected);
+      });
+    }
+  });
+
   it('parses AccessMember', () => {
     let expression = parser.parse('foo.bar');
     verifyEqual(expression, 
@@ -393,7 +455,7 @@ describe('Parser', () => {
 
   it('parses AccessMember with indexed string property', () => {
     let expression = parser.parse('foo["bar"].baz');
-    verifyEqual(expression, 
+    verifyEqual(expression,
       new AccessMember(
         new AccessKeyed(
           new AccessScope('foo', 0),
@@ -448,6 +510,30 @@ describe('Parser', () => {
         new AccessScope('baz', 0)
       )
     );
+  });
+
+  describe('parses CallExpression', () => {
+    const tests = [//a(b({a:b,c:d})[c({})[d({})]])
+      { expression: 'a()()()', expected: new CallFunction(new CallFunction(new CallScope('a', [], 0), []), []) },
+      { expression: 'a(b(c()))', expected: new CallScope('a', [new CallScope('b', [new CallScope('c', [], 0)], 0)], 0) },
+      { expression: 'a(b(),c())', expected: new CallScope('a', [new CallScope('b', [], 0), new CallScope('c', [], 0)], 0) },
+      { expression: 'a()[b]()', expected: new CallFunction(new AccessKeyed(new CallScope('a', [], 0), new AccessScope('b', 0)), []) },
+      { expression: '{foo}[\'foo\']()', expected: new CallFunction(new AccessKeyed(new LiteralObject(['foo'], [new AccessScope('foo', 0)]), new LiteralString('foo')), []) },
+      { expression: 'a(b({})[c()[d()]])', expected: new CallScope('a', [new AccessKeyed(new CallScope('b', [new LiteralObject([], [])], 0), new AccessKeyed(new CallScope('c', [], 0), new CallScope('d', [], 0)))], 0) }
+    ];
+
+
+    for (const test of tests) {
+      it(test.expression, () => {
+        let expression = parser.parse(test.expression);
+        verifyEqual(expression, test.expected);
+      });
+
+      it(`(${test.expression})`, () => {
+        let expression = parser.parse(`(${test.expression})`);
+        verifyEqual(expression, test.expected);
+      });
+    }
   });
 
   it('parses CallScope', () => {
@@ -522,107 +608,87 @@ describe('Parser', () => {
     );
   });
 
-  it('parses $parent', () => {
-    let s = '$parent';
-    for (let i = 1; i < 10; i++) {
-      let expression = parser.parse(s);
-      verifyEqual(expression, new AccessThis(i));
-      s += '.$parent';
+
+  const parents = [
+    { i: 1, name: '$parent' },
+    { i: 2, name: '$parent.$parent' },
+    { i: 3, name: '$parent.$parent.$parent' },
+    { i: 4, name: '$parent.$parent.$parent.$parent' },
+    { i: 5, name: '$parent.$parent.$parent.$parent.$parent' },
+    { i: 6, name: '$parent.$parent.$parent.$parent.$parent.$parent' },
+    { i: 7, name: '$parent.$parent.$parent.$parent.$parent.$parent.$parent' },
+    { i: 8, name: '$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent' },
+    { i: 9, name: '$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent' },
+    { i: 10, name: '$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent'  }
+  ];
+  describe('parses $parent', () => {
+    for (const parent of parents) {
+      it(parent.name, () => {
+        let expression = parser.parse(parent.name);
+        verifyEqual(expression, new AccessThis(parent.i));
+      });
+
+      it(`${parent.name} before value converter`, () => {
+        let expression = parser.parse(`${parent.name} | foo`);
+        verifyEqual(expression,
+          new ValueConverter(new AccessThis(parent.i), 'foo', [])
+        );
+      });
+
+      it(`${parent.name}.bar before value converter`, () => {
+        let expression = parser.parse(`${parent.name}.bar | foo`);
+        verifyEqual(expression,
+          new ValueConverter(new AccessScope('bar', parent.i), 'foo', [])
+        );
+      });
+
+      it(`${parent.name} before binding behavior`, () => {
+        let expression = parser.parse(`${parent.name} & foo`);
+        verifyEqual(expression,
+          new BindingBehavior(new AccessThis(parent.i), 'foo', [])
+        );
+      });
+
+      it(`${parent.name}.bar before binding behavior`, () => {
+        let expression = parser.parse(`${parent.name}.bar & foo`);
+        verifyEqual(expression,
+          new BindingBehavior(new AccessScope('bar', parent.i), 'foo', [])
+        );
+      });
     }
   });
-
-  it('parses $parent before value converter', () => {
-    let child = '';
-    for (let i = 1; i < 10; i++) {
-      let s = `$parent${child} | foo`;
-      let expression = parser.parse(s);
-      verifyEqual(expression,
-        new ValueConverter(new AccessThis(i), 'foo', [])
-      );
-      child += '.$parent';
-    }
-  });
-
-  it('parses $parent.foo before value converter', () => {
-    let child = '';
-    for (let i = 1; i < 10; i++) {
-      let s = `$parent${child}.bar | foo`;
-      let expression = parser.parse(s);
-      verifyEqual(expression,
-        new ValueConverter(new AccessScope('bar', i), 'foo', [])
-      );
-      child += '.$parent';
-    }
-  });
-
-  it('parses $parent before binding behavior', () => {
-    let child = '';
-    for (let i = 1; i < 10; i++) {
-      let s = `$parent${child} & foo`;
-      let expression = parser.parse(s);
-      verifyEqual(expression,
-        new BindingBehavior(new AccessThis(i), 'foo', [])
-      );
-      child += '.$parent';
-    }
-  });
-
-  it('parses $parent.foo before binding behavior', () => {
-    let child = '';
-    for (let i = 1; i < 10; i++) {
-      let s = `$parent${child}.bar & foo`;
-      let expression = parser.parse(s);
-      verifyEqual(expression,
-        new BindingBehavior(new AccessScope('bar', i), 'foo', [])
-      );
-      child += '.$parent';
-    }
-  });
-
-  it('translates $parent.foo to AccessScope', () => {
-    let s = '$parent.foo';
-    for (let i = 1; i < 10; i++) {
-      let expression = parser.parse(s);
-      verifyEqual(expression,
-        new AccessScope('foo', i)
-      );
-      s = '$parent.' + s;
-    }
-  });
-
-  it('translates $parent.foo() to CallScope', () => {
-    let s = '$parent.foo()';
-    for (let i = 1; i < 10; i++) {
-      let expression = parser.parse(s);
-      verifyEqual(expression,
-        new CallScope('foo', [], i)
-      );
-      s = '$parent.' + s;
-    }
-  });
-
-  it('translates $parent() to CallFunction', () => {
-    let s = '$parent()';
-    for (let i = 1; i < 10; i++) {
-      let expression = parser.parse(s);
-      verifyEqual(expression,
-        new CallFunction(new AccessThis(i), [])
-      );
-      s = '$parent.' + s;
-    }
-  });
-
-  it('translates $parent[0] to AccessKeyed', () => {
-    let s = '$parent[0]';
-    for (let i = 1; i < 10; i++) {
-      let expression = parser.parse(s);
-      verifyEqual(expression,
-        new AccessKeyed(
-          new AccessThis(i),
-          new LiteralPrimitive(0)
-        )
-      );
-      s = '$parent.' + s;
+  describe('translates $parent', () => {
+    for (const parent of parents) {
+      it(`${parent.name}.foo to AccessScope`, () => {
+        let expression = parser.parse(`${parent.name}.foo`);
+        verifyEqual(expression,
+          new AccessScope(`foo`, parent.i)
+        );
+      });
+  
+      it(`${parent.name}.foo() to CallScope`, () => {
+        let expression = parser.parse(`${parent.name}.foo()`);
+        verifyEqual(expression,
+          new CallScope(`foo`, [], parent.i)
+        );
+      });
+  
+      it(`${parent.name}() to CallFunction`, () => {
+        let expression = parser.parse(`${parent.name}()`);
+        verifyEqual(expression,
+          new CallFunction(new AccessThis(parent.i), [])
+        );
+      });
+  
+      it(`${parent.name}[0] to AccessKeyed`, () => {
+        let expression = parser.parse(`${parent.name}[0]`);
+        verifyEqual(expression,
+          new AccessKeyed(
+            new AccessThis(parent.i),
+            new LiteralPrimitive(0)
+          )
+        );
+      });
     }
   });
 
@@ -663,57 +729,37 @@ describe('Parser', () => {
     );
   });
 
-  it('parses es6 shorthand LiteralObject with one property', () => {
-    let expression = parser.parse('{foo}');
-    verifyEqual(expression,
-      new LiteralObject(
-        ['foo'],
-        [new AccessScope('foo', 0)]
-      )
-    );
-  });
+  describe('parses LiteralObject', () => {
+    const tests = [
+      { expression: '', expected: new LiteralObject([], []) },
+      { expression: 'foo', expected: new LiteralObject(['foo'], [new AccessScope('foo', 0)]) },
+      { expression: 'foo,bar', expected: new LiteralObject(['foo','bar'], [new AccessScope('foo', 0), new AccessScope('bar', 0)]) },
+      { expression: 'foo:bar', expected: new LiteralObject(['foo'], [new AccessScope('bar', 0)]) },
+      { expression: 'foo:bar()', expected: new LiteralObject(['foo'], [new CallScope('bar', [], 0)]) },
+      { expression: 'foo:a?b:c', expected: new LiteralObject(['foo'], [new Conditional(new AccessScope('a', 0), new AccessScope('b', 0), new AccessScope('c', 0))]) },
+      { expression: 'foo:bar=((baz))', expected: new LiteralObject(['foo'], [new Assign(new AccessScope('bar', 0), new AccessScope('baz', 0))]) },
+      { expression: 'foo:(bar)===baz', expected: new LiteralObject(['foo'], [new Binary('===', new AccessScope('bar', 0), new AccessScope('baz', 0))]) },
+      { expression: 'foo:[bar]', expected: new LiteralObject(['foo'], [new LiteralArray([new AccessScope('bar', 0)])]) },
+      { expression: 'foo:bar[baz]', expected: new LiteralObject(['foo'], [new AccessKeyed(new AccessScope('bar', 0), new AccessScope('baz', 0))]) },
+      { expression: '\'foo\':1', expected: new LiteralObject(['foo'], [new LiteralPrimitive(1)]) },
+      { expression: '1:1', expected: new LiteralObject([1], [new LiteralPrimitive(1)]) },
+      { expression: '1:\'foo\'', expected: new LiteralObject([1], [new LiteralString('foo')]) },
+      { expression: 'null:1', expected: new LiteralObject(['null'], [new LiteralPrimitive(1)]) },
+      { expression: 'foo:{}', expected: new LiteralObject(['foo'], [new LiteralObject([], [])]) },
+      { expression: 'foo:{bar}[baz]', expected: new LiteralObject(['foo'], [new AccessKeyed(new LiteralObject(['bar'], [new AccessScope('bar', 0)]), new AccessScope('baz', 0))]) }
+    ];
 
-  it('parses es6 shorthand LiteralObject with two properties', () => {
-    let expression = parser.parse('{ foo, bar }');
-    verifyEqual(expression,
-      new LiteralObject(
-        [
-          'foo',
-          'bar'
-        ],
-        [
-          new AccessScope('foo', 0),
-          new AccessScope('bar', 0)
-        ]
-      )
-    );
-  });
+    for (const test of tests) {
+      it(`{${test.expression}}`, () => {
+        let expression = parser.parse(`{${test.expression}}`);
+        verifyEqual(expression, test.expected);
+      });
 
-  it('parses empty LiteralObject', () => {
-    let expression = parser.parse('{}');
-    verifyEqual(expression,
-      new LiteralObject([], [])
-    );
-  });
-
-  it('parses LiteralObject with string literal property', () => {
-    let expression = parser.parse('{"foo": "bar"}');
-    verifyEqual(expression,
-      new LiteralObject(
-        ['foo'],
-        [new LiteralString('bar')]
-      )
-    );
-  });
-
-  it('parses LiteralObject with numeric literal property', () => {
-    let expression = parser.parse('{42: "foo"}');
-    verifyEqual(expression,
-      new LiteralObject(
-        [42],
-        [new LiteralString('foo')]
-      )
-    );
+      it(`({${test.expression}})`, () => {
+        let expression = parser.parse(`({${test.expression}})`);
+        verifyEqual(expression, test.expected);
+      });
+    }
   });
 
   describe('does not parse LiteralObject with computed property', () => {
@@ -726,7 +772,7 @@ describe('Parser', () => {
 
     for (const expr of expressions) {
       it(expr, () => {
-        verifyError(expr, 'Unexpected token [');
+        _verifyError(expr, 'Unexpected token [');
       });
     }
   });
@@ -746,7 +792,7 @@ describe('Parser', () => {
 
     for (const expr of expressions) {
       it(expr, () => {
-        verifyError(expr, 'expected');
+        _verifyError(expr, 'expected');
       });
     }
   });
@@ -761,7 +807,7 @@ describe('Parser', () => {
 
     for (const expr of expressions) {
       it(expr, () => {
-        verifyError(expr, 'Multiple expressions are not allowed');
+        _verifyError(expr, 'Multiple expressions are not allowed');
       });
     }
   });
@@ -778,7 +824,7 @@ describe('Parser', () => {
 
     for (const test of tests) {
       it(test.expr, () => {
-        verifyError(test.expr, `Unconsumed token ${test.token}`);
+        _verifyError(test.expr, `Unconsumed token ${test.token}`);
       });
     }
   });
@@ -796,7 +842,7 @@ describe('Parser', () => {
 
     for (const test of tests) {
       it(test.expr, () => {
-        verifyError(test.expr, `Missing expected token ${test.token}`);
+        _verifyError(test.expr, `Missing expected token ${test.token}`);
       });
     }
   });
@@ -817,13 +863,13 @@ describe('Parser', () => {
 
     for (const expr of expressions) {
       it(expr, () => {
-        verifyError(expr, 'is not assignable');
+        _verifyError(expr, 'is not assignable');
       });
     }
   });
 
   it('throw on incomplete conditional', () => {
-    verifyError('foo ? bar', 'requires all 3 expressions');
+    _verifyError('foo ? bar', 'Missing expected token : at column 9');
   });
 
   describe('throw on invalid primary expression', () => {
@@ -832,9 +878,9 @@ describe('Parser', () => {
     for (const expr of expressions) {
       it(expr, () => {
         if (expr.length === 1) {
-          verifyError(expr, `Unexpected end of expression`);
+          _verifyError(expr, `Unexpected end of expression`);
         } else {
-          verifyError(expr, `Unexpected token ${expr.slice(0, 0)}`);
+          _verifyError(expr, `Unexpected token ${expr.slice(0, 0)}`);
         }
       });
     }
@@ -849,7 +895,7 @@ describe('Parser', () => {
 
     for (const expr of expressions) {
       it(expr, () => {
-        verifyError(expr, 'Invalid exponent');
+        _verifyError(expr, 'Invalid exponent');
       });
     }
   });
@@ -881,23 +927,69 @@ describe('Parser', () => {
     for (const char of otherBMPIdentifierPartChars) {
       it(char, () => {
         const identifier = '$' + char;
-        verifyError(identifier, `Unexpected character [${char}] at column 1`);
+        _verifyError(identifier, `Unexpected character [${char}] at column 1`);
       });
     }
   });
 
-  function verifyError(expression, errorMessage) {
-    let error = null;
-    try {
-      parser.parse(expression);
-    } catch(e) {
-      error = e;
+  it('throws on double dot (parseAccessOrCallMember)', () => {
+    _verifyError('foo..bar', `Unexpected token . at column 4`);
+  });
+
+  it('throws on double dot (parseAccessOrCallScope)', () => {
+    _verifyError('$parent..bar', `Unexpected token . at column 8`);
+  });
+
+  describe('addIdentifierPartStart', () => {
+    const asciiChars = ['~', '@', '#', '\\'];
+  
+    beforeEach(() => {
+      parser = new Parser();
+    });
+
+    for (const asciiChar of asciiChars.slice(0, 1)) {
+      it(`addIdentifierStart works for ASCII character ${asciiChar}`, () => {
+        parserConfig.addIdentifierStart(asciiChar);
+        verifyEqual(parser.parse(asciiChar), new AccessScope(asciiChar, 0));
+      });
     }
 
-    expect(error).not.toBeNull();
-    expect(error.message).toContain(errorMessage);
+    for (const asciiChar of asciiChars.slice(2, 3)) {
+      it(`addIdentifierPart works for ASCII character ${asciiChar}`, () => {
+        parserConfig.addIdentifierPart(asciiChar);
+        verifyEqual(parser.parse(`$${asciiChar}`), new AccessScope(`$${asciiChar}`, 0));
+      });
+    }
+
+    it('addIdentifierStart works for unicode characters', () => {
+      parserConfig.addIdentifierStart('ಠ');
+      verifyEqual(parser.parse('ಠ_ಠ'), new AccessScope('ಠ_ಠ', 0));
+    });
+
+    it('addIdentifierPart works for unicode characters', () => {
+      parserConfig.addIdentifierPart('漢');
+      verifyEqual(parser.parse(`$漢`), new AccessScope('$漢', 0));
+      verifyError(parser, '漢', `Unexpected character [漢]`);
+    });
+  });
+
+  function _verifyError(expression, errorMessage = '') {
+    verifyError(parser, expression, errorMessage);
   }
 });
+
+
+function verifyError(parser, expression, errorMessage = '') {
+  let error = null;
+  try {
+    parser.parse(expression);
+  } catch(e) {
+    error = e;
+  }
+
+  expect(error).not.toBeNull();
+  expect(error.message).toContain(errorMessage);
+}
 
 function verifyEqual(actual, expected) {
   if (typeof expected !== 'object' || expected === null || expected === undefined) {
@@ -911,9 +1003,12 @@ function verifyEqual(actual, expected) {
     return;
   }
 
-  expect(actual).toEqual(jasmine.any(expected.constructor));
-  for (const prop of Object.keys(expected)) {
-    verifyEqual(actual[prop], expected[prop]);
+  if (actual) {
+    expect(actual.constructor.name).toEqual(expected.constructor.name);
+    expect(actual.toString()).toEqual(expected.toString());
+    for (const prop of Object.keys(expected)) {
+      verifyEqual(actual[prop], expected[prop]);
+    }
   }
 }
 
