@@ -70,9 +70,9 @@ function print(name, raw, compressed) {
 const raw = {
   // The only difference between the two lists below is digits 0-9, so we'll simply
   // use IdentifierStart and in the parser make sure to add the digit code points (48-58)
-  IdentifierStart: getCodePoints(['Binary_Property/ASCII', 'Script/Latin'], 'Binary_Property/ID_Start', 0xFFFF, 0x7F),
-  IdentifierPart: getCodePoints(['Binary_Property/ASCII', 'Script/Latin'], 'Binary_Property/ID_Continue', 0xFFFF, 0x7F),
-  Skippable: getCodePoints(['Binary_Property/White_Space', 'General_Category/Control'], null, 0xFF, 0x7F),
+  IdentifierStart: getCodePoints(['_', '$', 'Binary_Property/ASCII', 'Script/Latin'], 'Binary_Property/ID_Start', 0xFFFF),
+  IdentifierPart: getCodePoints(['_', '$', 'Binary_Property/ASCII', 'Script/Latin'], 'Binary_Property/ID_Continue', 0xFFFF),
+  Skippable: getCodePoints(['Binary_Property/White_Space', 'General_Category/Control'], null, 0xFF),
   ClosePunctuation: getCodePoints(['General_Category/Close_Punctuation'], null, 0x7F),
   OpenPunctuation: getCodePoints(['General_Category/Open_Punctuation'], null, 0x7F),
   Punctuation: getCodePoints(['General_Category/Punctuation'], null, 0x7F),
