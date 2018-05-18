@@ -779,7 +779,7 @@ export declare class BindingEngine {
   /**
    * Gets an observer for collection mutation.
    */
-  collectionObserver(collection: Array<any> | Map<any, any>): CollectionObserver;
+  collectionObserver(collection: Array<any> | Map<any, any> | Set<any>): CollectionObserver;
   /**
    * Gets an observer for a javascript expression that accesses a property on the binding context.
    * @param bindingContext The binding context (view-model)
