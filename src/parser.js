@@ -223,11 +223,15 @@ export class ParserImplementation {
         break;
       }
     case T$StringLiteral:
+    case T$TemplateTail:
       {
         result = new LiteralString(this.tokenValue);
         this.nextToken();
         break;
       }
+    case T$TemplateContinuation:
+      result = this.parseTemplate();
+      break;
     case T$NumericLiteral:
       {
         result = new LiteralPrimitive(this.tokenValue);
@@ -303,6 +307,20 @@ export class ParserImplementation {
       }
     }
 
+    return result;
+  }
+
+  parseTemplate(result) {
+    const head = new LiteralString(this.tokenValue);
+    this.expect(T$TemplateContinuation);
+    const current = new Binary('+', head, this.parseExpression());
+    result = result ? new Binary('+', result, current) : current;
+    if ((this.currentToken = this.scanTemplateTail()) === T$TemplateTail) {
+      result = new Binary('+', result, new LiteralString(this.tokenValue));
+      this.nextToken();
+    } else {
+      this.parseTemplate(result);
+    }
     return result;
   }
 
@@ -409,7 +427,7 @@ export class ParserImplementation {
 
         let unescaped;
 
-        if (this.currentChar === 0x75) {
+        if (this.currentChar === /*u*/0x75) {
           this.nextChar();
 
           if (this.index + 4 < this.length) {
@@ -452,6 +470,42 @@ export class ParserImplementation {
 
     this.tokenValue = unescaped;
     return T$StringLiteral;
+  }
+
+  scanTemplate() {
+    let tail = true;
+    let result = '';
+
+    while (this.nextChar() !== /*`*/0x60) {
+      if (this.currentChar === /*$*/0x24) {
+        if ((this.index + 1) < this.length && this.input.charCodeAt(this.index + 1) === /*{*/0x7B) {
+          this.index++;
+          tail = false;
+          break;
+        } else {
+          result += '$';
+        }
+      } else if (this.currentChar === /*\*/0x5C) {
+        result += String.fromCharCode(unescape(this.nextChar()));
+      } else {
+        result += String.fromCharCode(this.currentChar);
+      }
+    }
+
+    this.nextChar();
+    this.tokenValue = result;
+    if (tail) {
+      return T$TemplateTail;
+    }
+    return T$TemplateContinuation;
+  }
+
+  scanTemplateTail() {
+    if (this.index >= this.length) {
+      this.error('Unterminated template');
+    }
+    this.index--;
+    return this.scanTemplate();
   }
 
   error(message = `Unexpected token ${this.tokenRaw}`, column = this.startIndex) {
@@ -542,6 +596,8 @@ const T$UnaryOp                = 1 << 22;
 const T$MemberExpression       = 1 << 23;
 /** '.' | '[' | '(' */
 const T$MemberOrCallExpression = 1 << 24;
+const T$TemplateTail           = 1 << 25;
+const T$TemplateContinuation   = 1 << 26;
 
 /** false */      const T$FalseKeyword     = 0 | T$Keyword | T$Literal;
 /** true */       const T$TrueKeyword      = 1 | T$Keyword | T$Literal;
@@ -690,6 +746,9 @@ CharScanners[/*" 34*/0x22] =
 CharScanners[/*' 39*/0x27] = p => {
   return p.scanString();
 };
+CharScanners[/*` 96*/0x60] = p => {
+  return p.scanTemplate();
+}
 
 // !, !=, !==
 CharScanners[/*! 33*/0x21] = p => {

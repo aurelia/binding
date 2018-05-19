@@ -74,6 +74,28 @@ describe('Parser', () => {
         });
       }
     });
+
+    describe('template literal', () => {
+      const tests = [
+        { expr: '`\r\n\t\n`', expected: new LiteralString('\r\n\t\n') },
+        { expr: '`\n\r\n\r`', expected: new LiteralString('\n\r\n\r') },
+        { expr: '`x\\r\\nx`', expected: new LiteralString('x\r\nx') },
+        { expr: '`x\r\nx`', expected: new LiteralString('x\r\nx') },
+        { expr: '``', expected: $str },
+        { expr: '`foo`', expected: new LiteralString('foo') },
+        { expr: '`$`', expected: new LiteralString('$') },
+        { expr: '`a${foo}`', expected: new Binary('+', new Binary('+', new LiteralString('a'), $foo), $str) },
+        { expr: '`${ {foo: 1} }`', expected: new Binary('+', new Binary('+', $str, new LiteralObject(['foo'], [$num1])), $str) },
+        { expr: '`a${"foo"}b`', expected: new Binary('+', new Binary('+', new LiteralString('a'), new LiteralString('foo')), new LiteralString('b')) }
+      ];
+
+      for (const { expr, expected } of tests) {
+        it(expr, () => {
+          verifyEqual(parser.parse(expr), expected);
+        });
+      }
+    });
+
     describe('LiteralPrimitive', () => {
       // http://es5.github.io/x7.html#x7.8.4
       const tests = [
