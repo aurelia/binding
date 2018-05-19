@@ -3,7 +3,7 @@ import {
   AccessThis, AccessScope, AccessMember, AccessKeyed,
   CallScope, CallFunction, CallMember,
   PrefixNot, BindingBehavior, Binary,
-  LiteralPrimitive, LiteralArray, LiteralObject, LiteralString
+  LiteralPrimitive, LiteralArray, LiteralObject, LiteralString, PrefixUnary
 } from './ast';
 
 export class Parser {
@@ -132,6 +132,11 @@ export class ParserImplementation {
     case T$Bang:
       this.nextToken();
       return new PrefixNot('!', this.parseLeftHandSideExpression(0));
+    case T$TypeofKeyword:
+    case T$VoidKeyword:
+      const op = TokenValues[this.currentToken & T$TokenMask];
+      this.nextToken();
+      return new PrefixUnary(op, this.parseLeftHandSideExpression(0));
     case T$ParentScope: // $parent
       {
         do {
@@ -155,8 +160,8 @@ export class ParserImplementation {
     // falls through
     case T$Identifier: // identifier
       {
-        this.nextToken();
         result = new AccessScope(this.tokenValue, context & C$Ancestor);
+        this.nextToken();
         context = (context & C$ShorthandProp) | C$Scope;
         break;
       }
@@ -575,12 +580,13 @@ const T$MemberOrCallExpression = 1 << 24;
 /** 'instanceof' */const T$InstanceOfKeyword  = 33/*11*/ |  5 << T$PrecShift | T$BinaryOp | T$Keyword;
 /** '+' */         const T$Plus               = 34/*13*/ |  6 << T$PrecShift | T$BinaryOp | T$UnaryOp;
 /** '-' */         const T$Minus              = 35/*13*/ |  6 << T$PrecShift | T$BinaryOp | T$UnaryOp;
-/** 'typeof' */    const T$TypeofKeyword      = 36/*16*/ |  8 << T$PrecShift | T$BinaryOp | T$UnaryOp | T$Keyword;
-/** '*' */         const T$Star               = 37/*14*/ |  7 << T$PrecShift | T$BinaryOp;
-/** '%' */         const T$Percent            = 38/*14*/ |  7 << T$PrecShift | T$BinaryOp;
-/** '/' */         const T$Slash              = 39/*14*/ |  7 << T$PrecShift | T$BinaryOp;
-/** '=' */         const T$Eq                 = 40;
-/** '!' */         const T$Bang               = 41 | T$UnaryOp;
+/** 'typeof' */    const T$TypeofKeyword      = 36/*16*/ | T$UnaryOp | T$Keyword;
+/** 'void' */      const T$VoidKeyword        = 37/*16*/ | T$UnaryOp | T$Keyword;
+/** '*' */         const T$Star               = 38/*14*/ |  7 << T$PrecShift | T$BinaryOp;
+/** '%' */         const T$Percent            = 39/*14*/ |  7 << T$PrecShift | T$BinaryOp;
+/** '/' */         const T$Slash              = 40/*14*/ |  7 << T$PrecShift | T$BinaryOp;
+/** '=' */         const T$Eq                 = 41;
+/** '!' */         const T$Bang               = 42 | T$UnaryOp;
 
 const KeywordLookup = Object.create(null);
 KeywordLookup.true = T$TrueKeyword;
@@ -592,6 +598,7 @@ KeywordLookup.$parent = T$ParentScope;
 KeywordLookup.in = T$InKeyword;
 KeywordLookup.instanceof = T$InstanceOfKeyword;
 KeywordLookup.typeof = T$TypeofKeyword;
+KeywordLookup.void = T$VoidKeyword;
 
 /**
  * Array for mapping tokens to token values. The indices of the values
@@ -606,7 +613,7 @@ const TokenValues = [
   '(', '{', '.', '}', ')', ';', ',', '[', ']', ':', '?', '\'', '"',
 
   '&', '|', '||', '&&', '^', '==', '!=', '===', '!==', '<', '>',
-  '<=', '>=', 'in', 'instanceof', '+', '-', 'typeof', '*', '%', '/', '=', '!'
+  '<=', '>=', 'in', 'instanceof', '+', '-', 'typeof', 'void', '*', '%', '/', '=', '!'
 ];
 
 /**

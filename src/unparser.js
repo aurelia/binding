@@ -137,13 +137,23 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
 
     visitPrefix(prefix) {
       this.write(`(${prefix.operation}`);
+      if (prefix.operation.charCodeAt(0) >= /*a*/97) {
+        // add a space after if it's a keyword unary operator
+        // note: the Bitwise NOT (~) has charCode 126, so if/when that operator is added, it should be excluded here
+        this.write(' ');
+      }
       prefix.expression.accept(this);
       this.write(')');
     }
 
     visitBinary(binary) {
       binary.left.accept(this);
-      this.write(binary.operation);
+      if (binary.operation.charCodeAt(0) === /*i*/105) {
+        // add a space before and after if it's either 'in' or 'instanceof'
+        this.write(` ${binary.operation} `);
+      } else {
+        this.write(binary.operation);
+      }
       binary.right.accept(this);
     }
 

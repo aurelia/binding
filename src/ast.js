@@ -479,6 +479,8 @@ export class Binary extends Expression {
     case '===': return left === right;
     case '!=' : return left != right; // eslint-disable-line eqeqeq
     case '!==': return left !== right;
+    case 'instanceof': return typeof right === 'function' && left instanceof right;
+    case 'in': return typeof right === 'object' && right !== null && left in right;
     // no default
     }
 
@@ -540,6 +542,33 @@ export class PrefixNot extends Expression {
 
   evaluate(scope, lookupFunctions) {
     return !this.expression.evaluate(scope, lookupFunctions);
+  }
+
+  accept(visitor) {
+    return visitor.visitPrefix(this);
+  }
+
+  connect(binding, scope) {
+    this.expression.connect(binding, scope);
+  }
+}
+
+export class PrefixUnary extends Expression {
+  constructor(operation, expression) {
+    super();
+
+    this.operation = operation;
+    this.expression = expression;
+  }
+
+  evaluate(scope, lookupFunctions) {
+    switch (this.operation) {
+    case 'typeof': return typeof this.expression.evaluate(scope, lookupFunctions);
+    case 'void': return void this.expression.evaluate(scope, lookupFunctions);
+    // no default
+    }
+
+    throw new Error(`Internal error [${this.operation}] not handled`);
   }
 
   accept(visitor) {
