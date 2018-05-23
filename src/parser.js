@@ -891,7 +891,7 @@ function addIdPartOrStart(kind, value) {
   }
 }
 
-export const parserConfig = {
+export const ParserConfig = {
   addIdentifierPart: function(value) {
     addIdPartOrStart($idPart, value);
   },

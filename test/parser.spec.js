@@ -1,4 +1,4 @@
-import { Parser, parserConfig } from '../src/parser';
+import { Parser, ParserConfig } from '../src/parser';
 import { AccessKeyed, AccessMember, AccessScope, AccessThis,
   Assign, Binary, BindingBehavior, CallFunction,
   CallMember, CallScope, Conditional,
@@ -762,25 +762,25 @@ describe('Parser', () => {
 
     for (const asciiChar of asciiChars.slice(0, 1)) {
       it(`addIdentifierStart works for ASCII character ${asciiChar}`, () => {
-        parserConfig.addIdentifierStart(asciiChar);
+        ParserConfig.addIdentifierStart(asciiChar);
         verifyEqual(parser.parse(asciiChar), new AccessScope(asciiChar, 0));
       });
     }
 
     for (const asciiChar of asciiChars.slice(2, 3)) {
       it(`addIdentifierPart works for ASCII character ${asciiChar}`, () => {
-        parserConfig.addIdentifierPart(asciiChar);
+        ParserConfig.addIdentifierPart(asciiChar);
         verifyEqual(parser.parse(`$${asciiChar}`), new AccessScope(`$${asciiChar}`, 0));
       });
     }
 
     it('addIdentifierStart works for unicode characters', () => {
-      parserConfig.addIdentifierStart('ಠ');
+      ParserConfig.addIdentifierStart('ಠ');
       verifyEqual(parser.parse('ಠ_ಠ'), new AccessScope('ಠ_ಠ', 0));
     });
 
     it('addIdentifierPart works for unicode characters', () => {
-      parserConfig.addIdentifierPart('漢');
+      ParserConfig.addIdentifierPart('漢');
       verifyEqual(parser.parse(`$漢`), new AccessScope('$漢', 0));
       verifyError(parser, '漢', `Unexpected character [漢]`);
     });
