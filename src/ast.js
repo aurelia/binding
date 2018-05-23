@@ -618,6 +618,52 @@ export class LiteralString extends Expression {
   }
 }
 
+export class LiteralTemplate extends Expression {
+  constructor(cooked, expressions, raw, func) {
+    super();
+    this.cooked = cooked;
+    this.expressions = expressions || [];
+    this.length = this.expressions.length;
+    this.tagged = func !== undefined;
+    if (this.tagged) {
+      this.cooked.raw = raw;
+      this.func = func;
+    }
+  }
+
+  evaluate(scope, lookupFunctions) {
+    const results = new Array(this.length);
+    for (let i = 0; i < this.length; i++) {
+      results[i] = this.expressions[i].evaluate(scope, lookupFunctions);
+    }
+    if (this.tagged) {
+      const func = this.func.evaluate(scope, lookupFunctions);
+      if (typeof func !== 'function') {
+        throw new Error(`${this.func} is not a function`);
+      }
+      return func.call(null, this.cooked, ...results);
+    }
+    let result = this.cooked[0];
+    for (let i = 0; i < this.length; i++) {
+      result = String.prototype.concat(result, results[i], this.cooked[i + 1]);
+    }
+    return result;
+  }
+
+  accept(visitor) {
+    return visitor.visitLiteralTemplate(this);
+  }
+
+  connect(binding, scope) {
+    for (let i = 0; i < this.length; i++) {
+      this.expressions[i].connect(binding, scope);
+    }
+    if (this.tagged) {
+      this.func.connect(binding, scope);
+    }
+  }
+}
+
 export class LiteralArray extends Expression {
   constructor(elements) {
     super();

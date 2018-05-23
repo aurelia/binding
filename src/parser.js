@@ -3,7 +3,7 @@ import {
   AccessThis, AccessScope, AccessMember, AccessKeyed,
   CallScope, CallFunction, CallMember,
   PrefixNot, BindingBehavior, Binary,
-  LiteralPrimitive, LiteralArray, LiteralObject, LiteralString, PrefixUnary
+  LiteralPrimitive, LiteralArray, LiteralObject, LiteralString, LiteralTemplate, PrefixUnary
 } from './ast';
 
 export class Parser {
@@ -223,14 +223,15 @@ export class ParserImplementation {
         break;
       }
     case T$StringLiteral:
+      result = new LiteralString(this.tokenValue);
+      this.nextToken();
+      break;
     case T$TemplateTail:
-      {
-        result = new LiteralString(this.tokenValue);
-        this.nextToken();
-        break;
-      }
+      result = new LiteralTemplate([this.tokenValue]);
+      this.nextToken();
+      break;
     case T$TemplateContinuation:
-      result = this.parseTemplate();
+      result = this.parseTemplate(0);
       break;
     case T$NumericLiteral:
       {
@@ -303,6 +304,13 @@ export class ParserImplementation {
           result = new CallFunction(result, args);
         }
         context = 0;
+        break;
+      case T$TemplateTail:
+        result = new LiteralTemplate([this.tokenValue], [], [this.tokenRaw], result);
+        this.nextToken();
+        break;
+      case T$TemplateContinuation:
+        result = this.parseTemplate(context | C$Tagged, result);
       // no default
       }
     }
@@ -310,18 +318,27 @@ export class ParserImplementation {
     return result;
   }
 
-  parseTemplate(result) {
-    const head = new LiteralString(this.tokenValue);
+  parseTemplate(context, func) {
+    const cooked = [this.tokenValue];
+    const raw = context & C$Tagged ? [this.tokenRaw] : undefined;
     this.expect(T$TemplateContinuation);
-    const current = new Binary('+', head, this.parseExpression());
-    result = result ? new Binary('+', result, current) : current;
-    if ((this.currentToken = this.scanTemplateTail()) === T$TemplateTail) {
-      result = new Binary('+', result, new LiteralString(this.tokenValue));
-      this.nextToken();
-    } else {
-      this.parseTemplate(result);
+    const expressions = [this.parseExpression()];
+
+    while ((this.currentToken = this.scanTemplateTail()) !== T$TemplateTail) {
+      cooked.push(this.tokenValue);
+      if (context & C$Tagged) {
+        raw.push(this.tokenRaw);
+      }
+      this.expect(T$TemplateContinuation);
+      expressions.push(this.parseExpression());
     }
-    return result;
+
+    cooked.push(this.tokenValue);
+    if (context & C$Tagged) {
+      raw.push(this.tokenRaw);
+    }
+    this.nextToken();
+    return new LiteralTemplate(cooked, expressions, raw, func);
   }
 
   nextToken() {
@@ -552,6 +569,7 @@ const C$Scope         = 1 << 11;
 const C$Member        = 1 << 12;
 const C$Keyed         = 1 << 13;
 const C$ShorthandProp = 1 << 14;
+const C$Tagged        = 1 << 15;
 // Performing a bitwise and (&) with this value (511) will return only the ancestor bit (is this limit high enough?)
 const C$Ancestor      = (1 << 9) - 1;
 
@@ -596,8 +614,8 @@ const T$UnaryOp                = 1 << 22;
 const T$MemberExpression       = 1 << 23;
 /** '.' | '[' | '(' */
 const T$MemberOrCallExpression = 1 << 24;
-const T$TemplateTail           = 1 << 25;
-const T$TemplateContinuation   = 1 << 26;
+const T$TemplateTail           = 1 << 25 | T$MemberOrCallExpression;
+const T$TemplateContinuation   = 1 << 26 | T$MemberOrCallExpression;
 
 /** false */      const T$FalseKeyword     = 0 | T$Keyword | T$Literal;
 /** true */       const T$TrueKeyword      = 1 | T$Keyword | T$Literal;
@@ -748,7 +766,7 @@ CharScanners[/*' 39*/0x27] = p => {
 };
 CharScanners[/*` 96*/0x60] = p => {
   return p.scanTemplate();
-}
+};
 
 // !, !=, !==
 CharScanners[/*! 33*/0x21] = p => {

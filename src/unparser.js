@@ -199,5 +199,17 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
       let escaped = literal.value.replace(/'/g, "\'");
       this.write(`'${escaped}'`);
     }
+
+    visitLiteralTemplate(literal) {
+      const { cooked, expressions } = literal;
+      const length = expressions.length;
+      this.write('`');
+      this.write(cooked[0]);
+      for (let i = 0; i < length; i++) {
+        expressions[i].accept(this);
+        this.write(cooked[i + 1]);
+      }
+      this.write('`');
+    }
   };
 }

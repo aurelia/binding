@@ -2,7 +2,7 @@ import { Parser, parserConfig } from '../src/parser';
 import { AccessKeyed, AccessMember, AccessScope, AccessThis,
   Assign, Binary, BindingBehavior, CallFunction,
   CallMember, CallScope, Conditional,
-  LiteralArray, LiteralObject, LiteralPrimitive, LiteralString,
+  LiteralArray, LiteralObject, LiteralPrimitive, LiteralString, LiteralTemplate,
   PrefixNot, PrefixUnary, ValueConverter } from '../src/ast';
 import { latin1IdentifierStartChars, latin1IdentifierPartChars, otherBMPIdentifierPartChars } from './unicode';
 
@@ -77,16 +77,20 @@ describe('Parser', () => {
 
     describe('template literal', () => {
       const tests = [
-        { expr: '`\r\n\t\n`', expected: new LiteralString('\r\n\t\n') },
-        { expr: '`\n\r\n\r`', expected: new LiteralString('\n\r\n\r') },
-        { expr: '`x\\r\\nx`', expected: new LiteralString('x\r\nx') },
-        { expr: '`x\r\nx`', expected: new LiteralString('x\r\nx') },
-        { expr: '``', expected: $str },
-        { expr: '`foo`', expected: new LiteralString('foo') },
-        { expr: '`$`', expected: new LiteralString('$') },
-        { expr: '`a${foo}`', expected: new Binary('+', new Binary('+', new LiteralString('a'), $foo), $str) },
-        { expr: '`${ {foo: 1} }`', expected: new Binary('+', new Binary('+', $str, new LiteralObject(['foo'], [$num1])), $str) },
-        { expr: '`a${"foo"}b`', expected: new Binary('+', new Binary('+', new LiteralString('a'), new LiteralString('foo')), new LiteralString('b')) }
+        { expr: '`\r\n\t\n`', expected: new LiteralTemplate(['\r\n\t\n']) },
+        { expr: '`\n\r\n\r`', expected: new LiteralTemplate(['\n\r\n\r']) },
+        { expr: '`x\\r\\nx`', expected: new LiteralTemplate(['x\r\nx']) },
+        { expr: '`x\r\nx`', expected: new LiteralTemplate(['x\r\nx']) },
+        { expr: '``', expected: new LiteralTemplate(['']) },
+        { expr: '`foo`', expected: new LiteralTemplate(['foo']) },
+        { expr: '`$`', expected: new LiteralTemplate(['$']) },
+        { expr: '`a${foo}`', expected: new LiteralTemplate(['a', ''], [$foo]) },
+        { expr: '`${ {foo: 1} }`', expected: new LiteralTemplate(['', ''], [new LiteralObject(['foo'], [$num1])]) },
+        { expr: '`a${"foo"}b`', expected: new LiteralTemplate(['a', 'b'], [new LiteralString('foo')]) },
+        { expr: '`a${"foo"}b${"foo"}c`', expected: new LiteralTemplate(['a', 'b', 'c'], [new LiteralString('foo'), new LiteralString('foo')]) },
+        { expr: 'foo`a${"foo"}b`', expected: new LiteralTemplate(['a', 'b'], [new LiteralString('foo')], ['a', 'b'], $foo) },
+        { expr: 'foo`bar`', expected: new LiteralTemplate(['bar'], [], ['bar'], $foo) },
+        { expr: 'foo`\r\n`', expected: new LiteralTemplate(['\r\n'], [], ['\\r\\n'], $foo) }
       ];
 
       for (const { expr, expected } of tests) {
