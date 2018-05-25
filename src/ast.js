@@ -619,16 +619,31 @@ export class LiteralString extends Expression {
 }
 
 export class LiteralTemplate extends Expression {
-  constructor(cooked, expressions, raw, func) {
+  constructor(cooked, expressions, raw, tag) {
     super();
     this.cooked = cooked;
     this.expressions = expressions || [];
     this.length = this.expressions.length;
-    this.tagged = func !== undefined;
+    this.tagged = tag !== undefined;
     if (this.tagged) {
       this.cooked.raw = raw;
-      this.func = func;
+      this.tag = tag;
+      if (tag instanceof AccessScope) {
+        this.contextType = 'Scope';
+      } else if (tag instanceof AccessMember || tag instanceof AccessKeyed) {
+        this.contextType = 'Object';
+      } else {
+        throw new Error(`${this.tag} is not a valid template tag`);
+      }
     }
+  }
+
+  getScopeContext(scope, lookupFunctions) {
+    return getContextFor(this.tag.name, scope, this.tag.ancestor);
+  }
+
+  getObjectContext(scope, lookupFunctions) {
+    return this.tag.object.evaluate(scope, lookupFunctions);
   }
 
   evaluate(scope, lookupFunctions) {
@@ -637,11 +652,12 @@ export class LiteralTemplate extends Expression {
       results[i] = this.expressions[i].evaluate(scope, lookupFunctions);
     }
     if (this.tagged) {
-      const func = this.func.evaluate(scope, lookupFunctions);
+      const func = this.tag.evaluate(scope, lookupFunctions);
       if (typeof func !== 'function') {
-        throw new Error(`${this.func} is not a function`);
+        throw new Error(`${this.tag} is not a function`);
       }
-      return func.call(null, this.cooked, ...results);
+      const context = this[`get${this.contextType}Context`](scope, lookupFunctions);
+      return func.call(context, this.cooked, ...results);
     }
     let result = this.cooked[0];
     for (let i = 0; i < this.length; i++) {
@@ -659,7 +675,7 @@ export class LiteralTemplate extends Expression {
       this.expressions[i].connect(binding, scope);
     }
     if (this.tagged) {
-      this.func.connect(binding, scope);
+      this.tag.connect(binding, scope);
     }
   }
 }

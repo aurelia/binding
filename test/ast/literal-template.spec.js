@@ -1,5 +1,15 @@
-import {LiteralTemplate, LiteralString, AccessScope} from '../../src/ast';
+import {LiteralTemplate, LiteralString, AccessScope, AccessMember, AccessKeyed} from '../../src/ast';
 import {createScopeForTest} from '../../src/scope';
+
+class Test {
+  constructor() {
+    this.value = 'foo';
+  }
+
+  makeString(cooked, a, b) {
+    return cooked[0] + a + cooked[1] + b + cooked[2] + this.value;
+  }
+}
 
 describe('LiteralTemplate', () => {
   const tests = [
@@ -13,6 +23,8 @@ describe('LiteralTemplate', () => {
     { expr: new LiteralTemplate(['1', '2'], [new LiteralString('foo')], [], new AccessScope('makeString', 0)), expected: '1foo2', ctx: {makeString: (cooked, foo) => cooked[0] + foo + cooked[1]} },
     { expr: new LiteralTemplate(['1', '2'], [new AccessScope('foo')], [], new AccessScope('makeString', 0)), expected: '1bar2', ctx: {foo: 'bar', makeString: (cooked, foo) => cooked[0] + foo + cooked[1]} },
     { expr: new LiteralTemplate(['1', '2', '3'], [new AccessScope('foo'), new AccessScope('bar')], [], new AccessScope('makeString', 0)), expected: 'bazqux', ctx: {foo: 'baz', bar: 'qux', makeString: (cooked, foo, bar) => foo + bar} },
+    { expr: new LiteralTemplate(['1', '2', '3'], [new AccessScope('foo'), new AccessScope('bar')], [], new AccessMember(new AccessScope('test', 0), 'makeString')), expected: '1baz2qux3foo', ctx: {foo: 'baz', bar: 'qux', test: new Test()} },
+    { expr: new LiteralTemplate(['1', '2', '3'], [new AccessScope('foo'), new AccessScope('bar')], [], new AccessKeyed(new AccessScope('test', 0), new LiteralString('makeString'))), expected: '1baz2qux3foo', ctx: {foo: 'baz', bar: 'qux', test: new Test()} }
   ];
   for (const { expr, expected, ctx } of tests) {
     it(`evaluates ${expected}`, () => {
