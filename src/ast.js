@@ -646,18 +646,21 @@ export class LiteralTemplate extends Expression {
     return this.tag.object.evaluate(scope, lookupFunctions);
   }
 
-  evaluate(scope, lookupFunctions) {
+  evaluate(scope, lookupFunctions, mustEvaluate) {
     const results = new Array(this.length);
     for (let i = 0; i < this.length; i++) {
       results[i] = this.expressions[i].evaluate(scope, lookupFunctions);
     }
     if (this.tagged) {
       const func = this.tag.evaluate(scope, lookupFunctions);
-      if (typeof func !== 'function') {
-        throw new Error(`${this.tag} is not a function`);
+      if (typeof func === 'function') {
+        const context = this[`get${this.contextType}Context`](scope, lookupFunctions);
+        return func.call(context, this.cooked, ...results);
       }
-      const context = this[`get${this.contextType}Context`](scope, lookupFunctions);
-      return func.call(context, this.cooked, ...results);
+      if (!mustEvaluate) {
+        return null;
+      }
+      throw new Error(`${this.tag} is not a function`);
     }
     let result = this.cooked[0];
     for (let i = 0; i < this.length; i++) {
