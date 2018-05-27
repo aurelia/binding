@@ -3,7 +3,7 @@ import {
   AccessThis, AccessScope, AccessMember, AccessKeyed,
   CallScope, CallFunction, CallMember,
   Unary, BindingBehavior, Binary,
-  LiteralPrimitive, LiteralArray, LiteralObject, LiteralString
+  LiteralPrimitive, LiteralArray, LiteralObject, LiteralString, LiteralTemplate
 } from './ast';
 
 export class ExpressionCloner {
@@ -90,11 +90,15 @@ export class ExpressionCloner {
   }
 
   visitLiteralObject(literal) {
-    return new LiteralObject( literal.keys, this.cloneExpressionArray(literal.values));
+    return new LiteralObject(literal.keys, this.cloneExpressionArray(literal.values));
   }
 
   visitLiteralString(literal) {
     return new LiteralString(literal.value);
+  }
+
+  visitLiteralTemplate(literal) {
+    return new LiteralTemplate(literal.cooked, this.cloneExpressionArray(literal.expressions), literal.raw, literal.tag && literal.tag.accept(this));
   }
 }
 
