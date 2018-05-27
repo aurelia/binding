@@ -4,7 +4,6 @@ import {connectBindingToSignal} from './signals';
 
 export class Expression {
   constructor() {
-    this.isChain = false;
     this.isAssignable = false;
   }
 
@@ -20,35 +19,6 @@ export class Expression {
     return typeof FEATURE_NO_UNPARSER === 'undefined' ?
       Unparser.unparse(this) :
       super.toString();
-  }
-}
-
-export class Chain extends Expression {
-  constructor(expressions) {
-    super();
-
-    this.expressions = expressions;
-    this.isChain = true;
-  }
-
-  evaluate(scope, lookupFunctions) {
-    let result;
-    let expressions = this.expressions;
-    let last;
-
-    for (let i = 0, length = expressions.length; i < length; ++i) {
-      last = expressions[i].evaluate(scope, lookupFunctions);
-
-      if (last !== null) {
-        result = last;
-      }
-    }
-
-    return result;
-  }
-
-  accept(visitor) {
-    return visitor.visitChain(this);
   }
 }
 

@@ -1,5 +1,5 @@
 import {
-  Chain, ValueConverter, Assign, Conditional,
+  ValueConverter, Assign, Conditional,
   AccessThis, AccessScope, AccessMember, AccessKeyed,
   CallScope, CallFunction, CallMember,
   Unary, BindingBehavior, Binary,
@@ -14,8 +14,7 @@ export class Parser {
   parse(src) {
     src = src || '';
 
-    return this.cache[src]
-      || (this.cache[src] = new ParserImplementation(src).parseChain());
+    return this.cache[src] || (this.cache[src] = new ParserImplementation(src).parseBindingBehavior());
   }
 }
 
@@ -44,28 +43,17 @@ export class ParserImplementation {
     this.ch = src.charCodeAt(0);
   }
 
-  parseChain() {
-    this.nextToken();
-    const expressions = [];
-
-    while (!(this.tkn & T$ExpressionTerminal)) {
-      expressions.push(this.parseBindingBehavior());
-    }
-    if (this.tkn !== T$EOF) {
-      if (this.opt(T$Semicolon)) {
-        this.err('Multiple expressions are not allowed.');
-      }
-      if (this.tkn & T$ClosingToken) {
-        this.err(`Unconsumed token ${this.raw}`);
-      }
-    }
-    return (expressions.length === 1) ? expressions[0] : new Chain(expressions);
-  }
-
   parseBindingBehavior() {
+    this.nextToken();
+    if (this.tkn & T$ExpressionTerminal) {
+      this.err('Invalid start of expression');
+    }
     let result = this.parseValueConverter();
     while (this.opt(T$Ampersand)) {
       result = new BindingBehavior(result, this.val, this.parseVariadicArgs());
+    }
+    if (this.tkn !== T$EOF) {
+      this.err(`Unconsumed token ${this.raw}`);
     }
     return result;
   }
@@ -640,38 +628,37 @@ const T$TemplateContinuation   = 1 << 26 | T$MemberOrCallExpression;
 /** '.' */  const T$Period    =  8 | T$MemberExpression | T$MemberOrCallExpression;
 /** '}' */  const T$RBrace    =  9 | T$AccessScopeTerminal | T$ClosingToken | T$ExpressionTerminal;
 /** ')' */  const T$RParen    = 10 | T$AccessScopeTerminal | T$ClosingToken | T$ExpressionTerminal;
-/** ';' */  const T$Semicolon = 11 | T$ExpressionTerminal;
-/** ',' */  const T$Comma     = 12 | T$AccessScopeTerminal;
-/** '[' */  const T$LBracket  = 13 | T$OpeningToken | T$AccessScopeTerminal | T$MemberExpression | T$MemberOrCallExpression;
-/** ']' */  const T$RBracket  = 14 | T$ClosingToken | T$ExpressionTerminal;
-/** ':' */  const T$Colon     = 15 | T$AccessScopeTerminal;
-/** '?' */  const T$Question  = 16;
+/** ',' */  const T$Comma     = 11 | T$AccessScopeTerminal;
+/** '[' */  const T$LBracket  = 12 | T$OpeningToken | T$AccessScopeTerminal | T$MemberExpression | T$MemberOrCallExpression;
+/** ']' */  const T$RBracket  = 13 | T$ClosingToken | T$ExpressionTerminal;
+/** ':' */  const T$Colon     = 14 | T$AccessScopeTerminal;
+/** '?' */  const T$Question  = 15;
 
 // Operator precedence: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_Precedence#Table
-/** '&' */         const T$Ampersand          = 19 | T$AccessScopeTerminal;
-/** '|' */         const T$Bar                = 20 | T$AccessScopeTerminal;
-/** '||' */        const T$BarBar             = 21/* 5*/ |  1 << T$PrecShift | T$BinaryOp;
-/** '&&' */        const T$AmpersandAmpersand = 22/* 6*/ |  2 << T$PrecShift | T$BinaryOp;
-/** '^' */         const T$Caret              = 23/* 8*/ |  3 << T$PrecShift | T$BinaryOp;
-/** '==' */        const T$EqEq               = 24/*10*/ |  4 << T$PrecShift | T$BinaryOp;
-/** '!=' */        const T$BangEq             = 25/*10*/ |  4 << T$PrecShift | T$BinaryOp;
-/** '===' */       const T$EqEqEq             = 26/*10*/ |  4 << T$PrecShift | T$BinaryOp;
-/** '!== '*/       const T$BangEqEq           = 27/*10*/ |  4 << T$PrecShift | T$BinaryOp;
-/** '<' */         const T$Lt                 = 28/*11*/ |  5 << T$PrecShift | T$BinaryOp;
-/** '>' */         const T$Gt                 = 29/*11*/ |  5 << T$PrecShift | T$BinaryOp;
-/** '<=' */        const T$LtEq               = 30/*11*/ |  5 << T$PrecShift | T$BinaryOp;
-/** '>=' */        const T$GtEq               = 31/*11*/ |  5 << T$PrecShift | T$BinaryOp;
-/** 'in' */        const T$InKeyword          = 32/*11*/ |  5 << T$PrecShift | T$BinaryOp | T$Keyword;
-/** 'instanceof' */const T$InstanceOfKeyword  = 33/*11*/ |  5 << T$PrecShift | T$BinaryOp | T$Keyword;
-/** '+' */         const T$Plus               = 34/*13*/ |  6 << T$PrecShift | T$BinaryOp | T$UnaryOp;
-/** '-' */         const T$Minus              = 35/*13*/ |  6 << T$PrecShift | T$BinaryOp | T$UnaryOp;
-/** 'typeof' */    const T$TypeofKeyword      = 36/*16*/ | T$UnaryOp | T$Keyword;
-/** 'void' */      const T$VoidKeyword        = 37/*16*/ | T$UnaryOp | T$Keyword;
-/** '*' */         const T$Star               = 38/*14*/ |  7 << T$PrecShift | T$BinaryOp;
-/** '%' */         const T$Percent            = 39/*14*/ |  7 << T$PrecShift | T$BinaryOp;
-/** '/' */         const T$Slash              = 40/*14*/ |  7 << T$PrecShift | T$BinaryOp;
-/** '=' */         const T$Eq                 = 41;
-/** '!' */         const T$Bang               = 42 | T$UnaryOp;
+/** '&' */         const T$Ampersand          = 18 | T$AccessScopeTerminal;
+/** '|' */         const T$Bar                = 19 | T$AccessScopeTerminal;
+/** '||' */        const T$BarBar             = 20/* 5*/ |  1 << T$PrecShift | T$BinaryOp;
+/** '&&' */        const T$AmpersandAmpersand = 21/* 6*/ |  2 << T$PrecShift | T$BinaryOp;
+/** '^' */         const T$Caret              = 22/* 8*/ |  3 << T$PrecShift | T$BinaryOp;
+/** '==' */        const T$EqEq               = 23/*10*/ |  4 << T$PrecShift | T$BinaryOp;
+/** '!=' */        const T$BangEq             = 24/*10*/ |  4 << T$PrecShift | T$BinaryOp;
+/** '===' */       const T$EqEqEq             = 25/*10*/ |  4 << T$PrecShift | T$BinaryOp;
+/** '!== '*/       const T$BangEqEq           = 26/*10*/ |  4 << T$PrecShift | T$BinaryOp;
+/** '<' */         const T$Lt                 = 27/*11*/ |  5 << T$PrecShift | T$BinaryOp;
+/** '>' */         const T$Gt                 = 28/*11*/ |  5 << T$PrecShift | T$BinaryOp;
+/** '<=' */        const T$LtEq               = 29/*11*/ |  5 << T$PrecShift | T$BinaryOp;
+/** '>=' */        const T$GtEq               = 30/*11*/ |  5 << T$PrecShift | T$BinaryOp;
+/** 'in' */        const T$InKeyword          = 31/*11*/ |  5 << T$PrecShift | T$BinaryOp | T$Keyword;
+/** 'instanceof' */const T$InstanceOfKeyword  = 32/*11*/ |  5 << T$PrecShift | T$BinaryOp | T$Keyword;
+/** '+' */         const T$Plus               = 33/*13*/ |  6 << T$PrecShift | T$BinaryOp | T$UnaryOp;
+/** '-' */         const T$Minus              = 34/*13*/ |  6 << T$PrecShift | T$BinaryOp | T$UnaryOp;
+/** 'typeof' */    const T$TypeofKeyword      = 35/*16*/ | T$UnaryOp | T$Keyword;
+/** 'void' */      const T$VoidKeyword        = 36/*16*/ | T$UnaryOp | T$Keyword;
+/** '*' */         const T$Star               = 37/*14*/ |  7 << T$PrecShift | T$BinaryOp;
+/** '%' */         const T$Percent            = 38/*14*/ |  7 << T$PrecShift | T$BinaryOp;
+/** '/' */         const T$Slash              = 39/*14*/ |  7 << T$PrecShift | T$BinaryOp;
+/** '=' */         const T$Eq                 = 40;
+/** '!' */         const T$Bang               = 41 | T$UnaryOp;
 
 const KeywordLookup = Object.create(null);
 KeywordLookup.true = T$TrueKeyword;
@@ -695,7 +682,7 @@ KeywordLookup.void = T$VoidKeyword;
 const TokenValues = [
   false, true, null, undefined, '$this', '$parent',
 
-  '(', '{', '.', '}', ')', ';', ',', '[', ']', ':', '?', '\'', '"',
+  '(', '{', '.', '}', ')', ',', '[', ']', ':', '?', '\'', '"',
 
   '&', '|', '||', '&&', '^', '==', '!=', '===', '!==', '<', '>',
   '<=', '>=', 'in', 'instanceof', '+', '-', 'typeof', 'void', '*', '%', '/', '=', '!'
@@ -855,7 +842,6 @@ CharScanners[/*, 44*/0x2C] = returnToken(T$Comma);
 CharScanners[/*- 45*/0x2D] = returnToken(T$Minus);
 CharScanners[/*/ 47*/0x2F] = returnToken(T$Slash);
 CharScanners[/*: 58*/0x3A] = returnToken(T$Colon);
-CharScanners[/*; 59*/0x3B] = returnToken(T$Semicolon);
 CharScanners[/*? 63*/0x3F] = returnToken(T$Question);
 CharScanners[/*[ 91*/0x5B] = returnToken(T$LBracket);
 CharScanners[/*] 93*/0x5D] = returnToken(T$RBracket);

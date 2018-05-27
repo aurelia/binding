@@ -1,5 +1,5 @@
 import {
-  Chain, ValueConverter, Assign, Conditional,
+  ValueConverter, Assign, Conditional,
   AccessThis, AccessScope, AccessMember, AccessKeyed,
   CallScope, CallFunction, CallMember,
   Unary, BindingBehavior, Binary,
@@ -14,10 +14,6 @@ export class ExpressionCloner {
       clonedArray[i] = array[i].accept(this);
     }
     return clonedArray;
-  }
-
-  visitChain(chain) {
-    return new Chain(this.cloneExpressionArray(chain.expressions));
   }
 
   visitBindingBehavior(behavior) {
