@@ -532,28 +532,7 @@ export class Binary extends Expression {
   }
 }
 
-export class PrefixNot extends Expression {
-  constructor(operation, expression) {
-    super();
-
-    this.operation = operation;
-    this.expression = expression;
-  }
-
-  evaluate(scope, lookupFunctions) {
-    return !this.expression.evaluate(scope, lookupFunctions);
-  }
-
-  accept(visitor) {
-    return visitor.visitPrefix(this);
-  }
-
-  connect(binding, scope) {
-    this.expression.connect(binding, scope);
-  }
-}
-
-export class PrefixUnary extends Expression {
+export class Unary extends Expression {
   constructor(operation, expression) {
     super();
 
@@ -563,6 +542,7 @@ export class PrefixUnary extends Expression {
 
   evaluate(scope, lookupFunctions) {
     switch (this.operation) {
+    case '!': return !this.expression.evaluate(scope, lookupFunctions);
     case 'typeof': return typeof this.expression.evaluate(scope, lookupFunctions);
     case 'void': return void this.expression.evaluate(scope, lookupFunctions);
     // no default

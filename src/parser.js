@@ -2,8 +2,8 @@ import {
   Chain, ValueConverter, Assign, Conditional,
   AccessThis, AccessScope, AccessMember, AccessKeyed,
   CallScope, CallFunction, CallMember,
-  PrefixNot, BindingBehavior, Binary,
-  LiteralPrimitive, LiteralArray, LiteralObject, LiteralString, LiteralTemplate, PrefixUnary
+  Unary, BindingBehavior, Binary,
+  LiteralPrimitive, LiteralArray, LiteralObject, LiteralString, LiteralTemplate
 } from './ast';
 
 export class Parser {
@@ -139,13 +139,11 @@ export class ParserImplementation {
       this.nextToken();
       return new Binary('-', new LiteralPrimitive(0), this.parseLeftHandSide(0));
     case T$Bang:
-      this.nextToken();
-      return new PrefixNot('!', this.parseLeftHandSide(0));
     case T$TypeofKeyword:
     case T$VoidKeyword:
       const op = TokenValues[this.tkn & T$TokenMask];
       this.nextToken();
-      return new PrefixUnary(op, this.parseLeftHandSide(0));
+      return new Unary(op, this.parseLeftHandSide(0));
     case T$ParentScope: // $parent
       {
         do {

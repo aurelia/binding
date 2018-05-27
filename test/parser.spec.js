@@ -1,9 +1,9 @@
-import { Parser, ParserConfig } from '../src/parser';
+import { Parser } from '../src/parser';
 import { AccessKeyed, AccessMember, AccessScope, AccessThis,
   Assign, Binary, BindingBehavior, CallFunction,
   CallMember, CallScope, Conditional,
   LiteralArray, LiteralObject, LiteralPrimitive, LiteralString, LiteralTemplate,
-  PrefixNot, PrefixUnary, ValueConverter } from '../src/ast';
+  Unary, ValueConverter } from '../src/ast';
 import { latin1IdentifierStartChars, latin1IdentifierPartChars, otherBMPIdentifierPartChars } from './unicode';
 
 /* eslint-disable no-loop-func, no-floating-decimal, key-spacing, new-cap, quotes, comma-spacing */
@@ -176,7 +176,7 @@ describe('Parser', () => {
         const nestedTests = [
           { expr: `${expr} ? a : b`, expected: paren ? new Conditional(expected, $a, $b) : new Conditional(expected.condition, expected.yes, new Conditional(expected.no, $a, $b)) },
           { expr: `a[b] ? ${expr} : a=((b))`, expected: new Conditional(new AccessKeyed($a, $b), expected, new Assign($a, $b)) },
-          { expr: `a ? !b===!a : ${expr}`, expected: new Conditional($a, new Binary('===', new PrefixNot('!', $b), new PrefixNot('!', $a)), expected) }
+          { expr: `a ? !b===!a : ${expr}`, expected: new Conditional($a, new Binary('===', new Unary('!', $b), new Unary('!', $a)), expected) }
         ];
 
         for (const { expr: nExpr, expected: nExpected } of nestedTests) {
@@ -254,7 +254,7 @@ describe('Parser', () => {
     describe('Binary + Unary operator precedence', () => {
       const x = $x;
       const y = $y;
-      const u = (op, r) => op === '!' ? new PrefixNot(op, r) : new PrefixUnary(op, r);
+      const u = (op, r) => op === '!' ? new Unary(op, r) : new Unary(op, r);
       const b = (l, op, r) => new Binary(op, l, r);
 
       for (const _b of binaryOps) {
