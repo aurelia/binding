@@ -753,39 +753,6 @@ describe('Parser', () => {
     });
   });
 
-  describe('addIdentifierPartStart', () => {
-    const asciiChars = ['~', '@', '#', '\\'];
-
-    beforeEach(() => {
-      parser = new Parser();
-    });
-
-    for (const asciiChar of asciiChars.slice(0, 1)) {
-      it(`addIdentifierStart works for ASCII character ${asciiChar}`, () => {
-        ParserConfig.addIdentifierStart(asciiChar);
-        verifyEqual(parser.parse(asciiChar), new AccessScope(asciiChar, 0));
-      });
-    }
-
-    for (const asciiChar of asciiChars.slice(2, 3)) {
-      it(`addIdentifierPart works for ASCII character ${asciiChar}`, () => {
-        ParserConfig.addIdentifierPart(asciiChar);
-        verifyEqual(parser.parse(`$${asciiChar}`), new AccessScope(`$${asciiChar}`, 0));
-      });
-    }
-
-    it('addIdentifierStart works for unicode characters', () => {
-      ParserConfig.addIdentifierStart('ಠ');
-      verifyEqual(parser.parse('ಠ_ಠ'), new AccessScope('ಠ_ಠ', 0));
-    });
-
-    it('addIdentifierPart works for unicode characters', () => {
-      ParserConfig.addIdentifierPart('漢');
-      verifyEqual(parser.parse(`$漢`), new AccessScope('$漢', 0));
-      verifyError(parser, '漢', `Unexpected character [漢]`);
-    });
-  });
-
   function _verifyError(expr, errorMessage = '') {
     verifyError(parser, expr, errorMessage);
   }

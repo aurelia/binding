@@ -738,7 +738,6 @@ function unexpectedCharacter(p) {
   p.error(`Unexpected character [${String.fromCharCode(p.currentChar)}]`);
   return null;
 }
-unexpectedCharacter.notMapped = true;
 
 // ASCII IdentifierPart lookup
 const AsciiIdParts = new Set();
@@ -852,50 +851,3 @@ CharScanners[/*] 93*/0x5D] = returnToken(T$RBracket);
 CharScanners[/*^ 94*/0x5E] = returnToken(T$Caret);
 CharScanners[/*{ 123*/0x7B] = returnToken(T$LBrace);
 CharScanners[/*} 125*/0x7D] = returnToken(T$RBrace);
-
-const $idStart = 'IdentifierStart';
-const $idPart = 'IdentifierPart';
-
-function addIdPartOrStart(kind, value) {
-  switch (typeof value) {
-  case 'number':
-    if (kind === $idStart) {
-      // only set the function if it is an IdentifierStart and does not already have a function
-      if (CharScanners[value].notMapped) {
-        CharScanners[value] = p => p.scanIdentifier();
-      } else {
-        throw new Error(`${$idPart} [${String.fromCharCode(value)}] conflicts with an existing character mapping.`);
-      }
-    }
-    // an IdentifierStart is always also an IdentifierPart, so we'll set this value regardless
-    IdParts[value] = true;
-    AsciiIdParts.add(value);
-    break;
-  case 'string': {
-    let len = value.length;
-    while (len--) addIdPartOrStart(kind, value[len].charCodeAt());
-    break;
-  }
-  case 'object': {
-    let len = value.length;
-    if (Array.isArray) {
-      while (len--) {
-        addIdPartOrStart(kind, value[len]);
-      }
-      break;
-    }
-  }
-  // falls through
-  default:
-    throw new Error(`${kind} must be a string, number, or an array of either (actual: ${typeof value})`);
-  }
-}
-
-export const ParserConfig = {
-  addIdentifierPart: function(value) {
-    addIdPartOrStart($idPart, value);
-  },
-  addIdentifierStart: function(value) {
-    addIdPartOrStart($idStart, value);
-  }
-};

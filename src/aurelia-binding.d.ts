@@ -752,26 +752,6 @@ export declare class LiteralTemplate extends Expression {
 }
 
 /**
- * Global parser configuration object that enables certain customizations for the parser.
- */
-export declare const ParserConfig: {
-  /**
-   * Register the specified character(s) as valid parts of an identifier (but not valid starts).
-   * 
-   * @param value A number representing the character code, a string containing the individual
-   * characters, or an array of either.
-   */
-  addIdentifierPart(value: number | string | Array<number | string>): void;
-  /**
-   * Register the specified character(s) as valid parts as well as starts of an identifier.
-   * 
-   * @param value A number representing the character code, a string containing the individual 
-   * characters, or an array of either.
-   */
-  addIdentifierStart(value: number | string | Array<number | string>): void;
-}
-
-/**
  * Parses strings containing javascript expressions and returns a data-binding specialized AST.
  */
 export declare class Parser {
