@@ -130,7 +130,6 @@ class DelegationEntryHandler {
   dispose() {
     this.entry.decrement();
     this.lookup[this.targetEvent] = null;
-    this.entry = this.lookup = this.targetEvent = null;
   }
 }
 
@@ -151,7 +150,6 @@ class EventHandler {
 
   dispose() {
     this.target.removeEventListener(this.targetEvent, this.callback);
-    this.target = this.targetEvent = this.callback = null;
   }
 }
 
