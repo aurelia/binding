@@ -33,18 +33,6 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
       this.write(')');
     }
 
-    visitChain(chain) {
-      let expressions = chain.expressions;
-
-      for (let i = 0, length = expressions.length; i < length; ++i) {
-        if (i !== 0) {
-          this.write(';');
-        }
-
-        expressions[i].accept(this);
-      }
-    }
-
     visitBindingBehavior(behavior) {
       let args = behavior.args;
 

@@ -642,16 +642,13 @@ describe('Parser', () => {
 
       for (const expr of expressions) {
         it(expr, () => {
-          _verifyError(expr, 'Multiple expressions are not allowed');
+          _verifyError(expr, 'Unexpected character [;]');
         });
       }
     });
 
     describe('extra closing token', () => {
       const tests = [
-        { expr: ')', token: ')' },
-        { expr: ']', token: ']' },
-        { expr: '}', token: '}' },
         { expr: 'foo())', token: ')' },
         { expr: 'foo[x]]', token: ']' },
         { expr: '{foo}}', token: '}' }
@@ -660,6 +657,16 @@ describe('Parser', () => {
       for (const { expr, token } of tests) {
         it(expr, () => {
           _verifyError(expr, `Unconsumed token ${token}`);
+        });
+      }
+    });
+
+    describe('invalid expression start', () => {
+      const tests = [')', ']', '}', ''];
+
+      for (const expr of tests) {
+        it(expr, () => {
+          _verifyError(expr, `Invalid start of expression`);
         });
       }
     });
