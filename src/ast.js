@@ -479,6 +479,8 @@ export class Binary extends Expression {
     case '===': return left === right;
     case '!=' : return left != right; // eslint-disable-line eqeqeq
     case '!==': return left !== right;
+    case 'instanceof': return typeof right === 'function' && left instanceof right;
+    case 'in': return typeof right === 'object' && right !== null && left in right;
     // no default
     }
 
@@ -530,7 +532,7 @@ export class Binary extends Expression {
   }
 }
 
-export class PrefixNot extends Expression {
+export class Unary extends Expression {
   constructor(operation, expression) {
     super();
 
@@ -539,7 +541,14 @@ export class PrefixNot extends Expression {
   }
 
   evaluate(scope, lookupFunctions) {
-    return !this.expression.evaluate(scope, lookupFunctions);
+    switch (this.operation) {
+    case '!': return !this.expression.evaluate(scope, lookupFunctions);
+    case 'typeof': return typeof this.expression.evaluate(scope, lookupFunctions);
+    case 'void': return void this.expression.evaluate(scope, lookupFunctions);
+    // no default
+    }
+
+    throw new Error(`Internal error [${this.operation}] not handled`);
   }
 
   accept(visitor) {
@@ -586,6 +595,71 @@ export class LiteralString extends Expression {
   }
 
   connect(binding, scope) {
+  }
+}
+
+export class LiteralTemplate extends Expression {
+  constructor(cooked, expressions, raw, tag) {
+    super();
+    this.cooked = cooked;
+    this.expressions = expressions || [];
+    this.length = this.expressions.length;
+    this.tagged = tag !== undefined;
+    if (this.tagged) {
+      this.cooked.raw = raw;
+      this.tag = tag;
+      if (tag instanceof AccessScope) {
+        this.contextType = 'Scope';
+      } else if (tag instanceof AccessMember || tag instanceof AccessKeyed) {
+        this.contextType = 'Object';
+      } else {
+        throw new Error(`${this.tag} is not a valid template tag`);
+      }
+    }
+  }
+
+  getScopeContext(scope, lookupFunctions) {
+    return getContextFor(this.tag.name, scope, this.tag.ancestor);
+  }
+
+  getObjectContext(scope, lookupFunctions) {
+    return this.tag.object.evaluate(scope, lookupFunctions);
+  }
+
+  evaluate(scope, lookupFunctions, mustEvaluate) {
+    const results = new Array(this.length);
+    for (let i = 0; i < this.length; i++) {
+      results[i] = this.expressions[i].evaluate(scope, lookupFunctions);
+    }
+    if (this.tagged) {
+      const func = this.tag.evaluate(scope, lookupFunctions);
+      if (typeof func === 'function') {
+        const context = this[`get${this.contextType}Context`](scope, lookupFunctions);
+        return func.call(context, this.cooked, ...results);
+      }
+      if (!mustEvaluate) {
+        return null;
+      }
+      throw new Error(`${this.tag} is not a function`);
+    }
+    let result = this.cooked[0];
+    for (let i = 0; i < this.length; i++) {
+      result = String.prototype.concat(result, results[i], this.cooked[i + 1]);
+    }
+    return result;
+  }
+
+  accept(visitor) {
+    return visitor.visitLiteralTemplate(this);
+  }
+
+  connect(binding, scope) {
+    for (let i = 0; i < this.length; i++) {
+      this.expressions[i].connect(binding, scope);
+    }
+    if (this.tagged) {
+      this.tag.connect(binding, scope);
+    }
   }
 }
 

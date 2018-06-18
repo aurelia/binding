@@ -2,8 +2,8 @@ import {
   Chain, ValueConverter, Assign, Conditional,
   AccessThis, AccessScope, AccessMember, AccessKeyed,
   CallScope, CallFunction, CallMember,
-  PrefixNot, BindingBehavior, Binary,
-  LiteralPrimitive, LiteralArray, LiteralObject, LiteralString
+  Unary, BindingBehavior, Binary,
+  LiteralPrimitive, LiteralArray, LiteralObject, LiteralString, LiteralTemplate
 } from './ast';
 
 export class ExpressionCloner {
@@ -73,8 +73,8 @@ export class ExpressionCloner {
     return new CallMember(call.object.accept(this), call.name, this.cloneExpressionArray(call.args));
   }
 
-  visitPrefix(prefix) {
-    return new PrefixNot(prefix.operation, prefix.expression.accept(this));
+  visitUnary(unary) {
+    return new Unary(prefix.operation, prefix.expression.accept(this));
   }
 
   visitBinary(binary) {
@@ -90,11 +90,15 @@ export class ExpressionCloner {
   }
 
   visitLiteralObject(literal) {
-    return new LiteralObject( literal.keys, this.cloneExpressionArray(literal.values));
+    return new LiteralObject(literal.keys, this.cloneExpressionArray(literal.values));
   }
 
   visitLiteralString(literal) {
     return new LiteralString(literal.value);
+  }
+
+  visitLiteralTemplate(literal) {
+    return new LiteralTemplate(literal.cooked, this.cloneExpressionArray(literal.expressions), literal.raw, literal.tag && literal.tag.accept(this));
   }
 }
 

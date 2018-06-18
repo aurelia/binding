@@ -106,7 +106,7 @@ describe('CompositeObserver', () => {
     }, checkDelay * 2);
   });
 
-  it('handles PrefixNot expressions', done => {
+  it('handles Unary expressions', done => {
     let obj = { condition: true };
     let el = createElement('<div></div>');
     document.body.appendChild(el);

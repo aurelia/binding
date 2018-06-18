@@ -722,6 +722,36 @@ export declare class CallMember extends Expression {
 }
 
 /**
+ * An expression representing a (optionally tagged) template literal.
+ */
+export declare class LiteralTemplate extends Expression {
+  /**
+   * The cooked (escaped) string parts of the template.
+   * The first item is the TemplateHead. If there is only one item,
+   * then this counts as a NoSubstituteTemplate - functionally equivalent
+   * to a LiteralString, unless it's tagged.
+   */
+  cooked: string[] & {
+    /**
+     * The raw (unescaped) string parts of the template.
+     * These are only retrieved and stored for tagged templates.
+     */
+    raw?: string[]
+  };
+  /**
+   * The expressions within the template (the parts between `${` and `}`)
+   */
+  expressions: Expression[];
+  /**
+   * The tag (function) to be invoked with the LiteralTemplate arguments.
+   * The first argument is LiteralTemplate.cooked.
+   * The following arguments are the results of evaluating LiteralTemplate.expressions.
+   */
+  func?: AccessScope | AccessMember | AccessKeyed;
+  constructor(cooked: string[], expressions?: Expression[], raw?: string[], func?: AccessScope | AccessMember | AccessKeyed);
+}
+
+/**
  * Parses strings containing javascript expressions and returns a data-binding specialized AST.
  */
 export declare class Parser {
