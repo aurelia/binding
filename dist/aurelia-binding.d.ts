@@ -145,8 +145,8 @@ export declare interface CollectionObserver {
 /**
  * The change record of a collection mutation. 
  */
-export declare interface ICollectionObserverSplice<T = any> {
-
+export declare interface ICollectionObserverSplice<T = any, K = any> {
+  /* ArrayObserverSplice */
   /**
    * Number of items added to the collection.
    */
@@ -161,6 +161,33 @@ export declare interface ICollectionObserverSplice<T = any> {
    * A collection of items that were removed from the collection.
    */
   removed: Array<T>;
+  /* End ArrayObserverSplice */
+                                                   
+  /**
+   * The observed Set or Map after the change.
+   */
+  object: Set<T> | Map<K, T>;
+                                                   
+  /**
+   * The value of the Map item prior to the change.
+   */
+  oldValue: T;
+       
+  /**
+   * The key of the Map item that was changed.
+   */
+  key: K;
+                                                   
+  /**
+  * The Set value that was either added or removed.
+  */
+  value: T;
+                                                   
+  /**
+   * The type of change that has taken place. Valid options are "add", "delete", and "update".
+   * "update" is invalid for Set.
+   */
+  type: "add" | "delete" | "update";
 }
 
 /**
@@ -722,6 +749,36 @@ export declare class CallMember extends Expression {
 }
 
 /**
+ * An expression representing a (optionally tagged) template literal.
+ */
+export declare class LiteralTemplate extends Expression {
+  /**
+   * The cooked (escaped) string parts of the template.
+   * The first item is the TemplateHead. If there is only one item,
+   * then this counts as a NoSubstituteTemplate - functionally equivalent
+   * to a LiteralString, unless it's tagged.
+   */
+  cooked: string[] & {
+    /**
+     * The raw (unescaped) string parts of the template.
+     * These are only retrieved and stored for tagged templates.
+     */
+    raw?: string[]
+  };
+  /**
+   * The expressions within the template (the parts between `${` and `}`)
+   */
+  expressions: Expression[];
+  /**
+   * The tag (function) to be invoked with the LiteralTemplate arguments.
+   * The first argument is LiteralTemplate.cooked.
+   * The following arguments are the results of evaluating LiteralTemplate.expressions.
+   */
+  func?: AccessScope | AccessMember | AccessKeyed;
+  constructor(cooked: string[], expressions?: Expression[], raw?: string[], func?: AccessScope | AccessMember | AccessKeyed);
+}
+
+/**
  * Parses strings containing javascript expressions and returns a data-binding specialized AST.
  */
 export declare class Parser {
@@ -779,7 +836,7 @@ export declare class BindingEngine {
   /**
    * Gets an observer for collection mutation.
    */
-  collectionObserver(collection: Array<any> | Map<any, any>): CollectionObserver;
+  collectionObserver(collection: Array<any> | Map<any, any> | Set<any>): CollectionObserver;
   /**
    * Gets an observer for a javascript expression that accesses a property on the binding context.
    * @param bindingContext The binding context (view-model)

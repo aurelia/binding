@@ -3,11 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getSetObserver = exports.BindingEngine = exports.NameExpression = exports.Listener = exports.ListenerExpression = exports.BindingBehaviorResource = exports.ValueConverterResource = exports.Call = exports.CallExpression = exports.Binding = exports.BindingExpression = exports.ObjectObservationAdapter = exports.ObserverLocator = exports.SVGAnalyzer = exports.presentationAttributes = exports.presentationElements = exports.elements = exports.ComputedExpression = exports.ClassObserver = exports.SelectValueObserver = exports.CheckedObserver = exports.ValueAttributeObserver = exports.StyleObserver = exports.DataAttributeObserver = exports.dataAttributeAccessor = exports.XLinkAttributeObserver = exports.SetterObserver = exports.PrimitiveObserver = exports.propertyAccessor = exports.DirtyCheckProperty = exports.DirtyChecker = exports.EventSubscriber = exports.EventManager = exports.delegationStrategy = exports.getMapObserver = exports.ParserImplementation = exports.Parser = exports.bindingMode = exports.ExpressionCloner = exports.Unparser = exports.LiteralObject = exports.LiteralArray = exports.LiteralString = exports.LiteralPrimitive = exports.PrefixNot = exports.Binary = exports.CallFunction = exports.CallMember = exports.CallScope = exports.AccessKeyed = exports.AccessMember = exports.AccessScope = exports.AccessThis = exports.Conditional = exports.Assign = exports.ValueConverter = exports.BindingBehavior = exports.Chain = exports.Expression = exports.getArrayObserver = exports.CollectionLengthObserver = exports.ModifyCollectionObserver = exports.ExpressionObserver = exports.sourceContext = exports.targetContext = undefined;
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+exports.getSetObserver = exports.BindingEngine = exports.NameExpression = exports.Listener = exports.ListenerExpression = exports.BindingBehaviorResource = exports.ValueConverterResource = exports.Call = exports.CallExpression = exports.Binding = exports.BindingExpression = exports.ObjectObservationAdapter = exports.ObserverLocator = exports.SVGAnalyzer = exports.presentationAttributes = exports.presentationElements = exports.elements = exports.ComputedExpression = exports.ClassObserver = exports.SelectValueObserver = exports.CheckedObserver = exports.ValueAttributeObserver = exports.StyleObserver = exports.DataAttributeObserver = exports.dataAttributeAccessor = exports.XLinkAttributeObserver = exports.SetterObserver = exports.PrimitiveObserver = exports.propertyAccessor = exports.DirtyCheckProperty = exports.DirtyChecker = exports.EventSubscriber = exports.EventManager = exports.delegationStrategy = exports.getMapObserver = exports.ParserImplementation = exports.Parser = exports.bindingMode = exports.ExpressionCloner = exports.Unparser = exports.LiteralObject = exports.LiteralArray = exports.LiteralTemplate = exports.LiteralString = exports.LiteralPrimitive = exports.Unary = exports.Binary = exports.CallFunction = exports.CallMember = exports.CallScope = exports.AccessKeyed = exports.AccessMember = exports.AccessScope = exports.AccessThis = exports.Conditional = exports.Assign = exports.ValueConverter = exports.BindingBehavior = exports.Expression = exports.getArrayObserver = exports.CollectionLengthObserver = exports.ModifyCollectionObserver = exports.ExpressionObserver = exports.sourceContext = exports.targetContext = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class5, _dec6, _class7, _dec7, _class8, _dec8, _class9, _dec9, _class10, _class12, _temp, _dec10, _class13, _class14, _temp2;
 
@@ -1131,7 +1131,6 @@ var Expression = exports.Expression = function () {
   function Expression() {
     
 
-    this.isChain = false;
     this.isAssignable = false;
   }
 
@@ -1150,54 +1149,18 @@ var Expression = exports.Expression = function () {
   return Expression;
 }();
 
-var Chain = exports.Chain = function (_Expression) {
-  _inherits(Chain, _Expression);
-
-  function Chain(expressions) {
-    
-
-    var _this3 = _possibleConstructorReturn(this, _Expression.call(this));
-
-    _this3.expressions = expressions;
-    _this3.isChain = true;
-    return _this3;
-  }
-
-  Chain.prototype.evaluate = function evaluate(scope, lookupFunctions) {
-    var result = void 0;
-    var expressions = this.expressions;
-    var last = void 0;
-
-    for (var _i7 = 0, length = expressions.length; _i7 < length; ++_i7) {
-      last = expressions[_i7].evaluate(scope, lookupFunctions);
-
-      if (last !== null) {
-        result = last;
-      }
-    }
-
-    return result;
-  };
-
-  Chain.prototype.accept = function accept(visitor) {
-    return visitor.visitChain(this);
-  };
-
-  return Chain;
-}(Expression);
-
-var BindingBehavior = exports.BindingBehavior = function (_Expression2) {
-  _inherits(BindingBehavior, _Expression2);
+var BindingBehavior = exports.BindingBehavior = function (_Expression) {
+  _inherits(BindingBehavior, _Expression);
 
   function BindingBehavior(expression, name, args) {
     
 
-    var _this4 = _possibleConstructorReturn(this, _Expression2.call(this));
+    var _this3 = _possibleConstructorReturn(this, _Expression.call(this));
 
-    _this4.expression = expression;
-    _this4.name = name;
-    _this4.args = args;
-    return _this4;
+    _this3.expression = expression;
+    _this3.name = name;
+    _this3.args = args;
+    return _this3;
   }
 
   BindingBehavior.prototype.evaluate = function evaluate(scope, lookupFunctions) {
@@ -1244,19 +1207,19 @@ var BindingBehavior = exports.BindingBehavior = function (_Expression2) {
   return BindingBehavior;
 }(Expression);
 
-var ValueConverter = exports.ValueConverter = function (_Expression3) {
-  _inherits(ValueConverter, _Expression3);
+var ValueConverter = exports.ValueConverter = function (_Expression2) {
+  _inherits(ValueConverter, _Expression2);
 
   function ValueConverter(expression, name, args) {
     
 
-    var _this5 = _possibleConstructorReturn(this, _Expression3.call(this));
+    var _this4 = _possibleConstructorReturn(this, _Expression2.call(this));
 
-    _this5.expression = expression;
-    _this5.name = name;
-    _this5.args = args;
-    _this5.allArgs = [expression].concat(args);
-    return _this5;
+    _this4.expression = expression;
+    _this4.name = name;
+    _this4.args = args;
+    _this4.allArgs = [expression].concat(args);
+    return _this4;
   }
 
   ValueConverter.prototype.evaluate = function evaluate(scope, lookupFunctions) {
@@ -1312,18 +1275,18 @@ var ValueConverter = exports.ValueConverter = function (_Expression3) {
   return ValueConverter;
 }(Expression);
 
-var Assign = exports.Assign = function (_Expression4) {
-  _inherits(Assign, _Expression4);
+var Assign = exports.Assign = function (_Expression3) {
+  _inherits(Assign, _Expression3);
 
   function Assign(target, value) {
     
 
-    var _this6 = _possibleConstructorReturn(this, _Expression4.call(this));
+    var _this5 = _possibleConstructorReturn(this, _Expression3.call(this));
 
-    _this6.target = target;
-    _this6.value = value;
-    _this6.isAssignable = true;
-    return _this6;
+    _this5.target = target;
+    _this5.value = value;
+    _this5.isAssignable = true;
+    return _this5;
   }
 
   Assign.prototype.evaluate = function evaluate(scope, lookupFunctions) {
@@ -1344,18 +1307,18 @@ var Assign = exports.Assign = function (_Expression4) {
   return Assign;
 }(Expression);
 
-var Conditional = exports.Conditional = function (_Expression5) {
-  _inherits(Conditional, _Expression5);
+var Conditional = exports.Conditional = function (_Expression4) {
+  _inherits(Conditional, _Expression4);
 
   function Conditional(condition, yes, no) {
     
 
-    var _this7 = _possibleConstructorReturn(this, _Expression5.call(this));
+    var _this6 = _possibleConstructorReturn(this, _Expression4.call(this));
 
-    _this7.condition = condition;
-    _this7.yes = yes;
-    _this7.no = no;
-    return _this7;
+    _this6.condition = condition;
+    _this6.yes = yes;
+    _this6.no = no;
+    return _this6;
   }
 
   Conditional.prototype.evaluate = function evaluate(scope, lookupFunctions) {
@@ -1378,16 +1341,16 @@ var Conditional = exports.Conditional = function (_Expression5) {
   return Conditional;
 }(Expression);
 
-var AccessThis = exports.AccessThis = function (_Expression6) {
-  _inherits(AccessThis, _Expression6);
+var AccessThis = exports.AccessThis = function (_Expression5) {
+  _inherits(AccessThis, _Expression5);
 
   function AccessThis(ancestor) {
     
 
-    var _this8 = _possibleConstructorReturn(this, _Expression6.call(this));
+    var _this7 = _possibleConstructorReturn(this, _Expression5.call(this));
 
-    _this8.ancestor = ancestor;
-    return _this8;
+    _this7.ancestor = ancestor;
+    return _this7;
   }
 
   AccessThis.prototype.evaluate = function evaluate(scope, lookupFunctions) {
@@ -1408,18 +1371,18 @@ var AccessThis = exports.AccessThis = function (_Expression6) {
   return AccessThis;
 }(Expression);
 
-var AccessScope = exports.AccessScope = function (_Expression7) {
-  _inherits(AccessScope, _Expression7);
+var AccessScope = exports.AccessScope = function (_Expression6) {
+  _inherits(AccessScope, _Expression6);
 
   function AccessScope(name, ancestor) {
     
 
-    var _this9 = _possibleConstructorReturn(this, _Expression7.call(this));
+    var _this8 = _possibleConstructorReturn(this, _Expression6.call(this));
 
-    _this9.name = name;
-    _this9.ancestor = ancestor;
-    _this9.isAssignable = true;
-    return _this9;
+    _this8.name = name;
+    _this8.ancestor = ancestor;
+    _this8.isAssignable = true;
+    return _this8;
   }
 
   AccessScope.prototype.evaluate = function evaluate(scope, lookupFunctions) {
@@ -1444,18 +1407,18 @@ var AccessScope = exports.AccessScope = function (_Expression7) {
   return AccessScope;
 }(Expression);
 
-var AccessMember = exports.AccessMember = function (_Expression8) {
-  _inherits(AccessMember, _Expression8);
+var AccessMember = exports.AccessMember = function (_Expression7) {
+  _inherits(AccessMember, _Expression7);
 
   function AccessMember(object, name) {
     
 
-    var _this10 = _possibleConstructorReturn(this, _Expression8.call(this));
+    var _this9 = _possibleConstructorReturn(this, _Expression7.call(this));
 
-    _this10.object = object;
-    _this10.name = name;
-    _this10.isAssignable = true;
-    return _this10;
+    _this9.object = object;
+    _this9.name = name;
+    _this9.isAssignable = true;
+    return _this9;
   }
 
   AccessMember.prototype.evaluate = function evaluate(scope, lookupFunctions) {
@@ -1490,18 +1453,18 @@ var AccessMember = exports.AccessMember = function (_Expression8) {
   return AccessMember;
 }(Expression);
 
-var AccessKeyed = exports.AccessKeyed = function (_Expression9) {
-  _inherits(AccessKeyed, _Expression9);
+var AccessKeyed = exports.AccessKeyed = function (_Expression8) {
+  _inherits(AccessKeyed, _Expression8);
 
   function AccessKeyed(object, key) {
     
 
-    var _this11 = _possibleConstructorReturn(this, _Expression9.call(this));
+    var _this10 = _possibleConstructorReturn(this, _Expression8.call(this));
 
-    _this11.object = object;
-    _this11.key = key;
-    _this11.isAssignable = true;
-    return _this11;
+    _this10.object = object;
+    _this10.key = key;
+    _this10.isAssignable = true;
+    return _this10;
   }
 
   AccessKeyed.prototype.evaluate = function evaluate(scope, lookupFunctions) {
@@ -1536,18 +1499,18 @@ var AccessKeyed = exports.AccessKeyed = function (_Expression9) {
   return AccessKeyed;
 }(Expression);
 
-var CallScope = exports.CallScope = function (_Expression10) {
-  _inherits(CallScope, _Expression10);
+var CallScope = exports.CallScope = function (_Expression9) {
+  _inherits(CallScope, _Expression9);
 
   function CallScope(name, args, ancestor) {
     
 
-    var _this12 = _possibleConstructorReturn(this, _Expression10.call(this));
+    var _this11 = _possibleConstructorReturn(this, _Expression9.call(this));
 
-    _this12.name = name;
-    _this12.args = args;
-    _this12.ancestor = ancestor;
-    return _this12;
+    _this11.name = name;
+    _this11.args = args;
+    _this11.ancestor = ancestor;
+    return _this11;
   }
 
   CallScope.prototype.evaluate = function evaluate(scope, lookupFunctions, mustEvaluate) {
@@ -1575,18 +1538,18 @@ var CallScope = exports.CallScope = function (_Expression10) {
   return CallScope;
 }(Expression);
 
-var CallMember = exports.CallMember = function (_Expression11) {
-  _inherits(CallMember, _Expression11);
+var CallMember = exports.CallMember = function (_Expression10) {
+  _inherits(CallMember, _Expression10);
 
   function CallMember(object, name, args) {
     
 
-    var _this13 = _possibleConstructorReturn(this, _Expression11.call(this));
+    var _this12 = _possibleConstructorReturn(this, _Expression10.call(this));
 
-    _this13.object = object;
-    _this13.name = name;
-    _this13.args = args;
-    return _this13;
+    _this12.object = object;
+    _this12.name = name;
+    _this12.args = args;
+    return _this12;
   }
 
   CallMember.prototype.evaluate = function evaluate(scope, lookupFunctions, mustEvaluate) {
@@ -1608,9 +1571,9 @@ var CallMember = exports.CallMember = function (_Expression11) {
     var obj = this.object.evaluate(scope);
     if (getFunction(obj, this.name, false)) {
       var args = this.args;
-      var _i8 = args.length;
-      while (_i8--) {
-        args[_i8].connect(binding, scope);
+      var _i7 = args.length;
+      while (_i7--) {
+        args[_i7].connect(binding, scope);
       }
     }
   };
@@ -1618,17 +1581,17 @@ var CallMember = exports.CallMember = function (_Expression11) {
   return CallMember;
 }(Expression);
 
-var CallFunction = exports.CallFunction = function (_Expression12) {
-  _inherits(CallFunction, _Expression12);
+var CallFunction = exports.CallFunction = function (_Expression11) {
+  _inherits(CallFunction, _Expression11);
 
   function CallFunction(func, args) {
     
 
-    var _this14 = _possibleConstructorReturn(this, _Expression12.call(this));
+    var _this13 = _possibleConstructorReturn(this, _Expression11.call(this));
 
-    _this14.func = func;
-    _this14.args = args;
-    return _this14;
+    _this13.func = func;
+    _this13.args = args;
+    return _this13;
   }
 
   CallFunction.prototype.evaluate = function evaluate(scope, lookupFunctions, mustEvaluate) {
@@ -1651,9 +1614,9 @@ var CallFunction = exports.CallFunction = function (_Expression12) {
     var func = this.func.evaluate(scope);
     if (typeof func === 'function') {
       var args = this.args;
-      var _i9 = args.length;
-      while (_i9--) {
-        args[_i9].connect(binding, scope);
+      var _i8 = args.length;
+      while (_i8--) {
+        args[_i8].connect(binding, scope);
       }
     }
   };
@@ -1661,18 +1624,18 @@ var CallFunction = exports.CallFunction = function (_Expression12) {
   return CallFunction;
 }(Expression);
 
-var Binary = exports.Binary = function (_Expression13) {
-  _inherits(Binary, _Expression13);
+var Binary = exports.Binary = function (_Expression12) {
+  _inherits(Binary, _Expression12);
 
   function Binary(operation, left, right) {
     
 
-    var _this15 = _possibleConstructorReturn(this, _Expression13.call(this));
+    var _this14 = _possibleConstructorReturn(this, _Expression12.call(this));
 
-    _this15.operation = operation;
-    _this15.left = left;
-    _this15.right = right;
-    return _this15;
+    _this14.operation = operation;
+    _this14.left = left;
+    _this14.right = right;
+    return _this14;
   }
 
   Binary.prototype.evaluate = function evaluate(scope, lookupFunctions) {
@@ -1696,6 +1659,10 @@ var Binary = exports.Binary = function (_Expression13) {
         return left != right;
       case '!==':
         return left !== right;
+      case 'instanceof':
+        return typeof right === 'function' && left instanceof right;
+      case 'in':
+        return (typeof right === 'undefined' ? 'undefined' : _typeof(right)) === 'object' && right !== null && left in right;
     }
 
     if (left === null || right === null || left === undefined || right === undefined) {
@@ -1755,44 +1722,53 @@ var Binary = exports.Binary = function (_Expression13) {
   return Binary;
 }(Expression);
 
-var PrefixNot = exports.PrefixNot = function (_Expression14) {
-  _inherits(PrefixNot, _Expression14);
+var Unary = exports.Unary = function (_Expression13) {
+  _inherits(Unary, _Expression13);
 
-  function PrefixNot(operation, expression) {
+  function Unary(operation, expression) {
     
 
-    var _this16 = _possibleConstructorReturn(this, _Expression14.call(this));
+    var _this15 = _possibleConstructorReturn(this, _Expression13.call(this));
 
-    _this16.operation = operation;
-    _this16.expression = expression;
-    return _this16;
+    _this15.operation = operation;
+    _this15.expression = expression;
+    return _this15;
   }
 
-  PrefixNot.prototype.evaluate = function evaluate(scope, lookupFunctions) {
-    return !this.expression.evaluate(scope, lookupFunctions);
+  Unary.prototype.evaluate = function evaluate(scope, lookupFunctions) {
+    switch (this.operation) {
+      case '!':
+        return !this.expression.evaluate(scope, lookupFunctions);
+      case 'typeof':
+        return _typeof(this.expression.evaluate(scope, lookupFunctions));
+      case 'void':
+        return void this.expression.evaluate(scope, lookupFunctions);
+    }
+
+    throw new Error('Internal error [' + this.operation + '] not handled');
   };
 
-  PrefixNot.prototype.accept = function accept(visitor) {
+  Unary.prototype.accept = function accept(visitor) {
     return visitor.visitPrefix(this);
   };
 
-  PrefixNot.prototype.connect = function connect(binding, scope) {
+  Unary.prototype.connect = function connect(binding, scope) {
     this.expression.connect(binding, scope);
   };
 
-  return PrefixNot;
+  return Unary;
 }(Expression);
 
-var LiteralPrimitive = exports.LiteralPrimitive = function (_Expression15) {
-  _inherits(LiteralPrimitive, _Expression15);
+var LiteralPrimitive = exports.LiteralPrimitive = function (_Expression14) {
+  _inherits(LiteralPrimitive, _Expression14);
 
   function LiteralPrimitive(value) {
     
 
-    var _this17 = _possibleConstructorReturn(this, _Expression15.call(this));
+    var _this16 = _possibleConstructorReturn(this, _Expression14.call(this));
 
-    _this17.value = value;
-    return _this17;
+    _this16.value = value;
+    return _this16;
   }
 
   LiteralPrimitive.prototype.evaluate = function evaluate(scope, lookupFunctions) {
@@ -1808,16 +1784,16 @@ var LiteralPrimitive = exports.LiteralPrimitive = function (_Expression15) {
   return LiteralPrimitive;
 }(Expression);
 
-var LiteralString = exports.LiteralString = function (_Expression16) {
-  _inherits(LiteralString, _Expression16);
+var LiteralString = exports.LiteralString = function (_Expression15) {
+  _inherits(LiteralString, _Expression15);
 
   function LiteralString(value) {
     
 
-    var _this18 = _possibleConstructorReturn(this, _Expression16.call(this));
+    var _this17 = _possibleConstructorReturn(this, _Expression15.call(this));
 
-    _this18.value = value;
-    return _this18;
+    _this17.value = value;
+    return _this17;
   }
 
   LiteralString.prototype.evaluate = function evaluate(scope, lookupFunctions) {
@@ -1831,6 +1807,79 @@ var LiteralString = exports.LiteralString = function (_Expression16) {
   LiteralString.prototype.connect = function connect(binding, scope) {};
 
   return LiteralString;
+}(Expression);
+
+var LiteralTemplate = exports.LiteralTemplate = function (_Expression16) {
+  _inherits(LiteralTemplate, _Expression16);
+
+  function LiteralTemplate(cooked, expressions, raw, tag) {
+    
+
+    var _this18 = _possibleConstructorReturn(this, _Expression16.call(this));
+
+    _this18.cooked = cooked;
+    _this18.expressions = expressions || [];
+    _this18.length = _this18.expressions.length;
+    _this18.tagged = tag !== undefined;
+    if (_this18.tagged) {
+      _this18.cooked.raw = raw;
+      _this18.tag = tag;
+      if (tag instanceof AccessScope) {
+        _this18.contextType = 'Scope';
+      } else if (tag instanceof AccessMember || tag instanceof AccessKeyed) {
+        _this18.contextType = 'Object';
+      } else {
+        throw new Error(_this18.tag + ' is not a valid template tag');
+      }
+    }
+    return _this18;
+  }
+
+  LiteralTemplate.prototype.getScopeContext = function getScopeContext(scope, lookupFunctions) {
+    return getContextFor(this.tag.name, scope, this.tag.ancestor);
+  };
+
+  LiteralTemplate.prototype.getObjectContext = function getObjectContext(scope, lookupFunctions) {
+    return this.tag.object.evaluate(scope, lookupFunctions);
+  };
+
+  LiteralTemplate.prototype.evaluate = function evaluate(scope, lookupFunctions, mustEvaluate) {
+    var results = new Array(this.length);
+    for (var _i9 = 0; _i9 < this.length; _i9++) {
+      results[_i9] = this.expressions[_i9].evaluate(scope, lookupFunctions);
+    }
+    if (this.tagged) {
+      var func = this.tag.evaluate(scope, lookupFunctions);
+      if (typeof func === 'function') {
+        var context = this['get' + this.contextType + 'Context'](scope, lookupFunctions);
+        return func.call.apply(func, [context, this.cooked].concat(results));
+      }
+      if (!mustEvaluate) {
+        return null;
+      }
+      throw new Error(this.tag + ' is not a function');
+    }
+    var result = this.cooked[0];
+    for (var _i10 = 0; _i10 < this.length; _i10++) {
+      result = String.prototype.concat(result, results[_i10], this.cooked[_i10 + 1]);
+    }
+    return result;
+  };
+
+  LiteralTemplate.prototype.accept = function accept(visitor) {
+    return visitor.visitLiteralTemplate(this);
+  };
+
+  LiteralTemplate.prototype.connect = function connect(binding, scope) {
+    for (var _i11 = 0; _i11 < this.length; _i11++) {
+      this.expressions[_i11].connect(binding, scope);
+    }
+    if (this.tagged) {
+      this.tag.connect(binding, scope);
+    }
+  };
+
+  return LiteralTemplate;
 }(Expression);
 
 var LiteralArray = exports.LiteralArray = function (_Expression17) {
@@ -1849,8 +1898,8 @@ var LiteralArray = exports.LiteralArray = function (_Expression17) {
     var elements = this.elements;
     var result = [];
 
-    for (var _i10 = 0, length = elements.length; _i10 < length; ++_i10) {
-      result[_i10] = elements[_i10].evaluate(scope, lookupFunctions);
+    for (var _i12 = 0, length = elements.length; _i12 < length; ++_i12) {
+      result[_i12] = elements[_i12].evaluate(scope, lookupFunctions);
     }
 
     return result;
@@ -1862,8 +1911,8 @@ var LiteralArray = exports.LiteralArray = function (_Expression17) {
 
   LiteralArray.prototype.connect = function connect(binding, scope) {
     var length = this.elements.length;
-    for (var _i11 = 0; _i11 < length; _i11++) {
-      this.elements[_i11].connect(binding, scope);
+    for (var _i13 = 0; _i13 < length; _i13++) {
+      this.elements[_i13].connect(binding, scope);
     }
   };
 
@@ -1888,8 +1937,8 @@ var LiteralObject = exports.LiteralObject = function (_Expression18) {
     var keys = this.keys;
     var values = this.values;
 
-    for (var _i12 = 0, length = keys.length; _i12 < length; ++_i12) {
-      instance[keys[_i12]] = values[_i12].evaluate(scope, lookupFunctions);
+    for (var _i14 = 0, length = keys.length; _i14 < length; ++_i14) {
+      instance[keys[_i14]] = values[_i14].evaluate(scope, lookupFunctions);
     }
 
     return instance;
@@ -1901,8 +1950,8 @@ var LiteralObject = exports.LiteralObject = function (_Expression18) {
 
   LiteralObject.prototype.connect = function connect(binding, scope) {
     var length = this.keys.length;
-    for (var _i13 = 0; _i13 < length; _i13++) {
-      this.values[_i13].connect(binding, scope);
+    for (var _i15 = 0; _i15 < length; _i15++) {
+      this.values[_i15].connect(binding, scope);
     }
   };
 
@@ -1912,8 +1961,8 @@ var LiteralObject = exports.LiteralObject = function (_Expression18) {
 function evalList(scope, list, lookupFunctions) {
   var length = list.length;
   var result = [];
-  for (var _i14 = 0; _i14 < length; _i14++) {
-    result[_i14] = list[_i14].evaluate(scope, lookupFunctions);
+  for (var _i16 = 0; _i16 < length; _i16++) {
+    result[_i16] = list[_i16].evaluate(scope, lookupFunctions);
   }
   return result;
 }
@@ -2008,27 +2057,15 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
     Unparser.prototype.writeArgs = function writeArgs(args) {
       this.write('(');
 
-      for (var _i15 = 0, length = args.length; _i15 < length; ++_i15) {
-        if (_i15 !== 0) {
+      for (var _i17 = 0, length = args.length; _i17 < length; ++_i17) {
+        if (_i17 !== 0) {
           this.write(',');
         }
 
-        args[_i15].accept(this);
+        args[_i17].accept(this);
       }
 
       this.write(')');
-    };
-
-    Unparser.prototype.visitChain = function visitChain(chain) {
-      var expressions = chain.expressions;
-
-      for (var _i16 = 0, length = expressions.length; _i16 < length; ++_i16) {
-        if (_i16 !== 0) {
-          this.write(';');
-        }
-
-        expressions[_i16].accept(this);
-      }
     };
 
     Unparser.prototype.visitBindingBehavior = function visitBindingBehavior(behavior) {
@@ -2037,9 +2074,9 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
       behavior.expression.accept(this);
       this.write('&' + behavior.name);
 
-      for (var _i17 = 0, length = args.length; _i17 < length; ++_i17) {
+      for (var _i18 = 0, length = args.length; _i18 < length; ++_i18) {
         this.write(':');
-        args[_i17].accept(this);
+        args[_i18].accept(this);
       }
     };
 
@@ -2049,9 +2086,9 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
       converter.expression.accept(this);
       this.write('|' + converter.name);
 
-      for (var _i18 = 0, length = args.length; _i18 < length; ++_i18) {
+      for (var _i19 = 0, length = args.length; _i19 < length; ++_i19) {
         this.write(':');
-        args[_i18].accept(this);
+        args[_i19].accept(this);
       }
     };
 
@@ -2123,13 +2160,20 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
 
     Unparser.prototype.visitPrefix = function visitPrefix(prefix) {
       this.write('(' + prefix.operation);
+      if (prefix.operation.charCodeAt(0) >= 97) {
+        this.write(' ');
+      }
       prefix.expression.accept(this);
       this.write(')');
     };
 
     Unparser.prototype.visitBinary = function visitBinary(binary) {
       binary.left.accept(this);
-      this.write(binary.operation);
+      if (binary.operation.charCodeAt(0) === 105) {
+        this.write(' ' + binary.operation + ' ');
+      } else {
+        this.write(binary.operation);
+      }
       binary.right.accept(this);
     };
 
@@ -2142,12 +2186,12 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
 
       this.write('[');
 
-      for (var _i19 = 0, length = elements.length; _i19 < length; ++_i19) {
-        if (_i19 !== 0) {
+      for (var _i20 = 0, length = elements.length; _i20 < length; ++_i20) {
+        if (_i20 !== 0) {
           this.write(',');
         }
 
-        elements[_i19].accept(this);
+        elements[_i20].accept(this);
       }
 
       this.write(']');
@@ -2159,13 +2203,13 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
 
       this.write('{');
 
-      for (var _i20 = 0, length = keys.length; _i20 < length; ++_i20) {
-        if (_i20 !== 0) {
+      for (var _i21 = 0, length = keys.length; _i21 < length; ++_i21) {
+        if (_i21 !== 0) {
           this.write(',');
         }
 
-        this.write('\'' + keys[_i20] + '\':');
-        values[_i20].accept(this);
+        this.write('\'' + keys[_i21] + '\':');
+        values[_i21].accept(this);
       }
 
       this.write('}');
@@ -2174,6 +2218,20 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
     Unparser.prototype.visitLiteralString = function visitLiteralString(literal) {
       var escaped = literal.value.replace(/'/g, "\'");
       this.write('\'' + escaped + '\'');
+    };
+
+    Unparser.prototype.visitLiteralTemplate = function visitLiteralTemplate(literal) {
+      var cooked = literal.cooked,
+          expressions = literal.expressions;
+
+      var length = expressions.length;
+      this.write('`');
+      this.write(cooked[0]);
+      for (var _i22 = 0; _i22 < length; _i22++) {
+        expressions[_i22].accept(this);
+        this.write(cooked[_i22 + 1]);
+      }
+      this.write('`');
     };
 
     return Unparser;
@@ -2192,10 +2250,6 @@ var ExpressionCloner = exports.ExpressionCloner = function () {
       clonedArray[i] = array[i].accept(this);
     }
     return clonedArray;
-  };
-
-  ExpressionCloner.prototype.visitChain = function visitChain(chain) {
-    return new Chain(this.cloneExpressionArray(chain.expressions));
   };
 
   ExpressionCloner.prototype.visitBindingBehavior = function visitBindingBehavior(behavior) {
@@ -2242,8 +2296,8 @@ var ExpressionCloner = exports.ExpressionCloner = function () {
     return new CallMember(call.object.accept(this), call.name, this.cloneExpressionArray(call.args));
   };
 
-  ExpressionCloner.prototype.visitPrefix = function visitPrefix(prefix) {
-    return new PrefixNot(prefix.operation, prefix.expression.accept(this));
+  ExpressionCloner.prototype.visitUnary = function visitUnary(unary) {
+    return new Unary(prefix.operation, prefix.expression.accept(this));
   };
 
   ExpressionCloner.prototype.visitBinary = function visitBinary(binary) {
@@ -2264,6 +2318,10 @@ var ExpressionCloner = exports.ExpressionCloner = function () {
 
   ExpressionCloner.prototype.visitLiteralString = function visitLiteralString(literal) {
     return new LiteralString(literal.value);
+  };
+
+  ExpressionCloner.prototype.visitLiteralTemplate = function visitLiteralTemplate(literal) {
+    return new LiteralTemplate(literal.cooked, this.cloneExpressionArray(literal.expressions), literal.raw, literal.tag && literal.tag.accept(this));
   };
 
   return ExpressionCloner;
@@ -2289,639 +2347,456 @@ var Parser = exports.Parser = function () {
     this.cache = Object.create(null);
   }
 
-  Parser.prototype.parse = function parse(input) {
-    input = input || '';
+  Parser.prototype.parse = function parse(src) {
+    src = src || '';
 
-    return this.cache[input] || (this.cache[input] = new ParserImplementation(input).parseChain());
+    return this.cache[src] || (this.cache[src] = new ParserImplementation(src).parseBindingBehavior());
   };
 
   return Parser;
 }();
 
+var fromCharCode = String.fromCharCode;
+
 var ParserImplementation = exports.ParserImplementation = function () {
   _createClass(ParserImplementation, [{
-    key: 'hasNext',
+    key: 'raw',
     get: function get() {
-      return this.index < this.length;
-    }
-  }, {
-    key: 'tokenRaw',
-    get: function get() {
-      return this.input.slice(this.startIndex, this.index);
+      return this.src.slice(this.start, this.idx);
     }
   }]);
 
-  function ParserImplementation(input) {
+  function ParserImplementation(src) {
     
 
-    this.index = 0;
-    this.startIndex = 0;
-    this.lastIndex = 0;
-    this.input = input;
-    this.length = input.length;
-    this.currentToken = T$EOF;
-    this.tokenValue = undefined;
-    this.currentChar = input.charCodeAt(0);
+    this.idx = 0;
+
+    this.start = 0;
+
+    this.src = src;
+    this.len = src.length;
+
+    this.tkn = T$EOF;
+
+    this.val = undefined;
+
+    this.ch = src.charCodeAt(0);
   }
 
-  ParserImplementation.prototype.parseChain = function parseChain() {
-    this.nextToken();
-
-    var expressions = [];
-
-    while (this.currentToken !== T$EOF) {
-      if (this.optional(T$Semicolon)) {
-        this.error('Multiple expressions are not allowed.');
-      }
-
-      if ((this.currentToken & T$ClosingToken) === T$ClosingToken) {
-        this.error('Unconsumed token ' + this.tokenRaw);
-      }
-
-      var expr = this.parseBindingBehavior();
-      expressions.push(expr);
-
-      if (this.optional(T$Semicolon)) {
-        this.error('Multiple expressions are not allowed.');
-      }
-    }
-
-    return expressions.length === 1 ? expressions[0] : new Chain(expressions);
-  };
-
   ParserImplementation.prototype.parseBindingBehavior = function parseBindingBehavior() {
-    var result = this.parseValueConverter();
-
-    while (this.optional(T$Ampersand)) {
-      var name = this.tokenValue;
-      var args = [];
-
-      this.nextToken();
-
-      while (this.optional(T$Colon)) {
-        args.push(this.parseExpression());
-      }
-
-      result = new BindingBehavior(result, name, args);
+    this.nextToken();
+    if (this.tkn & T$ExpressionTerminal) {
+      this.err('Invalid start of expression');
     }
-
+    var result = this.parseValueConverter();
+    while (this.opt(T$Ampersand)) {
+      result = new BindingBehavior(result, this.val, this.parseVariadicArgs());
+    }
+    if (this.tkn !== T$EOF) {
+      this.err('Unconsumed token ' + this.raw);
+    }
     return result;
   };
 
   ParserImplementation.prototype.parseValueConverter = function parseValueConverter() {
     var result = this.parseExpression();
-
-    while (this.optional(T$Bar)) {
-      var name = this.tokenValue;
-      var args = [];
-
-      this.nextToken();
-
-      while (this.optional(T$Colon)) {
-        args.push(this.parseExpression());
-      }
-
-      result = new ValueConverter(result, name, args);
+    while (this.opt(T$Bar)) {
+      result = new ValueConverter(result, this.val, this.parseVariadicArgs());
     }
+    return result;
+  };
 
+  ParserImplementation.prototype.parseVariadicArgs = function parseVariadicArgs() {
+    this.nextToken();
+    var result = [];
+    while (this.opt(T$Colon)) {
+      result.push(this.parseExpression());
+    }
     return result;
   };
 
   ParserImplementation.prototype.parseExpression = function parseExpression() {
+    var exprStart = this.idx;
     var result = this.parseConditional();
 
-    while (this.currentToken === T$Eq) {
+    while (this.tkn === T$Eq) {
       if (!result.isAssignable) {
-        var expression = this.input.slice(this.lastIndex, this.startIndex);
-
-        this.error('Expression ' + expression + ' is not assignable');
+        this.err('Expression ' + this.src.slice(exprStart, this.start) + ' is not assignable');
       }
-
-      this.expect(T$Eq);
+      this.nextToken();
+      exprStart = this.idx;
       result = new Assign(result, this.parseConditional());
     }
-
     return result;
   };
 
   ParserImplementation.prototype.parseConditional = function parseConditional() {
-    var start = this.index;
     var result = this.parseBinary(0);
 
-    if (this.optional(T$Question)) {
+    if (this.opt(T$Question)) {
       var yes = this.parseExpression();
-
-      if (!this.optional(T$Colon)) {
-        var end = this.index < this.length ? this.index : this.length;
-        var expression = this.input.slice(start, end);
-
-        this.error('Conditional expression ' + expression + ' requires all 3 expressions');
-      }
-
-      var no = this.parseExpression();
-      result = new Conditional(result, yes, no);
+      this.expect(T$Colon);
+      result = new Conditional(result, yes, this.parseExpression());
     }
-
     return result;
   };
 
   ParserImplementation.prototype.parseBinary = function parseBinary(minPrecedence) {
-    var left = this.parseUnary();
+    var left = this.parseLeftHandSide(0);
 
-    if ((this.currentToken & T$BinaryOperator) !== T$BinaryOperator) {
-      return left;
-    }
-
-    while ((this.currentToken & T$BinaryOperator) === T$BinaryOperator) {
-      var opToken = this.currentToken;
-      var precedence = opToken & T$Precedence;
-      if (precedence < minPrecedence) {
+    while (this.tkn & T$BinaryOp) {
+      var opToken = this.tkn;
+      if ((opToken & T$Precedence) < minPrecedence) {
         break;
       }
       this.nextToken();
-      left = new Binary(TokenValues[opToken & T$TokenMask], left, this.parseBinary(precedence));
+      left = new Binary(TokenValues[opToken & T$TokenMask], left, this.parseBinary(opToken & T$Precedence));
     }
     return left;
   };
 
-  ParserImplementation.prototype.parseUnary = function parseUnary() {
-    var opToken = this.currentToken;
-    if ((opToken & T$UnaryOperator) === T$UnaryOperator) {
-      this.nextToken();
-      switch (opToken) {
-        case T$Plus:
-          return this.parseUnary();
-        case T$Minus:
-          return new Binary('-', new LiteralPrimitive(0), this.parseUnary());
-        case T$Bang:
-          return new PrefixNot('!', this.parseUnary());
-        default:
-      }
-    }
-    return this.parseAccessOrCallMember();
-  };
+  ParserImplementation.prototype.parseLeftHandSide = function parseLeftHandSide(context) {
+    var result = void 0;
 
-  ParserImplementation.prototype.parseAccessOrCallMember = function parseAccessOrCallMember() {
-    var result = this.parsePrimary();
-
-    while (true) {
-      if (this.optional(T$Period)) {
-        if ((this.currentToken ^ T$IdentifierOrKeyword) === T$IdentifierOrKeyword) {
-          this.error('Unexpected token ' + this.tokenRaw);
-        }
-        var name = this.tokenValue;
-
+    primary: switch (this.tkn) {
+      case T$Plus:
         this.nextToken();
-
-        if (this.optional(T$LParen)) {
-          var args = this.parseExpressionList(T$RParen);
-          this.expect(T$RParen);
-          if (result instanceof AccessThis) {
-            result = new CallScope(name, args, result.ancestor);
-          } else {
-            result = new CallMember(result, name, args);
-          }
-        } else {
-          if (result instanceof AccessThis) {
-            result = new AccessScope(name, result.ancestor);
-          } else {
-            result = new AccessMember(result, name);
-          }
-        }
-      } else if (this.optional(T$LBracket)) {
-        var key = this.parseExpression();
-        this.expect(T$RBracket);
-        result = new AccessKeyed(result, key);
-      } else if (this.optional(T$LParen)) {
-        var _args = this.parseExpressionList(T$RParen);
-        this.expect(T$RParen);
-        result = new CallFunction(result, _args);
-      } else {
-        return result;
-      }
-    }
-  };
-
-  ParserImplementation.prototype.parsePrimary = function parsePrimary() {
-    var token = this.currentToken;
-    switch (token) {
-      case T$Identifier:
+        return this.parseLeftHandSide(0);
+      case T$Minus:
+        this.nextToken();
+        return new Binary('-', new LiteralPrimitive(0), this.parseLeftHandSide(0));
+      case T$Bang:
+      case T$TypeofKeyword:
+      case T$VoidKeyword:
+        var op = TokenValues[this.tkn & T$TokenMask];
+        this.nextToken();
+        return new Unary(op, this.parseLeftHandSide(0));
       case T$ParentScope:
-        return this.parseAccessOrCallScope();
+        {
+          do {
+            this.nextToken();
+            context++;
+            if (this.opt(T$Period)) {
+              if (this.tkn === T$Period) {
+                this.err();
+              }
+              continue;
+            } else if (this.tkn & T$AccessScopeTerminal) {
+              result = new AccessThis(context & C$Ancestor);
+
+              context = context & C$ShorthandProp | C$This;
+              break primary;
+            } else {
+              this.err();
+            }
+          } while (this.tkn === T$ParentScope);
+        }
+
+      case T$Identifier:
+        {
+          result = new AccessScope(this.val, context & C$Ancestor);
+          this.nextToken();
+          context = context & C$ShorthandProp | C$Scope;
+          break;
+        }
       case T$ThisScope:
         this.nextToken();
-        return new AccessThis(0);
+        result = new AccessThis(0);
+        context = context & C$ShorthandProp | C$This;
+        break;
       case T$LParen:
         this.nextToken();
-        var result = this.parseExpression();
+        result = this.parseExpression();
         this.expect(T$RParen);
-        return result;
+        break;
       case T$LBracket:
-        this.nextToken();
-        var _elements = this.parseExpressionList(T$RBracket);
-        this.expect(T$RBracket);
-        return new LiteralArray(_elements);
-      case T$LBrace:
-        return this.parseObject();
-      case T$StringLiteral:
         {
-          var value = this.tokenValue;
           this.nextToken();
-          return new LiteralString(value);
+          var _elements = [];
+          if (this.tkn !== T$RBracket) {
+            do {
+              _elements.push(this.parseExpression());
+            } while (this.opt(T$Comma));
+          }
+          this.expect(T$RBracket);
+          result = new LiteralArray(_elements);
+          break;
         }
+      case T$LBrace:
+        {
+          var keys = [];
+          var values = [];
+          this.nextToken();
+          while (this.tkn !== T$RBrace) {
+            if (this.tkn & T$IdentifierOrKeyword) {
+              var ch = this.ch,
+                  tkn = this.tkn,
+                  idx = this.idx;
+
+              keys.push(this.val);
+              this.nextToken();
+              if (this.opt(T$Colon)) {
+                values.push(this.parseExpression());
+              } else {
+                this.ch = ch;
+                this.tkn = tkn;
+                this.idx = idx;
+                values.push(this.parseLeftHandSide(C$ShorthandProp));
+              }
+            } else if (this.tkn & T$Literal) {
+              keys.push(this.val);
+              this.nextToken();
+              this.expect(T$Colon);
+              values.push(this.parseExpression());
+            } else {
+              this.err();
+            }
+            if (this.tkn !== T$RBrace) {
+              this.expect(T$Comma);
+            }
+          }
+          this.expect(T$RBrace);
+          result = new LiteralObject(keys, values);
+          break;
+        }
+      case T$StringLiteral:
+        result = new LiteralString(this.val);
+        this.nextToken();
+        break;
+      case T$TemplateTail:
+        result = new LiteralTemplate([this.val]);
+        this.nextToken();
+        break;
+      case T$TemplateContinuation:
+        result = this.parseTemplate(0);
+        break;
       case T$NumericLiteral:
         {
-          var _value = this.tokenValue;
+          result = new LiteralPrimitive(this.val);
           this.nextToken();
-          return new LiteralPrimitive(_value);
+          break;
         }
       case T$NullKeyword:
       case T$UndefinedKeyword:
       case T$TrueKeyword:
       case T$FalseKeyword:
+        result = new LiteralPrimitive(TokenValues[this.tkn & T$TokenMask]);
         this.nextToken();
-        return new LiteralPrimitive(TokenValues[token & T$TokenMask]);
+        break;
       default:
-        if (this.index >= this.length) {
-          throw new Error('Unexpected end of expression at column ' + this.index + ' of ' + this.input);
+        if (this.idx >= this.len) {
+          this.err('Unexpected end of expression');
         } else {
-          this.error('Unexpected token ' + this.tokenRaw);
+          this.err();
         }
     }
-  };
 
-  ParserImplementation.prototype.parseAccessOrCallScope = function parseAccessOrCallScope(name, token) {
-    if (!(name && token)) {
-      name = this.tokenValue;
-      token = this.currentToken;
-      this.nextToken();
+    if (context & C$ShorthandProp) {
+      return result;
     }
 
-    var ancestor = 0;
-    while (token === T$ParentScope) {
-      ancestor++;
-      if (this.optional(T$Period)) {
-        name = this.tokenValue;
-        token = this.currentToken;
-        this.nextToken();
-      } else if ((this.currentToken & T$AccessScopeTerminal) === T$AccessScopeTerminal) {
-        return new AccessThis(ancestor);
-      } else {
-        this.error('Unexpected token ' + this.tokenRaw);
-      }
-    }
-
-    if (this.optional(T$LParen)) {
-      var args = this.parseExpressionList(T$RParen);
-      this.expect(T$RParen);
-      return new CallScope(name, args, ancestor);
-    }
-
-    return new AccessScope(name, ancestor);
-  };
-
-  ParserImplementation.prototype.parseObject = function parseObject() {
-    var keys = [];
-    var values = [];
-
-    this.expect(T$LBrace);
-
-    while (this.currentToken !== T$RBrace) {
-      var token = this.currentToken;
-      var name = this.tokenValue;
-
-      switch (token) {
-        case T$Identifier:
-        case T$FalseKeyword:
-        case T$TrueKeyword:
-        case T$NullKeyword:
-        case T$UndefinedKeyword:
-        case T$ThisScope:
-        case T$ParentScope:
-          keys.push(name);
+    var name = this.val;
+    while (this.tkn & T$MemberOrCallExpression) {
+      switch (this.tkn) {
+        case T$Period:
           this.nextToken();
-          if (this.optional(T$Colon)) {
-            values.push(this.parseExpression());
-          } else {
-            values.push(this.parseAccessOrCallScope(name, token));
+          if (!(this.tkn & T$IdentifierOrKeyword)) {
+            this.err();
           }
-          break;
-        case T$StringLiteral:
-        case T$NumericLiteral:
-          keys.push(name);
+          name = this.val;
           this.nextToken();
-          this.expect(T$Colon);
-          values.push(this.parseExpression());
+
+          context = (context & (C$This | C$Scope)) << 1 | context & C$Member | (context & C$Keyed) >> 1;
+          if (this.tkn === T$LParen) {
+            continue;
+          }
+          if (context & C$Scope) {
+            result = new AccessScope(name, result.ancestor);
+          } else {
+            result = new AccessMember(result, name);
+          }
+          continue;
+        case T$LBracket:
+          this.nextToken();
+          context = C$Keyed;
+          result = new AccessKeyed(result, this.parseExpression());
+          this.expect(T$RBracket);
           break;
-        default:
-          this.error('Unexpected token ' + this.tokenRaw);
+        case T$LParen:
+          this.nextToken();
+          var args = [];
+          while (this.tkn !== T$RParen) {
+            args.push(this.parseExpression());
+            if (!this.opt(T$Comma)) {
+              break;
+            }
+          }
+          this.expect(T$RParen);
+          if (context & C$Scope) {
+            result = new CallScope(name, args, result.ancestor);
+          } else if (context & C$Member) {
+            result = new CallMember(result, name, args);
+          } else {
+            result = new CallFunction(result, args);
+          }
+          context = 0;
+          break;
+        case T$TemplateTail:
+          result = new LiteralTemplate([this.val], [], [this.raw], result);
+          this.nextToken();
+          break;
+        case T$TemplateContinuation:
+          result = this.parseTemplate(context | C$Tagged, result);
       }
-      if (this.currentToken !== T$RBrace) {
-        this.expect(T$Comma);
-      }
-    }
-
-    this.expect(T$RBrace);
-
-    return new LiteralObject(keys, values);
-  };
-
-  ParserImplementation.prototype.parseExpressionList = function parseExpressionList(terminator) {
-    var result = [];
-
-    if (this.currentToken !== terminator) {
-      do {
-        result.push(this.parseExpression());
-      } while (this.optional(T$Comma));
     }
 
     return result;
   };
 
-  ParserImplementation.prototype.nextToken = function nextToken() {
-    return this.currentToken = this.scanToken();
-  };
+  ParserImplementation.prototype.parseTemplate = function parseTemplate(context, func) {
+    var cooked = [this.val];
+    var raw = context & C$Tagged ? [this.raw] : undefined;
+    this.expect(T$TemplateContinuation);
+    var expressions = [this.parseExpression()];
 
-  ParserImplementation.prototype.nextChar = function nextChar() {
-    return this.currentChar = this.input.charCodeAt(++this.index);
-  };
-
-  ParserImplementation.prototype.scanToken = function scanToken() {
-    while (this.hasNext) {
-      if (this.currentChar <= $SPACE) {
-        this.nextChar();
-        continue;
+    while ((this.tkn = this.scanTemplateTail()) !== T$TemplateTail) {
+      cooked.push(this.val);
+      if (context & C$Tagged) {
+        raw.push(this.raw);
       }
-
-      this.lastIndex = this.startIndex;
-      this.startIndex = this.index;
-
-      if (isIdentifierStart(this.currentChar)) {
-        return this.scanIdentifier();
-      }
-
-      if (isDigit(this.currentChar)) {
-        return this.scanNumber();
-      }
-      switch (this.currentChar) {
-        case $PERIOD:
-          {
-            var nextChar = this.input.charCodeAt(this.index + 1);
-            if (isDigit(nextChar)) {
-              return this.scanNumber();
-            }
-            this.nextChar();
-            return T$Period;
-          }
-        case $LPAREN:
-          this.nextChar();
-          return T$LParen;
-        case $RPAREN:
-          this.nextChar();
-          return T$RParen;
-        case $LBRACE:
-          this.nextChar();
-          return T$LBrace;
-        case $RBRACE:
-          this.nextChar();
-          return T$RBrace;
-        case $LBRACKET:
-          this.nextChar();
-          return T$LBracket;
-        case $RBRACKET:
-          this.nextChar();
-          return T$RBracket;
-        case $COMMA:
-          this.nextChar();
-          return T$Comma;
-        case $COLON:
-          this.nextChar();
-          return T$Colon;
-        case $SEMICOLON:
-          this.nextChar();
-          return T$Semicolon;
-        case $SQ:
-        case $DQ:
-          return this.scanString();
-        case $PLUS:
-          this.nextChar();
-          return T$Plus;
-        case $MINUS:
-          this.nextChar();
-          return T$Minus;
-        case $STAR:
-          this.nextChar();
-          return T$Star;
-        case $SLASH:
-          this.nextChar();
-          return T$Slash;
-        case $PERCENT:
-          this.nextChar();
-          return T$Percent;
-        case $CARET:
-          this.nextChar();
-          return T$Caret;
-        case $QUESTION:
-          this.nextChar();
-          return T$Question;
-        case $LT:
-          {
-            this.nextChar();
-            if (this.currentChar === $EQ) {
-              this.nextChar();
-              return T$LtEq;
-            }
-            return T$Lt;
-          }
-        case $GT:
-          {
-            this.nextChar();
-            if (this.currentChar === $EQ) {
-              this.nextChar();
-              return T$GtEq;
-            }
-            return T$Gt;
-          }
-        case $BANG:
-          {
-            this.nextChar();
-            if (this.currentChar === $EQ) {
-              this.nextChar();
-              if (this.currentChar === $EQ) {
-                this.nextChar();
-                return T$BangEqEq;
-              }
-              return T$BangEq;
-            }
-            return T$Bang;
-          }
-        case $EQ:
-          {
-            this.nextChar();
-            if (this.currentChar === $EQ) {
-              this.nextChar();
-              if (this.currentChar === $EQ) {
-                this.nextChar();
-                return T$EqEqEq;
-              }
-              return T$EqEq;
-            }
-            return T$Eq;
-          }
-        case $AMPERSAND:
-          {
-            this.nextChar();
-            if (this.currentChar === $AMPERSAND) {
-              this.nextChar();
-              return T$AmpersandAmpersand;
-            }
-            return T$Ampersand;
-          }
-        case $BAR:
-          {
-            this.nextChar();
-            if (this.currentChar === $BAR) {
-              this.nextChar();
-              return T$BarBar;
-            }
-            return T$Bar;
-          }
-        case $NBSP:
-          this.nextChar();
-          continue;
-      }
-
-      this.error('Unexpected character [' + String.fromCharCode(this.currentChar) + ']');
-      return null;
+      this.expect(T$TemplateContinuation);
+      expressions.push(this.parseExpression());
     }
 
-    return T$EOF;
+    cooked.push(this.val);
+    if (context & C$Tagged) {
+      raw.push(this.raw);
+    }
+    this.nextToken();
+    return new LiteralTemplate(cooked, expressions, raw, func);
+  };
+
+  ParserImplementation.prototype.nextToken = function nextToken() {
+    while (this.idx < this.len) {
+      if (this.ch <= 0x20) {
+        this.next();
+        continue;
+      }
+      this.start = this.idx;
+      if (this.ch === 0x24 || this.ch >= 0x61 && this.ch <= 0x7A) {
+        this.tkn = this.scanIdentifier();
+        return;
+      }
+
+      if ((this.tkn = CharScanners[this.ch](this)) !== null) {
+        return;
+      }
+    }
+    this.tkn = T$EOF;
+  };
+
+  ParserImplementation.prototype.next = function next() {
+    return this.ch = this.src.charCodeAt(++this.idx);
   };
 
   ParserImplementation.prototype.scanIdentifier = function scanIdentifier() {
-    this.nextChar();
+    while (AsciiIdParts.has(this.next()) || this.ch > 0x7F && IdParts[this.ch]) {}
 
-    while (isIdentifierPart(this.currentChar)) {
-      this.nextChar();
-    }
-
-    this.tokenValue = this.tokenRaw;
-
-    if (this.tokenValue.length >= 4 && this.tokenValue.length <= 9) {
-      var token = KeywordLookup[this.tokenValue];
-      if (token !== undefined) {
-        return token;
-      }
-    }
-
-    return T$Identifier;
+    return KeywordLookup[this.val = this.raw] || T$Identifier;
   };
 
-  ParserImplementation.prototype.scanNumber = function scanNumber() {
-    var isFloat = false;
-    var value = 0;
-
-    while (isDigit(this.currentChar)) {
-      value = value * 10 + (this.currentChar - $0);
-      this.nextChar();
-    }
-
-    if (this.currentChar === $PERIOD) {
-      this.nextChar();
-
-      var decimalValue = 0;
-      var decimalPlaces = 0;
-
-      while (isDigit(this.currentChar)) {
-        decimalValue = decimalValue * 10 + (this.currentChar - $0);
-        decimalPlaces++;
-        this.nextChar();
-      }
-
-      value += decimalValue / Math.pow(10, decimalPlaces);
-    }
-
-    var nonDigitStart = this.index;
-    if (this.currentChar === $e || this.currentChar === $E) {
-      isFloat = true;
-      var exponentStart = this.index;
-      this.nextChar();
-
-      if (this.currentChar === $PLUS || this.currentChar === $MINUS) {
-        this.nextChar();
-      }
-
-      if (!isDigit(this.currentChar)) {
-        this.index = exponentStart;
-        this.error('Invalid exponent');
-      }
-
-      while (isDigit(this.currentChar)) {
-        this.nextChar();
+  ParserImplementation.prototype.scanNumber = function scanNumber(isFloat) {
+    if (isFloat) {
+      this.val = 0;
+    } else {
+      this.val = this.ch - 0x30;
+      while (this.next() <= 0x39 && this.ch >= 0x30) {
+        this.val = this.val * 10 + this.ch - 0x30;
       }
     }
 
-    if (!isFloat) {
-      this.tokenValue = value;
-      return T$NumericLiteral;
+    if (isFloat || this.ch === 0x2E) {
+      if (!isFloat) {
+        this.next();
+      }
+      var start = this.idx;
+      var value = this.ch - 0x30;
+      while (this.next() <= 0x39 && this.ch >= 0x30) {
+        value = value * 10 + this.ch - 0x30;
+      }
+      this.val = this.val + value / Math.pow(10, this.idx - start);
     }
 
-    var text = value + this.input.slice(nonDigitStart, this.index);
-    this.tokenValue = parseFloat(text);
+    if (this.ch === 0x65 || this.ch === 0x45) {
+      var _start = this.idx;
+
+      this.next();
+      if (this.ch === 0x2D || this.ch === 0x2B) {
+        this.next();
+      }
+
+      if (!(this.ch >= 0x30 && this.ch <= 0x39)) {
+        this.idx = _start;
+        this.err('Invalid exponent');
+      }
+      while (this.next() <= 0x39 && this.ch >= 0x30) {}
+      this.val = parseFloat(this.src.slice(this.start, this.idx));
+    }
+
     return T$NumericLiteral;
   };
 
   ParserImplementation.prototype.scanString = function scanString() {
-    var quote = this.currentChar;
-    this.nextChar();
+    var quote = this.ch;
+    this.next();
 
     var buffer = void 0;
-    var marker = this.index;
+    var marker = this.idx;
 
-    while (this.currentChar !== quote) {
-      if (this.currentChar === $BACKSLASH) {
+    while (this.ch !== quote) {
+      if (this.ch === 0x5C) {
         if (!buffer) {
           buffer = [];
         }
 
-        buffer.push(this.input.slice(marker, this.index));
+        buffer.push(this.src.slice(marker, this.idx));
 
-        this.nextChar();
+        this.next();
 
         var _unescaped = void 0;
 
-        if (this.currentChar === $u) {
-          this.nextChar();
+        if (this.ch === 0x75) {
+          this.next();
 
-          if (this.index + 4 < this.length) {
-            var hex = this.input.slice(this.index, this.index + 4);
+          if (this.idx + 4 < this.len) {
+            var hex = this.src.slice(this.idx, this.idx + 4);
 
             if (!/[A-Z0-9]{4}/i.test(hex)) {
-              this.error('Invalid unicode escape [\\u' + hex + ']');
+              this.err('Invalid unicode escape [\\u' + hex + ']');
             }
 
             _unescaped = parseInt(hex, 16);
-            this.index += 4;
-            this.currentChar = this.input.charCodeAt(this.index);
+            this.idx += 4;
+            this.ch = this.src.charCodeAt(this.idx);
           } else {
-            this.error('Unexpected token ' + this.tokenRaw);
+            this.err();
           }
         } else {
-          _unescaped = unescape(this.currentChar);
-          this.nextChar();
+          _unescaped = unescape(this.ch);
+          this.next();
         }
 
-        buffer.push(String.fromCharCode(_unescaped));
-        marker = this.index;
-      } else if (this.currentChar === $EOF) {
-        this.error('Unterminated quote');
+        buffer.push(fromCharCode(_unescaped));
+        marker = this.idx;
+      } else if (this.ch === 0) {
+        this.err('Unterminated quote');
       } else {
-        this.nextChar();
+        this.next();
       }
     }
 
-    var last = this.input.slice(marker, this.index);
-    this.nextChar();
+    var last = this.src.slice(marker, this.idx);
+    this.next();
     var unescaped = last;
 
     if (buffer !== null && buffer !== undefined) {
@@ -2929,16 +2804,55 @@ var ParserImplementation = exports.ParserImplementation = function () {
       unescaped = buffer.join('');
     }
 
-    this.tokenValue = unescaped;
+    this.val = unescaped;
     return T$StringLiteral;
   };
 
-  ParserImplementation.prototype.error = function error(message) {
-    throw new Error('Parser Error: ' + message + ' at column ' + this.startIndex + ' in expression [' + this.input + ']');
+  ParserImplementation.prototype.scanTemplate = function scanTemplate() {
+    var tail = true;
+    var result = '';
+
+    while (this.next() !== 0x60) {
+      if (this.ch === 0x24) {
+        if (this.idx + 1 < this.len && this.src.charCodeAt(this.idx + 1) === 0x7B) {
+          this.idx++;
+          tail = false;
+          break;
+        } else {
+          result += '$';
+        }
+      } else if (this.ch === 0x5C) {
+        result += fromCharCode(unescape(this.next()));
+      } else {
+        result += fromCharCode(this.ch);
+      }
+    }
+
+    this.next();
+    this.val = result;
+    if (tail) {
+      return T$TemplateTail;
+    }
+    return T$TemplateContinuation;
   };
 
-  ParserImplementation.prototype.optional = function optional(type) {
-    if (this.currentToken === type) {
+  ParserImplementation.prototype.scanTemplateTail = function scanTemplateTail() {
+    if (this.idx >= this.len) {
+      this.err('Unterminated template');
+    }
+    this.idx--;
+    return this.scanTemplate();
+  };
+
+  ParserImplementation.prototype.err = function err() {
+    var message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'Unexpected token ' + this.raw;
+    var column = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this.start;
+
+    throw new Error('Parser Error: ' + message + ' at column ' + column + ' in expression [' + this.src + ']');
+  };
+
+  ParserImplementation.prototype.opt = function opt(token) {
+    if (this.tkn === token) {
       this.nextToken();
       return true;
     }
@@ -2947,168 +2861,268 @@ var ParserImplementation = exports.ParserImplementation = function () {
   };
 
   ParserImplementation.prototype.expect = function expect(token) {
-    if (this.currentToken === token) {
+    if (this.tkn === token) {
       this.nextToken();
     } else {
-      this.error('Missing expected token ' + TokenValues[token & T$TokenMask]);
+      this.err('Missing expected token ' + TokenValues[token & T$TokenMask], this.idx);
     }
   };
 
   return ParserImplementation;
 }();
 
-var $EOF = 0;
-var $TAB = 9;
-var $LF = 10;
-var $VTAB = 11;
-var $FF = 12;
-var $CR = 13;
-var $SPACE = 32;
-var $BANG = 33;
-var $DQ = 34;
-var $$ = 36;
-var $PERCENT = 37;
-var $AMPERSAND = 38;
-var $SQ = 39;
-var $LPAREN = 40;
-var $RPAREN = 41;
-var $STAR = 42;
-var $PLUS = 43;
-var $COMMA = 44;
-var $MINUS = 45;
-var $PERIOD = 46;
-var $SLASH = 47;
-var $COLON = 58;
-var $SEMICOLON = 59;
-var $LT = 60;
-var $EQ = 61;
-var $GT = 62;
-var $QUESTION = 63;
-
-var $0 = 48;
-var $9 = 57;
-
-var $A = 65;
-var $E = 69;
-var $Z = 90;
-
-var $LBRACKET = 91;
-var $BACKSLASH = 92;
-var $RBRACKET = 93;
-var $CARET = 94;
-var $_ = 95;
-
-var $a = 97;
-var $e = 101;
-var $f = 102;
-var $n = 110;
-var $r = 114;
-var $t = 116;
-var $u = 117;
-var $v = 118;
-var $z = 122;
-
-var $LBRACE = 123;
-var $BAR = 124;
-var $RBRACE = 125;
-var $NBSP = 160;
-
-function isIdentifierStart(code) {
-  return $a <= code && code <= $z || $A <= code && code <= $Z || code === $_ || code === $$;
-}
-
-function isIdentifierPart(code) {
-  return $a <= code && code <= $z || $A <= code && code <= $Z || $0 <= code && code <= $9 || code === $_ || code === $$;
-}
-
-function isDigit(code) {
-  return $0 <= code && code <= $9;
-}
-
 function unescape(code) {
   switch (code) {
-    case $n:
-      return $LF;
-    case $f:
-      return $FF;
-    case $r:
-      return $CR;
-    case $t:
-      return $TAB;
-    case $v:
-      return $VTAB;
+    case 0x66:
+      return 0xC;
+    case 0x6E:
+      return 0xA;
+    case 0x72:
+      return 0xD;
+    case 0x74:
+      return 0x9;
+    case 0x76:
+      return 0xB;
     default:
       return code;
   }
 }
 
+var C$This = 1 << 10;
+var C$Scope = 1 << 11;
+var C$Member = 1 << 12;
+var C$Keyed = 1 << 13;
+var C$ShorthandProp = 1 << 14;
+var C$Tagged = 1 << 15;
+
+var C$Ancestor = (1 << 9) - 1;
+
 var T$TokenMask = (1 << 6) - 1;
 
-var T$PrecedenceShift = 6;
+var T$PrecShift = 6;
 
-var T$Precedence = 7 << T$PrecedenceShift;
+var T$Precedence = 7 << T$PrecShift;
 
-var T$ClosingToken = 1 << 9;
+var T$ExpressionTerminal = 1 << 11;
 
-var T$AccessScopeTerminal = 1 << 10;
-var T$EOF = 1 << 11 | T$AccessScopeTerminal;
-var T$Identifier = 1 << 12 | T$IdentifierOrKeyword;
-var T$NumericLiteral = 1 << 13;
-var T$StringLiteral = 1 << 14;
-var T$BinaryOperator = 1 << 15;
-var T$UnaryOperator = 1 << 16;
-var T$IdentifierOrKeyword = 1 << 17;
+var T$ClosingToken = 1 << 12;
 
-var T$FalseKeyword = 0 | T$IdentifierOrKeyword;
-var T$TrueKeyword = 1 | T$IdentifierOrKeyword;
-var T$NullKeyword = 2 | T$IdentifierOrKeyword;
-var T$UndefinedKeyword = 3 | T$IdentifierOrKeyword;
+var T$OpeningToken = 1 << 13;
+
+var T$AccessScopeTerminal = 1 << 14;
+var T$Keyword = 1 << 15;
+var T$EOF = 1 << 16 | T$AccessScopeTerminal | T$ExpressionTerminal;
+var T$Identifier = 1 << 17;
+var T$IdentifierOrKeyword = T$Identifier | T$Keyword;
+var T$Literal = 1 << 18;
+var T$NumericLiteral = 1 << 19 | T$Literal;
+var T$StringLiteral = 1 << 20 | T$Literal;
+var T$BinaryOp = 1 << 21;
+
+var T$UnaryOp = 1 << 22;
+
+var T$MemberExpression = 1 << 23;
+
+var T$MemberOrCallExpression = 1 << 24;
+var T$TemplateTail = 1 << 25 | T$MemberOrCallExpression;
+var T$TemplateContinuation = 1 << 26 | T$MemberOrCallExpression;
+
+var T$FalseKeyword = 0 | T$Keyword | T$Literal;
+var T$TrueKeyword = 1 | T$Keyword | T$Literal;
+var T$NullKeyword = 2 | T$Keyword | T$Literal;
+var T$UndefinedKeyword = 3 | T$Keyword | T$Literal;
 var T$ThisScope = 4 | T$IdentifierOrKeyword;
 var T$ParentScope = 5 | T$IdentifierOrKeyword;
 
-var T$LParen = 6 | T$AccessScopeTerminal;
-var T$LBrace = 7;
-var T$Period = 8;
-var T$RBrace = 9 | T$AccessScopeTerminal | T$ClosingToken;
-var T$RParen = 10 | T$AccessScopeTerminal | T$ClosingToken;
-var T$Semicolon = 11;
-var T$Comma = 12 | T$AccessScopeTerminal;
-var T$LBracket = 13 | T$AccessScopeTerminal;
-var T$RBracket = 14 | T$ClosingToken;
-var T$Colon = 15;
-var T$Question = 16;
+var T$LParen = 6 | T$OpeningToken | T$AccessScopeTerminal | T$MemberOrCallExpression;
+var T$LBrace = 7 | T$OpeningToken;
+var T$Period = 8 | T$MemberExpression | T$MemberOrCallExpression;
+var T$RBrace = 9 | T$AccessScopeTerminal | T$ClosingToken | T$ExpressionTerminal;
+var T$RParen = 10 | T$AccessScopeTerminal | T$ClosingToken | T$ExpressionTerminal;
+var T$Comma = 11 | T$AccessScopeTerminal;
+var T$LBracket = 12 | T$OpeningToken | T$AccessScopeTerminal | T$MemberExpression | T$MemberOrCallExpression;
+var T$RBracket = 13 | T$ClosingToken | T$ExpressionTerminal;
+var T$Colon = 14 | T$AccessScopeTerminal;
+var T$Question = 15;
 
-var T$Ampersand = 19 | T$AccessScopeTerminal;
-var T$Bar = 20 | T$AccessScopeTerminal;
-var T$BarBar = 21 | 1 << T$PrecedenceShift | T$BinaryOperator;
-var T$AmpersandAmpersand = 22 | 2 << T$PrecedenceShift | T$BinaryOperator;
-var T$Caret = 23 | 3 << T$PrecedenceShift | T$BinaryOperator;
-var T$EqEq = 24 | 4 << T$PrecedenceShift | T$BinaryOperator;
-var T$BangEq = 25 | 4 << T$PrecedenceShift | T$BinaryOperator;
-var T$EqEqEq = 26 | 4 << T$PrecedenceShift | T$BinaryOperator;
-var T$BangEqEq = 27 | 4 << T$PrecedenceShift | T$BinaryOperator;
-var T$Lt = 28 | 5 << T$PrecedenceShift | T$BinaryOperator;
-var T$Gt = 29 | 5 << T$PrecedenceShift | T$BinaryOperator;
-var T$LtEq = 30 | 5 << T$PrecedenceShift | T$BinaryOperator;
-var T$GtEq = 31 | 5 << T$PrecedenceShift | T$BinaryOperator;
-var T$Plus = 32 | 6 << T$PrecedenceShift | T$BinaryOperator | T$UnaryOperator;
-var T$Minus = 33 | 6 << T$PrecedenceShift | T$BinaryOperator | T$UnaryOperator;
-var T$Star = 34 | 7 << T$PrecedenceShift | T$BinaryOperator;
-var T$Percent = 35 | 7 << T$PrecedenceShift | T$BinaryOperator;
-var T$Slash = 36 | 7 << T$PrecedenceShift | T$BinaryOperator;
-var T$Eq = 37;
-var T$Bang = 38 | T$UnaryOperator;
+var T$Ampersand = 18 | T$AccessScopeTerminal;
+var T$Bar = 19 | T$AccessScopeTerminal;
+var T$BarBar = 20 | 1 << T$PrecShift | T$BinaryOp;
+var T$AmpersandAmpersand = 21 | 2 << T$PrecShift | T$BinaryOp;
+var T$Caret = 22 | 3 << T$PrecShift | T$BinaryOp;
+var T$EqEq = 23 | 4 << T$PrecShift | T$BinaryOp;
+var T$BangEq = 24 | 4 << T$PrecShift | T$BinaryOp;
+var T$EqEqEq = 25 | 4 << T$PrecShift | T$BinaryOp;
+var T$BangEqEq = 26 | 4 << T$PrecShift | T$BinaryOp;
+var T$Lt = 27 | 5 << T$PrecShift | T$BinaryOp;
+var T$Gt = 28 | 5 << T$PrecShift | T$BinaryOp;
+var T$LtEq = 29 | 5 << T$PrecShift | T$BinaryOp;
+var T$GtEq = 30 | 5 << T$PrecShift | T$BinaryOp;
+var T$InKeyword = 31 | 5 << T$PrecShift | T$BinaryOp | T$Keyword;
+var T$InstanceOfKeyword = 32 | 5 << T$PrecShift | T$BinaryOp | T$Keyword;
+var T$Plus = 33 | 6 << T$PrecShift | T$BinaryOp | T$UnaryOp;
+var T$Minus = 34 | 6 << T$PrecShift | T$BinaryOp | T$UnaryOp;
+var T$TypeofKeyword = 35 | T$UnaryOp | T$Keyword;
+var T$VoidKeyword = 36 | T$UnaryOp | T$Keyword;
+var T$Star = 37 | 7 << T$PrecShift | T$BinaryOp;
+var T$Percent = 38 | 7 << T$PrecShift | T$BinaryOp;
+var T$Slash = 39 | 7 << T$PrecShift | T$BinaryOp;
+var T$Eq = 40;
+var T$Bang = 41 | T$UnaryOp;
 
-var KeywordLookup = Object.create(null, {
-  true: { value: T$TrueKeyword },
-  null: { value: T$NullKeyword },
-  false: { value: T$FalseKeyword },
-  undefined: { value: T$UndefinedKeyword },
-  $this: { value: T$ThisScope },
-  $parent: { value: T$ParentScope }
+var KeywordLookup = Object.create(null);
+KeywordLookup.true = T$TrueKeyword;
+KeywordLookup.null = T$NullKeyword;
+KeywordLookup.false = T$FalseKeyword;
+KeywordLookup.undefined = T$UndefinedKeyword;
+KeywordLookup.$this = T$ThisScope;
+KeywordLookup.$parent = T$ParentScope;
+KeywordLookup.in = T$InKeyword;
+KeywordLookup.instanceof = T$InstanceOfKeyword;
+KeywordLookup.typeof = T$TypeofKeyword;
+KeywordLookup.void = T$VoidKeyword;
+
+var TokenValues = [false, true, null, undefined, '$this', '$parent', '(', '{', '.', '}', ')', ',', '[', ']', ':', '?', '\'', '"', '&', '|', '||', '&&', '^', '==', '!=', '===', '!==', '<', '>', '<=', '>=', 'in', 'instanceof', '+', '-', 'typeof', 'void', '*', '%', '/', '=', '!'];
+
+var codes = {
+  AsciiIdPart: [0x24, 0, 0x30, 0x3A, 0x41, 0x5B, 0x5F, 0, 0x61, 0x7B],
+  IdStart: [0x24, 0, 0x41, 0x5B, 0x5F, 0, 0x61, 0x7B, 0xAA, 0, 0xBA, 0, 0xC0, 0xD7, 0xD8, 0xF7, 0xF8, 0x2B9, 0x2E0, 0x2E5, 0x1D00, 0x1D26, 0x1D2C, 0x1D5D, 0x1D62, 0x1D66, 0x1D6B, 0x1D78, 0x1D79, 0x1DBF, 0x1E00, 0x1F00, 0x2071, 0, 0x207F, 0, 0x2090, 0x209D, 0x212A, 0x212C, 0x2132, 0, 0x214E, 0, 0x2160, 0x2189, 0x2C60, 0x2C80, 0xA722, 0xA788, 0xA78B, 0xA7AF, 0xA7B0, 0xA7B8, 0xA7F7, 0xA800, 0xAB30, 0xAB5B, 0xAB5C, 0xAB65, 0xFB00, 0xFB07, 0xFF21, 0xFF3B, 0xFF41, 0xFF5B],
+  Digit: [0x30, 0x3A],
+  Skip: [0, 0x21, 0x7F, 0xA1]
+};
+
+function decompress(lookup, set, compressed, value) {
+  var rangeCount = compressed.length;
+  for (var _i23 = 0; _i23 < rangeCount; _i23 += 2) {
+    var start = compressed[_i23];
+    var end = compressed[_i23 + 1];
+    end = end > 0 ? end : start + 1;
+    if (lookup) {
+      lookup.fill(value, start, end);
+    }
+    if (set) {
+      for (var ch = start; ch < end; ch++) {
+        set.add(ch);
+      }
+    }
+  }
+}
+
+function returnToken(token) {
+  return function (p) {
+    p.next();
+    return token;
+  };
+}
+function unexpectedCharacter(p) {
+  p.err('Unexpected character [' + fromCharCode(p.ch) + ']');
+  return null;
+}
+
+var AsciiIdParts = new Set();
+decompress(null, AsciiIdParts, codes.AsciiIdPart, true);
+
+var IdParts = new Uint8Array(0xFFFF);
+decompress(IdParts, null, codes.IdStart, 1);
+decompress(IdParts, null, codes.Digit, 1);
+
+var CharScanners = new Array(0xFFFF);
+CharScanners.fill(unexpectedCharacter, 0, 0xFFFF);
+
+decompress(CharScanners, null, codes.Skip, function (p) {
+  p.next();
+  return null;
+});
+decompress(CharScanners, null, codes.IdStart, function (p) {
+  return p.scanIdentifier();
+});
+decompress(CharScanners, null, codes.Digit, function (p) {
+  return p.scanNumber(false);
 });
 
-var TokenValues = [false, true, null, undefined, '$this', '$parent', '(', '{', '.', '}', ')', ';', ',', '[', ']', ':', '?', '\'', '"', '&', '|', '||', '&&', '^', '==', '!=', '===', '!==', '<', '>', '<=', '>=', '+', '-', '*', '%', '/', '=', '!'];
+CharScanners[0x22] = CharScanners[0x27] = function (p) {
+  return p.scanString();
+};
+CharScanners[0x60] = function (p) {
+  return p.scanTemplate();
+};
+
+CharScanners[0x21] = function (p) {
+  if (p.next() !== 0x3D) {
+    return T$Bang;
+  }
+  if (p.next() !== 0x3D) {
+    return T$BangEq;
+  }
+  p.next();
+  return T$BangEqEq;
+};
+
+CharScanners[0x3D] = function (p) {
+  if (p.next() !== 0x3D) {
+    return T$Eq;
+  }
+  if (p.next() !== 0x3D) {
+    return T$EqEq;
+  }
+  p.next();
+  return T$EqEqEq;
+};
+
+CharScanners[0x26] = function (p) {
+  if (p.next() !== 0x26) {
+    return T$Ampersand;
+  }
+  p.next();
+  return T$AmpersandAmpersand;
+};
+
+CharScanners[0x7C] = function (p) {
+  if (p.next() !== 0x7C) {
+    return T$Bar;
+  }
+  p.next();
+  return T$BarBar;
+};
+
+CharScanners[0x2E] = function (p) {
+  if (p.next() <= 0x39 && p.ch >= 0x30) {
+    return p.scanNumber(true);
+  }
+  return T$Period;
+};
+
+CharScanners[0x3C] = function (p) {
+  if (p.next() !== 0x3D) {
+    return T$Lt;
+  }
+  p.next();
+  return T$LtEq;
+};
+
+CharScanners[0x3E] = function (p) {
+  if (p.next() !== 0x3D) {
+    return T$Gt;
+  }
+  p.next();
+  return T$GtEq;
+};
+
+CharScanners[0x25] = returnToken(T$Percent);
+CharScanners[0x28] = returnToken(T$LParen);
+CharScanners[0x29] = returnToken(T$RParen);
+CharScanners[0x2A] = returnToken(T$Star);
+CharScanners[0x2B] = returnToken(T$Plus);
+CharScanners[0x2C] = returnToken(T$Comma);
+CharScanners[0x2D] = returnToken(T$Minus);
+CharScanners[0x2F] = returnToken(T$Slash);
+CharScanners[0x3A] = returnToken(T$Colon);
+CharScanners[0x3F] = returnToken(T$Question);
+CharScanners[0x5B] = returnToken(T$LBracket);
+CharScanners[0x5D] = returnToken(T$RBracket);
+CharScanners[0x5E] = returnToken(T$Caret);
+CharScanners[0x7B] = returnToken(T$LBrace);
+CharScanners[0x7D] = returnToken(T$RBrace);
 
 var mapProto = Map.prototype;
 
@@ -3223,8 +3237,8 @@ function handleCapturedEvent(event) {
     }
     target = target.parentNode;
   }
-  for (var _i21 = orderedCallbacks.length - 1; _i21 >= 0 && !event.propagationStopped; _i21--) {
-    var orderedCallback = orderedCallbacks[_i21];
+  for (var _i24 = orderedCallbacks.length - 1; _i24 >= 0 && !event.propagationStopped; _i24--) {
+    var orderedCallback = orderedCallbacks[_i24];
     if ('handleEvent' in orderedCallback) {
       orderedCallback.handleEvent(event);
     } else {
@@ -3323,7 +3337,6 @@ var DelegationEntryHandler = function () {
   DelegationEntryHandler.prototype.dispose = function dispose() {
     this.entry.decrement();
     this.lookup[this.targetEvent] = null;
-    this.entry = this.lookup = this.targetEvent = null;
   };
 
   return DelegationEntryHandler;
@@ -3340,7 +3353,6 @@ var EventHandler = function () {
 
   EventHandler.prototype.dispose = function dispose() {
     this.target.removeEventListener(this.targetEvent, this.callback);
-    this.target = this.targetEvent = this.callback = null;
   };
 
   return EventHandler;
@@ -3524,8 +3536,8 @@ var EventSubscriber = exports.EventSubscriber = function () {
     this.handler = callbackOrListener;
 
     var events = this.events;
-    for (var _i22 = 0, ii = events.length; ii > _i22; ++_i22) {
-      element.addEventListener(events[_i22], callbackOrListener);
+    for (var _i25 = 0, ii = events.length; ii > _i25; ++_i25) {
+      element.addEventListener(events[_i25], callbackOrListener);
     }
   };
 
@@ -3536,8 +3548,8 @@ var EventSubscriber = exports.EventSubscriber = function () {
     var element = this.element;
     var callbackOrListener = this.handler;
     var events = this.events;
-    for (var _i23 = 0, ii = events.length; ii > _i23; ++_i23) {
-      element.removeEventListener(events[_i23], callbackOrListener);
+    for (var _i26 = 0, ii = events.length; ii > _i26; ++_i26) {
+      element.removeEventListener(events[_i26], callbackOrListener);
     }
     this.element = this.handler = null;
   };
@@ -4190,8 +4202,8 @@ var SelectValueObserver = exports.SelectValueObserver = (_dec9 = subscriberColle
     var count = 0;
     var value = [];
 
-    for (var _i24 = 0, ii = options.length; _i24 < ii; _i24++) {
-      var _option = options.item(_i24);
+    for (var _i27 = 0, ii = options.length; _i27 < ii; _i27++) {
+      var _option = options.item(_i27);
       if (!_option.selected) {
         continue;
       }
@@ -4329,8 +4341,8 @@ var ClassObserver = exports.ClassObserver = function () {
 
     if (newValue !== null && newValue !== undefined && newValue.length) {
       names = newValue.split(/\s+/);
-      for (var _i25 = 0, length = names.length; _i25 < length; _i25++) {
-        name = names[_i25];
+      for (var _i28 = 0, length = names.length; _i28 < length; _i28++) {
+        name = names[_i28];
         if (name === '') {
           continue;
         }
@@ -4423,9 +4435,9 @@ var ComputedExpression = exports.ComputedExpression = function (_Expression19) {
 function createComputedObserver(obj, propertyName, descriptor, observerLocator) {
   var dependencies = descriptor.get.dependencies;
   if (!(dependencies instanceof ComputedExpression)) {
-    var _i26 = dependencies.length;
-    while (_i26--) {
-      dependencies[_i26] = observerLocator.parser.parse(dependencies[_i26]);
+    var _i29 = dependencies.length;
+    while (_i29--) {
+      dependencies[_i29] = observerLocator.parser.parse(dependencies[_i29]);
     }
     dependencies = descriptor.get.dependencies = new ComputedExpression(propertyName, dependencies);
   }
@@ -4744,8 +4756,8 @@ var ObserverLocator = exports.ObserverLocator = (_temp = _class12 = function () 
   };
 
   ObserverLocator.prototype.getAdapterObserver = function getAdapterObserver(obj, propertyName, descriptor) {
-    for (var _i27 = 0, ii = this.adapters.length; _i27 < ii; _i27++) {
-      var adapter = this.adapters[_i27];
+    for (var _i30 = 0, ii = this.adapters.length; _i30 < ii; _i30++) {
+      var adapter = this.adapters[_i30];
       var observer = adapter.getObserver(obj, propertyName, descriptor);
       if (observer) {
         return observer;

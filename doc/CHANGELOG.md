@@ -1,3 +1,33 @@
+<a name="2.1.0"></a>
+# [2.1.0](https://github.com/aurelia/binding/compare/2.0.0...2.1.0) (2018-06-19)
+
+
+### Bug Fixes
+
+* **ast:** preserve evaluation context for the tag in tagged template literals ([8528baa](https://github.com/aurelia/binding/commit/8528baa))
+* **doc:** ICollectionObserverSplice Typescript interface ([92a0006](https://github.com/aurelia/binding/commit/92a0006))
+* **EventManager:** remove unnecessary dereference ([e2f8866](https://github.com/aurelia/binding/commit/e2f8866))
+* **expression-cloner:** add literal template ([d324785](https://github.com/aurelia/binding/commit/d324785))
+* **literal-template:** only throw on invalid function when mustEvaluate is truthy ([766571d](https://github.com/aurelia/binding/commit/766571d))
+* **parser:** allow $parent as an argument of binding behaviors and value converters ([f76de45](https://github.com/aurelia/binding/commit/f76de45)), closes [#608](https://github.com/aurelia/binding/issues/608)
+* **typescript:** put back missing collection properties to ICollectionObserverSplice ([b4f7b28](https://github.com/aurelia/binding/commit/b4f7b28))
+* **typings:** accept Set<any> for collectionObserver ([87ca285](https://github.com/aurelia/binding/commit/87ca285))
+
+
+### Features
+
+* **parser:** add basic support for template literals ([39021ef](https://github.com/aurelia/binding/commit/39021ef))
+* **parser:** add expression operators 'in', 'instanceof', 'typeof', 'void' ([e849661](https://github.com/aurelia/binding/commit/e849661))
+* **parser:** add support for non-ASCII identifiers in the Latin-1 supplement block ([dfaca35](https://github.com/aurelia/binding/commit/dfaca35)), closes [#640](https://github.com/aurelia/binding/issues/640)
+* **parser:** add support for tagged template literals ([b9497d2](https://github.com/aurelia/binding/commit/b9497d2))
+
+
+### Performance Improvements
+
+* **parser:** add node microbench script ([37dfcb8](https://github.com/aurelia/binding/commit/37dfcb8))
+
+
+
 <a name="2.0.0"></a>
 # [2.0.0](https://github.com/aurelia/binding/compare/1.7.1...2.0.0) (2018-05-09)
 
