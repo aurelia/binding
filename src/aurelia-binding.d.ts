@@ -146,7 +146,7 @@ export declare interface CollectionObserver {
  * The change record of a collection mutation. 
  */
 export declare interface ICollectionObserverSplice<T = any> {
-
+  /* ArrayObserverSplice */
   /**
    * Number of items added to the collection.
    */
@@ -161,6 +161,33 @@ export declare interface ICollectionObserverSplice<T = any> {
    * A collection of items that were removed from the collection.
    */
   removed: Array<T>;
+  /* End ArrayObserverSplice */
+                                                   
+  /**
+   * The observed Set or Map after the change.
+   */
+  object: Set<T> | Map<K, V>;
+                                                   
+  /**
+   * The value of the Map item prior to the change.
+   */
+  oldValue: V;
+       
+  /**
+   * The key of the Map item that was changed.
+   */
+  key: K;
+                                                   
+  /**
+  * The Set value that was either added or removed.
+  */
+  value: T;
+                                                   
+  /**
+   * The type of change that has taken place. Valid options are "add", "delete", and "update".
+   * "update" is invalid for Set.
+   */
+  type: "add" | "delete" | "update";
 }
 
 /**
