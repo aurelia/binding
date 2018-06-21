@@ -196,17 +196,30 @@ describe('Parser', () => {
     });
 
     describe('Binary left-to-right associativity', () => {
-      it('4/2*10', () => {
-        const expr = parser.parse('4/2*10');
-        const res = expr.evaluate({}, {});
-        expect(res).toBe(20);
-      });
+      const tests = [
+        { expr: '4/2*10', expected: 4/2*10 },
+        { expr: '4/2*10+1', expected: 4/2*10+1 },
+        { expr: '1+4/2+1', expected: 1+4/2+1 },
+        { expr: '1+4/2+1+1', expected: 1+4/2+1+1 },
+        { expr: '4/2*10', expected: 4/2*10 },
+        { expr: '4/2*10/2', expected: 4/2*10/2 },
+        { expr: '4/2*10*2', expected: 4/2*10*2 },
+        { expr: '4/2*10+2', expected: 4/2*10+2 },
+        { expr: '2/4/2*10', expected: 2/4/2*10 },
+        { expr: '2*4/2*10', expected: 2*4/2*10 },
+        { expr: '2+4/2*10', expected: 2+4/2*10 },
+        { expr: '2/4/2*10/2', expected: 2/4/2*10/2 },
+        { expr: '2*4/2*10*2', expected: 2*4/2*10*2 },
+        { expr: '2+4/2*10+2', expected: 2+4/2*10+2 }
+      ];
 
-      it('4-2+10', () => {
-        const expr = parser.parse('4-2+10');
-        const res = expr.evaluate({}, {});
-        expect(res).toBe(12);
-      });
+      for (const { expr, expected } of tests) {
+        it(`${expr} evaluates to ${expected}`, () => {
+          const parsed = parser.parse(expr);
+          const actual = parsed.evaluate({}, {});
+          expect(actual).toBe(expected);
+        });
+      }
     });
 
     describe('Binary operator precedence', () => {
