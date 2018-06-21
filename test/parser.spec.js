@@ -195,6 +195,20 @@ describe('Parser', () => {
       }
     });
 
+    describe('Binary left-to-right associativity', () => {
+      it('4/2*10', () => {
+        const expr = parser.parse('4/2*10');
+        const res = expr.evaluate({}, {});
+        expect(res).toBe(20);
+      });
+
+      it('4-2+10', () => {
+        const expr = parser.parse('4-2+10');
+        const res = expr.evaluate({}, {});
+        expect(res).toBe(12);
+      });
+    });
+
     describe('Binary operator precedence', () => {
       const x = [0, 1, 2, 3, 4, 5, 6, 7].map(i => new AccessScope(`x${i}`, 0));
       const b = (l, op, r) => new Binary(op, l, r);

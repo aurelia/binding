@@ -106,7 +106,7 @@ export class ParserImplementation {
 
     while (this.tkn & T$BinaryOp) {
       const opToken = this.tkn;
-      if ((opToken & T$Precedence) < minPrecedence) {
+      if ((opToken & T$Precedence) <= minPrecedence) {
         break;
       }
       this.nextToken();
