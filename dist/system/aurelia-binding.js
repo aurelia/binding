@@ -3,7 +3,7 @@
 System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], function (_export, _context) {
   "use strict";
 
-  var LogManager, PLATFORM, DOM, TaskQueue, metadata, _createClass, _typeof, _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class5, _dec6, _class7, _dec7, _class8, _dec8, _class9, _dec9, _class10, _class12, _temp, _dec10, _class13, _class14, _temp2, targetContext, sourceContext, map, slotNames, versionSlotNames, i, queue, queued, nextId, minimumImmediate, frameBudget, isFlushRequested, immediate, arrayPool1, arrayPool2, poolUtilization, ExpressionObserver, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, pop, push, reverse, shift, sort, splice, unshift, ModifyArrayObserver, Expression, BindingBehavior, ValueConverter, Assign, Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, Unary, LiteralPrimitive, LiteralString, LiteralTemplate, LiteralArray, LiteralObject, _Unparser, ExpressionCloner, bindingMode, Parser, fromCharCode, ParserImplementation, C$This, C$Scope, C$Member, C$Keyed, C$ShorthandProp, C$Tagged, C$Ancestor, T$TokenMask, T$PrecShift, T$Precedence, T$ExpressionTerminal, T$ClosingToken, T$OpeningToken, T$AccessScopeTerminal, T$Keyword, T$EOF, T$Identifier, T$IdentifierOrKeyword, T$Literal, T$NumericLiteral, T$StringLiteral, T$BinaryOp, T$UnaryOp, T$MemberExpression, T$MemberOrCallExpression, T$TemplateTail, T$TemplateContinuation, T$FalseKeyword, T$TrueKeyword, T$NullKeyword, T$UndefinedKeyword, T$ThisScope, T$ParentScope, T$LParen, T$LBrace, T$Period, T$RBrace, T$RParen, T$Comma, T$LBracket, T$RBracket, T$Colon, T$Question, T$Ampersand, T$Bar, T$BarBar, T$AmpersandAmpersand, T$Caret, T$EqEq, T$BangEq, T$EqEqEq, T$BangEqEq, T$Lt, T$Gt, T$LtEq, T$GtEq, T$InKeyword, T$InstanceOfKeyword, T$Plus, T$Minus, T$TypeofKeyword, T$VoidKeyword, T$Star, T$Percent, T$Slash, T$Eq, T$Bang, KeywordLookup, TokenValues, codes, AsciiIdParts, IdParts, CharScanners, mapProto, ModifyMapObserver, CapturedHandlerEntry, DelegateHandlerEntry, DelegationEntryHandler, EventHandler, DefaultEventStrategy, delegationStrategy, EventManager, EventSubscriber, DirtyChecker, DirtyCheckProperty, logger, propertyAccessor, PrimitiveObserver, SetterObserver, XLinkAttributeObserver, dataAttributeAccessor, DataAttributeObserver, StyleObserver, ValueAttributeObserver, checkedArrayContext, checkedValueContext, CheckedObserver, selectArrayContext, SelectValueObserver, ClassObserver, ComputedExpression, svgElements, svgPresentationElements, svgPresentationAttributes, svgAnalyzer, createElement, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, Binding, CallExpression, Call, ValueConverterResource, BindingBehaviorResource, ListenerExpression, Listener, NameExpression, NameBinder, LookupFunctions, BindingEngine, setProto, ModifySetObserver, signals;
+  var LogManager, PLATFORM, DOM, TaskQueue, metadata, _createClass, _typeof, _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class5, _dec6, _class7, _dec7, _class8, _dec8, _class9, _dec9, _class10, _class12, _temp, _dec10, _class13, _class14, _temp2, targetContext, sourceContext, map, slotNames, versionSlotNames, i, queue, queued, nextId, minimumImmediate, frameBudget, isFlushRequested, immediate, arrayPool1, arrayPool2, poolUtilization, ExpressionObserver, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, pop, push, reverse, shift, sort, splice, unshift, ModifyArrayObserver, Expression, BindingBehavior, ValueConverter, Assign, Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, Unary, LiteralPrimitive, LiteralString, LiteralTemplate, LiteralArray, LiteralObject, _Unparser, ExpressionCloner, bindingMode, Parser, fromCharCode, ParserImplementation, C$This, C$Scope, C$Member, C$Keyed, C$ShorthandProp, C$Tagged, C$Ancestor, T$TokenMask, T$PrecShift, T$Precedence, T$ExpressionTerminal, T$ClosingToken, T$OpeningToken, T$AccessScopeTerminal, T$Keyword, T$EOF, T$Identifier, T$IdentifierOrKeyword, T$Literal, T$NumericLiteral, T$StringLiteral, T$BinaryOp, T$UnaryOp, T$MemberExpression, T$MemberOrCallExpression, T$TemplateTail, T$TemplateContinuation, T$FalseKeyword, T$TrueKeyword, T$NullKeyword, T$UndefinedKeyword, T$ThisScope, T$ParentScope, T$LParen, T$LBrace, T$Period, T$RBrace, T$RParen, T$Comma, T$LBracket, T$RBracket, T$Colon, T$Question, T$Ampersand, T$Bar, T$BarBar, T$AmpersandAmpersand, T$Caret, T$EqEq, T$BangEq, T$EqEqEq, T$BangEqEq, T$Lt, T$Gt, T$LtEq, T$GtEq, T$InKeyword, T$InstanceOfKeyword, T$Plus, T$Minus, T$TypeofKeyword, T$VoidKeyword, T$Star, T$Percent, T$Slash, T$Eq, T$Bang, KeywordLookup, TokenValues, codes, AsciiIdParts, IdParts, CharScanners, ci, mapProto, ModifyMapObserver, CapturedHandlerEntry, DelegateHandlerEntry, DelegationEntryHandler, EventHandler, DefaultEventStrategy, delegationStrategy, EventManager, EventSubscriber, DirtyChecker, DirtyCheckProperty, logger, propertyAccessor, PrimitiveObserver, SetterObserver, XLinkAttributeObserver, dataAttributeAccessor, DataAttributeObserver, StyleObserver, ValueAttributeObserver, checkedArrayContext, checkedValueContext, CheckedObserver, selectArrayContext, SelectValueObserver, ClassObserver, ComputedExpression, svgElements, svgPresentationElements, svgPresentationAttributes, svgAnalyzer, createElement, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, Binding, CallExpression, Call, ValueConverterResource, BindingBehaviorResource, ListenerExpression, Listener, NameExpression, NameBinder, LookupFunctions, BindingEngine, setProto, ModifySetObserver, signals;
 
   function _possibleConstructorReturn(self, call) {
     if (!self) {
@@ -672,7 +672,11 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
       var end = compressed[_i23 + 1];
       end = end > 0 ? end : start + 1;
       if (lookup) {
-        lookup.fill(value, start, end);
+        var j = start;
+        while (j < end) {
+          lookup[j] = value;
+          j++;
+        }
       }
       if (set) {
         for (var ch = start; ch < end; ch++) {
@@ -2817,7 +2821,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
 
           while (this.tkn & T$BinaryOp) {
             var opToken = this.tkn;
-            if ((opToken & T$Precedence) < minPrecedence) {
+            if ((opToken & T$Precedence) <= minPrecedence) {
               break;
             }
             this.nextToken();
@@ -3341,8 +3345,12 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
       decompress(IdParts, null, codes.Digit, 1);
 
       CharScanners = new Array(0xFFFF);
+      ci = 0;
 
-      CharScanners.fill(unexpectedCharacter, 0, 0xFFFF);
+      while (ci < 0xFFFF) {
+        CharScanners[ci] = unexpectedCharacter;
+        ci++;
+      }
 
       decompress(CharScanners, null, codes.Skip, function (p) {
         p.next();

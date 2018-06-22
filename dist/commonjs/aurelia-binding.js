@@ -2446,7 +2446,7 @@ var ParserImplementation = exports.ParserImplementation = function () {
 
     while (this.tkn & T$BinaryOp) {
       var opToken = this.tkn;
-      if ((opToken & T$Precedence) < minPrecedence) {
+      if ((opToken & T$Precedence) <= minPrecedence) {
         break;
       }
       this.nextToken();
@@ -2998,7 +2998,11 @@ function decompress(lookup, set, compressed, value) {
     var end = compressed[_i23 + 1];
     end = end > 0 ? end : start + 1;
     if (lookup) {
-      lookup.fill(value, start, end);
+      var j = start;
+      while (j < end) {
+        lookup[j] = value;
+        j++;
+      }
     }
     if (set) {
       for (var ch = start; ch < end; ch++) {
@@ -3027,7 +3031,11 @@ decompress(IdParts, null, codes.IdStart, 1);
 decompress(IdParts, null, codes.Digit, 1);
 
 var CharScanners = new Array(0xFFFF);
-CharScanners.fill(unexpectedCharacter, 0, 0xFFFF);
+var ci = 0;
+while (ci < 0xFFFF) {
+  CharScanners[ci] = unexpectedCharacter;
+  ci++;
+}
 
 decompress(CharScanners, null, codes.Skip, function (p) {
   p.next();

@@ -1,3 +1,14 @@
+<a name="2.1.1"></a>
+## [2.1.1](https://github.com/aurelia/binding/compare/2.1.0...2.1.1) (2018-06-22)
+
+
+### Bug Fixes
+
+* **parser:** left-to-right associativity for nested binary expressions with same precedence ([d2d867e](https://github.com/aurelia/binding/commit/d2d867e))
+* **parser:** use loop instead of array.fill for IE10 compat ([a7080bd](https://github.com/aurelia/binding/commit/a7080bd))
+
+
+
 <a name="2.1.0"></a>
 # [2.1.0](https://github.com/aurelia/binding/compare/2.0.0...2.1.0) (2018-06-19)
 

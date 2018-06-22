@@ -2493,7 +2493,7 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
 
       while (this.tkn & T$BinaryOp) {
         var opToken = this.tkn;
-        if ((opToken & T$Precedence) < minPrecedence) {
+        if ((opToken & T$Precedence) <= minPrecedence) {
           break;
         }
         this.nextToken();
@@ -3045,7 +3045,11 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
       var end = compressed[_i23 + 1];
       end = end > 0 ? end : start + 1;
       if (lookup) {
-        lookup.fill(value, start, end);
+        var j = start;
+        while (j < end) {
+          lookup[j] = value;
+          j++;
+        }
       }
       if (set) {
         for (var ch = start; ch < end; ch++) {
@@ -3074,7 +3078,11 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
   decompress(IdParts, null, codes.Digit, 1);
 
   var CharScanners = new Array(0xFFFF);
-  CharScanners.fill(unexpectedCharacter, 0, 0xFFFF);
+  var ci = 0;
+  while (ci < 0xFFFF) {
+    CharScanners[ci] = unexpectedCharacter;
+    ci++;
+  }
 
   decompress(CharScanners, null, codes.Skip, function (p) {
     p.next();
