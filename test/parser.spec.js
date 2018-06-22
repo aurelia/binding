@@ -195,6 +195,33 @@ describe('Parser', () => {
       }
     });
 
+    describe('Binary left-to-right associativity', () => {
+      const tests = [
+        { expr: '4/2*10', expected: 4/2*10 },
+        { expr: '4/2*10+1', expected: 4/2*10+1 },
+        { expr: '1+4/2+1', expected: 1+4/2+1 },
+        { expr: '1+4/2+1+1', expected: 1+4/2+1+1 },
+        { expr: '4/2*10', expected: 4/2*10 },
+        { expr: '4/2*10/2', expected: 4/2*10/2 },
+        { expr: '4/2*10*2', expected: 4/2*10*2 },
+        { expr: '4/2*10+2', expected: 4/2*10+2 },
+        { expr: '2/4/2*10', expected: 2/4/2*10 },
+        { expr: '2*4/2*10', expected: 2*4/2*10 },
+        { expr: '2+4/2*10', expected: 2+4/2*10 },
+        { expr: '2/4/2*10/2', expected: 2/4/2*10/2 },
+        { expr: '2*4/2*10*2', expected: 2*4/2*10*2 },
+        { expr: '2+4/2*10+2', expected: 2+4/2*10+2 }
+      ];
+
+      for (const { expr, expected } of tests) {
+        it(`${expr} evaluates to ${expected}`, () => {
+          const parsed = parser.parse(expr);
+          const actual = parsed.evaluate({}, {});
+          expect(actual).toBe(expected);
+        });
+      }
+    });
+
     describe('Binary operator precedence', () => {
       const x = [0, 1, 2, 3, 4, 5, 6, 7].map(i => new AccessScope(`x${i}`, 0));
       const b = (l, op, r) => new Binary(op, l, r);
