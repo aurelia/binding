@@ -169,6 +169,7 @@ export class ParserImplementation {
       this.nextToken();
       result = this.parseExpression();
       this.expect(T$RParen);
+      context = C$Primary;
       break;
     case T$LBracket: // literal array
       {
@@ -181,6 +182,7 @@ export class ParserImplementation {
         }
         this.expect(T$RBracket);
         result = new LiteralArray(elements);
+        context = C$Primary;
         break;
       }
     case T$LBrace: // object
@@ -215,23 +217,29 @@ export class ParserImplementation {
         }
         this.expect(T$RBrace);
         result = new LiteralObject(keys, values);
+        context = C$Primary;
         break;
       }
     case T$StringLiteral:
       result = new LiteralString(this.val);
       this.nextToken();
+      context = C$Primary;
       break;
     case T$TemplateTail:
       result = new LiteralTemplate([this.val]);
       this.nextToken();
+      context = C$Primary;
       break;
     case T$TemplateContinuation:
       result = this.parseTemplate(0);
+      context = C$Primary;
       break;
     case T$NumericLiteral:
       {
         result = new LiteralPrimitive(this.val);
         this.nextToken();
+        // note: spec says 42.foo() is syntactically correct, so we could set context to C$Primary here but we'd have to add
+        // state and rewind the parser after float scanning to accomplish that, and doesn't seem worth it for something so convoluted
         break;
       }
     case T$NullKeyword:
@@ -240,6 +248,7 @@ export class ParserImplementation {
     case T$FalseKeyword:
       result = new LiteralPrimitive(TokenValues[this.tkn & T$TokenMask]);
       this.nextToken();
+      context = C$Primary;
       break;
     default:
       if (this.idx >= this.len) {
@@ -264,8 +273,8 @@ export class ParserImplementation {
         }
         name = this.val;
         this.nextToken();
-        // Change $This to $Scope, change $Scope to $Member, keep $Member as-is, change $Keyed to $Member, disregard other flags
-        context = ((context & (C$This | C$Scope)) << 1) | (context & C$Member) | ((context & C$Keyed) >> 1);
+        // Keep $Primary, Change $This to $Scope, change $Scope to $Member, keep $Member as-is, change $Keyed to $Member, change $Call to $Member, disregard other flags
+        context = (context & C$Primary) | ((context & (C$This | C$Scope)) << 1) | (context & C$Member) | ((context & C$Keyed) >> 1) | ((context & C$Call) >> 2);
         if (this.tkn === T$LParen) {
           continue;
         }
@@ -293,12 +302,12 @@ export class ParserImplementation {
         this.expect(T$RParen);
         if (context & C$Scope) {
           result = new CallScope(name, args, result.ancestor);
-        } else if (context & C$Member) {
+        } else if (context & (C$Member | C$Primary)) {
           result = new CallMember(result, name, args);
         } else {
           result = new CallFunction(result, args);
         }
-        context = 0;
+        context = C$Call;
         break;
       case T$TemplateTail:
         result = new LiteralTemplate([this.val], [], [this.raw], result);
@@ -567,8 +576,10 @@ const C$This          = 1 << 10;
 const C$Scope         = 1 << 11;
 const C$Member        = 1 << 12;
 const C$Keyed         = 1 << 13;
-const C$ShorthandProp = 1 << 14;
-const C$Tagged        = 1 << 15;
+const C$Call          = 1 << 14;
+const C$Primary       = 1 << 15;
+const C$ShorthandProp = 1 << 16;
+const C$Tagged        = 1 << 17;
 // Performing a bitwise and (&) with this value (511) will return only the ancestor bit (is this limit high enough?)
 const C$Ancestor      = (1 << 9) - 1;
 
