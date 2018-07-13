@@ -462,6 +462,43 @@ describe('Parser', () => {
       verifyEqual(expr, new CallScope('foo', [new CallScope('bar', [$x], 0), $y], 0));
     });
 
+    describe('CallMember', () => {
+      const memberExpressions = [
+        { memberExpr: 'foo', ast: new AccessScope('foo', 0)},
+        { memberExpr: 'foo()', ast: new CallScope('foo', [], 0)},
+        { memberExpr: 'null', ast: new LiteralPrimitive(null)},
+        { memberExpr: 'true', ast: new LiteralPrimitive(true)},
+        { memberExpr: 'false', ast: new LiteralPrimitive(false)},
+        { memberExpr: '\'foo\'', ast: new LiteralString('foo')},
+        { memberExpr: '"foo"', ast: new LiteralString('foo')},
+        { memberExpr: '[]', ast: new LiteralArray([])},
+        { memberExpr: '[1,2]', ast: new LiteralArray([new LiteralPrimitive(1), new LiteralPrimitive(2)])},
+        { memberExpr: '{}', ast: new LiteralObject([], [])},
+        { memberExpr: '{foo}', ast: new LiteralObject(['foo'], [new AccessScope('foo', 0)])},
+        { memberExpr: '`foo`', ast: new LiteralTemplate(['foo'], [], ['foo'])},
+        { memberExpr: 'foo`bar`', ast: new LiteralTemplate(['bar'], [], ['bar'], new AccessScope('foo', 0))},
+        { memberExpr: '(42)', ast: new LiteralPrimitive(42)},
+        { memberExpr: '(.3)', ast: new LiteralPrimitive(.3)},
+        { memberExpr: '(10e2)', ast: new LiteralPrimitive(10e2)},
+        { memberExpr: '(void 0)', ast: new Unary('void', new LiteralPrimitive(0))},
+        { memberExpr: '(typeof null)', ast: new Unary('typeof', new LiteralPrimitive(null))},
+        { memberExpr: '(1+1)', ast: new Binary('+', new LiteralPrimitive(1), new LiteralPrimitive(1))},
+        { memberExpr: '(true===true?{}:{})', ast: new Conditional(new Binary('===', new LiteralPrimitive(true), new LiteralPrimitive(true)), new LiteralObject([], []), new LiteralObject([], []))},
+      ];
+
+      for (const { memberExpr, ast } of memberExpressions) {
+        const expr = memberExpr + '.foo()';
+        const expected = new CallMember(ast, 'foo', []);
+        it(expr, () => {
+          verifyEqual(parser.parse(expr), expected);
+        });
+
+        it(`(${expr})`, () => {
+          verifyEqual(parser.parse(`(${expr})`), expected);
+        });
+      }
+    });
+
     it('CallMember', () => {
       let expr = parser.parse('foo.bar(x)');
       verifyEqual(expr, new CallMember($foo, 'bar', [$x]));
