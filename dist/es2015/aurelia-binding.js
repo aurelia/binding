@@ -2285,6 +2285,7 @@ export let ParserImplementation = class ParserImplementation {
         this.nextToken();
         result = this.parseExpression();
         this.expect(T$RParen);
+        context = C$Primary;
         break;
       case T$LBracket:
         {
@@ -2297,6 +2298,7 @@ export let ParserImplementation = class ParserImplementation {
           }
           this.expect(T$RBracket);
           result = new LiteralArray(elements);
+          context = C$Primary;
           break;
         }
       case T$LBrace:
@@ -2331,23 +2333,28 @@ export let ParserImplementation = class ParserImplementation {
           }
           this.expect(T$RBrace);
           result = new LiteralObject(keys, values);
+          context = C$Primary;
           break;
         }
       case T$StringLiteral:
         result = new LiteralString(this.val);
         this.nextToken();
+        context = C$Primary;
         break;
       case T$TemplateTail:
         result = new LiteralTemplate([this.val]);
         this.nextToken();
+        context = C$Primary;
         break;
       case T$TemplateContinuation:
         result = this.parseTemplate(0);
+        context = C$Primary;
         break;
       case T$NumericLiteral:
         {
           result = new LiteralPrimitive(this.val);
           this.nextToken();
+
           break;
         }
       case T$NullKeyword:
@@ -2356,6 +2363,7 @@ export let ParserImplementation = class ParserImplementation {
       case T$FalseKeyword:
         result = new LiteralPrimitive(TokenValues[this.tkn & T$TokenMask]);
         this.nextToken();
+        context = C$Primary;
         break;
       default:
         if (this.idx >= this.len) {
@@ -2380,7 +2388,7 @@ export let ParserImplementation = class ParserImplementation {
           name = this.val;
           this.nextToken();
 
-          context = (context & (C$This | C$Scope)) << 1 | context & C$Member | (context & C$Keyed) >> 1;
+          context = context & C$Primary | (context & (C$This | C$Scope)) << 1 | context & C$Member | (context & C$Keyed) >> 1 | (context & C$Call) >> 2;
           if (this.tkn === T$LParen) {
             continue;
           }
@@ -2408,12 +2416,12 @@ export let ParserImplementation = class ParserImplementation {
           this.expect(T$RParen);
           if (context & C$Scope) {
             result = new CallScope(name, args, result.ancestor);
-          } else if (context & C$Member) {
+          } else if (context & (C$Member | C$Primary)) {
             result = new CallMember(result, name, args);
           } else {
             result = new CallFunction(result, args);
           }
-          context = 0;
+          context = C$Call;
           break;
         case T$TemplateTail:
           result = new LiteralTemplate([this.val], [], [this.raw], result);
@@ -2661,8 +2669,10 @@ const C$This = 1 << 10;
 const C$Scope = 1 << 11;
 const C$Member = 1 << 12;
 const C$Keyed = 1 << 13;
-const C$ShorthandProp = 1 << 14;
-const C$Tagged = 1 << 15;
+const C$Call = 1 << 14;
+const C$Primary = 1 << 15;
+const C$ShorthandProp = 1 << 16;
+const C$Tagged = 1 << 17;
 
 const C$Ancestor = (1 << 9) - 1;
 

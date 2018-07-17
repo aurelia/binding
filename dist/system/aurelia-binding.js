@@ -3,7 +3,7 @@
 System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], function (_export, _context) {
   "use strict";
 
-  var LogManager, PLATFORM, DOM, TaskQueue, metadata, _createClass, _typeof, _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class5, _dec6, _class7, _dec7, _class8, _dec8, _class9, _dec9, _class10, _class12, _temp, _dec10, _class13, _class14, _temp2, targetContext, sourceContext, map, slotNames, versionSlotNames, i, queue, queued, nextId, minimumImmediate, frameBudget, isFlushRequested, immediate, arrayPool1, arrayPool2, poolUtilization, ExpressionObserver, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, pop, push, reverse, shift, sort, splice, unshift, ModifyArrayObserver, Expression, BindingBehavior, ValueConverter, Assign, Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, Unary, LiteralPrimitive, LiteralString, LiteralTemplate, LiteralArray, LiteralObject, _Unparser, ExpressionCloner, bindingMode, Parser, fromCharCode, ParserImplementation, C$This, C$Scope, C$Member, C$Keyed, C$ShorthandProp, C$Tagged, C$Ancestor, T$TokenMask, T$PrecShift, T$Precedence, T$ExpressionTerminal, T$ClosingToken, T$OpeningToken, T$AccessScopeTerminal, T$Keyword, T$EOF, T$Identifier, T$IdentifierOrKeyword, T$Literal, T$NumericLiteral, T$StringLiteral, T$BinaryOp, T$UnaryOp, T$MemberExpression, T$MemberOrCallExpression, T$TemplateTail, T$TemplateContinuation, T$FalseKeyword, T$TrueKeyword, T$NullKeyword, T$UndefinedKeyword, T$ThisScope, T$ParentScope, T$LParen, T$LBrace, T$Period, T$RBrace, T$RParen, T$Comma, T$LBracket, T$RBracket, T$Colon, T$Question, T$Ampersand, T$Bar, T$BarBar, T$AmpersandAmpersand, T$Caret, T$EqEq, T$BangEq, T$EqEqEq, T$BangEqEq, T$Lt, T$Gt, T$LtEq, T$GtEq, T$InKeyword, T$InstanceOfKeyword, T$Plus, T$Minus, T$TypeofKeyword, T$VoidKeyword, T$Star, T$Percent, T$Slash, T$Eq, T$Bang, KeywordLookup, TokenValues, codes, AsciiIdParts, IdParts, CharScanners, ci, mapProto, ModifyMapObserver, CapturedHandlerEntry, DelegateHandlerEntry, DelegationEntryHandler, EventHandler, DefaultEventStrategy, delegationStrategy, EventManager, EventSubscriber, DirtyChecker, DirtyCheckProperty, logger, propertyAccessor, PrimitiveObserver, SetterObserver, XLinkAttributeObserver, dataAttributeAccessor, DataAttributeObserver, StyleObserver, ValueAttributeObserver, checkedArrayContext, checkedValueContext, CheckedObserver, selectArrayContext, SelectValueObserver, ClassObserver, ComputedExpression, svgElements, svgPresentationElements, svgPresentationAttributes, svgAnalyzer, createElement, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, Binding, CallExpression, Call, ValueConverterResource, BindingBehaviorResource, ListenerExpression, Listener, NameExpression, NameBinder, LookupFunctions, BindingEngine, setProto, ModifySetObserver, signals;
+  var LogManager, PLATFORM, DOM, TaskQueue, metadata, _createClass, _typeof, _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class5, _dec6, _class7, _dec7, _class8, _dec8, _class9, _dec9, _class10, _class12, _temp, _dec10, _class13, _class14, _temp2, targetContext, sourceContext, map, slotNames, versionSlotNames, i, queue, queued, nextId, minimumImmediate, frameBudget, isFlushRequested, immediate, arrayPool1, arrayPool2, poolUtilization, ExpressionObserver, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, pop, push, reverse, shift, sort, splice, unshift, ModifyArrayObserver, Expression, BindingBehavior, ValueConverter, Assign, Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, Unary, LiteralPrimitive, LiteralString, LiteralTemplate, LiteralArray, LiteralObject, _Unparser, ExpressionCloner, bindingMode, Parser, fromCharCode, ParserImplementation, C$This, C$Scope, C$Member, C$Keyed, C$Call, C$Primary, C$ShorthandProp, C$Tagged, C$Ancestor, T$TokenMask, T$PrecShift, T$Precedence, T$ExpressionTerminal, T$ClosingToken, T$OpeningToken, T$AccessScopeTerminal, T$Keyword, T$EOF, T$Identifier, T$IdentifierOrKeyword, T$Literal, T$NumericLiteral, T$StringLiteral, T$BinaryOp, T$UnaryOp, T$MemberExpression, T$MemberOrCallExpression, T$TemplateTail, T$TemplateContinuation, T$FalseKeyword, T$TrueKeyword, T$NullKeyword, T$UndefinedKeyword, T$ThisScope, T$ParentScope, T$LParen, T$LBrace, T$Period, T$RBrace, T$RParen, T$Comma, T$LBracket, T$RBracket, T$Colon, T$Question, T$Ampersand, T$Bar, T$BarBar, T$AmpersandAmpersand, T$Caret, T$EqEq, T$BangEq, T$EqEqEq, T$BangEqEq, T$Lt, T$Gt, T$LtEq, T$GtEq, T$InKeyword, T$InstanceOfKeyword, T$Plus, T$Minus, T$TypeofKeyword, T$VoidKeyword, T$Star, T$Percent, T$Slash, T$Eq, T$Bang, KeywordLookup, TokenValues, codes, AsciiIdParts, IdParts, CharScanners, ci, mapProto, ModifyMapObserver, CapturedHandlerEntry, DelegateHandlerEntry, DelegationEntryHandler, EventHandler, DefaultEventStrategy, delegationStrategy, EventManager, EventSubscriber, DirtyChecker, DirtyCheckProperty, logger, propertyAccessor, PrimitiveObserver, SetterObserver, XLinkAttributeObserver, dataAttributeAccessor, DataAttributeObserver, StyleObserver, ValueAttributeObserver, checkedArrayContext, checkedValueContext, CheckedObserver, selectArrayContext, SelectValueObserver, ClassObserver, ComputedExpression, svgElements, svgPresentationElements, svgPresentationAttributes, svgAnalyzer, createElement, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, Binding, CallExpression, Call, ValueConverterResource, BindingBehaviorResource, ListenerExpression, Listener, NameExpression, NameBinder, LookupFunctions, BindingEngine, setProto, ModifySetObserver, signals;
 
   function _possibleConstructorReturn(self, call) {
     if (!self) {
@@ -2883,6 +2883,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
               this.nextToken();
               result = this.parseExpression();
               this.expect(T$RParen);
+              context = C$Primary;
               break;
             case T$LBracket:
               {
@@ -2895,6 +2896,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
                 }
                 this.expect(T$RBracket);
                 result = new LiteralArray(_elements);
+                context = C$Primary;
                 break;
               }
             case T$LBrace:
@@ -2932,23 +2934,28 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
                 }
                 this.expect(T$RBrace);
                 result = new LiteralObject(keys, values);
+                context = C$Primary;
                 break;
               }
             case T$StringLiteral:
               result = new LiteralString(this.val);
               this.nextToken();
+              context = C$Primary;
               break;
             case T$TemplateTail:
               result = new LiteralTemplate([this.val]);
               this.nextToken();
+              context = C$Primary;
               break;
             case T$TemplateContinuation:
               result = this.parseTemplate(0);
+              context = C$Primary;
               break;
             case T$NumericLiteral:
               {
                 result = new LiteralPrimitive(this.val);
                 this.nextToken();
+
                 break;
               }
             case T$NullKeyword:
@@ -2957,6 +2964,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
             case T$FalseKeyword:
               result = new LiteralPrimitive(TokenValues[this.tkn & T$TokenMask]);
               this.nextToken();
+              context = C$Primary;
               break;
             default:
               if (this.idx >= this.len) {
@@ -2981,7 +2989,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
                 name = this.val;
                 this.nextToken();
 
-                context = (context & (C$This | C$Scope)) << 1 | context & C$Member | (context & C$Keyed) >> 1;
+                context = context & C$Primary | (context & (C$This | C$Scope)) << 1 | context & C$Member | (context & C$Keyed) >> 1 | (context & C$Call) >> 2;
                 if (this.tkn === T$LParen) {
                   continue;
                 }
@@ -3009,12 +3017,12 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
                 this.expect(T$RParen);
                 if (context & C$Scope) {
                   result = new CallScope(name, args, result.ancestor);
-                } else if (context & C$Member) {
+                } else if (context & (C$Member | C$Primary)) {
                   result = new CallMember(result, name, args);
                 } else {
                   result = new CallFunction(result, args);
                 }
-                context = 0;
+                context = C$Call;
                 break;
               case T$TemplateTail:
                 result = new LiteralTemplate([this.val], [], [this.raw], result);
@@ -3252,8 +3260,10 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
       C$Scope = 1 << 11;
       C$Member = 1 << 12;
       C$Keyed = 1 << 13;
-      C$ShorthandProp = 1 << 14;
-      C$Tagged = 1 << 15;
+      C$Call = 1 << 14;
+      C$Primary = 1 << 15;
+      C$ShorthandProp = 1 << 16;
+      C$Tagged = 1 << 17;
       C$Ancestor = (1 << 9) - 1;
       T$TokenMask = (1 << 6) - 1;
       T$PrecShift = 6;

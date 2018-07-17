@@ -1,3 +1,13 @@
+<a name="2.1.2"></a>
+## [2.1.2](https://github.com/aurelia/binding/compare/2.1.1...2.1.2) (2018-07-17)
+
+
+### Bug Fixes
+
+* **parser:** allow PrimaryExpression on the lefthand side of CallMember ([c161c3a](https://github.com/aurelia/binding/commit/c161c3a)), closes [#700](https://github.com/aurelia/binding/issues/700)
+
+
+
 <a name="2.1.1"></a>
 ## [2.1.1](https://github.com/aurelia/binding/compare/2.1.0...2.1.1) (2018-06-22)
 
