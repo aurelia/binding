@@ -56,24 +56,28 @@ export class CheckedObserver {
   }
 
   synchronizeElement() {
-    let value = this.value;
-    let element = this.element;
-    let elementValue = element.hasOwnProperty('model') ? element.model : element.value;
-    let isRadio = element.type === 'radio';
-    let matcher = element.matcher || ((a, b) => a === b);
+    const value = this.value;
+    const element = this.element;
+    const elementValue = element.hasOwnProperty('model') ? element.model : element.value;
+    const isRadio = element.type === 'radio';
+    const matcher = element.matcher || ((a, b) => a === b);
 
-    element.checked =
-      isRadio && !!matcher(value, elementValue)
-      || !isRadio && value === true
-      || !isRadio && Array.isArray(value) && value.findIndex(item => !!matcher(item, elementValue)) !== -1;
+    if (isRadio) {
+      element.checked = !!matcher(value, elementValue);
+    } else if (Array.isArray(value)) {
+      element.checked = value.findIndex(item => !!matcher(item, elementValue)) !== -1;
+    } else {
+      const checkedValue = element.hasOwnProperty('model') ? element.model : true;
+      element.checked = !!matcher(value, checkedValue);
+    }
   }
 
   synchronizeValue() {
     let value = this.value;
-    let element = this.element;
-    let elementValue = element.hasOwnProperty('model') ? element.model : element.value;
+    const element = this.element;
+    const elementValue = element.hasOwnProperty('model') ? element.model : element.value;
     let index;
-    let matcher = element.matcher || ((a, b) => a === b);
+    const matcher = element.matcher || ((a, b) => a === b);
 
     if (element.type === 'checkbox') {
       if (Array.isArray(value)) {
@@ -87,7 +91,10 @@ export class CheckedObserver {
         return;
       }
 
-      value = element.checked;
+
+      const checkedValue = element.hasOwnProperty('model') ? element.model : true;
+      const uncheckedValue = element.hasOwnProperty('modelUnchecked') ? element.modelUnchecked : false;
+      value = element.checked ? checkedValue : uncheckedValue;
     } else if (element.checked) {
       value = elementValue;
     } else {
