@@ -319,6 +319,62 @@ describe('CheckedObserver', () => {
     });
   });
 
+  describe('checkbox - custom values', () => {
+    var obj, el, binding;
+
+    beforeAll(() => {
+      obj = { color: 'red' };
+      el = createElement('<input type="checkbox" />');
+      document.body.appendChild(el);
+      el.model = 'red';
+      el.modelUnchecked = 'blue';
+      binding = getBinding(observerLocator, obj, 'color', el, 'checked', bindingMode.twoWay).binding;
+    });
+
+    it('binds', () => {
+      binding.bind(createScopeForTest(obj));
+      expect(el.checked).toBe(true);
+    });
+
+    it('responds to model change', done => {
+      obj.color = 'blue';
+      setTimeout(() => {
+        expect(el.checked).toBe(false);
+        done();
+      }, 0);
+    });
+
+    it('responds to element change', done => {
+      el.checked = false;
+      el.dispatchEvent(DOM.createCustomEvent('change'));
+      setTimeout(() => {
+        expect(obj.color).toBe('blue');
+        done();
+      }, 0);
+    });
+
+    it('notifies', () => {
+      let targetObserver = binding.targetObserver;
+      let spy = jasmine.createSpy('callback');
+      let oldValue = binding.targetObserver.getValue();
+      let newValue = 'red';
+      targetObserver.subscribe(spy);
+      targetObserver.setValue(newValue);
+      expect(spy).toHaveBeenCalledWith(newValue, oldValue);
+    });
+
+    it('unbinds', () => {
+      var targetObserver = binding.targetObserver;
+      spyOn(targetObserver, 'unbind').and.callThrough();
+      binding.unbind();
+      expect(targetObserver.unbind).toHaveBeenCalled();
+    });
+
+    afterAll(() => {
+      document.body.removeChild(el);
+    });
+  });
+
   describe('checkbox - late-bound value', () => {
     var obj, el, binding, binding2;
 
