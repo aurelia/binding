@@ -1,5 +1,6 @@
 /* eslint-disable no-extend-native */
 import {ModifyCollectionObserver} from './collection-observation';
+import * as LogManager from 'aurelia-logging';
 
 const arrayProto = Array.prototype;
 const pop = arrayProto.pop;
@@ -12,7 +13,14 @@ const unshift = arrayProto.unshift;
 const arrayObserverKey = '__array_observer__';
 const patchedKey = '__au_patched__';
 
-if (!arrayProto[patchedKey]) {
+if (arrayProto[patchedKey]) {
+  LogManager
+    .getLogger('array-observation')
+    .warn('Detected 2nd attempt of patching array from Aurelia binding.'
+      + ' This is probably caused by dependency mismatch between core modules and a 3rd party plugin.'
+      + ' Please see https://github.com/aurelia/cli/pull/906 if you are using webpack.'
+    );
+} else {
   arrayProto[patchedKey] = 1;
   arrayProto.pop = function() {
     let notEmpty = this.length > 0;
