@@ -10,10 +10,8 @@ const shift = arrayProto.shift;
 const sort = arrayProto.sort;
 const splice = arrayProto.splice;
 const unshift = arrayProto.unshift;
-const arrayObserverKey = '__array_observer__';
-const patchedKey = '__au_patched__';
 
-if (arrayProto[patchedKey]) {
+if (arrayProto.__au_patched__) {
   LogManager
     .getLogger('array-observation')
     .warn('Detected 2nd attempt of patching array from Aurelia binding.'
@@ -21,12 +19,12 @@ if (arrayProto[patchedKey]) {
       + ' Please see https://github.com/aurelia/cli/pull/906 if you are using webpack.'
     );
 } else {
-  arrayProto[patchedKey] = 1;
+  arrayProto.__au_patched__ = 1;
   arrayProto.pop = function() {
     let notEmpty = this.length > 0;
     let methodCallResult = pop.apply(this, arguments);
-    if (notEmpty && this[arrayObserverKey] !== undefined) {
-      this[arrayObserverKey].addChangeRecord({
+    if (notEmpty && this.__array_observer__ !== undefined) {
+      this.__array_observer__.addChangeRecord({
         type: 'delete',
         object: this,
         name: this.length,
@@ -38,8 +36,8 @@ if (arrayProto[patchedKey]) {
 
   arrayProto.push = function() {
     let methodCallResult = push.apply(this, arguments);
-    if (this[arrayObserverKey] !== undefined) {
-      this[arrayObserverKey].addChangeRecord({
+    if (this.__array_observer__ !== undefined) {
+      this.__array_observer__.addChangeRecord({
         type: 'splice',
         object: this,
         index: this.length - arguments.length,
@@ -52,13 +50,13 @@ if (arrayProto[patchedKey]) {
 
   arrayProto.reverse = function() {
     let oldArray;
-    if (this[arrayObserverKey] !== undefined) {
-      this[arrayObserverKey].flushChangeRecords();
+    if (this.__array_observer__ !== undefined) {
+      this.__array_observer__.flushChangeRecords();
       oldArray = this.slice();
     }
     let methodCallResult = reverse.apply(this, arguments);
-    if (this[arrayObserverKey] !== undefined) {
-      this[arrayObserverKey].reset(oldArray);
+    if (this.__array_observer__ !== undefined) {
+      this.__array_observer__.reset(oldArray);
     }
     return methodCallResult;
   };
@@ -66,8 +64,8 @@ if (arrayProto[patchedKey]) {
   arrayProto.shift = function() {
     let notEmpty = this.length > 0;
     let methodCallResult = shift.apply(this, arguments);
-    if (notEmpty && this[arrayObserverKey] !== undefined) {
-      this[arrayObserverKey].addChangeRecord({
+    if (notEmpty && this.__array_observer__ !== undefined) {
+      this.__array_observer__.addChangeRecord({
         type: 'delete',
         object: this,
         name: 0,
@@ -79,21 +77,21 @@ if (arrayProto[patchedKey]) {
 
   arrayProto.sort = function() {
     let oldArray;
-    if (this[arrayObserverKey] !== undefined) {
-      this[arrayObserverKey].flushChangeRecords();
+    if (this.__array_observer__ !== undefined) {
+      this.__array_observer__.flushChangeRecords();
       oldArray = this.slice();
     }
     let methodCallResult = sort.apply(this, arguments);
-    if (this[arrayObserverKey] !== undefined) {
-      this[arrayObserverKey].reset(oldArray);
+    if (this.__array_observer__ !== undefined) {
+      this.__array_observer__.reset(oldArray);
     }
     return methodCallResult;
   };
 
   arrayProto.splice = function() {
     let methodCallResult = splice.apply(this, arguments);
-    if (this[arrayObserverKey] !== undefined) {
-      this[arrayObserverKey].addChangeRecord({
+    if (this.__array_observer__ !== undefined) {
+      this.__array_observer__.addChangeRecord({
         type: 'splice',
         object: this,
         index: +arguments[0],
@@ -106,8 +104,8 @@ if (arrayProto[patchedKey]) {
 
   arrayProto.unshift = function() {
     let methodCallResult = unshift.apply(this, arguments);
-    if (this[arrayObserverKey] !== undefined) {
-      this[arrayObserverKey].addChangeRecord({
+    if (this.__array_observer__ !== undefined) {
+      this.__array_observer__.addChangeRecord({
         type: 'splice',
         object: this,
         index: 0,
@@ -135,13 +133,13 @@ class ModifyArrayObserver extends ModifyCollectionObserver {
    * @returns ModifyArrayObserver always the same instance for any given array instance
    */
   static for(taskQueue, array) {
-    if (!(arrayObserverKey in array)) {
-      Reflect.defineProperty(array, arrayObserverKey, {
+    if (!('__array_observer__' in array)) {
+      Reflect.defineProperty(array, '__array_observer__', {
         value: ModifyArrayObserver.create(taskQueue, array),
         enumerable: false, configurable: false
       });
     }
-    return array[arrayObserverKey];
+    return array.__array_observer__;
   }
 
   static create(taskQueue, array) {
