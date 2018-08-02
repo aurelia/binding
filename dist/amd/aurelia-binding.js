@@ -1038,109 +1038,115 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
     return CollectionLengthObserver;
   }()) || _class3);
 
-  var pop = Array.prototype.pop;
-  var push = Array.prototype.push;
-  var reverse = Array.prototype.reverse;
-  var shift = Array.prototype.shift;
-  var sort = Array.prototype.sort;
-  var splice = Array.prototype.splice;
-  var unshift = Array.prototype.unshift;
+  var arrayProto = Array.prototype;
+  var pop = arrayProto.pop;
+  var push = arrayProto.push;
+  var reverse = arrayProto.reverse;
+  var shift = arrayProto.shift;
+  var sort = arrayProto.sort;
+  var splice = arrayProto.splice;
+  var unshift = arrayProto.unshift;
 
-  Array.prototype.pop = function () {
-    var notEmpty = this.length > 0;
-    var methodCallResult = pop.apply(this, arguments);
-    if (notEmpty && this.__array_observer__ !== undefined) {
-      this.__array_observer__.addChangeRecord({
-        type: 'delete',
-        object: this,
-        name: this.length,
-        oldValue: methodCallResult
-      });
-    }
-    return methodCallResult;
-  };
+  if (arrayProto.__au_patched__) {
+    LogManager.getLogger('array-observation').warn('Detected 2nd attempt of patching array from Aurelia binding.' + ' This is probably caused by dependency mismatch between core modules and a 3rd party plugin.' + ' Please see https://github.com/aurelia/cli/pull/906 if you are using webpack.');
+  } else {
+    arrayProto.__au_patched__ = 1;
+    arrayProto.pop = function () {
+      var notEmpty = this.length > 0;
+      var methodCallResult = pop.apply(this, arguments);
+      if (notEmpty && this.__array_observer__ !== undefined) {
+        this.__array_observer__.addChangeRecord({
+          type: 'delete',
+          object: this,
+          name: this.length,
+          oldValue: methodCallResult
+        });
+      }
+      return methodCallResult;
+    };
 
-  Array.prototype.push = function () {
-    var methodCallResult = push.apply(this, arguments);
-    if (this.__array_observer__ !== undefined) {
-      this.__array_observer__.addChangeRecord({
-        type: 'splice',
-        object: this,
-        index: this.length - arguments.length,
-        removed: [],
-        addedCount: arguments.length
-      });
-    }
-    return methodCallResult;
-  };
+    arrayProto.push = function () {
+      var methodCallResult = push.apply(this, arguments);
+      if (this.__array_observer__ !== undefined) {
+        this.__array_observer__.addChangeRecord({
+          type: 'splice',
+          object: this,
+          index: this.length - arguments.length,
+          removed: [],
+          addedCount: arguments.length
+        });
+      }
+      return methodCallResult;
+    };
 
-  Array.prototype.reverse = function () {
-    var oldArray = void 0;
-    if (this.__array_observer__ !== undefined) {
-      this.__array_observer__.flushChangeRecords();
-      oldArray = this.slice();
-    }
-    var methodCallResult = reverse.apply(this, arguments);
-    if (this.__array_observer__ !== undefined) {
-      this.__array_observer__.reset(oldArray);
-    }
-    return methodCallResult;
-  };
+    arrayProto.reverse = function () {
+      var oldArray = void 0;
+      if (this.__array_observer__ !== undefined) {
+        this.__array_observer__.flushChangeRecords();
+        oldArray = this.slice();
+      }
+      var methodCallResult = reverse.apply(this, arguments);
+      if (this.__array_observer__ !== undefined) {
+        this.__array_observer__.reset(oldArray);
+      }
+      return methodCallResult;
+    };
 
-  Array.prototype.shift = function () {
-    var notEmpty = this.length > 0;
-    var methodCallResult = shift.apply(this, arguments);
-    if (notEmpty && this.__array_observer__ !== undefined) {
-      this.__array_observer__.addChangeRecord({
-        type: 'delete',
-        object: this,
-        name: 0,
-        oldValue: methodCallResult
-      });
-    }
-    return methodCallResult;
-  };
+    arrayProto.shift = function () {
+      var notEmpty = this.length > 0;
+      var methodCallResult = shift.apply(this, arguments);
+      if (notEmpty && this.__array_observer__ !== undefined) {
+        this.__array_observer__.addChangeRecord({
+          type: 'delete',
+          object: this,
+          name: 0,
+          oldValue: methodCallResult
+        });
+      }
+      return methodCallResult;
+    };
 
-  Array.prototype.sort = function () {
-    var oldArray = void 0;
-    if (this.__array_observer__ !== undefined) {
-      this.__array_observer__.flushChangeRecords();
-      oldArray = this.slice();
-    }
-    var methodCallResult = sort.apply(this, arguments);
-    if (this.__array_observer__ !== undefined) {
-      this.__array_observer__.reset(oldArray);
-    }
-    return methodCallResult;
-  };
+    arrayProto.sort = function () {
+      var oldArray = void 0;
+      if (this.__array_observer__ !== undefined) {
+        this.__array_observer__.flushChangeRecords();
+        oldArray = this.slice();
+      }
+      var methodCallResult = sort.apply(this, arguments);
+      if (this.__array_observer__ !== undefined) {
+        this.__array_observer__.reset(oldArray);
+      }
+      return methodCallResult;
+    };
 
-  Array.prototype.splice = function () {
-    var methodCallResult = splice.apply(this, arguments);
-    if (this.__array_observer__ !== undefined) {
-      this.__array_observer__.addChangeRecord({
-        type: 'splice',
-        object: this,
-        index: +arguments[0],
-        removed: methodCallResult,
-        addedCount: arguments.length > 2 ? arguments.length - 2 : 0
-      });
-    }
-    return methodCallResult;
-  };
+    arrayProto.splice = function () {
+      var methodCallResult = splice.apply(this, arguments);
+      if (this.__array_observer__ !== undefined) {
+        this.__array_observer__.addChangeRecord({
+          type: 'splice',
+          object: this,
+          index: +arguments[0],
+          removed: methodCallResult,
+          addedCount: arguments.length > 2 ? arguments.length - 2 : 0
+        });
+      }
+      return methodCallResult;
+    };
 
-  Array.prototype.unshift = function () {
-    var methodCallResult = unshift.apply(this, arguments);
-    if (this.__array_observer__ !== undefined) {
-      this.__array_observer__.addChangeRecord({
-        type: 'splice',
-        object: this,
-        index: 0,
-        removed: [],
-        addedCount: arguments.length
-      });
-    }
-    return methodCallResult;
-  };
+    arrayProto.unshift = function () {
+      var methodCallResult = unshift.apply(this, arguments);
+      if (this.__array_observer__ !== undefined) {
+        this.__array_observer__.addChangeRecord({
+          type: 'splice',
+          object: this,
+          index: 0,
+          removed: [],
+          addedCount: arguments.length
+        });
+      }
+      return methodCallResult;
+    };
+  }
 
   function _getArrayObserver(taskQueue, array) {
     return ModifyArrayObserver.for(taskQueue, array);

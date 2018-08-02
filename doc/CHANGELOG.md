@@ -1,3 +1,13 @@
+<a name="2.1.3"></a>
+## [2.1.3](https://github.com/aurelia/binding/compare/2.1.2...2.1.3) (2018-08-02)
+
+
+### Bug Fixes
+
+* **ArrayObservation:** ensure patch applied only once ([72b5d6d](https://github.com/aurelia/binding/commit/72b5d6d))
+
+
+
 <a name="2.1.2"></a>
 ## [2.1.2](https://github.com/aurelia/binding/compare/2.1.1...2.1.2) (2018-07-17)
 
