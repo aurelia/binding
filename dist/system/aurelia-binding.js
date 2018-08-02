@@ -3,7 +3,7 @@
 System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], function (_export, _context) {
   "use strict";
 
-  var LogManager, PLATFORM, DOM, TaskQueue, metadata, _typeof, _createClass, _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class5, _dec6, _class7, _dec7, _class8, _dec8, _class9, _dec9, _class10, _class12, _temp, _dec10, _class13, _class14, _temp2, targetContext, sourceContext, map, slotNames, versionSlotNames, i, queue, queued, nextId, minimumImmediate, frameBudget, isFlushRequested, immediate, arrayPool1, arrayPool2, poolUtilization, ExpressionObserver, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, pop, push, reverse, shift, sort, splice, unshift, ModifyArrayObserver, Expression, Chain, BindingBehavior, ValueConverter, Assign, Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, PrefixNot, LiteralPrimitive, LiteralString, LiteralArray, LiteralObject, _Unparser, ExpressionCloner, bindingMode, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP, EOF, Parser, ParserImplementation, mapProto, ModifyMapObserver, CapturedHandlerEntry, DelegateHandlerEntry, DelegationEntryHandler, EventHandler, DefaultEventStrategy, delegationStrategy, EventManager, EventSubscriber, DirtyChecker, DirtyCheckProperty, logger, propertyAccessor, PrimitiveObserver, SetterObserver, XLinkAttributeObserver, dataAttributeAccessor, DataAttributeObserver, StyleObserver, ValueAttributeObserver, checkedArrayContext, checkedValueContext, CheckedObserver, selectArrayContext, SelectValueObserver, ClassObserver, ComputedExpression, svgElements, svgPresentationElements, svgPresentationAttributes, svgAnalyzer, createElement, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, Binding, CallExpression, Call, ValueConverterResource, BindingBehaviorResource, ListenerExpression, Listener, NameExpression, NameBinder, LookupFunctions, BindingEngine, setProto, ModifySetObserver, signals;
+  var LogManager, PLATFORM, DOM, TaskQueue, metadata, _typeof, _createClass, _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class5, _dec6, _class7, _dec7, _class8, _dec8, _class9, _dec9, _class10, _class12, _temp, _dec10, _class13, _class14, _temp2, targetContext, sourceContext, map, slotNames, versionSlotNames, i, queue, queued, nextId, minimumImmediate, frameBudget, isFlushRequested, immediate, arrayPool1, arrayPool2, poolUtilization, ExpressionObserver, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, arrayProto, pop, push, reverse, shift, sort, splice, unshift, ModifyArrayObserver, Expression, Chain, BindingBehavior, ValueConverter, Assign, Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, PrefixNot, LiteralPrimitive, LiteralString, LiteralArray, LiteralObject, _Unparser, ExpressionCloner, bindingMode, Token, Lexer, Scanner, OPERATORS, $EOF, $TAB, $LF, $VTAB, $FF, $CR, $SPACE, $BANG, $DQ, $$, $PERCENT, $AMPERSAND, $SQ, $LPAREN, $RPAREN, $STAR, $PLUS, $COMMA, $MINUS, $PERIOD, $SLASH, $COLON, $SEMICOLON, $LT, $EQ, $GT, $QUESTION, $0, $9, $A, $E, $Z, $LBRACKET, $BACKSLASH, $RBRACKET, $CARET, $_, $a, $e, $f, $n, $r, $t, $u, $v, $z, $LBRACE, $BAR, $RBRACE, $NBSP, EOF, Parser, ParserImplementation, mapProto, ModifyMapObserver, CapturedHandlerEntry, DelegateHandlerEntry, DelegationEntryHandler, EventHandler, DefaultEventStrategy, delegationStrategy, EventManager, EventSubscriber, DirtyChecker, DirtyCheckProperty, logger, propertyAccessor, PrimitiveObserver, SetterObserver, XLinkAttributeObserver, dataAttributeAccessor, DataAttributeObserver, StyleObserver, ValueAttributeObserver, checkedArrayContext, checkedValueContext, CheckedObserver, selectArrayContext, SelectValueObserver, ClassObserver, ComputedExpression, svgElements, svgPresentationElements, svgPresentationAttributes, svgAnalyzer, createElement, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, Binding, CallExpression, Call, ValueConverterResource, BindingBehaviorResource, ListenerExpression, Listener, NameExpression, NameBinder, LookupFunctions, BindingEngine, setProto, ModifySetObserver, signals;
 
   function _possibleConstructorReturn(self, call) {
     if (!self) {
@@ -1399,110 +1399,116 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
 
       _export('CollectionLengthObserver', CollectionLengthObserver);
 
-      pop = Array.prototype.pop;
-      push = Array.prototype.push;
-      reverse = Array.prototype.reverse;
-      shift = Array.prototype.shift;
-      sort = Array.prototype.sort;
-      splice = Array.prototype.splice;
-      unshift = Array.prototype.unshift;
+      arrayProto = Array.prototype;
+      pop = arrayProto.pop;
+      push = arrayProto.push;
+      reverse = arrayProto.reverse;
+      shift = arrayProto.shift;
+      sort = arrayProto.sort;
+      splice = arrayProto.splice;
+      unshift = arrayProto.unshift;
 
 
-      Array.prototype.pop = function () {
-        var notEmpty = this.length > 0;
-        var methodCallResult = pop.apply(this, arguments);
-        if (notEmpty && this.__array_observer__ !== undefined) {
-          this.__array_observer__.addChangeRecord({
-            type: 'delete',
-            object: this,
-            name: this.length,
-            oldValue: methodCallResult
-          });
-        }
-        return methodCallResult;
-      };
+      if (arrayProto.__au_patched__) {
+        LogManager.getLogger('array-observation').warn('Detected 2nd attempt of patching array from Aurelia binding.' + ' This is probably caused by dependency mismatch between core modules and a 3rd party plugin.' + ' Please see https://github.com/aurelia/cli/pull/906 if you are using webpack.');
+      } else {
+        arrayProto.__au_patched__ = 1;
+        arrayProto.pop = function () {
+          var notEmpty = this.length > 0;
+          var methodCallResult = pop.apply(this, arguments);
+          if (notEmpty && this.__array_observer__ !== undefined) {
+            this.__array_observer__.addChangeRecord({
+              type: 'delete',
+              object: this,
+              name: this.length,
+              oldValue: methodCallResult
+            });
+          }
+          return methodCallResult;
+        };
 
-      Array.prototype.push = function () {
-        var methodCallResult = push.apply(this, arguments);
-        if (this.__array_observer__ !== undefined) {
-          this.__array_observer__.addChangeRecord({
-            type: 'splice',
-            object: this,
-            index: this.length - arguments.length,
-            removed: [],
-            addedCount: arguments.length
-          });
-        }
-        return methodCallResult;
-      };
+        arrayProto.push = function () {
+          var methodCallResult = push.apply(this, arguments);
+          if (this.__array_observer__ !== undefined) {
+            this.__array_observer__.addChangeRecord({
+              type: 'splice',
+              object: this,
+              index: this.length - arguments.length,
+              removed: [],
+              addedCount: arguments.length
+            });
+          }
+          return methodCallResult;
+        };
 
-      Array.prototype.reverse = function () {
-        var oldArray = void 0;
-        if (this.__array_observer__ !== undefined) {
-          this.__array_observer__.flushChangeRecords();
-          oldArray = this.slice();
-        }
-        var methodCallResult = reverse.apply(this, arguments);
-        if (this.__array_observer__ !== undefined) {
-          this.__array_observer__.reset(oldArray);
-        }
-        return methodCallResult;
-      };
+        arrayProto.reverse = function () {
+          var oldArray = void 0;
+          if (this.__array_observer__ !== undefined) {
+            this.__array_observer__.flushChangeRecords();
+            oldArray = this.slice();
+          }
+          var methodCallResult = reverse.apply(this, arguments);
+          if (this.__array_observer__ !== undefined) {
+            this.__array_observer__.reset(oldArray);
+          }
+          return methodCallResult;
+        };
 
-      Array.prototype.shift = function () {
-        var notEmpty = this.length > 0;
-        var methodCallResult = shift.apply(this, arguments);
-        if (notEmpty && this.__array_observer__ !== undefined) {
-          this.__array_observer__.addChangeRecord({
-            type: 'delete',
-            object: this,
-            name: 0,
-            oldValue: methodCallResult
-          });
-        }
-        return methodCallResult;
-      };
+        arrayProto.shift = function () {
+          var notEmpty = this.length > 0;
+          var methodCallResult = shift.apply(this, arguments);
+          if (notEmpty && this.__array_observer__ !== undefined) {
+            this.__array_observer__.addChangeRecord({
+              type: 'delete',
+              object: this,
+              name: 0,
+              oldValue: methodCallResult
+            });
+          }
+          return methodCallResult;
+        };
 
-      Array.prototype.sort = function () {
-        var oldArray = void 0;
-        if (this.__array_observer__ !== undefined) {
-          this.__array_observer__.flushChangeRecords();
-          oldArray = this.slice();
-        }
-        var methodCallResult = sort.apply(this, arguments);
-        if (this.__array_observer__ !== undefined) {
-          this.__array_observer__.reset(oldArray);
-        }
-        return methodCallResult;
-      };
+        arrayProto.sort = function () {
+          var oldArray = void 0;
+          if (this.__array_observer__ !== undefined) {
+            this.__array_observer__.flushChangeRecords();
+            oldArray = this.slice();
+          }
+          var methodCallResult = sort.apply(this, arguments);
+          if (this.__array_observer__ !== undefined) {
+            this.__array_observer__.reset(oldArray);
+          }
+          return methodCallResult;
+        };
 
-      Array.prototype.splice = function () {
-        var methodCallResult = splice.apply(this, arguments);
-        if (this.__array_observer__ !== undefined) {
-          this.__array_observer__.addChangeRecord({
-            type: 'splice',
-            object: this,
-            index: +arguments[0],
-            removed: methodCallResult,
-            addedCount: arguments.length > 2 ? arguments.length - 2 : 0
-          });
-        }
-        return methodCallResult;
-      };
+        arrayProto.splice = function () {
+          var methodCallResult = splice.apply(this, arguments);
+          if (this.__array_observer__ !== undefined) {
+            this.__array_observer__.addChangeRecord({
+              type: 'splice',
+              object: this,
+              index: +arguments[0],
+              removed: methodCallResult,
+              addedCount: arguments.length > 2 ? arguments.length - 2 : 0
+            });
+          }
+          return methodCallResult;
+        };
 
-      Array.prototype.unshift = function () {
-        var methodCallResult = unshift.apply(this, arguments);
-        if (this.__array_observer__ !== undefined) {
-          this.__array_observer__.addChangeRecord({
-            type: 'splice',
-            object: this,
-            index: 0,
-            removed: [],
-            addedCount: arguments.length
-          });
-        }
-        return methodCallResult;
-      };
+        arrayProto.unshift = function () {
+          var methodCallResult = unshift.apply(this, arguments);
+          if (this.__array_observer__ !== undefined) {
+            this.__array_observer__.addChangeRecord({
+              type: 'splice',
+              object: this,
+              index: 0,
+              removed: [],
+              addedCount: arguments.length
+            });
+          }
+          return methodCallResult;
+        };
+      }
 
       _export('getArrayObserver', _getArrayObserver);
 

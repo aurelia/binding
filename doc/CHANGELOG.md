@@ -1,3 +1,8 @@
+<a name="1.7.2"></a>
+## [1.7.2](https://github.com/aurelia/binding/compare/1.7.1...1.7.2) (2018-08-02)
+
+* Added code to prevent duplicate collection patching and warn developers with a message that provides advice on properly addressing the problem.
+
 <a name="1.7.1"></a>
 ## [1.7.1](https://github.com/aurelia/binding/compare/1.7.0...1.7.1) (2018-03-18)
 
