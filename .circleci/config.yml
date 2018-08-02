@@ -6,24 +6,21 @@ defaults: &defaults
     - image: aureliaeffect/circleci-v1:latest
 
 # Variables
-var_1: &cache_key aurelia-{{ .Branch }}-{{ checksum "package-lock.json" }}
+var_1: &cache_key aurelia-{{ .Branch }}-{{ checksum "package.json" }}{{ checksum "package-lock.json" }}
 
 version: 2
 jobs:
   install:
     <<: *defaults
     steps:
-      - run:
-          name: "Show npm and node versions"
-          command: |
-            node --version
-            npm --version
       - checkout
-      - run: npm ci -dd
+      - run: npm ci
+      - run: jspm install
       - save_cache:
           key: *cache_key
           paths:
             - node_modules
+            - jspm_packages
 
   build:
     <<: *defaults
@@ -31,7 +28,6 @@ jobs:
       - checkout
       - restore_cache:
           key: *cache_key
-      - run: jspm install
       - run: gulp build
       - store_artifacts:
           path: ./dist
@@ -42,7 +38,6 @@ jobs:
       - checkout
       - restore_cache:
           key: *cache_key
-      - run: jspm install
       - run: gulp cover
       - run: codecov -f ./build/reports/coverage/coverage-final.json 
       - store_test_results:
@@ -56,7 +51,6 @@ jobs:
       - checkout
       - restore_cache:
           key: *cache_key
-      - run: jspm install
       - run: gulp build
       - run: gulp doc
 
