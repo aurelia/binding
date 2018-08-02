@@ -45,15 +45,6 @@ jobs:
       - store_artifacts:
           path: ./build/reports/coverage
 
-  doc:
-    <<: *defaults
-    steps:
-      - checkout
-      - restore_cache:
-          key: *cache_key
-      - run: gulp build
-      - run: gulp doc
-
   lint:
     <<: *defaults
     steps:
@@ -71,9 +62,6 @@ workflows:
                 requires:
                     - install
             - unit_tests:
-                requires:
-                    - install
-            - doc:
                 requires:
                     - install
             - lint:
