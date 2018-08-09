@@ -941,7 +941,7 @@ const unshift = arrayProto.unshift;
 if (arrayProto.__au_patched__) {
   LogManager.getLogger('array-observation').warn('Detected 2nd attempt of patching array from Aurelia binding.' + ' This is probably caused by dependency mismatch between core modules and a 3rd party plugin.' + ' Please see https://github.com/aurelia/cli/pull/906 if you are using webpack.');
 } else {
-  arrayProto.__au_patched__ = 1;
+  Reflect.defineProperty(arrayProto, '__au_patched__', { value: 1 });
   arrayProto.pop = function () {
     let notEmpty = this.length > 0;
     let methodCallResult = pop.apply(this, arguments);

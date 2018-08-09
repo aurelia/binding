@@ -1,3 +1,8 @@
+<a name="1.7.3"></a>
+## [1.7.3](https://github.com/aurelia/binding/compare/1.7.2...1.7.3) (2018-08-09)
+
+
+
 <a name="1.7.2"></a>
 ## [1.7.2](https://github.com/aurelia/binding/compare/1.7.1...1.7.2) (2018-08-02)
 
