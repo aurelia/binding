@@ -19,7 +19,7 @@ if (arrayProto.__au_patched__) {
       + ' Please see https://github.com/aurelia/cli/pull/906 if you are using webpack.'
     );
 } else {
-  arrayProto.__au_patched__ = 1;
+  Reflect.defineProperty(arrayProto, '__au_patched__', { value: 1 });
   arrayProto.pop = function() {
     let notEmpty = this.length > 0;
     let methodCallResult = pop.apply(this, arguments);
