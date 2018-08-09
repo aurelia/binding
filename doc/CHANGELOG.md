@@ -1,3 +1,13 @@
+<a name="2.1.4"></a>
+## [2.1.4](https://github.com/aurelia/binding/compare/2.1.3...2.1.4) (2018-08-09)
+
+
+### Bug Fixes
+
+* **array-observation:** make marker non enumerable ([a06c801](https://github.com/aurelia/binding/commit/a06c801))
+
+
+
 <a name="2.1.3"></a>
 ## [2.1.3](https://github.com/aurelia/binding/compare/2.1.2...2.1.3) (2018-08-02)
 
