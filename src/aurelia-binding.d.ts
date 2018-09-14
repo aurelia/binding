@@ -415,6 +415,12 @@ export declare class SelectValueObserver implements InternalPropertyObserver {
  * Property observer for HTML Attributes.
  */
 export declare class DataAttributeObserver implements InternalPropertyObserver {
+
+  constructor(
+    element: Element,
+    propertyName: string
+  );
+  
   /**
    * Gets the property value.
    */
