@@ -1,3 +1,10 @@
+<a name="2.1.5"></a>
+## [2.1.5](https://github.com/aurelia/binding/compare/2.1.4...2.1.5) (2018-09-25)
+
+### Bug Fixes
+
+* Update constructor typings for DataAttributeObserver
+
 <a name="2.1.4"></a>
 ## [2.1.4](https://github.com/aurelia/binding/compare/2.1.3...2.1.4) (2018-08-09)
 

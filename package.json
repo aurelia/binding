@@ -1,6 +1,6 @@
 {
   "name": "aurelia-binding",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "description": "A modern databinding library for JavaScript and HTML.",
   "keywords": [
     "aurelia",
@@ -95,51 +95,5 @@
     "vinyl": "^1.1.1",
     "vinyl-paths": "^2.1.0",
     "yargs": "^4.8.1"
-  },
-  "aurelia": {
-    "documentation": {
-      "articles": [
-        {
-          "title": "Binding: Basics",
-          "href": "doc/article/en-US/binding-basics.md"
-        },
-        {
-          "title": "Binding: Class and Style",
-          "href": "doc/article/en-US/binding-class-and-style.md"
-        },
-        {
-          "title": "Binding: Checkboxes",
-          "href": "doc/article/en-US/binding-checkboxes.md"
-        },
-        {
-          "title": "Binding: Radios",
-          "href": "doc/article/en-US/binding-radios.md"
-        },
-        {
-          "title": "Binding: Selects",
-          "href": "doc/article/en-US/binding-selects.md"
-        },
-        {
-          "title": "Binding: Delegate vs Trigger",
-          "href": "doc/article/en-US/binding-delegate-vs-trigger.md"
-        },
-        {
-          "title": "Binding: Computed Properties",
-          "href": "doc/article/en-US/binding-computed-properties.md"
-        },
-        {
-          "title": "Binding: Binding Behaviors",
-          "href": "doc/article/en-US/binding-binding-behaviors.md"
-        },
-        {
-          "title": "Binding: Value Converters",
-          "href": "doc/article/en-US/binding-value-converters.md"
-        },
-        {
-          "title": "Binding: How it Works",
-          "href": "doc/article/en-US/binding-how-it-works.md"
-        }
-      ]
-    }
   }
 }

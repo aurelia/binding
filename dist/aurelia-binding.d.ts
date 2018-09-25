@@ -139,7 +139,7 @@ export declare interface CollectionObserver {
   /**
    * Subscribe to collection mutation events.
    */
-  subscribe(callback: (changeRecords: Array<ICollectionObserverSplice<any>>) => void): Disposable;
+  subscribe(callback: (changeRecords: Array<ICollectionObserverSplice>) => void): Disposable;
 }
 
 /**
@@ -415,6 +415,12 @@ export declare class SelectValueObserver implements InternalPropertyObserver {
  * Property observer for HTML Attributes.
  */
 export declare class DataAttributeObserver implements InternalPropertyObserver {
+
+  constructor(
+    element: Element,
+    propertyName: string
+  );
+  
   /**
    * Gets the property value.
    */
