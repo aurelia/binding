@@ -73,7 +73,7 @@ describe('ObserverLocator', () => {
   });
 
   it('uses ValueAttributeObserver for element value attributes', () => {
-    var obj = createElement('<input />'),
+    var obj = createElement('<input>'),
         observer = locator.getObserver(obj, 'value');
     expect(observer instanceof ValueAttributeObserver).toBe(true);
     obj = createElement('<textarea></textarea'),
@@ -82,13 +82,13 @@ describe('ObserverLocator', () => {
   });
 
   it('uses DataAttributeObserver for data-* attributes', () => {
-    var obj = createElement('<input data-foo="bar" />'),
+    var obj = createElement('<input data-foo="bar">'),
         observer = locator.getObserver(obj, 'data-foo');
     expect(observer instanceof DataAttributeObserver).toBe(true);
   });
 
   it('uses DataAttributeObserver for aria-* attributes', () => {
-    var obj = createElement('<input aria-hidden="bar" />'),
+    var obj = createElement('<input aria-hidden="bar">'),
         observer = locator.getObserver(obj, 'aria-hidden');
     expect(observer instanceof DataAttributeObserver).toBe(true);
   });
@@ -112,7 +112,7 @@ describe('ObserverLocator', () => {
   });
 
   it('uses CheckedObserver for input checked attributes', () => {
-    var obj = createElement('<input />'),
+    var obj = createElement('<input>'),
         observer = locator.getObserver(obj, 'checked');
     expect(observer instanceof CheckedObserver).toBe(true);
   });
