@@ -17,6 +17,7 @@
   "license": "MIT",
   "author": "Rob Eisenberg <rob@bluespire.com> (http://robeisenberg.com/)",
   "main": "dist/commonjs/aurelia-binding.js",
+  "module": "dist/es2015/aurelia-binding.js",
   "typings": "dist/aurelia-binding.d.ts",
   "repository": {
     "type": "git",
