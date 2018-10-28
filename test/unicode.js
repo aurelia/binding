@@ -11,22 +11,24 @@ const otherBMPIdentifierPartCodes = [
   65500 /*ￜ*/
 ];
 
-function toChars(list) {
-  return list.map((val, idx, arr) => {
-    if (idx % 2 === 0) {
-      const chars = [String.fromCharCode(arr[idx])];
-      if (arr[idx + 1] > 0) {
-        chars.push(String.fromCharCode(arr[idx + 1] - 1));
-      }
-      return chars;
+
+function toChars(compressed) {
+  const chars = [];
+  const rangeCount = compressed.length;
+  for (let i = 0; i < rangeCount; i += 2) {
+    const start = compressed[i];
+    let end = compressed[i + 1];
+    end = end > 0 ? end : start + 1;
+    for (let j = start; j < end; ++j) {
+      chars.push(String.fromCharCode(j));
     }
-    return [];
-  }).reduce((prev, cur) => prev.concat(...cur), []);
+  }
+  return chars;
 }
 
-let latin1IdentifierPartChars = toChars(latin1IdentifierPartCodes);
-let latin1IdentifierStartChars = toChars(latin1IdentifierStartCodes);
-let otherBMPIdentifierPartChars = toChars(otherBMPIdentifierPartCodes);
+const latin1IdentifierPartChars = toChars(latin1IdentifierPartCodes);
+const latin1IdentifierStartChars = toChars(latin1IdentifierStartCodes);
+const otherBMPIdentifierPartChars = toChars(otherBMPIdentifierPartCodes);
 
 export {
   latin1IdentifierStartChars, latin1IdentifierPartChars, otherBMPIdentifierPartChars

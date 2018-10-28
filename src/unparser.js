@@ -123,7 +123,7 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
       this.writeArgs(call.args);
     }
 
-    visitPrefix(prefix) {
+    visitUnary(prefix) {
       this.write(`(${prefix.operation}`);
       if (prefix.operation.charCodeAt(0) >= /*a*/97) {
         // add a space after if it's a keyword unary operator

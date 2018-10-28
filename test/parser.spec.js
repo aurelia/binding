@@ -1,867 +1,1280 @@
-import { Parser } from '../src/parser';
+import './setup';
 import { AccessKeyed, AccessMember, AccessScope, AccessThis,
   Assign, Binary, BindingBehavior, CallFunction,
   CallMember, CallScope, Conditional,
-  LiteralArray, LiteralObject, LiteralPrimitive, LiteralString, LiteralTemplate,
+  LiteralArray, LiteralObject, LiteralPrimitive, LiteralTemplate, LiteralString,
   Unary, ValueConverter } from '../src/ast';
+import { parseCore as parse } from '../src/parser';
 import { latin1IdentifierStartChars, latin1IdentifierPartChars, otherBMPIdentifierPartChars } from './unicode';
+import { Serializer } from './serializer';
 
-/* eslint-disable no-loop-func, no-floating-decimal, key-spacing, new-cap, quotes, comma-spacing */
+/* eslint-disable no-loop-func, no-floating-decimal, key-spacing, new-cap, quotes, comma-spacing, indent, blocks, dot-notation */
 
-const $a = new AccessScope('a', 0);
-const $b = new AccessScope('b', 0);
-const $c = new AccessScope('c', 0);
-const $x = new AccessScope('x', 0);
-const $y = new AccessScope('y', 0);
-const $z = new AccessScope('z', 0);
-const $foo = new AccessScope('foo', 0);
-const $bar = new AccessScope('bar', 0);
-const $baz = new AccessScope('baz', 0);
-const $true = new LiteralPrimitive(true);
+export function verifyASTEqual(actual, expected, errors, path) {
+  if (expected === null) {
+    if (actual !== null) {
+      expect(actual).toBe(null);
+    }
+  } else if (actual === null) {
+    const expectedSerialized = Serializer.serialize(expected);
+    if (actual !== expectedSerialized) {
+      throw new Error(`expected:\n${expectedSerialized}\nbut got:\nnull`);
+    }
+    expect(actual).toBe(expectedSerialized);
+  } else {
+    const expectedSerialized = Serializer.serialize(expected);
+    //const expectedUnparsed = Unparser.unparse(expected);
+    const actualSerialized = Serializer.serialize(actual);
+    //const actualUnparsed = Unparser.unparse(actual);
+    if (actualSerialized !== expectedSerialized) {
+      throw new Error(`expected:\n${expectedSerialized}\nbut got:\n${actualSerialized}`);
+    }
+    // if (actualUnparsed !== expectedUnparsed) {
+    //   expect(actualUnparsed).to.equal(expectedUnparsed);
+    // }
+  }
+}
+
+const binaryMultiplicative = ['*', '%', '/'];
+const binaryAdditive = ['+', '-'];
+const binaryRelational = [
+  ['<', '<'],
+  ['<=', '<='],
+  ['>', '>'],
+  ['>=', '>='],
+  ['in', ' in '],
+  ['instanceof', ' instanceof ']
+];
+const binaryEquality = ['==', '!=', '===', '!=='];
+
+
 const $false = new LiteralPrimitive(false);
+const $true = new LiteralPrimitive(true);
 const $null = new LiteralPrimitive(null);
 const $undefined = new LiteralPrimitive(undefined);
 const $str = new LiteralString('');
-const $str1 = new LiteralString('1');
-const $num0 = new LiteralPrimitive(0);
-const $num1 = new LiteralPrimitive(1);
-const $num2 = new LiteralPrimitive(2);
+const $tpl = new LiteralTemplate([''], []);
 const $arr = new LiteralArray([]);
 const $obj = new LiteralObject([], []);
+const $this = new AccessThis(0);
+const $parent = new AccessThis(1);
 
-const binaryOps = [
-  '&&', '||',
-  '==', '!=', '===', '!==',
-  '<', '>', '<=', '>=',
-  '+', '-',
-  '*', '%', '/',
-  'in', 'instanceof'
-];
-const unaryOps = [
-  '!',
-  'typeof',
-  'void'
-];
+const $a = new AccessScope('a');
+const $b = new AccessScope('b');
+const $c = new AccessScope('c');
+const $num0 = new LiteralPrimitive(0);
+const $num1 = new LiteralPrimitive(1);
 
-describe('Parser', () => {
-  let parser;
+const codes = {
+  //SyntaxError
+  InvalidExpressionStart: 'Code 100',
+  UnconsumedToken: 'Code 101',
+  DoubleDot: 'Code 102',
+  InvalidMemberExpression: 'Code 103',
+  UnexpectedEndOfExpression: 'Code 104',
+  ExpectedIdentifier: 'Code 105',
+  InvalidForDeclaration: 'Code 106',
+  LiteralInvalidObjectPropertyDefinition: 'Code 107',
+  UnterminatedQuote: 'Code 108',
+  UnterminatedTemplate: 'Code 109',
+  MissingExpectedToken: 'Code 110',
+  UnexpectedCharacter: 'Code 111',
 
-  beforeEach(() => {
-    parser = new Parser();
+  //SemanticError
+  NotAssignable: 'Code 150',
+  UnexpectedForOf: 'Code 151'
+};
+
+// function parse(expr) {
+//   return new Parser().parse(expr);
+// }
+
+
+function verifyResultOrError(expr, expected, expectedMsg) {
+  let error = null;
+  let actual = null;
+  try {
+    actual = parse(expr);
+  } catch (e) {
+    error = e;
+  }
+  if (expectedMsg === null || expectedMsg === undefined) {
+    if (error === null) {
+      verifyASTEqual(actual, expected);
+    } else {
+      throw new Error(`Expected expression "${expr}" to parse successfully, but it threw "${error.message}"`);
+    }
+  } else {
+    if (error === null) {
+      throw new Error(`Expected expression "${expr}" to throw "${expectedMsg}", but no error was thrown`);
+    } else {
+      // if (error.message !== expectedMsg) {
+      //   throw new Error(`Expected expression "${expr}" to throw "${expectedMsg}", but got "${error.message}" instead`);
+      // }
+    }
+  }
+}
+
+
+// Note: we could loop through all generated tests by picking SimpleIsBindingBehaviorList and ComplexIsBindingBehaviorList,
+// but we're separating them out to make the test suites more granular for debugging and reporting purposes
+describe('ExpressionParser', () => {
+  // #region Simple lists
+
+  // The goal here is to pre-create arrays of string+ast expression pairs that each represent a unique
+  // path taken in the expression parser. We're creating them here at the module level simply to speed up
+  // the tests. They're never modified, so it's safe to reuse the same expression for multiple tests.
+
+  // They're called Simple..Lists because we're not creating any combinations / nested expressions yet.
+  // Instead, these lists will be the inputs for combinations further down below.
+
+  // Note: we're more or less following the same ordering here as the tc39 spec description comments;
+  // those comments (https://tc39.github.io/... in expression-parser.ts) are partial extracts from the spec
+  // with mostly just omissions; the only modification is the special parsing rules related to AccessThis
+
+
+  // 1. parsePrimaryExpression.this
+  const AccessThisList = [
+    [`$this`,             $this],
+    [`$parent`,           $parent],
+    [`$parent.$parent`,   new AccessThis(2)]
+  ];
+  // 2. parsePrimaryExpression.IdentifierName
+  const AccessScopeList = [
+    ...AccessThisList.map(([input, expr]) => [`${input}.a`, new AccessScope('a', expr.ancestor)]),
+    [`$this.$parent`,     new AccessScope('$parent')],
+    [`$parent.$this`,     new AccessScope('$this', 1)],
+    [`a`,                 $a]
+  ];
+  // 3. parsePrimaryExpression.Literal
+  const LiteralSimpleStringList = [
+    [`''`,                $str],
+    [`""`,                $str]
+  ];
+  const LiteralSimpleNumberList = [
+    [`1`,                 $num1],
+    [`1.1`,               new LiteralPrimitive(1.1)],
+    [`.1`,                new LiteralPrimitive(.1)],
+    [`0.1`,               new LiteralPrimitive(.1)]
+  ];
+  const LiteralKeywordPrimitiveList = [
+    [`undefined`,         $undefined],
+    [`null`,              $null],
+    [`true`,              $true],
+    [`false`,             $false]
+  ];
+  // concatenation of 3.
+  const LiteralSimplePrimitiveList = [
+    ...LiteralSimpleStringList,
+    ...LiteralSimpleNumberList,
+    ...LiteralKeywordPrimitiveList
+  ];
+
+  // 4. parsePrimaryExpression.LiteralArray
+  const LiteralSimpleArrayList = [
+    [`[]`,                $arr]
+  ];
+  // 5. parsePrimaryExpression.LiteralObject
+  const LiteralSimpleObjectList = [
+    [`{}`,                $obj]
+  ];
+  // 6. parsePrimaryExpression.LiteralTemplate
+  const LiteralSimpleTemplateList = [
+    [`\`\``,              $tpl],
+    [`\`\${a}\``,         new LiteralTemplate(['', ''], [$a])]
+  ];
+  // concatenation of 3., 4., 5., 6.
+  const LiteralSimpleList = [
+    ...LiteralSimplePrimitiveList,
+    ...LiteralSimpleTemplateList,
+    ...LiteralSimpleArrayList,
+    ...LiteralSimpleObjectList
+  ];
+  // 7. parsePrimaryExpression.ParenthesizedExpression
+  // Note: this is simply one of each precedence group, except for Primary because
+  // parenthesized and primary are already from the same precedence group
+  const SimpleParenthesizedList = [
+    [`(a[b])`,            new AccessKeyed($a, $b)],
+    [`(a.b)`,             new AccessMember($a, 'b')],
+    [`(a\`\`)`,           new LiteralTemplate([''], [], [''], $a)],
+    [`($this())`,         new CallFunction($this, [])],
+    [`(a())`,             new CallScope('a', [])],
+    [`(!a)`,              new Unary('!', $a)],
+    [`(a+b)`,             new Binary('+', $a, $b)],
+    [`(a?b:c)`,           new Conditional($a, $b, new AccessScope('c'))],
+    [`(a=b)`,             new Assign($a, $b)]
+  ];
+  // concatenation of 1 through 7 (all Primary expressions)
+  // This forms the group Precedence.Primary
+  const SimplePrimaryList = [
+    ...AccessThisList,
+    ...AccessScopeList,
+    ...LiteralSimpleList,
+    ...SimpleParenthesizedList
+  ];
+  // 2. parseMemberExpression.MemberExpression [ AssignmentExpression ]
+  const SimpleAccessKeyedList = [
+    ...SimplePrimaryList
+      .map(([input, expr]) => [`${input}[b]`, new AccessKeyed(expr, $b)])
+  ];
+  // 3. parseMemberExpression.MemberExpression . IdentifierName
+  const SimpleAccessMemberList = [
+    ...[...AccessScopeList, ...LiteralSimpleList]
+      .map(([input, expr]) => [`${input}.b`, new AccessMember(expr, 'b')])
+  ];
+  // 4. parseMemberExpression.MemberExpression LiteralTemplate
+  const SimpleTaggedTemplateList = [
+    ...AccessScopeList
+      .map(([input, expr]) => [`${input}\`\``, new LiteralTemplate([''], [], [''], expr)]),
+
+    ...AccessScopeList
+      .map(([input, expr]) => [`${input}\`\${a}\``, new LiteralTemplate(['', ''], [$a], ['', ''], expr)])
+  ];
+  // 1. parseCallExpression.MemberExpression Arguments (this one doesn't technically fit the spec here)
+  const SimpleCallFunctionList = [
+    ...[...AccessThisList, ...LiteralSimpleList]
+      .map(([input, expr]) => [`${input}()`, new CallFunction(expr, [])])
+  ];
+  // 2. parseCallExpression.MemberExpression Arguments
+  const SimpleCallScopeList = [
+    ...[...AccessScopeList]
+      .map(([input, expr]) => [`${input}()`, new CallScope(expr.name, [], expr.ancestor)])
+  ];
+  // 3. parseCallExpression.MemberExpression Arguments
+  const SimpleCallMemberList = [
+    ...[...AccessScopeList, ...LiteralSimpleList]
+      .map(([input, expr]) => [`${input}.b()`, new CallMember(expr, 'b', [])])
+  ];
+  // concatenation of 1-3 of MemberExpression and 1-3 of CallExpression
+  const SimpleLeftHandSideList = [
+    ...SimpleAccessKeyedList,
+    ...SimpleAccessMemberList,
+    ...SimpleTaggedTemplateList,
+    ...SimpleCallFunctionList,
+    ...SimpleCallScopeList,
+    ...SimpleCallMemberList
+  ];
+
+  // concatenation of Primary and Member+CallExpression
+  // This forms the group Precedence.LeftHandSide
+  // used only for testing complex Unary expressions
+  const SimpleIsLeftHandSideList = [
+    ...SimplePrimaryList,
+    ...SimpleLeftHandSideList
+  ];
+
+  // parseUnaryExpression (this is actually at the top in the parser due to the order in which expressions must be parsed)
+  const SimpleUnaryList = [
+    [`!$1`, new Unary('!', new AccessScope('$1'))],
+    [`-$2`, new Unary('-', new AccessScope('$2'))],
+    [`+$3`, new Unary('+', new AccessScope('$3'))],
+    [`void $4`, new Unary('void', new AccessScope('$4'))],
+    [`typeof $5`, new Unary('typeof', new AccessScope('$5'))]
+  ];
+  // concatenation of Unary + LeftHandSide
+  // This forms the group Precedence.LeftHandSide and includes Precedence.Unary
+  const SimpleIsUnaryList = [
+    ...SimpleIsLeftHandSideList,
+    ...SimpleUnaryList
+  ];
+
+  // This forms the group Precedence.Multiplicative
+  const SimpleMultiplicativeList = [
+    [`$6*$7`, new Binary('*', new AccessScope('$6'), new AccessScope('$7'))],
+    [`$8%$9`, new Binary('%', new AccessScope('$8'), new AccessScope('$9'))],
+    [`$10/$11`, new Binary('/', new AccessScope('$10'), new AccessScope('$11'))]
+  ];
+  const SimpleIsMultiplicativeList = [
+    ...SimpleIsUnaryList,
+    ...SimpleMultiplicativeList
+  ];
+
+  // This forms the group Precedence.Additive
+  const SimpleAdditiveList = [
+    [`$12+$13`, new Binary('+', new AccessScope('$12'), new AccessScope('$13'))],
+    [`$14-$15`, new Binary('-', new AccessScope('$14'), new AccessScope('$15'))]
+  ];
+  const SimpleIsAdditiveList = [
+    ...SimpleIsMultiplicativeList,
+    ...SimpleAdditiveList
+  ];
+
+  // This forms the group Precedence.Relational
+  const SimpleRelationalList = [
+    [`$16<$17`, new Binary('<', new AccessScope('$16'), new AccessScope('$17'))],
+    [`$18>$19`, new Binary('>', new AccessScope('$18'), new AccessScope('$19'))],
+    [`$20<=$21`, new Binary('<=', new AccessScope('$20'), new AccessScope('$21'))],
+    [`$22>=$23`, new Binary('>=', new AccessScope('$22'), new AccessScope('$23'))],
+    [`$24 in $25`, new Binary('in', new AccessScope('$24'), new AccessScope('$25'))],
+    [`$26 instanceof $27`, new Binary('instanceof', new AccessScope('$26'), new AccessScope('$27'))]
+  ];
+  const SimpleIsRelationalList = [
+    ...SimpleIsAdditiveList,
+    ...SimpleRelationalList
+  ];
+
+  // This forms the group Precedence.Equality
+  const SimpleEqualityList = [
+    [`$28==$29`, new Binary('==', new AccessScope('$28'), new AccessScope('$29'))],
+    [`$30!=$31`, new Binary('!=', new AccessScope('$30'), new AccessScope('$31'))],
+    [`$32===$33`, new Binary('===', new AccessScope('$32'), new AccessScope('$33'))],
+    [`$34!==$35`, new Binary('!==', new AccessScope('$34'), new AccessScope('$35'))]
+  ];
+  const SimpleIsEqualityList = [
+    ...SimpleIsRelationalList,
+    ...SimpleEqualityList
+  ];
+
+  // This forms the group Precedence.LogicalAND
+  const SimpleLogicalANDList = [
+    [`$36&&$37`, new Binary('&&', new AccessScope('$36'), new AccessScope('$37'))]
+  ];
+  const SimpleIsLogicalANDList = [
+    ...SimpleIsEqualityList,
+    ...SimpleLogicalANDList
+  ];
+
+  // This forms the group Precedence.LogicalOR
+  const SimpleLogicalORList = [
+    [`$38||$39`, new Binary('||', new AccessScope('$38'), new AccessScope('$39'))]
+  ];
+  const SimpleIsLogicalORList = [
+    ...SimpleIsLogicalANDList,
+    ...SimpleLogicalORList
+  ];
+
+  // This forms the group Precedence.Conditional
+  const SimpleConditionalList = [
+    [`a?b:c`, new Conditional($a, $b, new AccessScope('c'))]
+  ];
+  const SimpleIsConditionalList = [
+    ...SimpleIsLogicalORList,
+    ...SimpleConditionalList
+  ];
+
+  // This forms the group Precedence.Assign
+  const SimpleAssignList = [
+    [`a=b`, new Assign($a, $b)]
+  ];
+  const SimpleIsAssignList = [
+    ...SimpleIsConditionalList,
+    ...SimpleAssignList
+  ];
+
+  // This forms the group Precedence.Variadic
+  const SimpleValueConverterList = [
+    [`a|b`, new ValueConverter($a, 'b', [])],
+    [`a|b:c`, new ValueConverter($a, 'b', [new AccessScope('c')])],
+    [`a|b:c:d`, new ValueConverter($a, 'b', [new AccessScope('c'), new AccessScope('d')])]
+  ];
+  const SimpleIsValueConverterList = [
+    ...SimpleIsAssignList,
+    ...SimpleValueConverterList
+  ];
+
+  const SimpleBindingBehaviorList = [
+    [`a&b`, new BindingBehavior($a, 'b', [])],
+    [`a&b:c`, new BindingBehavior($a, 'b', [new AccessScope('c')])],
+    [`a&b:c:d`, new BindingBehavior($a, 'b', [new AccessScope('c'), new AccessScope('d')])]
+  ];
+
+  const SimpleIsBindingBehaviorList = [
+    ...SimpleIsValueConverterList,
+    ...SimpleBindingBehaviorList
+  ];
+
+  describe('parse simple expression', () => {
+    describe('parse AccessThisList', () => {
+      for (const [input, expected] of AccessThisList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse AccessScopeList', () => {
+      for (const [input, expected] of AccessScopeList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse LiteralSimpleStringList', () => {
+      for (const [input, expected] of LiteralSimpleStringList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse LiteralSimpleNumberList', () => {
+      for (const [input, expected] of LiteralSimpleNumberList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse LiteralKeywordPrimitiveList', () => {
+      for (const [input, expected] of LiteralKeywordPrimitiveList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse LiteralSimpleArrayList', () => {
+      for (const [input, expected] of LiteralSimpleArrayList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse LiteralSimpleObjectList', () => {
+      for (const [input, expected] of LiteralSimpleObjectList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse LiteralSimpleTemplateList', () => {
+      for (const [input, expected] of LiteralSimpleTemplateList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse SimpleParenthesizedList', () => {
+      for (const [input, expected] of SimpleParenthesizedList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse SimpleAccessKeyedList', () => {
+      for (const [input, expected] of SimpleAccessKeyedList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse SimpleAccessMemberList', () => {
+      for (const [input, expected] of SimpleAccessMemberList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse SimpleTaggedTemplateList', () => {
+      for (const [input, expected] of SimpleTaggedTemplateList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse SimpleCallFunctionList', () => {
+      for (const [input, expected] of SimpleCallFunctionList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse SimpleCallScopeList', () => {
+      for (const [input, expected] of SimpleCallScopeList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse SimpleCallMemberList', () => {
+      for (const [input, expected] of SimpleCallMemberList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse SimpleUnaryList', () => {
+      for (const [input, expected] of SimpleUnaryList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse SimpleMultiplicativeList', () => {
+      for (const [input, expected] of SimpleMultiplicativeList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse SimpleAdditiveList', () => {
+      for (const [input, expected] of SimpleAdditiveList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse SimpleRelationalList', () => {
+      for (const [input, expected] of SimpleRelationalList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse SimpleEqualityList', () => {
+      for (const [input, expected] of SimpleEqualityList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse SimpleLogicalANDList', () => {
+      for (const [input, expected] of SimpleLogicalANDList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse SimpleLogicalORList', () => {
+      for (const [input, expected] of SimpleLogicalORList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse SimpleConditionalList', () => {
+      for (const [input, expected] of SimpleConditionalList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse SimpleAssignList', () => {
+      for (const [input, expected] of SimpleAssignList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse SimpleValueConverterList', () => {
+      for (const [input, expected] of SimpleValueConverterList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
+
+    describe('parse SimpleBindingBehaviorList', () => {
+      for (const [input, expected] of SimpleBindingBehaviorList) {
+        it(input, () => {
+          verifyResultOrError(input, expected, null);
+        });
+      }
+    });
   });
 
-  describe('should parse', () => {
-    describe('LiteralString', () => {
-      // http://es5.github.io/x7.html#x7.8.4
-      const tests = [
-        { expr: '\'foo\'', expected: new LiteralString('foo') },
-        { expr: `\'${unicodeEscape('äöüÄÖÜß')}\'`, expected: new LiteralString('äöüÄÖÜß') },
-        { expr: `\'${unicodeEscape('ಠ_ಠ')}\'`, expected: new LiteralString('ಠ_ಠ') },
-        { expr: '\'\\\\\'', expected: new LiteralString('\\') },
-        { expr: '\'\\\'\'', expected: new LiteralString('\'') },
-        { expr: '\'"\'', expected: new LiteralString('"') },
-        { expr: '\'\\f\'', expected: new LiteralString('\f') },
-        { expr: '\'\\n\'', expected: new LiteralString('\n') },
-        { expr: '\'\\r\'', expected: new LiteralString('\r') },
-        { expr: '\'\\t\'', expected: new LiteralString('\t') },
-        { expr: '\'\\v\'', expected: new LiteralString('\v') },
-        { expr: '\'\\v\'', expected: new LiteralString('\v') }
-      ];
+  // #endregion
 
-      for (const { expr, expected } of tests) {
-        it(expr, () => {
-          verifyEqual(parser.parse(expr), expected);
+  // #region Complex lists
+  // This is where the fun begins :) We're now going to create large lists of combinations in order
+  // to hit every possible (non-error) edge case. The fundamental edge cases are written by hand, which
+  // we then supplement by mixing in the simple lists created above. This generates a fair amount of redundancy
+  // in the tests, but that's a perfectly acceptable tradeoff as it will cause issues to surface that you would
+  // otherwise never think of.
+
+
+  // We're validating all (meaningful) strings that can be escaped and combining them
+  // with normal leading and trailing strings to verify escaping works correctly in different situations
+  // This array is used to verify parsing of string LiteralPrimitive, and the strings in LiteralTemplate and LiteralTemplate
+  const stringEscapables = [
+    [`\\\\`, `\\`],
+    [`\\\``, `\``],
+    [`\\'`,  `'`],
+    [`\\"`,  `"`],
+    [`\\f`,  `\f`],
+    [`\\n`,  `\n`],
+    [`\\r`,  `\r`],
+    [`\\t`,  `\t`],
+    [`\\b`,  `\b`],
+    [`\\v`,  `\v`]
+  ]
+  .map(([raw, cooked]) => [
+    [raw,         cooked],
+    [`${raw}`,   `${cooked}`],
+    [`x${raw}`,  `x${cooked}`],
+    [`${raw}x`,  `${cooked}x`],
+    [`x${raw}x`, `x${cooked}x`]
+  ])
+  .reduce((acc, cur) => acc.concat(cur));
+
+  // Verify all string escapes, unicode characters, double and single quotes
+  const LiteralComplexStringList = [
+    ...[
+      ['foo',                new LiteralString('foo')],
+      ['äöüÄÖÜß',            new LiteralString('äöüÄÖÜß')],
+      ['ಠ_ಠ',               new LiteralString('ಠ_ಠ')],
+      ...stringEscapables.map(([raw, cooked]) => [raw, new LiteralString(cooked)])]
+    .map(([input, expr]) => [
+      [`'${input}'`, expr],
+      [`"${input}"`, expr]
+    ])
+    .reduce((acc, cur) => acc.concat(cur))
+  ];
+  describe('parse LiteralComplexStringList', () => {
+    for (const [input, expected] of LiteralComplexStringList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+  // Verify different floating point notations and parsing numbers that are outside the "safe" integer range
+  const ComplexNumberList = [
+    ['9007199254740992',                                                  new LiteralPrimitive(9007199254740992)],
+    ['0.9007199254740992',                                                new LiteralPrimitive(.9007199254740992)],
+    ['.9007199254740992',                                                 new LiteralPrimitive(.9007199254740992)],
+    ['.90071992547409929007199254740992',                                 new LiteralPrimitive(.90071992547409929007199254740992)],
+    ['9007199254740992.9007199254740992',                                 new LiteralPrimitive(9007199254740992.9007199254740992)],
+    ['9007199254740992.90071992547409929007199254740992',                 new LiteralPrimitive(9007199254740992.90071992547409929007199254740992)],
+    ['90071992547409929007199254740992',                                  new LiteralPrimitive(90071992547409929007199254740992)],
+    ['90071992547409929007199254740992.9007199254740992',                 new LiteralPrimitive(90071992547409929007199254740992.9007199254740992)],
+    ['90071992547409929007199254740992.90071992547409929007199254740992', new LiteralPrimitive(90071992547409929007199254740992.90071992547409929007199254740992)]
+  ];
+  describe('parse ComplexNumberList', () => {
+    for (const [input, expected] of ComplexNumberList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+  // Verify various combinations of nested and chained parts/expressions, with/without escaped strings
+  // Also combine this with the full list of SimpleIsAssign (once and twice) to validate parsing precedence of arguments
+  const LiteralComplexTemplateList = [
+    [`\`a\``,                       new LiteralTemplate(['a'], [])],
+    [`\`\\\${a}\``,                 new LiteralTemplate(['${a}'], [])],
+    [`\`$a\``,                      new LiteralTemplate(['$a'], [])],
+    [`\`\${a}\${b}\``,              new LiteralTemplate(['', '', ''],                       [$a, $b])],
+    [`\`a\${a}\${b}\``,             new LiteralTemplate(['a', '', ''],                      [$a, $b])],
+    [`\`\${a}a\${b}\``,             new LiteralTemplate(['', 'a', ''],                      [$a, $b])],
+    [`\`a\${a}a\${b}\``,            new LiteralTemplate(['a', 'a', ''],                     [$a, $b])],
+    [`\`\${a}\${b}a\``,             new LiteralTemplate(['', '', 'a'],                      [$a, $b])],
+    [`\`\${a}a\${b}a\``,            new LiteralTemplate(['', 'a', 'a'],                     [$a, $b])],
+    [`\`a\${a}a\${b}a\``,           new LiteralTemplate(['a', 'a', 'a'],                    [$a, $b])],
+    [`\`\${\`\${a}\`}\``,           new LiteralTemplate(['', ''], [new LiteralTemplate(['', ''],   [$a])])],
+    [`\`\${\`a\${a}\`}\``,          new LiteralTemplate(['', ''], [new LiteralTemplate(['a', ''],  [$a])])],
+    [`\`\${\`\${a}a\`}\``,          new LiteralTemplate(['', ''], [new LiteralTemplate(['', 'a'],  [$a])])],
+    [`\`\${\`a\${a}a\`}\``,         new LiteralTemplate(['', ''], [new LiteralTemplate(['a', 'a'], [$a])])],
+    [`\`\${\`\${\`\${a}\`}\`}\``,   new LiteralTemplate(['', ''], [new LiteralTemplate(['', ''], [new LiteralTemplate(['', ''],   [$a])])])],
+    ...stringEscapables.map(([raw, cooked]) => [
+      [`\`${raw}\``,                new LiteralTemplate([cooked],              [])],
+      [`\`\${a}${raw}\``,           new LiteralTemplate(['', cooked],        [$a])],
+      [`\`${raw}\${a}\``,           new LiteralTemplate([cooked, ''],        [$a])],
+      [`\`${raw}\${a}${raw}\``,     new LiteralTemplate([cooked, cooked],    [$a])],
+      [`\`\${a}${raw}\${a}\``,      new LiteralTemplate(['', cooked, ''],    [$a, $a])]
+    ])
+    .reduce((acc, cur) => acc.concat(cur)),
+    ...SimpleIsAssignList
+      .map(([input, expr]) => [`\`\${${input}}\``, new LiteralTemplate(['', ''], [expr])]),
+    ...SimpleIsAssignList
+      .map(([input, expr]) => [`\`\${${input}}\${${input}}\``, new LiteralTemplate(['', '', ''], [expr, expr])])
+  ];
+  describe('parse LiteralComplexTemplateList', () => {
+    for (const [input, expected] of LiteralComplexTemplateList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+  // Verify various combinations of specified and unspecified (elision) array items
+  // Also combine this with the full list of SimpleIsAssign (once and twice) to validate parsing precedence of element expressions
+  const LiteralComplexArrayList = [
+    [`[,]`,                 new LiteralArray([$undefined, $undefined])],
+    [`[,,]`,                new LiteralArray([$undefined, $undefined, $undefined])],
+    [`[,,,]`,               new LiteralArray([$undefined, $undefined, $undefined, $undefined])],
+    [`[a,]`,                new LiteralArray([$a, $undefined])],
+    [`[a,,]`,               new LiteralArray([$a, $undefined, $undefined])],
+    [`[a,a,]`,              new LiteralArray([$a, $a, $undefined])],
+    [`[a,,,]`,              new LiteralArray([$a, $undefined, $undefined, $undefined])],
+    [`[a,a,,]`,             new LiteralArray([$a, $a, $undefined, $undefined])],
+    [`[,a]`,                new LiteralArray([$undefined, $a])],
+    [`[,a,]`,               new LiteralArray([$undefined, $a, $undefined])],
+    [`[,a,,]`,              new LiteralArray([$undefined, $a, $undefined, $undefined])],
+    [`[,a,a,]`,             new LiteralArray([$undefined, $a, $a, $undefined])],
+    [`[,,a]`,               new LiteralArray([$undefined, $undefined, $a])],
+    [`[,a,a]`,              new LiteralArray([$undefined, $a, $a])],
+    [`[,,a,]`,              new LiteralArray([$undefined, $undefined, $a, $undefined])],
+    [`[,,,a]`,              new LiteralArray([$undefined, $undefined, $undefined, $a])],
+    [`[,,a,a]`,             new LiteralArray([$undefined, $undefined, $a, $a])],
+    ...SimpleIsAssignList.map(([input, expr]) => [
+      [`[${input}]`,           new LiteralArray([expr])],
+      [`[${input},${input}]`,  new LiteralArray([expr, expr])]
+    ])
+    .reduce((acc, cur) => acc.concat(cur))
+  ];
+  describe('parse LiteralComplexArrayList', () => {
+    for (const [input, expected] of LiteralComplexArrayList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+  // Verify various combinations of shorthand, full, string and number property definitions
+  // Also combine this with the full list of SimpleIsAssign (once and twice) to validate parsing precedence of value expressions
+  const LiteralComplexObjectList = [
+    [`{a}`,                 new LiteralObject(['a'], [$a])],
+    [`{a:a}`,               new LiteralObject(['a'], [$a])],
+    [`{'a':a}`,             new LiteralObject(['a'], [$a])],
+    [`{"a":a}`,             new LiteralObject(['a'], [$a])],
+    [`{1:a}`,               new LiteralObject([1], [$a])],
+    [`{'1':a}`,             new LiteralObject(['1'], [$a])],
+    [`{"1":a}`,             new LiteralObject(['1'], [$a])],
+    [`{'a':a,b}`,           new LiteralObject(['a', 'b'], [$a, $b])],
+    [`{"a":a,b}`,           new LiteralObject(['a', 'b'], [$a, $b])],
+    [`{1:a,b}`,             new LiteralObject([1, 'b'], [$a, $b])],
+    [`{'1':a,b}`,           new LiteralObject(['1', 'b'], [$a, $b])],
+    [`{"1":a,b}`,           new LiteralObject(['1', 'b'], [$a, $b])],
+    [`{a,'b':b}`,           new LiteralObject(['a', 'b'], [$a, $b])],
+    [`{a,"b":b}`,           new LiteralObject(['a', 'b'], [$a, $b])],
+    [`{a,1:b}`,             new LiteralObject(['a', 1], [$a, $b])],
+    [`{a,'1':b}`,           new LiteralObject(['a', '1'], [$a, $b])],
+    [`{a,"1":b}`,           new LiteralObject(['a', '1'], [$a, $b])],
+    [`{a,b}`,               new LiteralObject(['a', 'b'], [$a, $b])],
+    [`{a:a,b}`,             new LiteralObject(['a', 'b'], [$a, $b])],
+    [`{a,b:b}`,             new LiteralObject(['a', 'b'], [$a, $b])],
+    [`{a:a,b,c}`,           new LiteralObject(['a', 'b', 'c'], [$a, $b, $c])],
+    [`{a,b:b,c}`,           new LiteralObject(['a', 'b', 'c'], [$a, $b, $c])],
+    [`{a,b,c:c}`,           new LiteralObject(['a', 'b', 'c'], [$a, $b, $c])],
+    [`{a:a,b:b,c}`,         new LiteralObject(['a', 'b', 'c'], [$a, $b, $c])],
+    [`{a:a,b,c:c}`,         new LiteralObject(['a', 'b', 'c'], [$a, $b, $c])],
+    [`{a,b:b,c:c}`,         new LiteralObject(['a', 'b', 'c'], [$a, $b, $c])],
+    ...SimpleIsAssignList.map(([input, expr]) => [
+      [`{a:${input}}`,            new LiteralObject(['a'], [expr])],
+      [`{a:${input},b:${input}}`, new LiteralObject(['a', 'b'], [expr, expr])]
+    ])
+    .reduce((acc, cur) => acc.concat(cur))
+  ];
+  describe('parse LiteralComplexObjectList', () => {
+    for (const [input, expected] of LiteralComplexObjectList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+  const ComplexAccessKeyedList = [
+    ...SimpleIsAssignList
+      .map(([input, expr]) => [`a[${input}]`, new AccessKeyed($a, expr)])
+  ];
+  describe('parse ComplexAccessKeyedList', () => {
+    for (const [input, expected] of ComplexAccessKeyedList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+  const ComplexAccessMemberList = [
+    ...[
+      ...LiteralKeywordPrimitiveList,
+      [`typeof`],
+      [`void`],
+      [`$this`],
+      [`$parent`],
+      [`in`],
+      [`instanceof`],
+      [`of`]]
+      .map(([input]) => [`a.${input}`, new AccessMember($a, input)])
+  ];
+  describe('parse ComplexAccessMemberList', () => {
+    for (const [input, expected] of ComplexAccessMemberList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+  const ComplexTaggedTemplateList = [
+    [`a\`a\``,                       new LiteralTemplate(['a'],           [],                                                                       ['a'],             $a)],
+    [`a\`\\\${a}\``,                 new LiteralTemplate(['${a}'],        [],                                                                       ['${a}'],          $a)],
+    [`a\`$a\``,                      new LiteralTemplate(['$a'],          [],                                                                       ['$a'],            $a)],
+    [`a\`\${b}\${c}\``,              new LiteralTemplate(['', '', ''],    [$b, $c],                                                                 ['', '', ''],      $a)],
+    [`a\`a\${b}\${c}\``,             new LiteralTemplate(['a', '', ''],   [$b, $c],                                                                 ['a', '', ''],     $a)],
+    [`a\`\${b}a\${c}\``,             new LiteralTemplate(['', 'a', ''],   [$b, $c],                                                                 ['', 'a', ''],     $a)],
+    [`a\`a\${b}a\${c}\``,            new LiteralTemplate(['a', 'a', ''],  [$b, $c],                                                                 ['a', 'a', ''],    $a)],
+    [`a\`\${b}\${c}a\``,             new LiteralTemplate(['', '', 'a'],   [$b, $c],                                                                 ['', '', 'a'],     $a)],
+    [`a\`\${b}a\${c}a\``,            new LiteralTemplate(['', 'a', 'a'],  [$b, $c],                                                                 ['', 'a', 'a'],    $a)],
+    [`a\`a\${b}a\${c}a\``,           new LiteralTemplate(['a', 'a', 'a'], [$b, $c],                                                                 ['a', 'a', 'a'],   $a)],
+    [`a\`\${\`\${a}\`}\``,           new LiteralTemplate(['', ''],        [new LiteralTemplate(['', ''],   [$a])],                                  ['', ''],          $a)],
+    [`a\`\${\`a\${a}\`}\``,          new LiteralTemplate(['', ''],        [new LiteralTemplate(['a', ''],  [$a])],                                  ['', ''],          $a)],
+    [`a\`\${\`\${a}a\`}\``,          new LiteralTemplate(['', ''],        [new LiteralTemplate(['', 'a'],  [$a])],                                  ['', ''],          $a)],
+    [`a\`\${\`a\${a}a\`}\``,         new LiteralTemplate(['', ''],        [new LiteralTemplate(['a', 'a'], [$a])],                                  ['', ''],          $a)],
+    [`a\`\${\`\${\`\${a}\`}\`}\``,   new LiteralTemplate(['', ''],        [new LiteralTemplate(['', ''], [new LiteralTemplate(['', ''],   [$a])])], ['', ''],          $a)],
+    ...stringEscapables.map(([raw, cooked]) => [
+      [`a\`${raw}\``,                new LiteralTemplate([cooked],         [],       [cooked],         $a)],
+      [`a\`\${a}${raw}\``,           new LiteralTemplate(['', cooked],     [$a],     ['', cooked],     $a)],
+      [`a\`${raw}\${a}\``,           new LiteralTemplate([cooked, ''],     [$a],     [cooked, ''],     $a)],
+      [`a\`${raw}\${a}${raw}\``,     new LiteralTemplate([cooked, cooked], [$a],     [cooked, cooked], $a)],
+      [`a\`\${a}${raw}\${a}\``,      new LiteralTemplate(['', cooked, ''], [$a, $a], ['', cooked, ''], $a)]
+    ])
+    .reduce((acc, cur) => acc.concat(cur)),
+    ...SimpleIsAssignList
+      .map(([input, expr]) => [`a\`\${${input}}\``,             new LiteralTemplate(['', ''],     [expr],       ['', ''],     $a)]),
+    ...SimpleIsAssignList
+      .map(([input, expr]) => [`a\`\${${input}}\${${input}}\``, new LiteralTemplate(['', '', ''], [expr, expr], ['', '', ''], $a)])
+  ];
+  describe('parse ComplexTaggedTemplateList', () => {
+    for (const [input, expected] of ComplexTaggedTemplateList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+  const ComplexCallFunctionList = [
+    ...SimpleIsAssignList
+      .map(([input, expr]) => [`$this(${input})`, new CallFunction($this, [expr])]),
+    ...SimpleIsAssignList
+      .map(([input, expr]) => [`$this(${input},${input})`, new CallFunction($this, [expr, expr])])
+  ];
+  describe('parse ComplexCallFunctionList', () => {
+    for (const [input, expected] of ComplexCallFunctionList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+  const ComplexCallScopeList = [
+    ...SimpleIsAssignList
+      .map(([input, expr]) => [`a(${input})`, new CallScope('a', [expr])]),
+    ...SimpleIsAssignList
+      .map(([input, expr]) => [`a(${input},${input})`, new CallScope('a', [expr, expr])])
+  ];
+  describe('parse ComplexCallScopeList', () => {
+    for (const [input, expected] of ComplexCallScopeList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+  const ComplexCallMemberList = [
+    ...SimpleIsAssignList
+      .map(([input, expr]) => [`a.b(${input})`, new CallMember($a, 'b', [expr])]),
+    ...SimpleIsAssignList
+      .map(([input, expr]) => [`a.b(${input},${input})`, new CallMember($a, 'b', [expr, expr])])
+  ];
+  describe('parse ComplexCallMemberList', () => {
+    for (const [input, expected] of ComplexCallMemberList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+  const ComplexUnaryList = [
+    ...SimpleIsLeftHandSideList
+      .map(([input, expr]) => [`!${input}`, new Unary('!', expr)]),
+    ...SimpleIsLeftHandSideList
+      .map(([input, expr]) => [`+${input}`, new Unary('+', expr)]),
+    ...SimpleIsLeftHandSideList
+      .map(([input, expr]) => [`-${input}`, new Unary('-', expr)]),
+    ...SimpleIsLeftHandSideList
+      .map(([input, expr]) => [`void ${input}`, new Unary('void', expr)]),
+    ...SimpleIsLeftHandSideList
+      .map(([input, expr]) => [`typeof ${input}`, new Unary('typeof', expr)])
+  ];
+  describe('parse ComplexUnaryList', () => {
+    for (const [input, expected] of ComplexUnaryList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+  // Combine a precedence group with all precedence groups below it, the precedence group on the same
+  // level, and a precedence group above it, and verify that the precedence/associativity is correctly enforced
+  const ComplexMultiplicativeList = [
+    ...binaryMultiplicative.map(op => [
+      ...SimpleIsMultiplicativeList.map(([i1, e1]) => [`${i1}${op}a`, new Binary(op, e1, $a)]),
+      ...SimpleUnaryList
+        .map(([i1, e1]) => SimpleMultiplicativeList.map(([i2, e2]) => [`${i2}${op}${i1}`, new Binary(op, e2, e1)]))
+        .reduce((a, b) => a.concat(b)),
+      ...SimpleMultiplicativeList
+        .map(([i1, e1]) => SimpleMultiplicativeList.map(([i2, e2]) => [`${i1}${op}${i2}`, new Binary(e2.operation, new Binary(op, new Binary(e1.operation, e1.left, e1.right), e2.left), e2.right)]))
+        .reduce((a, b) => a.concat(b)),
+      ...SimpleAdditiveList
+        .map(([i1, e1]) => SimpleMultiplicativeList.map(([i2, e2]) => [`${i1}${op}${i2}`, new Binary(e1.operation, e1.left, new Binary(e2.operation, new Binary(op, e1.right, e2.left), e2.right))]))
+        .reduce((a, b) => a.concat(b))
+    ]).reduce((a, b) => a.concat(b))
+  ];
+  describe('parse ComplexMultiplicativeList', () => {
+    for (const [input, expected] of ComplexMultiplicativeList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+  const ComplexAdditiveList = [
+    ...binaryAdditive.map(op => [
+      ...SimpleIsAdditiveList.map(([i1, e1]) => [`${i1}${op}a`, new Binary(op, e1, $a)]),
+      ...SimpleMultiplicativeList
+        .map(([i1, e1]) => SimpleAdditiveList.map(([i2, e2]) => [`${i2}${op}${i1}`, new Binary(op, e2, e1)]))
+        .reduce((a, b) => a.concat(b)),
+      ...SimpleAdditiveList
+        .map(([i1, e1]) => SimpleAdditiveList.map(([i2, e2]) => [`${i1}${op}${i2}`, new Binary(e2.operation, new Binary(op, new Binary(e1.operation, e1.left, e1.right), e2.left), e2.right)]))
+        .reduce((a, b) => a.concat(b)),
+      ...SimpleRelationalList
+        .map(([i1, e1]) => SimpleAdditiveList.map(([i2, e2]) => [`${i1}${op}${i2}`, new Binary(e1.operation, e1.left, new Binary(e2.operation, new Binary(op, e1.right, e2.left), e2.right))]))
+        .reduce((a, b) => a.concat(b))
+    ]).reduce((a, b) => a.concat(b))
+  ];
+  describe('parse ComplexAdditiveList', () => {
+    for (const [input, expected] of ComplexAdditiveList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+  const ComplexRelationalList = [
+    ...binaryRelational.map(([op, txt]) => [
+      ...SimpleIsRelationalList.map(([i1, e1]) => [`${i1}${txt}a`, new Binary(op, e1, $a)]),
+      ...SimpleAdditiveList
+        .map(([i1, e1]) => SimpleRelationalList.map(([i2, e2]) => [`${i2}${txt}${i1}`, new Binary(op, e2, e1)]))
+        .reduce((a, b) => a.concat(b)),
+      ...SimpleRelationalList
+        .map(([i1, e1]) => SimpleRelationalList.map(([i2, e2]) => [`${i1}${txt}${i2}`, new Binary(e2.operation, new Binary(op, new Binary(e1.operation, e1.left, e1.right), e2.left), e2.right)]))
+        .reduce((a, b) => a.concat(b)),
+      ...SimpleEqualityList
+        .map(([i1, e1]) => SimpleRelationalList.map(([i2, e2]) => [`${i1}${txt}${i2}`, new Binary(e1.operation, e1.left, new Binary(e2.operation, new Binary(op, e1.right, e2.left), e2.right))]))
+        .reduce((a, b) => a.concat(b))
+    ]).reduce((a, b) => a.concat(b))
+  ];
+  describe('parse ComplexRelationalList', () => {
+    for (const [input, expected] of ComplexRelationalList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+  const ComplexEqualityList = [
+    ...binaryEquality.map(op => [
+      ...SimpleIsEqualityList.map(([i1, e1]) => [`${i1}${op}a`, new Binary(op, e1, $a)]),
+      ...SimpleRelationalList
+        .map(([i1, e1]) => SimpleEqualityList.map(([i2, e2]) => [`${i2}${op}${i1}`, new Binary(op, e2, e1)]))
+        .reduce((a, b) => a.concat(b)),
+      ...SimpleEqualityList
+        .map(([i1, e1]) => SimpleEqualityList.map(([i2, e2]) => [`${i1}${op}${i2}`, new Binary(e2.operation, new Binary(op, new Binary(e1.operation, e1.left, e1.right), e2.left), e2.right)]))
+        .reduce((a, b) => a.concat(b)),
+      ...SimpleLogicalANDList
+        .map(([i1, e1]) => SimpleEqualityList.map(([i2, e2]) => [`${i1}${op}${i2}`, new Binary(e1.operation, e1.left, new Binary(e2.operation, new Binary(op, e1.right, e2.left), e2.right))]))
+        .reduce((a, b) => a.concat(b))
+    ]).reduce((a, b) => a.concat(b))
+  ];
+  describe('parse ComplexEqualityList', () => {
+    for (const [input, expected] of ComplexEqualityList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+  const ComplexLogicalANDList = [
+    ...SimpleIsLogicalANDList.map(([i1, e1]) => [`${i1}&&a`, new Binary('&&', e1, $a)]),
+    ...SimpleEqualityList
+      .map(([i1, e1]) => SimpleLogicalANDList.map(([i2, e2]) => [`${i2}&&${i1}`, new Binary('&&', e2, e1)]))
+      .reduce((a, b) => a.concat(b)),
+    ...SimpleLogicalANDList
+      .map(([i1, e1]) => SimpleLogicalANDList.map(([i2, e2]) => [`${i1}&&${i2}`, new Binary(e2.operation, new Binary('&&', new Binary(e1.operation, e1.left, e1.right), e2.left), e2.right)]))
+      .reduce((a, b) => a.concat(b)),
+    ...SimpleLogicalORList
+      .map(([i1, e1]) => SimpleLogicalANDList.map(([i2, e2]) => [`${i1}&&${i2}`, new Binary(e1.operation, e1.left, new Binary(e2.operation, new Binary('&&', e1.right, e2.left), e2.right))]))
+      .reduce((a, b) => a.concat(b))
+  ];
+  describe('parse ComplexLogicalANDList', () => {
+    for (const [input, expected] of ComplexLogicalANDList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+  const ComplexLogicalORList = [
+    ...SimpleIsLogicalORList.map(([i1, e1]) => [`${i1}||a`, new Binary('||', e1, $a)]),
+    ...SimpleLogicalANDList
+      .map(([i1, e1]) => SimpleLogicalORList.map(([i2, e2]) => [`${i2}||${i1}`, new Binary('||', e2, e1)]))
+      .reduce((a, b) => a.concat(b)),
+    ...SimpleLogicalORList
+      .map(([i1, e1]) => SimpleLogicalORList.map(([i2, e2]) => [`${i1}||${i2}`, new Binary(e2.operation, new Binary('||', new Binary(e1.operation, e1.left, e1.right), e2.left), e2.right)]))
+      .reduce((a, b) => a.concat(b)),
+    ...SimpleConditionalList
+      .map(([i1, e1]) => SimpleLogicalORList.map(([i2, e2]) => [`${i1}||${i2}`, new Conditional(e1.condition, e1.yes, new Binary(e2.operation, new Binary('||', e1.no, e2.left), e2.right))]))
+      .reduce((a, b) => a.concat(b))
+  ];
+  describe('parse ComplexLogicalORList', () => {
+    for (const [input, expected] of ComplexLogicalORList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+  const ComplexConditionalList = [
+    ...SimpleIsLogicalORList.map(([i1, e1]) => [`${i1}?0:1`, new Conditional(e1, $num0, $num1)]),
+    ...SimpleIsAssignList.map(([i1, e1]) => [`0?1:${i1}`, new Conditional($num0, $num1, e1)]),
+    ...SimpleIsAssignList.map(([i1, e1]) => [`0?${i1}:1`, new Conditional($num0, e1, $num1)]),
+    ...SimpleConditionalList.map(([i1, e1]) => [`${i1}?0:1`, new Conditional(e1.condition, e1.yes, new Conditional(e1.no, $num0, $num1))])
+  ];
+  describe('parse ComplexConditionalList', () => {
+    for (const [input, expected] of ComplexConditionalList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+
+  const ComplexAssignList = [
+    ...SimpleIsAssignList.map(([i1, e1]) => [`a=${i1}`, new Assign($a, e1)]),
+    ...SimpleIsAssignList.map(([i1, e1]) => [`a=b=${i1}`, new Assign($a, new Assign($b, e1))]),
+    ...AccessScopeList.map(([i1, e1]) => [`${i1}=a`, new Assign(e1, $a)]),
+    ...SimpleAccessMemberList.map(([i1, e1]) => [`${i1}=a`, new Assign(e1, $a)]),
+    ...SimpleAccessKeyedList.map(([i1, e1]) => [`${i1}=a`, new Assign(e1, $a)]),
+    ...SimpleAssignList.map(([i1, e1]) => [`${i1}=c`, new Assign(e1.target, new Assign(e1.value, $c))])
+  ];
+  describe('parse ComplexAssignList', () => {
+    for (const [input, expected] of ComplexAssignList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+
+  const ComplexValueConverterList = [
+    ...SimpleIsAssignList.map(([i1, e1]) => [`${i1}|a`, new ValueConverter(e1, 'a', [])]),
+    ...SimpleIsAssignList.map(([i1, e1]) => [`${i1}|a:${i1}`, new ValueConverter(e1, 'a', [e1])]),
+    ...SimpleIsAssignList.map(([i1, e1]) => [`${i1}|a:${i1}:${i1}`, new ValueConverter(e1, 'a', [e1, e1])]),
+    ...AccessScopeList.map(([i1, e1]) => [`${i1}|a|b`, new ValueConverter(new ValueConverter(e1, 'a', []), 'b', [])]),
+    ...AccessScopeList.map(([i1, e1]) => [`${i1}|a|b|c`, new ValueConverter(new ValueConverter(new ValueConverter(e1, 'a', []), 'b', []), 'c', [])]),
+    ...AccessScopeList.map(([i1, e1]) => [`${i1}|a:${i1}:${i1}`, new ValueConverter(e1, 'a', [e1, e1])]),
+    ...AccessScopeList.map(([i1, e1]) => [`${i1}|a:${i1}:${i1}:${i1}`, new ValueConverter(e1, 'a', [e1, e1, e1])]),
+    ...AccessScopeList.map(([i1, e1]) => [`${i1}|a:${i1}:${i1}:${i1}|b|c:${i1}:${i1}:${i1}`, new ValueConverter(new ValueConverter(new ValueConverter(e1, 'a', [e1, e1, e1]), 'b', []), 'c', [e1, e1, e1])]),
+    ...AccessScopeList.map(([i1, e1]) => [`${i1}|a:${i1}:${i1}:${i1}|b:${i1}:${i1}:${i1}|c`, new ValueConverter(new ValueConverter(new ValueConverter(e1, 'a', [e1, e1, e1]), 'b', [e1, e1, e1]), 'c', [])])
+  ];
+  describe('parse ComplexValueConverterList', () => {
+    for (const [input, expected] of ComplexValueConverterList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+  const ComplexBindingBehaviorList = [
+    ...SimpleIsValueConverterList.map(([i1, e1]) => [`${i1}&a`, new BindingBehavior(e1, 'a', [])]),
+    ...SimpleIsAssignList.map(([i1, e1]) => [`${i1}&a:${i1}`, new BindingBehavior(e1, 'a', [e1])]),
+    ...SimpleIsAssignList.map(([i1, e1]) => [`${i1}&a:${i1}:${i1}`, new BindingBehavior(e1, 'a', [e1, e1])]),
+    ...AccessScopeList.map(([i1, e1]) => [`${i1}&a&b`, new BindingBehavior(new BindingBehavior(e1, 'a', []), 'b', [])]),
+    ...AccessScopeList.map(([i1, e1]) => [`${i1}&a&b&c`, new BindingBehavior(new BindingBehavior(new BindingBehavior(e1, 'a', []), 'b', []), 'c', [])]),
+    ...AccessScopeList.map(([i1, e1]) => [`${i1}&a:${i1}:${i1}`, new BindingBehavior(e1, 'a', [e1, e1])]),
+    ...AccessScopeList.map(([i1, e1]) => [`${i1}&a:${i1}:${i1}:${i1}`, new BindingBehavior(e1, 'a', [e1, e1, e1])]),
+    ...AccessScopeList.map(([i1, e1]) => [`${i1}&a:${i1}:${i1}:${i1}&b&c:${i1}:${i1}:${i1}`, new BindingBehavior(new BindingBehavior(new BindingBehavior(e1, 'a', [e1, e1, e1]), 'b', []), 'c', [e1, e1, e1])]),
+    ...AccessScopeList.map(([i1, e1]) => [`${i1}&a:${i1}:${i1}:${i1}&b:${i1}:${i1}:${i1}&c`, new BindingBehavior(new BindingBehavior(new BindingBehavior(e1, 'a', [e1, e1, e1]), 'b', [e1, e1, e1]), 'c', [])])
+  ];
+  describe('parse ComplexBindingBehaviorList', () => {
+    for (const [input, expected] of ComplexBindingBehaviorList) {
+      it(input, () => {
+        verifyASTEqual(parse(input), expected);
+      });
+    }
+  });
+
+  describe('parse unicode IdentifierStart', () => {
+    for (const char of latin1IdentifierStartChars) {
+      it(char, () => {
+        verifyASTEqual(parse(char), new AccessScope(char, 0));
+      });
+    }
+  });
+
+  describe('parse unicode IdentifierPart', () => {
+    for (const char of latin1IdentifierPartChars) {
+      it(char, () => {
+        const identifier = `$${char}`;
+        verifyASTEqual(parse(identifier), new AccessScope(identifier, 0));
+      });
+    }
+  });
+
+  describe('Errors', () => {
+    for (const input of [
+      ')', '}', ']', '%', '*',
+      ',', '/', ':', '>', '<',
+      '=', '?', 'of','instanceof', 'in', ' '
+    ]) {
+      it(`throw Code 100 (InvalidExpressionStart) on "${input}"`, () => {
+        verifyResultOrError(input, null, 'Code 100');
+      });
+    }
+
+    for (const input of ['..', '...']) {
+      it(`throw Code 101 (UnconsumedToken) on "${input}"`, () => {
+        verifyResultOrError(input, null, 'Code 101');
+      });
+    }
+    it(`throw Code 101 (UnconsumedToken) on "$this!"`, () => {
+      verifyResultOrError(`$this!`, null, 'Code 101');
+    });
+    for (const [input] of SimpleIsAssignList) {
+      for (const op of [')', ']', '}']) {
+        it(`throw Code 110 (MissingExpectedToken) on "${input}${op}"`, () => {
+          verifyResultOrError(`${input}${op}`, null, 'Code 101');
         });
       }
+    }
+
+
+    it(`throw Code 102 (DoubleDot) on "$parent..bar"`, () => {
+      verifyResultOrError(`$parent..bar`, null, 'Code 102');
     });
 
-    describe('template literal', () => {
-      const tests = [
-        { expr: '`\r\n\t\n`', expected: new LiteralTemplate(['\r\n\t\n']) },
-        { expr: '`\n\r\n\r`', expected: new LiteralTemplate(['\n\r\n\r']) },
-        { expr: '`x\\r\\nx`', expected: new LiteralTemplate(['x\r\nx']) },
-        { expr: '`x\r\nx`', expected: new LiteralTemplate(['x\r\nx']) },
-        { expr: '``', expected: new LiteralTemplate(['']) },
-        { expr: '`foo`', expected: new LiteralTemplate(['foo']) },
-        { expr: '`$`', expected: new LiteralTemplate(['$']) },
-        { expr: '`a${foo}`', expected: new LiteralTemplate(['a', ''], [$foo]) },
-        { expr: '`${ {foo: 1} }`', expected: new LiteralTemplate(['', ''], [new LiteralObject(['foo'], [$num1])]) },
-        { expr: '`a${"foo"}b`', expected: new LiteralTemplate(['a', 'b'], [new LiteralString('foo')]) },
-        { expr: '`a${"foo"}b${"foo"}c`', expected: new LiteralTemplate(['a', 'b', 'c'], [new LiteralString('foo'), new LiteralString('foo')]) },
-        { expr: 'foo`a${"foo"}b`', expected: new LiteralTemplate(['a', 'b'], [new LiteralString('foo')], ['a', 'b'], $foo) },
-        { expr: 'foo`bar`', expected: new LiteralTemplate(['bar'], [], ['bar'], $foo) },
-        { expr: 'foo`\r\n`', expected: new LiteralTemplate(['\r\n'], [], ['\\r\\n'], $foo) }
-      ];
+    for (const nonTerminal of ['!', ' of', ' typeof', '=']) {
+      it(`throw Code 103 (InvalidMemberExpression) on "$parent${nonTerminal}"`, () => {
+        verifyResultOrError(`$parent${nonTerminal}`, null, 'Code 103');
+      });
+    }
 
-      for (const { expr, expected } of tests) {
-        it(expr, () => {
-          verifyEqual(parser.parse(expr), expected);
-        });
-      }
-    });
 
-    describe('LiteralPrimitive', () => {
-      // http://es5.github.io/x7.html#x7.8.4
-      const tests = [
-        { expr: 'true', expected: $true },
-        { expr: 'false', expected: $false },
-        { expr: 'null', expected: $null },
-        { expr: 'undefined', expected: $undefined },
-        { expr: '0', expected: $num0 },
-        { expr: '1', expected: $num1 },
-        { expr: '-1', expected: new Binary('-', $num0, $num1) },
-        { expr: '(-1)', expected: new Binary('-', $num0, $num1) },
-        { expr: '-(-1)', expected: new Binary('-', $num0, new Binary('-', $num0, $num1)) },
-        { expr: '+(-1)', expected: new Binary('-', $num0, $num1) },
-        { expr: '-(+1)', expected: new Binary('-', $num0, $num1) },
-        { expr: '+(+1)', expected: $num1 },
-        { expr: '9007199254740992', expected: new LiteralPrimitive(9007199254740992) }, // Number.MAX_SAFE_INTEGER + 1
-        { expr: '1.7976931348623157e+308', expected: new LiteralPrimitive(1.7976931348623157e+308) }, // Number.MAX_VALUE
-        { expr: '1.7976931348623157E+308', expected: new LiteralPrimitive(1.7976931348623157e+308) }, // Number.MAX_VALUE
-        { expr: '-9007199254740992', expected: new Binary('-', $num0, new LiteralPrimitive(9007199254740992)) }, // Number.MIN_SAFE_INTEGER - 1
-        { expr: '5e-324', expected: new LiteralPrimitive(5e-324) }, // Number.MIN_VALUE
-        { expr: '5E-324', expected: new LiteralPrimitive(5e-324) }, // Number.MIN_VALUE
-        { expr: '2.2', expected: new LiteralPrimitive(2.2) },
-        { expr: '2.2e2', expected: new LiteralPrimitive(2.2e2) },
-        { expr: '.42', expected: new LiteralPrimitive(.42) },
-        { expr: '0.42', expected: new LiteralPrimitive(.42) },
-        { expr: '.42E10', expected: new LiteralPrimitive(.42e10) }
-      ];
+    for (const op of ['!', '(', '+', '-', '.', '[', 'typeof']) {
+      it(`throw Code 104 (UnexpectedEndOfExpression) on "${op}"`, () => {
+        verifyResultOrError(op, null, 'Code 104');
+      });
+    }
 
-      for (const { expr, expected } of tests) {
-        it(expr, () => {
-          verifyEqual(parser.parse(expr), expected);
-        });
-      }
-    });
-
-    describe('LiteralArray', () => {
-      const tests = [
-        { expr: '[1 <= 0]', expected: new LiteralArray([new Binary('<=', $num1, $num0)]) },
-        { expr: '[0]', expected: new LiteralArray([$num0])},
-        { expr: '[]', expected: $arr},
-        { expr: '[[[]]]', expected: new LiteralArray([new LiteralArray([$arr])])},
-        { expr: '[[],[[]]]', expected: new LiteralArray([$arr, new LiteralArray([$arr])])},
-        { expr: '[x()]', expected: new LiteralArray([new CallScope('x', [], 0)]) },
-        { expr: '[1, "z", "a", null]', expected: new LiteralArray([$num1, new LiteralString('z'), new LiteralString('a'), $null]) }
-      ];
-
-      for (const { expr, expected } of tests) {
-        it(expr, () => {
-          verifyEqual(parser.parse(expr), expected);
-        });
-      }
-    });
-
-    describe('Conditional', () => {
-      const tests = [
-        { expr: '(false ? true : undefined)', paren: true, expected: new Conditional($false, $true, $undefined) },
-        { expr: '("1" ? "" : "1")', paren: true, expected: new Conditional($str1, $str, $str1) },
-        { expr: '("1" ? foo : "")', paren: true, expected: new Conditional($str1, $foo, $str) },
-        { expr: '(false ? false : true)', paren: true, expected: new Conditional($false, $false, $true) },
-        { expr: '(foo ? foo : true)', paren: true, expected: new Conditional($foo, $foo, $true) },
-        { expr: 'foo() ? 1 : 2', expected: new Conditional(new CallScope('foo', [], 0), $num1, $num2) },
-        { expr: 'true ? foo : false', expected: new Conditional($true, $foo, $false) },
-        { expr: '"1" ? "" : "1"', expected: new Conditional($str1, $str, $str1) },
-        { expr: '"1" ? foo : ""', expected: new Conditional($str1, $foo, $str) },
-        { expr: 'foo ? foo : "1"', expected: new Conditional($foo, $foo, $str1) },
-        { expr: 'true ? foo : bar', expected: new Conditional($true, $foo, $bar) }
-      ];
-
-      for (const { expr, expected, paren } of tests) {
-        it(expr, () => {
-          verifyEqual(parser.parse(expr), expected);
-        });
-
-        const nestedTests = [
-          { expr: `${expr} ? a : b`, expected: paren ? new Conditional(expected, $a, $b) : new Conditional(expected.condition, expected.yes, new Conditional(expected.no, $a, $b)) },
-          { expr: `a[b] ? ${expr} : a=((b))`, expected: new Conditional(new AccessKeyed($a, $b), expected, new Assign($a, $b)) },
-          { expr: `a ? !b===!a : ${expr}`, expected: new Conditional($a, new Binary('===', new Unary('!', $b), new Unary('!', $a)), expected) }
-        ];
-
-        for (const { expr: nExpr, expected: nExpected } of nestedTests) {
-          it(nExpr, () => {
-            verifyEqual(parser.parse(nExpr), nExpected);
-          });
-        }
-      }
-    });
-
-    describe('Binary', () => {
-      for (const op of binaryOps) {
-        it(`\"${op}\"`, () => {
-          verifyEqual(parser.parse(`x ${op} y`), new Binary(op, $x, $y));
-        });
-      }
-    });
-
-    describe('Binary left-to-right associativity', () => {
-      const tests = [
-        { expr: '4/2*10', expected: 4/2*10 },
-        { expr: '4/2*10+1', expected: 4/2*10+1 },
-        { expr: '1+4/2+1', expected: 1+4/2+1 },
-        { expr: '1+4/2+1+1', expected: 1+4/2+1+1 },
-        { expr: '4/2*10', expected: 4/2*10 },
-        { expr: '4/2*10/2', expected: 4/2*10/2 },
-        { expr: '4/2*10*2', expected: 4/2*10*2 },
-        { expr: '4/2*10+2', expected: 4/2*10+2 },
-        { expr: '2/4/2*10', expected: 2/4/2*10 },
-        { expr: '2*4/2*10', expected: 2*4/2*10 },
-        { expr: '2+4/2*10', expected: 2+4/2*10 },
-        { expr: '2/4/2*10/2', expected: 2/4/2*10/2 },
-        { expr: '2*4/2*10*2', expected: 2*4/2*10*2 },
-        { expr: '2+4/2*10+2', expected: 2+4/2*10+2 }
-      ];
-
-      for (const { expr, expected } of tests) {
-        it(`${expr} evaluates to ${expected}`, () => {
-          const parsed = parser.parse(expr);
-          const actual = parsed.evaluate({}, {});
-          expect(actual).toBe(expected);
-        });
-      }
-    });
-
-    describe('Binary operator precedence', () => {
-      const x = [0, 1, 2, 3, 4, 5, 6, 7].map(i => new AccessScope(`x${i}`, 0));
-      const b = (l, op, r) => new Binary(op, l, r);
-      const prec1 = ['||'];
-      const prec2 = ['&&'];
-      const prec3 = ['^'];
-      const prec4 = ['==', '!=', '===', '!=='];
-      const prec5 = ['<', '>', '<=', '>=', 'in', 'instanceof'];
-      const prec6 = ['+', '-'];
-      const prec7 = ['*', '%', '/'];
-      for (const _1 of prec1) {
-        for (const _2 of prec2) {
-          for (const _3 of prec3) {
-            for (const _4 of prec4) {
-              for (const _5 of prec5) {
-                for (const _6 of prec6) {
-                  for (const _7 of prec7) {
-                    const tests = [
-                      {
-                        // natural ascending precedence
-                        expr:       `x0 ${_1}    x1 ${_2}    x2 ${_3}    x3 ${_4}    x4 ${_5}    x5 ${_6}    x6 ${_7}  x7`,
-                        expected: b(x[0], _1, b(x[1], _2, b(x[2], _3, b(x[3], _4, b(x[4], _5, b(x[5], _6, b(x[6], _7, x[7])))))))
-                      },
-                      {
-                        // forced descending precedence
-                        expr:             `((((((x0 ${_1}  x1) ${_2}  x2) ${_3}  x3) ${_4}  x4) ${_5}  x5) ${_6}  x6) ${_7}  x7`,
-                        expected: b(b(b(b(b(b(b(x[0], _1, x[1]), _2, x[2]), _3, x[3]), _4, x[4]), _5, x[5]), _6, x[6]), _7, x[7])
-                      },
-                      {
-                        // natural descending precedence
-                        expr:                   `x7 ${_7}  x6  ${_6}  x5  ${_5}  x4  ${_4}  x3  ${_3}  x2  ${_2}  x1  ${_1}  x0`,
-                        expected: b(b(b(b(b(b(b(x[7], _7, x[6]), _6, x[5]), _5, x[4]), _4, x[3]), _3, x[2]), _2, x[1]), _1, x[0])
-                      },
-                      {
-                        // forced ascending precedence
-                        expr:       `x7 ${_7}   (x6 ${_6}   (x5 ${_5}   (x4 ${_4}   (x3 ${_3}   (x2 ${_2}   (x1 ${_1}  x0))))))`,
-                        expected: b(x[7], _7, b(x[6], _6, b(x[5], _5, b(x[4], _4, b(x[3], _3, b(x[2], _2, b(x[1], _1, x[0])))))))
-                      }
-                    ];
-
-                    for (const { expr, expected } of tests) {
-                      it(expr, () => {
-                        const actual = parser.parse(expr);
-                        expect(actual.toString()).toEqual(expected.toString());
-                        verifyEqual(actual, expected);
-                      });
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    });
-
-    describe('Binary + Unary operator precedence', () => {
-      const x = $x;
-      const y = $y;
-      const u = (op, r) => op === '!' ? new Unary(op, r) : new Unary(op, r);
-      const b = (l, op, r) => new Binary(op, l, r);
-
-      for (const _b of binaryOps) {
-        for (const _u of unaryOps) {
-          const tests = [
-            {
-              // natural right unary-first
-              expr:     `x ${_b} ${_u} y`,
-              expected: b(x, _b, u(_u, y))
-            },
-            {
-              // natural left unary-first
-              expr:      `${_u} x ${_b} y`,
-              expected: b(u(_u, x), _b, y)
-            },
-            {
-              // forced binary-first
-              expr:    `${_u} (x ${_b} y)`,
-              expected: u(_u, b(x, _b, y))
-            }
-          ];
-
-          for (const { expr, expected } of tests) {
-            it(expr, () => {
-              const actual = parser.parse(expr);
-              expect(actual.toString()).toEqual(expected.toString());
-              verifyEqual(actual, expected);
-            });
-          }
-        }
-      }
-    });
-
-    const variadics = [
-      { ctor: BindingBehavior, op: '&' },
-      { ctor: ValueConverter, op: '|' }
-    ];
-
-    for (const { ctor: Variadic, op } of variadics) {
-      const $this0 = new AccessThis(0);
-      const $this1 = new AccessThis(1);
-      const $this2 = new AccessThis(2);
-
-      describe(Variadic.name, () => {
-        const tests = [
-          { expr: `foo${op}bar:$this:$this`, expected: new Variadic($foo, 'bar', [$this0, $this0]) },
-          { expr: `foo${op}bar:$this:$parent`, expected: new Variadic($foo, 'bar', [$this0, $this1]) },
-          { expr: `foo${op}bar:$parent:$this`, expected: new Variadic($foo, 'bar', [$this1, $this0]) },
-          { expr: `foo${op}bar:$parent.$parent:$parent.$parent`, expected: new Variadic($foo, 'bar', [$this2, $this2]) },
-          { expr: `foo${op}bar:"1"?"":"1":true?foo:bar`, expected: new Variadic($foo, 'bar', [new Conditional($str1, $str, $str1), new Conditional($true, $foo, $bar)]) },
-          { expr: `foo${op}bar:[1<=0]:[[],[[]]]`, expected: new Variadic($foo, 'bar', [new LiteralArray([new Binary('<=', $num1, $num0)]), new LiteralArray([$arr, new LiteralArray([$arr])])]) },
-          { expr: `foo${op}bar:{foo:a?b:c}:{1:1}`, expected: new Variadic($foo, 'bar', [new LiteralObject(['foo'], [new Conditional($a, $b, $c)]), new LiteralObject([1], [$num1])]) },
-          { expr: `foo${op}bar:a(b({})[c()[d()]])`, expected: new Variadic($foo, 'bar', [new CallScope('a', [new AccessKeyed(new CallScope('b', [$obj], 0), new AccessKeyed(new CallScope('c', [], 0), new CallScope('d', [], 0)))], 0)]) },
-          { expr: `a(b({})[c()[d()]])${op}bar`, expected: new Variadic(new CallScope('a', [new AccessKeyed(new CallScope('b', [$obj], 0), new AccessKeyed(new CallScope('c', [], 0), new CallScope('d', [], 0)))], 0), 'bar', []) },
-          { expr: `true?foo:bar${op}bar`, expected: new Variadic(new Conditional($true, $foo, $bar), 'bar', []) },
-          { expr: `$parent.$parent${op}bar`, expected: new Variadic($this2, 'bar', []) }
-        ];
-
-        for (const { expr, expected } of tests) {
-          it(expr, () => {
-            verifyEqual(parser.parse(expr), expected);
-          });
+    for (const [input, expr] of SimpleIsLeftHandSideList) {
+      it(`throw Code 105 (ExpectedIdentifier) on "${input}."`, () => {
+        if (typeof expr['value'] !== 'number' || input.includes('.')) { // only non-float numbers are allowed to end on a dot
+          verifyResultOrError(`${input}.`, null, 'Code 105');
+        } else {
+          verifyResultOrError(`${input}.`, expr, null);
         }
       });
     }
 
-    it('chained BindingBehaviors', () => {
-      let expr = parser.parse('foo & bar:x:y:z & baz:a:b:c');
-      verifyEqual(expr, new BindingBehavior(new BindingBehavior($foo, 'bar', [$x, $y, $z]), 'baz', [$a, $b, $c]));
-    });
+    for (const input of ['{', '{[]}', '{[}', '{[a]}', '{[a}', '{{', '{(']) {
+      it(`throw Code 107 (LiteralInvalidObjectPropertyDefinition) on "${input}"`, () => {
+        verifyResultOrError(input, null, 'Code 107');
+      });
+    }
 
-    it('chained ValueConverters', () => {
-      let expr = parser.parse('foo | bar:x:y:z | baz:a:b:c');
-      verifyEqual(expr, new ValueConverter(new ValueConverter($foo, 'bar', [$x, $y, $z]), 'baz', [$a, $b, $c]));
-    });
+    for (const input of ['"', '\'']) {
+      it(`throw Code 108 (UnterminatedQuote) on "${input}"`, () => {
+        verifyResultOrError(input, null, 'Code 108');
+      });
+    }
 
-    it('chained ValueConverters and BindingBehaviors', () => {
-      let expr = parser.parse('foo | bar:x:y:z & baz:a:b:c');
-      verifyEqual(expr, new BindingBehavior(new ValueConverter($foo, 'bar', [$x, $y, $z]), 'baz', [$a, $b, $c]));
-    });
+    for (const input of ['`', '` ', '`${a}']) {
+      it(`throw Code 109 (UnterminatedTemplate) on "${input}"`, () => {
+        verifyResultOrError(input, null, 'Code 109');
+      });
+    }
 
-    it('AccessScope', () => {
-      let expr = parser.parse('foo');
-      verifyEqual(expr, $foo);
-    });
-
-    describe('AccessKeyed', () => {
-      const tests = [
-        { expr: 'foo[bar]', expected: new AccessKeyed($foo, $bar) },
-        { expr: 'foo[\'bar\']', expected: new AccessKeyed($foo, new LiteralString('bar')) },
-        { expr: 'foo[0]', expected: new AccessKeyed($foo, $num0) },
-        { expr: 'foo[(0)]', expected: new AccessKeyed($foo, $num0) },
-        { expr: '(foo)[0]', expected: new AccessKeyed($foo, $num0) },
-        { expr: 'foo[null]', expected: new AccessKeyed($foo, $null) },
-        { expr: '\'foo\'[0]', expected: new AccessKeyed(new LiteralString('foo'), $num0) },
-        { expr: 'foo()[bar]', expected: new AccessKeyed(new CallScope('foo', [], 0), $bar) },
-        { expr: 'a[b[c]]', expected: new AccessKeyed($a, new AccessKeyed($b, $c)) },
-        { expr: 'a[b][c]', expected: new AccessKeyed(new AccessKeyed($a, $b), $c) }
-      ];
-
-      for (const { expr, expected } of tests) {
-        it(expr, () => {
-          verifyEqual(parser.parse(expr), expected);
-        });
-
-        it(`(${expr})`, () => {
-          verifyEqual(parser.parse(`(${expr})`), expected);
+    for (const [input] of SimpleIsAssignList) {
+      for (const op of ['(', '[']) {
+        it(`throw Code 110 (MissingExpectedToken) on "${op}${input}"`, () => {
+          verifyResultOrError(`${op}${input}`, null, 'Code 110');
         });
       }
-    });
+    }
+    for (const [input] of SimpleIsConditionalList) {
+      it(`throw Code 110 (MissingExpectedToken) on "${input}?${input}"`, () => {
+        verifyResultOrError(`${input}?${input}`, null, 'Code 110');
+      });
+    }
+    for (const [input] of AccessScopeList) {
+      it(`throw Code 110 (MissingExpectedToken) on "{${input}"`, () => {
+        verifyResultOrError(`{${input}`, null, 'Code 110');
+      });
+    }
+    for (const [input] of LiteralSimpleStringList) {
+      it(`throw Code 110 (MissingExpectedToken) on "{${input}}"`, () => {
+        verifyResultOrError(`{${input}}`, null, 'Code 110');
+      });
+    }
+    for (const input of ['{24}', '{24, 24}', '{\'\'}', '{a.b}', '{a[b]}', '{a()}']) {
+      it(`throw Code 110 (MissingExpectedToken) on "${input}"`, () => {
+        verifyResultOrError(input, null, 'Code 110');
+      });
+    }
 
-    describe('AccessMember', () => {
-      const tests = [
-        { expr: 'foo.bar', expected: new AccessMember($foo, 'bar') },
-        { expr: 'foo.bar.baz.qux', expected: new AccessMember(new AccessMember(new AccessMember($foo, 'bar'), 'baz'), 'qux') },
-        { expr: 'foo["bar"].baz', expected: new AccessMember(new AccessKeyed($foo, new LiteralString('bar')), 'baz') },
-        { expr: 'foo[""].baz', expected: new AccessMember(new AccessKeyed($foo, $str), 'baz') },
-        { expr: 'foo[null].baz', expected: new AccessMember(new AccessKeyed($foo, $null), 'baz') },
-        { expr: 'foo[42].baz', expected: new AccessMember(new AccessKeyed($foo, new LiteralPrimitive(42)), 'baz') },
-        { expr: '{}.foo', expected: new AccessMember($obj, 'foo') },
-        { expr: '[].foo', expected: new AccessMember($arr, 'foo') },
-        { expr: 'null.foo', expected: new AccessMember($null, 'foo') },
-        { expr: 'undefined.foo', expected: new AccessMember($undefined, 'foo') },
-        { expr: 'true.foo', expected: new AccessMember($true, 'foo') },
-        { expr: 'false.foo', expected: new AccessMember($false, 'foo') }
-      ];
+    for (const input of ['#', ';', '@', '^', '~', '\\', 'foo;']) {
+      it(`throw Code 111 (UnexpectedCharacter) on "${input}"`, () => {
+        verifyResultOrError(input, null, 'Code 111');
+      });
+    }
 
-      for (const { expr, expected } of tests) {
-        it(expr, () => {
-          verifyEqual(parser.parse(expr), expected);
-        });
-      }
-    });
+    for (const [input] of SimpleIsAssignList) {
+      it(`throw Code 112 (MissingValueConverter) on "${input}|"`, () => {
+        verifyResultOrError(`${input}|`, null, 'Code 112');
+      });
+    }
 
-    it('Assign', () => {
-      let expr = parser.parse('foo = bar');
-      verifyEqual(expr, new Assign($foo, $bar));
-    });
+    for (const [input] of SimpleIsAssignList) {
+      it(`throw Code 113 (MissingBindingBehavior) on "${input}&"`, () => {
+        verifyResultOrError(`${input}&`, null, 'Code 113');
+      });
+    }
 
-    it('Assign to ignored Unary', () => {
-      let expr = parser.parse('+foo = bar');
-      verifyEqual(expr, new Assign($foo, $bar));
-    });
+    for (const [input] of [
+      [`$this`, $this],
+      ...LiteralSimpleList,
+      ...SimpleUnaryList
+    ]) {
+      it(`throw Code 150 (NotAssignable) on "${input}=a"`, () => {
+        verifyResultOrError(`${input}=a`, null, 'Code 150');
+      });
+    }
 
-    it('chained Assign', () => {
-      let expr = parser.parse('foo = bar = baz');
-      verifyEqual(expr, new Assign(new Assign($foo, $bar), $baz));
-    });
-
-    describe('CallExpression', () => {
-      const tests = [
-        { expr: 'a()()()', expected: new CallFunction(new CallFunction(new CallScope('a', [], 0), []), []) },
-        { expr: 'a(b(c()))', expected: new CallScope('a', [new CallScope('b', [new CallScope('c', [], 0)], 0)], 0) },
-        { expr: 'a(b(),c())', expected: new CallScope('a', [new CallScope('b', [], 0), new CallScope('c', [], 0)], 0) },
-        { expr: 'a()[b]()', expected: new CallFunction(new AccessKeyed(new CallScope('a', [], 0), $b), []) },
-        { expr: '{foo}[\'foo\']()', expected: new CallFunction(new AccessKeyed(new LiteralObject(['foo'], [$foo]), new LiteralString('foo')), []) },
-        { expr: 'a(b({})[c()[d()]])', expected: new CallScope('a', [new AccessKeyed(new CallScope('b', [$obj], 0), new AccessKeyed(new CallScope('c', [], 0), new CallScope('d', [], 0)))], 0) }
-      ];
-
-      for (const { expr, expected } of tests) {
-        it(expr, () => {
-          verifyEqual(parser.parse(expr), expected);
-        });
-
-        it(`(${expr})`, () => {
-          verifyEqual(parser.parse(`(${expr})`), expected);
-        });
-      }
-    });
-
-    it('CallScope', () => {
-      let expr = parser.parse('foo(x)');
-      verifyEqual(expr, new CallScope('foo', [$x], 0));
-    });
-
-    it('nested CallScope', () => {
-      let expr = parser.parse('foo(bar(x), y)');
-      verifyEqual(expr, new CallScope('foo', [new CallScope('bar', [$x], 0), $y], 0));
-    });
-
-    describe('CallMember', () => {
-      const memberExpressions = [
-        { memberExpr: 'foo', ast: new AccessScope('foo', 0)},
-        { memberExpr: 'foo()', ast: new CallScope('foo', [], 0)},
-        { memberExpr: 'null', ast: new LiteralPrimitive(null)},
-        { memberExpr: 'true', ast: new LiteralPrimitive(true)},
-        { memberExpr: 'false', ast: new LiteralPrimitive(false)},
-        { memberExpr: '\'foo\'', ast: new LiteralString('foo')},
-        { memberExpr: '"foo"', ast: new LiteralString('foo')},
-        { memberExpr: '[]', ast: new LiteralArray([])},
-        { memberExpr: '[1,2]', ast: new LiteralArray([new LiteralPrimitive(1), new LiteralPrimitive(2)])},
-        { memberExpr: '{}', ast: new LiteralObject([], [])},
-        { memberExpr: '{foo}', ast: new LiteralObject(['foo'], [new AccessScope('foo', 0)])},
-        { memberExpr: '`foo`', ast: new LiteralTemplate(['foo'], [], ['foo'])},
-        { memberExpr: 'foo`bar`', ast: new LiteralTemplate(['bar'], [], ['bar'], new AccessScope('foo', 0))},
-        { memberExpr: '(42)', ast: new LiteralPrimitive(42)},
-        { memberExpr: '(.3)', ast: new LiteralPrimitive(.3)},
-        { memberExpr: '(10e2)', ast: new LiteralPrimitive(10e2)},
-        { memberExpr: '(void 0)', ast: new Unary('void', new LiteralPrimitive(0))},
-        { memberExpr: '(typeof null)', ast: new Unary('typeof', new LiteralPrimitive(null))},
-        { memberExpr: '(1+1)', ast: new Binary('+', new LiteralPrimitive(1), new LiteralPrimitive(1))},
-        { memberExpr: '(true===true?{}:{})', ast: new Conditional(new Binary('===', new LiteralPrimitive(true), new LiteralPrimitive(true)), new LiteralObject([], []), new LiteralObject([], []))},
-      ];
-
-      for (const { memberExpr, ast } of memberExpressions) {
-        const expr = memberExpr + '.foo()';
-        const expected = new CallMember(ast, 'foo', []);
-        it(expr, () => {
-          verifyEqual(parser.parse(expr), expected);
-        });
-
-        it(`(${expr})`, () => {
-          verifyEqual(parser.parse(`(${expr})`), expected);
-        });
-      }
-    });
-
-    it('CallMember', () => {
-      let expr = parser.parse('foo.bar(x)');
-      verifyEqual(expr, new CallMember($foo, 'bar', [$x]));
-    });
-
-    it('nested CallMember', () => {
-      let expr = parser.parse('foo.bar.baz(x)');
-      verifyEqual(expr, new CallMember(new AccessMember($foo, 'bar'), 'baz', [$x]));
-    });
-
-    it('$this', () => {
-      let expr = parser.parse('$this');
-      verifyEqual(expr, new AccessThis(0));
-    });
-
-    it('$this.member to AccessScope', () => {
-      let expr = parser.parse('$this.foo');
-      verifyEqual(expr, $foo);
-    });
-
-    it('$this() to CallFunction', () => {
-      let expr = parser.parse('$this()');
-      verifyEqual(expr, new CallFunction(new AccessThis(0), []));
-    });
-
-    it('$this.member() to CallScope', () => {
-      let expr = parser.parse('$this.foo(x)');
-      verifyEqual(expr, new CallScope('foo', [$x], 0));
-    });
-
-    const parents = [
-      { i: 1, name: '$parent' },
-      { i: 2, name: '$parent.$parent' },
-      { i: 3, name: '$parent.$parent.$parent' },
-      { i: 4, name: '$parent.$parent.$parent.$parent' },
-      { i: 5, name: '$parent.$parent.$parent.$parent.$parent' },
-      { i: 6, name: '$parent.$parent.$parent.$parent.$parent.$parent' },
-      { i: 7, name: '$parent.$parent.$parent.$parent.$parent.$parent.$parent' },
-      { i: 8, name: '$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent' },
-      { i: 9, name: '$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent' },
-      { i: 10, name: '$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent'  }
-    ];
-    describe('$parent', () => {
-      for (const { i, name } of parents) {
-        it(name, () => {
-          let expr = parser.parse(name);
-          verifyEqual(expr, new AccessThis(i));
-        });
-
-        it(`${name} before ValueConverter`, () => {
-          let expr = parser.parse(`${name} | foo`);
-          verifyEqual(expr, new ValueConverter(new AccessThis(i), 'foo', []));
-        });
-
-        it(`${name}.bar before ValueConverter`, () => {
-          let expr = parser.parse(`${name}.bar | foo`);
-          verifyEqual(expr, new ValueConverter(new AccessScope('bar', i), 'foo', []));
-        });
-
-        it(`${name} before binding behavior`, () => {
-          let expr = parser.parse(`${name} & foo`);
-          verifyEqual(expr, new BindingBehavior(new AccessThis(i), 'foo', []));
-        });
-
-        it(`${name}.bar before binding behavior`, () => {
-          let expr = parser.parse(`${name}.bar & foo`);
-          verifyEqual(expr, new BindingBehavior(new AccessScope('bar', i), 'foo', []));
-        });
-
-        it(`${name}.foo to AccessScope`, () => {
-          let expr = parser.parse(`${name}.foo`);
-          verifyEqual(expr, new AccessScope(`foo`, i));
-        });
-
-        it(`${name}.foo() to CallScope`, () => {
-          let expr = parser.parse(`${name}.foo()`);
-          verifyEqual(expr, new CallScope(`foo`, [], i));
-        });
-
-        it(`${name}() to CallFunction`, () => {
-          let expr = parser.parse(`${name}()`);
-          verifyEqual(expr, new CallFunction(new AccessThis(i), []));
-        });
-
-        it(`${name}[0] to AccessKeyed`, () => {
-          let expr = parser.parse(`${name}[0]`);
-          verifyEqual(expr, new AccessKeyed(new AccessThis(i), $num0));
-        });
-      }
-    });
-
-    it('$parent inside CallMember', () => {
-      let expr = parser.parse('matcher.bind($parent)');
-      verifyEqual(expr, new CallMember(new AccessScope('matcher', 0), 'bind', [new AccessThis(1)]));
-    });
-
-    it('$parent in LiteralObject', () => {
-      let expr = parser.parse('{parent: $parent}');
-      verifyEqual(expr, new LiteralObject(['parent'], [new AccessThis(1)]));
-    });
-
-    it('$parent and foo in LiteralObject', () => {
-      let expr = parser.parse('{parent: $parent, foo: bar}');
-      verifyEqual(expr, new LiteralObject(['parent', 'foo'], [new AccessThis(1), $bar]));
-    });
-
-    describe('LiteralObject', () => {
-      const tests = [
-        { expr: '', expected: $obj },
-        { expr: 'foo', expected: new LiteralObject(['foo'], [$foo]) },
-        { expr: 'foo,bar', expected: new LiteralObject(['foo', 'bar'], [$foo, $bar]) },
-        { expr: 'foo:bar', expected: new LiteralObject(['foo'], [$bar]) },
-        { expr: 'foo:bar()', expected: new LiteralObject(['foo'], [new CallScope('bar', [], 0)]) },
-        { expr: 'foo:a?b:c', expected: new LiteralObject(['foo'], [new Conditional($a, $b, $c)]) },
-        { expr: 'foo:bar=((baz))', expected: new LiteralObject(['foo'], [new Assign($bar, $baz)]) },
-        { expr: 'foo:(bar)===baz', expected: new LiteralObject(['foo'], [new Binary('===', $bar, $baz)]) },
-        { expr: 'foo:[bar]', expected: new LiteralObject(['foo'], [new LiteralArray([$bar])]) },
-        { expr: 'foo:bar[baz]', expected: new LiteralObject(['foo'], [new AccessKeyed($bar, $baz)]) },
-        { expr: '\'foo\':1', expected: new LiteralObject(['foo'], [$num1]) },
-        { expr: '1:1', expected: new LiteralObject([1], [$num1]) },
-        { expr: '1:\'foo\'', expected: new LiteralObject([1], [new LiteralString('foo')]) },
-        { expr: 'null:1', expected: new LiteralObject(['null'], [$num1]) },
-        { expr: 'foo:{}', expected: new LiteralObject(['foo'], [$obj]) },
-        { expr: 'foo:{bar}[baz]', expected: new LiteralObject(['foo'], [new AccessKeyed(new LiteralObject(['bar'], [$bar]), $baz)]) }
-      ];
-
-      for (const { expr, expected } of tests) {
-        it(`{${expr}}`, () => {
-          verifyEqual(parser.parse(`{${expr}}`), expected);
-        });
-
-        it(`({${expr}})`, () => {
-          verifyEqual(parser.parse(`({${expr}})`), expected);
-        });
-      }
-    });
-
-    describe('unicode IdentifierStart', () => {
-      for (const char of latin1IdentifierStartChars) {
-        it(char, () => {
-          const expr = parser.parse(char);
-          verifyEqual(expr,
-            new AccessScope(char, 0)
-         );
-        });
-      }
-    });
-
-    describe('unicode IdentifierPart', () => {
-      for (const char of latin1IdentifierPartChars) {
-        it(char, () => {
-          const identifier = '$' + char;
-          const expr = parser.parse(identifier);
-          verifyEqual(expr,
-            new AccessScope(identifier, 0)
-         );
-        });
-      }
-    });
+    for (const [input] of SimpleIsBindingBehaviorList.filter(([i, e]) => !e.ancestor)) {
+      it(`throw Code 151 (UnexpectedForOf) on "${input} of"`, () => {
+        verifyResultOrError(`${input} of`, null, 'Code 151');
+      });
+    }
   });
 
-  describe('should not parse', () => {
-    describe('LiteralObject with computed property', () => {
-      const expressions = [
-        '{ []: "foo" }',
-        '{ [42]: "foo" }',
-        '{ ["foo"]: "bar" }',
-        '{ [foo]: "bar" }'
-      ];
-
-      for (const expr of expressions) {
-        it(expr, () => {
-          _verifyError(expr, 'Unexpected token [');
-        });
-      }
-    });
-
-    describe('invalid shorthand properties', () => {
-      const expressions = [
-        '{ foo.bar }',
-        '{ foo.bar, bar.baz }',
-        '{ "foo" }',
-        '{ "foo.bar" }',
-        '{ 42 }',
-        '{ 42, 42 }',
-        '{ [foo] }',
-        '{ ["foo"] }',
-        '{ [42] }'
-      ];
-
-      for (const expr of expressions) {
-        it(expr, () => {
-          _verifyError(expr, 'expected');
-        });
-      }
-    });
-
-    describe('multiple expressions', () => {
-      const expressions = [
-        ';',
-        'foo;',
-        ';foo',
-        'foo&bar;baz|qux'
-      ];
-
-      for (const expr of expressions) {
-        it(expr, () => {
-          _verifyError(expr, 'Unexpected character [;]');
-        });
-      }
-    });
-
-    describe('extra closing token', () => {
-      const tests = [
-        { expr: 'foo())', token: ')' },
-        { expr: 'foo[x]]', token: ']' },
-        { expr: '{foo}}', token: '}' }
-      ];
-
-      for (const { expr, token } of tests) {
-        it(expr, () => {
-          _verifyError(expr, `Unconsumed token ${token}`);
-        });
-      }
-    });
-
-    describe('invalid expression start', () => {
-      const tests = [')', ']', '}', ''];
-
-      for (const expr of tests) {
-        it(expr, () => {
-          _verifyError(expr, `Invalid start of expression`);
-        });
-      }
-    });
-
-    describe('missing expected token', () => {
-      const tests = [
-        { expr: '(foo', token: ')' },
-        { expr: '[foo', token: ']' },
-        { expr: '{foo', token: ',' },
-        { expr: 'foo(bar', token: ')' },
-        { expr: 'foo[bar', token: ']' },
-        { expr: 'foo.bar(baz', token: ')' },
-        { expr: 'foo.bar[baz', token: ']' }
-      ];
-
-      for (const { expr, token } of tests) {
-        it(expr, () => {
-          _verifyError(expr, `Missing expected token ${token}`);
-        });
-      }
-    });
-
-    describe('assigning unassignable', () => {
-      const expressions = [
-        '(foo ? bar : baz) = qux',
-        '$this = foo',
-        'foo() = bar',
-        'foo.bar() = baz',
-        '!foo = bar',
-        '-foo = bar',
-        '\'foo\' = bar',
-        '42 = foo',
-        '[] = foo',
-        '{} = foo'
-      ].concat(binaryOps.map(op => `foo ${op} bar = baz`));
-
-      for (const expr of expressions) {
-        it(expr, () => {
-          _verifyError(expr, 'is not assignable');
-        });
-      }
-    });
-
-    it('incomplete conditional', () => {
-      _verifyError('foo ? bar', 'Missing expected token : at column 9');
-    });
-
-    describe('invalid primary expression', () => {
-      const expressions = ['.', ',', '&', '|', '=', '<', '>', '*', '%', '/'];
-      expressions.push(...expressions.map(e => e + ' '));
-      for (const expr of expressions) {
-        it(expr, () => {
-          if (expr.length === 1) {
-            _verifyError(expr, `Unexpected end of expression`);
-          } else {
-            _verifyError(expr, `Unexpected token ${expr.slice(0, 0)}`);
-          }
-        });
-      }
-    });
-
-    describe('invalid exponent', () => {
-      const expressions = ['1e', '1ee', '1e.'];
-
-      for (const expr of expressions) {
-        it(expr, () => {
-          _verifyError(expr, 'Invalid exponent');
-        });
-      }
-    });
-
-    describe('unknown unicode IdentifierPart', () => {
-      for (const char of otherBMPIdentifierPartChars) {
-        it(char, () => {
-          const identifier = '$' + char;
-          _verifyError(identifier, `Unexpected character [${char}] at column 1`);
-        });
-      }
-    });
-
-    it('double dot (AccessScope)', () => {
-      _verifyError('foo..bar', `Unexpected token . at column 4`);
-    });
-
-    it('double dot (AccessMember)', () => {
-      _verifyError('foo.bar..baz', `Unexpected token . at column 8`);
-    });
-
-    it('double dot (AccessThis)', () => {
-      _verifyError('$parent..bar', `Unexpected token . at column 8`);
-    });
+  describe('unknown unicode IdentifierPart', () => {
+    for (const char of otherBMPIdentifierPartChars) {
+      it(char, () => {
+        const identifier = `$${char}`;
+        verifyResultOrError(identifier, null, codes.UnexpectedCharacter);
+      });
+    }
   });
-
-  function _verifyError(expr, errorMessage = '') {
-    verifyError(parser, expr, errorMessage);
-  }
 });
 
-function verifyError(parser, expr, errorMessage = '') {
-  let error = null;
-  try {
-    parser.parse(expr);
-  } catch (e) {
-    error = e;
-  }
-
-  expect(error).not.toBeNull();
-  expect(error.message).toContain(errorMessage);
-}
-
-function verifyEqual(actual, expected) {
-  if (typeof expected !== 'object' || expected === null || expected === undefined) {
-    expect(actual).toEqual(expected);
-    return;
-  }
-  if (expected instanceof Array) {
-    for (let i = 0; i < expected.length; i++) {
-      verifyEqual(actual[i], expected[i]);
-    }
-    return;
-  }
-
-  if (actual) {
-    expect(actual.constructor.name).toEqual(expected.constructor.name);
-    expect(actual.toString()).toEqual(expected.toString());
-    for (const prop of Object.keys(expected)) {
-      verifyEqual(actual[prop], expected[prop]);
-    }
-  }
-}
-
-function unicodeEscape(str) {
-  return str.replace(/[\s\S]/g, c => `\\u${('0000' + c.charCodeAt().toString(16)).slice(-4)}`);
-}

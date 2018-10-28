@@ -2,6 +2,9 @@ import {Unparser} from './unparser';
 import {getContextFor} from './scope';
 import {connectBindingToSignal} from './signals';
 
+
+const emptyArray = Object.freeze([]);
+
 export class Expression {
   constructor() {
     this.isAssignable = false;
@@ -190,7 +193,7 @@ export class Conditional extends Expression {
 export class AccessThis extends Expression {
   constructor(ancestor) {
     super();
-    this.ancestor = ancestor;
+    this.ancestor = ancestor === undefined ? 0 : ancestor;
   }
 
   evaluate(scope, lookupFunctions) {
@@ -215,7 +218,7 @@ export class AccessScope extends Expression {
     super();
 
     this.name = name;
-    this.ancestor = ancestor;
+    this.ancestor = ancestor === undefined ? 0 : ancestor;
     this.isAssignable = true;
   }
 
@@ -325,7 +328,7 @@ export class CallScope extends Expression {
 
     this.name = name;
     this.args = args;
-    this.ancestor = ancestor;
+    this.ancestor = ancestor === undefined ? 0 : ancestor;
   }
 
   evaluate(scope, lookupFunctions, mustEvaluate) {
@@ -522,7 +525,7 @@ export class Unary extends Expression {
   }
 
   accept(visitor) {
-    return visitor.visitPrefix(this);
+    return visitor.visitUnary(this);
   }
 
   connect(binding, scope) {
@@ -572,18 +575,18 @@ export class LiteralTemplate extends Expression {
   constructor(cooked, expressions, raw, tag) {
     super();
     this.cooked = cooked;
-    this.expressions = expressions || [];
+    this.expressions = expressions || emptyArray;
     this.length = this.expressions.length;
     this.tagged = tag !== undefined;
+    this.cooked.raw = raw || emptyArray;
     if (this.tagged) {
-      this.cooked.raw = raw;
       this.tag = tag;
       if (tag instanceof AccessScope) {
         this.contextType = 'Scope';
       } else if (tag instanceof AccessMember || tag instanceof AccessKeyed) {
         this.contextType = 'Object';
       } else {
-        throw new Error(`${this.tag} is not a valid template tag`);
+        //throw new Error(`${this.tag} is not a valid template tag`);
       }
     }
   }
