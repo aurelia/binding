@@ -47,9 +47,9 @@ Bind a boolean property to an input element's `checked` attribute using `checked
         <label><input type="checkbox" checked.bind="cpu"> CPU</label>
         <label><input type="checkbox" checked.bind="memory"> Memory</label>
 
-        motherboard = ${motherboard}<br/>
-        cpu = ${cpu}<br/>
-        memory = ${memory}<br/>
+        motherboard = ${motherboard}<br>
+        cpu = ${cpu}<br>
+        memory = ${memory}<br>
       </form>
     </template>
   </source-code>
@@ -117,7 +117,7 @@ To define the input's "value", bind the input's `model` attribute: `model.bind="
           <input type="checkbox" model.bind="product.id" checked.bind="selectedProductIds">
           ${product.id} - ${product.name}
         </label>
-        <br />
+        <br>
         Selected product IDs: ${selectedProductIds}
       </form>
     </template>
@@ -315,7 +315,7 @@ Finally, here's an example that adds and removes strings from a `selectedProduct
           <input type="checkbox" value.bind="product" checked.bind="selectedProducts">
           ${product}
         </label>
-        <br />
+        <br>
         Selected products: ${selectedProducts}
       </form>
     </template>

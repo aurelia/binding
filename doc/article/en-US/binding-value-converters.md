@@ -33,7 +33,7 @@ Here's a simple data-binding example using the **bind** (`.bind="expression"`) a
   <source-code lang="HTML">
     <template>
       <label for="name">Enter Name:</label>
-      <input id="name" type="text" value.bind="name" />
+      <input id="name" type="text" value.bind="name">
       <p>Name is ${name}</p>
     </template>
   </source-code>
@@ -80,7 +80,7 @@ Sometimes the raw data exposed by your view-model isn't in a format that's ideal
 <code-listing heading="date-and-number.html">
   <source-code lang="HTML">
     <template>
-      ${currentDate} <br/>
+      ${currentDate} <br>
       ${netWorth}
     </template>
   </source-code>
@@ -172,7 +172,7 @@ Before we get too far into the details, let's rework the previous example to use
       <require from="./date-format"></require>
       <require from="./currency-format"></require>
 
-      ${currentDate | dateFormat} <br/>
+      ${currentDate | dateFormat} <br>
       ${netWorth | currencyFormat}
     </template>
   </source-code>
@@ -204,7 +204,7 @@ Finally, we applied the converter in the binding using the pipe `|` syntax:
 
 <code-listing heading="Converter Syntax">
   <source-code lang="HTML">
-    ${currentDate | dateFormat} <br/>
+    ${currentDate | dateFormat} <br>
     ${netWorth | currencyFormat}
   </source-code>
 </code-listing>
@@ -278,11 +278,11 @@ The converters in the previous example worked great, but what if we needed to di
       <require from="./date-format"></require>
       <require from="./number-format"></require>
 
-      ${currentDate | dateFormat:'M/D/YYYY h:mm:ss a'} <br/>
-      ${currentDate | dateFormat:'MMMM Mo YYYY'} <br/>
-      ${currentDate | dateFormat:'h:mm:ss a'} <br/>
-      ${netWorth | numberFormat:'$0,0.00'} <br/>
-      ${netWorth | numberFormat:'$0.0a'} <br/>
+      ${currentDate | dateFormat:'M/D/YYYY h:mm:ss a'} <br>
+      ${currentDate | dateFormat:'MMMM Mo YYYY'} <br>
+      ${currentDate | dateFormat:'h:mm:ss a'} <br>
+      ${netWorth | numberFormat:'$0,0.00'} <br>
+      ${netWorth | numberFormat:'$0.0a'} <br>
       ${netWorth | numberFormat:'0.00000)'}
     </template>
   </source-code>
@@ -296,8 +296,8 @@ With the `format` parameter added to the `toView` methods, we are able to specif
 
 <code-listing heading="Converter Parameter Syntax">
   <source-code lang="HTML">
-    ${currentDate | dateFormat:'MMMM Mo YYYY'} <br/>
-    ${netWorth | numberFormat:'$0.0a'} <br/>
+    ${currentDate | dateFormat:'MMMM Mo YYYY'} <br>
+    ${netWorth | numberFormat:'$0.0a'} <br>
   </source-code>
 </code-listing>
 
@@ -603,8 +603,8 @@ In the example below, we have a view-model that exposes colors in an object form
       <require from="./rgb-to-hex"></require>
 
       <label for="color">Select Color:</label>
-      <input id="color" type="color" value.bind="rgb | rgbToHex" />
-      <br/> r: ${rgb.r}, g:${rgb.g}, b:${rgb.b}
+      <input id="color" type="color" value.bind="rgb | rgbToHex">
+      <br> r: ${rgb.r}, g:${rgb.g}, b:${rgb.b}
     </template>
   </source-code>
 </code-listing>

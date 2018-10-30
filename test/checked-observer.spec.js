@@ -21,7 +21,7 @@ describe('CheckedObserver', () => {
 
     beforeAll(() => {
       obj = { selectedItems: [] };
-      el = createElement('<input type="checkbox" value="A" />');
+      el = createElement('<input type="checkbox" value="A">');
       observerLocator.getObserver(el, 'value');
       document.body.appendChild(el);
       binding = getBinding(observerLocator, obj, 'selectedItems', el, 'checked', bindingMode.twoWay).binding;
@@ -89,7 +89,7 @@ describe('CheckedObserver', () => {
 
     beforeAll(() => {
       obj = { selectedItems: [], itemA: {} };
-      el = createElement('<input type="checkbox" />');
+      el = createElement('<input type="checkbox">');
       el.model = obj.itemA;
       observerLocator.getObserver(el, 'model');
       document.body.appendChild(el);
@@ -158,7 +158,7 @@ describe('CheckedObserver', () => {
 
     beforeAll(() => {
       obj = { selectedItems: [], itemA: { foo: 'A' } };
-      el = createElement('<input type="checkbox" />');
+      el = createElement('<input type="checkbox">');
       el.model = obj.itemA;
       document.body.appendChild(el);
       binding = getBinding(observerLocator, obj, 'selectedItems', el, 'checked', bindingMode.twoWay).binding;
@@ -214,7 +214,7 @@ describe('CheckedObserver', () => {
 
     beforeAll(() => {
       obj = { checked: false };
-      el = createElement('<input type="checkbox" />');
+      el = createElement('<input type="checkbox">');
       document.body.appendChild(el);
       binding = getBinding(observerLocator, obj, 'checked', el, 'checked', bindingMode.twoWay).binding;
     });
@@ -268,7 +268,7 @@ describe('CheckedObserver', () => {
 
     beforeAll(() => {
       obj = { selectedItems: ['A'], value: 'A' };
-      el = createElement('<input type="checkbox" />');
+      el = createElement('<input type="checkbox">');
       document.body.appendChild(el);
       binding = getBinding(observerLocator, obj, 'selectedItems', el, 'checked', bindingMode.twoWay).binding;
       binding2 = getBinding(observerLocator, obj, 'value', el, 'value', bindingMode.toView).binding;
@@ -331,9 +331,9 @@ describe('CheckedObserver', () => {
       obj = { value: 'B' };
       el = createElement(
         `<div>
-          <input name="test" type="radio" value="A" />
-          <input name="test" type="radio" value="B" />
-          <input name="test" type="radio" value="C" />
+          <input name="test" type="radio" value="A">
+          <input name="test" type="radio" value="B">
+          <input name="test" type="radio" value="C">
         </div>`);
       document.body.appendChild(el);
       radios = [
@@ -394,9 +394,9 @@ describe('CheckedObserver', () => {
       obj = { value: false };
       el = createElement(
         `<div>
-          <input name="test" type="radio" />
-          <input name="test" type="radio" />
-          <input name="test" type="radio" />
+          <input name="test" type="radio">
+          <input name="test" type="radio">
+          <input name="test" type="radio">
         </div>`);
       document.body.appendChild(el);
       el.children.item(0).model = null;
@@ -460,9 +460,9 @@ describe('CheckedObserver', () => {
       obj = { value: { foo: 'B' } };
       el = createElement(
         `<div>
-          <input name="test" type="radio" />
-          <input name="test" type="radio" />
-          <input name="test" type="radio" />
+          <input name="test" type="radio">
+          <input name="test" type="radio">
+          <input name="test" type="radio">
         </div>`);
       document.body.appendChild(el);
       el.children.item(0).model = { foo: 'A' };
@@ -533,9 +533,9 @@ describe('CheckedObserver', () => {
       obj = { value: undefined };
       el = createElement(
         `<div>
-          <input name="test" type="radio" />
-          <input name="test" type="radio" />
-          <input name="test" type="radio" />
+          <input name="test" type="radio">
+          <input name="test" type="radio">
+          <input name="test" type="radio">
         </div>`);
       document.body.appendChild(el);
       el.children.item(0).model = undefined;

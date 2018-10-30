@@ -63,7 +63,7 @@ A `<select>` element can serve as a single-select or multiple-select "picker" de
   <source-code lang="HTML">
     <template>
       <label>
-        Select product:<br/>
+        Select product:<br>
         <select value.bind="selectedProductId">
           <option model.bind="null">Choose...</option>
           <option repeat.for="product of products"
@@ -129,7 +129,7 @@ A `<select>` element can serve as a single-select or multiple-select "picker" de
   <source-code lang="HTML">
     <template>
       <label>
-        Select product:<br/>
+        Select product:<br>
         <select value.bind="selectedProduct">
           <option model.bind="null">Choose...</option>
           <option repeat.for="product of products"
@@ -204,7 +204,7 @@ You may run into situations where the object your select element's value is boun
   <source-code lang="HTML">
     <template>
       <label>
-        Select product:<br/>
+        Select product:<br>
         <select value.bind="selectedProduct" matcher.bind="productMatcher">
           <option model.bind="null">Choose...</option>
           <option repeat.for="product of products"
@@ -293,7 +293,7 @@ You may run into situations where the object your select element's value is boun
   <source-code lang="HTML">
     <template>
       <label>
-        Select product:<br/>
+        Select product:<br>
         <select value.bind="selectedProduct">
           <option value="">Choose...</option>
           <option repeat.for="product of products"

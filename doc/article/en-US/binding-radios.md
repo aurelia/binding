@@ -69,7 +69,7 @@ Let's start with an example that uses a numeric "selected item" property. In thi
                  model.bind="product.id" checked.bind="selectedProductId">
           ${product.id} - ${product.name}
         </label>
-        <br />
+        <br>
         Selected product ID: ${selectedProductId}
       </form>
     </template>
@@ -313,7 +313,7 @@ Finally, here's an example using strings. This is example is unique because it d
                  value.bind="product" checked.bind="selectedProduct">
           ${product}
         </label>
-        <br />
+        <br>
         Selected product: ${selectedProduct}
       </form>
     </template>

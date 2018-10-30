@@ -99,9 +99,9 @@ describe('element observation', () => {
 
   it('value attributes', (done) => {
     var cases = [
-        { tag: '<input type="text" value="foo" />', attr: 'value', old: 'foo', new: 'bar' },
-        { tag: '<input type="text" value="foo" />', attr: 'value', old: 'foo', new: undefined, expected: '' },
-        { tag: '<input type="text" value="foo" />', attr: 'value', old: 'foo', new: null, expected: '' },
+        { tag: '<input type="text" value="foo">', attr: 'value', old: 'foo', new: 'bar' },
+        { tag: '<input type="text" value="foo">', attr: 'value', old: 'foo', new: undefined, expected: '' },
+        { tag: '<input type="text" value="foo">', attr: 'value', old: 'foo', new: null, expected: '' },
 
         { tag: '<textarea>foo</textarea>', attr: 'value', old: 'foo', new: 'bar' },
         { tag: '<textarea>foo</textarea>', attr: 'value', old: 'foo', new: undefined, expected: '' },
@@ -131,8 +131,8 @@ describe('element observation', () => {
 
   it('native properties of Elements and SVGElements', () => {
     var cases = [
-      { tag: '<input type="text" />', attr: 'type', old: 'text', new: 'checkbox' },
-      { tag: '<input id="foo" />', attr: 'id', old: 'foo', new: 'bar' },
+      { tag: '<input type="text">', attr: 'type', old: 'text', new: 'checkbox' },
+      { tag: '<input id="foo">', attr: 'id', old: 'foo', new: 'bar' },
       { tag: '<svg width="100"></svg>', attr: 'width', old: '100', new: '200' },
       { tag: '<svg viewBox="0 0 100 100"></svg>', attr: 'viewBox', old: '0 0 100 100', new: '0 0 200 200' },
     ];
@@ -216,16 +216,16 @@ describe('element observation', () => {
 
       observer.setValue('');
       expect(el.style.fontWeight).toBe('');
-      
+
       observer.setValue({ opacity: 0.65 });
       expect(el.style.opacity).toBe('0.65');
       observer.setValue('opacity: 0.1 !important');
       expect(el.style.opacity).toBe('0.1');
       expect(el.style.getPropertyPriority('opacity')).toBe('important');
-      
+
       observer.setValue('');
       expect(el.style.opacity).toBe('');
-      
+
       observer.setValue({ width: '50px', height: '40px', backgroundColor: 'blue', 'background-image': 'url("http://aurelia.io/test2.png")' });
       expect(el.style.height).toBe('40px');
       expect(el.style.width).toBe('50px');
@@ -263,7 +263,7 @@ describe('element observation', () => {
     it('sets and remove attribute correctly', () => {
       let cases = [
         { tag: '<a></a>', attr: 'href' },
-        { tag: '<img />', attr: 'src' }
+        { tag: '<img>', attr: 'src' }
       ];
       cases.forEach(test => {
         let el = createElement(test.tag);
