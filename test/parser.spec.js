@@ -661,6 +661,23 @@ describe('Parser', () => {
   });
 
   describe('should not parse', () => {
+    describe('LiteralString with unterminated quote', () => {
+      const expressions = [
+        '\'a',
+        '\'',
+        'a\'',
+        '"a',
+        '"',
+        'a"'
+      ];
+
+      for (const expr of expressions) {
+        it(expr, () => {
+          _verifyError(expr, 'Unterminated quote');
+        });
+      }
+    });
+
     describe('LiteralObject with computed property', () => {
       const expressions = [
         '{ []: "foo" }',

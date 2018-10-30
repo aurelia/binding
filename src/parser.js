@@ -472,7 +472,7 @@ export class ParserImplementation {
 
         buffer.push(fromCharCode(unescaped));
         marker = this.idx;
-      } else if (this.ch === /*EOF*/0) {
+      } else if (this.ch === /*EOF*/0 || this.idx >= this.len) {
         this.err('Unterminated quote');
       } else {
         this.next();
