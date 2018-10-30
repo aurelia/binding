@@ -1,3 +1,14 @@
+<a name="2.1.6"></a>
+## [2.1.6](https://github.com/aurelia/binding/compare/2.1.5...2.1.6) (2018-10-30)
+
+
+### Bug Fixes
+
+* **doc:** fix html5 syntax ([bfbb06a](https://github.com/aurelia/binding/commit/bfbb06a)), closes [/github.com/aurelia/templating/pull/647#issuecomment-427989601](https://github.com//github.com/aurelia/templating/pull/647/issues/issuecomment-427989601)
+* **parser:** throw on unterminated quote instead of infinite loop ([4907f38](https://github.com/aurelia/binding/commit/4907f38))
+
+
+
 <a name="2.1.5"></a>
 ## [2.1.5](https://github.com/aurelia/binding/compare/2.1.4...2.1.5) (2018-09-25)
 

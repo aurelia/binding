@@ -3177,7 +3177,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
 
               buffer.push(fromCharCode(_unescaped));
               marker = this.idx;
-            } else if (this.ch === 0) {
+            } else if (this.ch === 0 || this.idx >= this.len) {
               this.err('Unterminated quote');
             } else {
               this.next();
