@@ -40,33 +40,10 @@ gulp.task('doc-shape', function(){
     .pipe(gulp.dest(paths.doc));
 });
 
-function removeDTSPlugin(options) {
-  var found = options.plugins.find(function(x){
-    return x instanceof Array;
-  });
-
-  var index = options.plugins.indexOf(found);
-  options.plugins.splice(index, 1);
-  return options;
-}
-
-gulp.task('build-example-js', function() {
-  return gulp.src(paths.exampleSource + '**/*.js')
-    .pipe(to5(assign({}, removeDTSPlugin(compilerOptions.amd()))))
-    .pipe(gulp.dest(paths.exampleOutput));
-});
-
-gulp.task('build-example-html', function() {
-  return gulp.src(paths.exampleSource + '**/*.html')
-    .pipe(gulp.dest(paths.exampleOutput));
-});
-
 gulp.task('doc', function(callback){
   return runSequence(
     'doc-generate',
-    'doc-shape',
-    'build-example-js',
-    'build-example-html',
+    'doc-shape'
     callback
   );
 });

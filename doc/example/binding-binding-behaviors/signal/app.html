@@ -1,9 +1,0 @@
-<template>
-  <div>
-    <h4>Without Signal: ${postDateTime | demoTimeAgo}</h4>
-    <pre><code>\${postDateTime | demoTimeAgo}</code></pre>
-    <h4>With Signal: ${postDateTime | demoTimeAgo & signal:'my-signal'}</h4>
-    <pre><code>\${postDateTime | demoTimeAgo & signal:'my-signal'}</code></pre>
-    <button click.delegate="signalBindings()">Signal</button>
-  </div>
-</template>
