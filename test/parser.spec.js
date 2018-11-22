@@ -678,6 +678,35 @@ describe('Parser', () => {
       }
     });
 
+    describe('Unterminated template literal', () => {
+      const unterminatedBacktick = [
+        '`a',
+        '`',
+        'a`',
+        '`a ${b} ${`',
+        '`a ${`',
+        '`${`'
+      ];
+
+      for (const expr of unterminatedBacktick) {
+        it(expr, () => {
+          _verifyError(expr, 'Unterminated template literal');
+        });
+      }
+
+      const unterminatedExpr = [
+        '`a ${b} ${',
+        '`a ${',
+        '`${'
+      ];
+
+      for (const expr of unterminatedExpr) {
+        it(expr, () => {
+          _verifyError(expr, 'Unexpected end of expression');
+        });
+      }
+    });
+
     describe('LiteralObject with computed property', () => {
       const expressions = [
         '{ []: "foo" }',
