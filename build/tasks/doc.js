@@ -43,7 +43,7 @@ gulp.task('doc-shape', function(){
 gulp.task('doc', function(callback){
   return runSequence(
     'doc-generate',
-    'doc-shape'
+    'doc-shape',
     callback
   );
 });
