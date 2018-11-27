@@ -184,10 +184,13 @@ export declare interface ICollectionObserverSplice<T = any, K = any> {
   value: T;
                                                    
   /**
-   * The type of change that has taken place. Valid options are "add", "delete", and "update".
-   * "update" is invalid for Set.
+   * The type of change that has taken place. Valid options are "splice", "add", "delete", "update", and "clear".
+   * 
+   * *Note:* "splice" is only valid for Array; "add", "update", and "clear" are invalid for Array.
+   * 
+   * *Note:* "update" is invalid for Set.
    */
-  type: "add" | "delete" | "update";
+  type: "splice" | "add" | "delete" | "update" | "clear";
 }
 
 /**
@@ -509,6 +512,28 @@ export declare interface InternalCollectionObserver {
    * @param callable A callable object.
    */
   unsubscribe(context: any, callable: Callable): void;
+  /**
+   * Adds a change record to the collection observer.
+   * @param changeRecord 
+   */
+  addChangeRecord(changeRecord: ICollectionObserverSplice): void;
+  /**
+   * This will flush the change records of this observer and call any subscribers if applicable.
+   */
+  flushChangeRecords(): void;
+  /**
+   * Reset the observer to the passed collection and call any subscribers with changes between the current collection and the reset collection.
+   * @param oldCollection 
+   */
+  reset(oldCollection): void;
+  /**
+   * Get a length observer for this collection.
+   */
+  getLengthObserver(): any;
+  /**
+   * This will call subscribers notifying of changed records.
+   */
+  call(): void;
 }
 
 /**
@@ -821,6 +846,10 @@ export declare class ObserverLocator {
    * Gets an observer for map mutation.
    */
   getMapObserver(map: Map<any, any>): InternalCollectionObserver;
+  /**
+   * Gets an observer for set mutation.
+   */
+  getSetObserver(set: Set<any>): InternalCollectionObserver;
 }
 
 /**
