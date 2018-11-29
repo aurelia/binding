@@ -184,13 +184,11 @@ export declare interface ICollectionObserverSplice<T = any, K = any> {
   value: T;
                                                    
   /**
-   * The type of change that has taken place. Valid options are "splice", "add", "delete", "update", and "clear".
-   * 
-   * *Note:* "splice" is only valid for Array; "add", "update", and "clear" are invalid for Array.
+   * The type of change that has taken place. Valid options are "add", "delete", and "update".
    * 
    * *Note:* "update" is invalid for Set.
    */
-  type: "splice" | "add" | "delete" | "update" | "clear";
+  type: "add" | "delete" | "update";
 }
 
 /**
@@ -513,11 +511,6 @@ export declare interface InternalCollectionObserver {
    */
   unsubscribe(context: any, callable: Callable): void;
   /**
-   * Adds a change record to the collection observer.
-   * @param changeRecord 
-   */
-  addChangeRecord(changeRecord: ICollectionObserverSplice): void;
-  /**
    * This will flush the change records of this observer and call any subscribers if applicable.
    */
   flushChangeRecords(): void;
@@ -525,15 +518,11 @@ export declare interface InternalCollectionObserver {
    * Reset the observer to the passed collection and call any subscribers with changes between the current collection and the reset collection.
    * @param oldCollection 
    */
-  reset(oldCollection): void;
+  reset(oldCollection: any[] | Set<any> | Map<any, any>): void;
   /**
    * Get a length observer for this collection.
    */
   getLengthObserver(): any;
-  /**
-   * This will call subscribers notifying of changed records.
-   */
-  call(): void;
 }
 
 /**
