@@ -184,7 +184,7 @@ export declare interface ICollectionObserverSplice<T = any, K = any> {
   value: T;
                                                    
   /**
-   * The type of change that has taken place. Valid options are "add", "delete", and "update".
+   * The type of change that has taken place. Valid options are "add", "delete", "update", and  "clear".
    * 
    * *Note:* "update" is invalid for Set.
    * 
