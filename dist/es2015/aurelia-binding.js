@@ -2611,6 +2611,8 @@ export let ParserImplementation = class ParserImplementation {
         }
       } else if (this.ch === 0x5C) {
         result += fromCharCode(unescape(this.next()));
+      } else if (this.ch === 0 || this.idx >= this.len) {
+        this.err('Unterminated template literal');
       } else {
         result += fromCharCode(this.ch);
       }

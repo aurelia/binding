@@ -1,3 +1,13 @@
+<a name="2.1.7"></a>
+## [2.1.7](https://github.com/aurelia/binding/compare/2.1.6...2.1.7) (2018-12-01)
+
+
+### Bug Fixes
+
+* **parser:** throw on unterminated template literal ([5c5b5e3](https://github.com/aurelia/binding/commit/5c5b5e3))
+
+
+
 <a name="2.1.6"></a>
 ## [2.1.6](https://github.com/aurelia/binding/compare/2.1.5...2.1.6) (2018-10-30)
 
