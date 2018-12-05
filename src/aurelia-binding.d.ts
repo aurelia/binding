@@ -145,7 +145,7 @@ export declare interface CollectionObserver {
 /**
  * The change record of a collection mutation. 
  */
-export declare interface ICollectionObserverSplice<T = any> {
+export declare interface ICollectionObserverSplice<T = any, K = any> {
   /* ArrayObserverSplice */
   /**
    * Number of items added to the collection.
@@ -166,12 +166,12 @@ export declare interface ICollectionObserverSplice<T = any> {
   /**
    * The observed Set or Map after the change.
    */
-  object: Set<T> | Map<K, V>;
+  object: Set<T> | Map<K, T>;
                                                    
   /**
    * The value of the Map item prior to the change.
    */
-  oldValue: V;
+  oldValue: T;
        
   /**
    * The key of the Map item that was changed.
@@ -184,10 +184,13 @@ export declare interface ICollectionObserverSplice<T = any> {
   value: T;
                                                    
   /**
-   * The type of change that has taken place. Valid options are "add", "delete", and "update".
-   * "update" is invalid for Set.
+   * The type of change that has taken place. Valid options are "add", "delete", "update", and  "clear".
+   * 
+   * *Note:* "update" is invalid for Set.
+   * 
+   * *Note:* "clear" is only valid for Map and Set.
    */
-  type: "add" | "delete" | "update";
+  type: "add" | "delete" | "update" | "clear";
 }
 
 /**
@@ -509,6 +512,19 @@ export declare interface InternalCollectionObserver {
    * @param callable A callable object.
    */
   unsubscribe(context: any, callable: Callable): void;
+  /**
+   * This will flush the change records of this observer and call any subscribers if applicable.
+   */
+  flushChangeRecords(): void;
+  /**
+   * Reset the observer to the passed collection and call any subscribers with changes between the current collection and the reset collection.
+   * @param oldCollection 
+   */
+  reset(oldCollection: any[] | Set<any> | Map<any, any>): void;
+  /**
+   * Get a length observer for this collection.
+   */
+  getLengthObserver(): any;
 }
 
 /**
@@ -821,6 +837,10 @@ export declare class ObserverLocator {
    * Gets an observer for map mutation.
    */
   getMapObserver(map: Map<any, any>): InternalCollectionObserver;
+  /**
+   * Gets an observer for set mutation.
+   */
+  getSetObserver(set: Set<any>): InternalCollectionObserver;
 }
 
 /**
