@@ -68,7 +68,7 @@ describe('connect-queue', () => {
     });
   });
 
-  it('connects more than 100 bindings when increasing the connect treshold', done => {
+  it('connects more than 100 bindings when increasing the connect threshold', done => {
     setConnectQueueThreshold(150);
     let expression = bindingEngine.createBindingExpression('value', 'foo', bindingMode.toView);
     let source = { bindingContext: { foo: 'bar' } };
