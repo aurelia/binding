@@ -5,6 +5,7 @@ import {TaskQueue} from 'aurelia-task-queue';
 import {BindingEngine} from '../src/binding-engine';
 import {bindingMode} from '../src/binding-mode';
 import {createOverrideContext} from '../src/scope';
+import {setConnectQueueThreshold} from '../src/connect-queue';
 
 describe('connect-queue', () => {
   let bindingEngine, taskQueue;
@@ -45,6 +46,35 @@ describe('connect-queue', () => {
     source.overrideContext = createOverrideContext(source.bindingContext);
     let targets = [];
     for (let i = 1; i <= 101; i++) {
+      let target = DOM.createElement('input');
+      targets.push(target);
+      let binding = expression.createBinding(target);
+      binding.bind(source);
+      expect(target.value).toBe('bar');
+    }
+    source.bindingContext.foo = 'baz';
+    taskQueue.queueMicroTask({
+      call: () => {
+        let i = targets.length - 1;
+        expect(targets[i].value).toBe('bar');
+        while (i--) {
+          expect(targets[i].value).toBe('baz');
+        }
+        setTimeout(() => {
+          expect(targets[targets.length - 1].value).toBe('baz');
+          done();
+        });
+      }
+    });
+  });
+
+  it('connects more than 100 bindings when increasing the connect treshold', done => {
+    setConnectQueueThreshold(150);
+    let expression = bindingEngine.createBindingExpression('value', 'foo', bindingMode.toView);
+    let source = { bindingContext: { foo: 'bar' } };
+    source.overrideContext = createOverrideContext(source.bindingContext);
+    let targets = [];
+    for (let i = 1; i <= 151; i++) {
       let target = DOM.createElement('input');
       targets.push(target);
       let binding = expression.createBinding(target);
