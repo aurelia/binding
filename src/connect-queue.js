@@ -62,9 +62,9 @@ export function setConnectQueueThreshold(value) {
 }
 
 export function enableConnectQueue() {
-  minimumImmediate = 100;
+  setConnectQueueThreshold(100);
 }
 
 export function disableConnectQueue() {
-  minimumImmediate = Number.MAX_SAFE_INTEGER;
+  setConnectQueueThreshold(Number.MAX_SAFE_INTEGER);
 }
