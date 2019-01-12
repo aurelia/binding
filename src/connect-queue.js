@@ -68,3 +68,7 @@ export function enableConnectQueue() {
 export function disableConnectQueue() {
   setConnectQueueThreshold(Number.MAX_SAFE_INTEGER);
 }
+
+export function getConnectQueueSize() {
+  return queue.length;
+}
