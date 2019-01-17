@@ -5,7 +5,13 @@ const logger = LogManager.getLogger('property-observation');
 
 export const propertyAccessor = {
   getValue: (obj, propertyName) => obj[propertyName],
-  setValue: (value, obj, propertyName) => { obj[propertyName] = value; }
+  setValue: (value, obj, propertyName) => {
+    if (obj instanceof HTMLElement) {
+      obj.setAttribute(propertyName, value);
+    } else {
+      obj[propertyName] = value;
+    }
+  }
 };
 
 export class PrimitiveObserver {
