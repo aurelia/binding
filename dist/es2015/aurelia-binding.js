@@ -130,7 +130,7 @@ export function connectable() {
 const queue = [];
 const queued = {};
 let nextId = 0;
-const minimumImmediate = 100;
+let minimumImmediate = 100;
 const frameBudget = 15;
 
 let isFlushRequested = false;
@@ -180,6 +180,22 @@ export function enqueueBindingConnect(binding) {
     isFlushRequested = true;
     PLATFORM.requestAnimationFrame(flush);
   }
+}
+
+export function setConnectQueueThreshold(value) {
+  minimumImmediate = value;
+}
+
+export function enableConnectQueue() {
+  setConnectQueueThreshold(100);
+}
+
+export function disableConnectQueue() {
+  setConnectQueueThreshold(Number.MAX_SAFE_INTEGER);
+}
+
+export function getConnectQueueSize() {
+  return queue.length;
 }
 
 function addSubscriber(context, callable) {

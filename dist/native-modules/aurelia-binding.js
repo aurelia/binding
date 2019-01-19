@@ -198,6 +198,22 @@ export function enqueueBindingConnect(binding) {
   }
 }
 
+export function setConnectQueueThreshold(value) {
+  minimumImmediate = value;
+}
+
+export function enableConnectQueue() {
+  setConnectQueueThreshold(100);
+}
+
+export function disableConnectQueue() {
+  setConnectQueueThreshold(Number.MAX_SAFE_INTEGER);
+}
+
+export function getConnectQueueSize() {
+  return queue.length;
+}
+
 function addSubscriber(context, callable) {
   if (this.hasSubscriber(context, callable)) {
     return false;

@@ -11,6 +11,10 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
   exports.createScopeForTest = createScopeForTest;
   exports.connectable = connectable;
   exports.enqueueBindingConnect = enqueueBindingConnect;
+  exports.setConnectQueueThreshold = setConnectQueueThreshold;
+  exports.enableConnectQueue = enableConnectQueue;
+  exports.disableConnectQueue = disableConnectQueue;
+  exports.getConnectQueueSize = getConnectQueueSize;
   exports.subscriberCollection = subscriberCollection;
   exports.calcSplices = calcSplices;
   exports.mergeSplice = mergeSplice;
@@ -275,6 +279,22 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
       isFlushRequested = true;
       _aureliaPal.PLATFORM.requestAnimationFrame(flush);
     }
+  }
+
+  function setConnectQueueThreshold(value) {
+    minimumImmediate = value;
+  }
+
+  function enableConnectQueue() {
+    setConnectQueueThreshold(100);
+  }
+
+  function disableConnectQueue() {
+    setConnectQueueThreshold(Number.MAX_SAFE_INTEGER);
+  }
+
+  function getConnectQueueSize() {
+    return queue.length;
   }
 
   function addSubscriber(context, callable) {

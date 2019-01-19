@@ -1,3 +1,17 @@
+<a name="2.2.0"></a>
+# [2.2.0](https://github.com/aurelia/binding/compare/2.1.7...2.2.0) (2019-01-18)
+
+
+### Bug Fixes
+
+* **typings:** Add "clear" as valid option for type ([c5f6486](https://github.com/aurelia/binding/commit/c5f6486))
+* **typings:** Add "clear" type to collection splice interface ([c16f1f3](https://github.com/aurelia/binding/commit/c16f1f3))
+* **typings:** Correct ICollectionObserverSplice generics ([52ca954](https://github.com/aurelia/binding/commit/52ca954))
+* **typings:** Revert exposing some APIs, add reset param typing ([1aa9c43](https://github.com/aurelia/binding/commit/1aa9c43))
+* **typings:** Update interfaces with missing property types and methods ([133edc3](https://github.com/aurelia/binding/commit/133edc3))
+
+
+
 <a name="2.1.7"></a>
 ## [2.1.7](https://github.com/aurelia/binding/compare/2.1.6...2.1.7) (2018-12-01)
 
@@ -1075,78 +1089,4 @@
 
 * **AST:** do not coerce operands of || or && to booleans ([1c4260ce](http://github.com/aurelia/binding/commit/1c4260cebc3fe6f4b3e73ee237af3295afc042d2))
 * **ArrayObserveObserver:** unobserve array when there are no subscribers ([5e847640](http://github.com/aurelia/binding/commit/5e847640a3a3ca70648288c218e509a791c5493b))
-* **EventManager:** delegate and direct event subscription reversed ([11e36493](http://github.com/aurelia/binding/commit/11e364936b4726f34bf15268a112fc62d154b920))
-* **OoObjectObserver:** unobserve object when there are no subscribers ([0ebdd3db](http://github.com/aurelia/binding/commit/0ebdd3db32ce9391beada8b84d6b6371f641a6ed))
-* **classList:** Element.classList polyfill Fixes: aurelia/framework#121 ([0a41adef](http://github.com/aurelia/binding/commit/0a41adef94a1c9f208efb469b05b8a4917b8b01a))
-
-
-#### Features
-
-* **ClassObserver:** enable multiple class bindings ([69273136](http://github.com/aurelia/binding/commit/6927313661a9b1263aa634ba6f2ef9446d597976))
-* **EventManager:** enable two-way scrollTop/scrollLeft binding Fixes: #98 ([543d845c](http://github.com/aurelia/binding/commit/543d845c533fc785b7b0de7651b50a3fa39086d2))
-* **name-expression:** make ref bindings work with api props ([0e6642eb](http://github.com/aurelia/binding/commit/0e6642eb23992e6dac20aceccd2eb789d5d82b62), closes [#87](http://github.com/aurelia/binding/issues/87))
-* **observer-locator:** enable custom observer locator through getter/setters ([f09451ce](http://github.com/aurelia/binding/commit/f09451cefb79a85f14b47c89bf6e2c1fa0ac008e))
-* **svg:** expanded svg support ([331a95da](http://github.com/aurelia/binding/commit/331a95da502dd2b28f992fdd2094fb3799c4acae), closes [#59](http://github.com/aurelia/binding/issues/59))
-
-
-### 0.6.1 (2015-05-06)
-
-
-#### Bug Fixes
-
-* **property-observation:** better update when in OO mode ([2d8ad7d5](http://github.com/aurelia/binding/commit/2d8ad7d57a543b35be6f6cc5b4792f10e5a5ab30))
-
-
-## 0.6.0 (2015-04-30)
-
-
-#### Bug Fixes
-
-* **AccessKeyedObserver:** handle PathObserver ([28c58bd3](http://github.com/aurelia/binding/commit/28c58bd38d03dadbfd60a01128088f85f3a84ee8))
-* **EventManager:** Internet Explorer contenteditable ([2fa23b39](http://github.com/aurelia/binding/commit/2fa23b394afbc9b25f6493a98a8115a869355972))
-* **SelectValueObserver:** update model value when options change ([72701392](http://github.com/aurelia/binding/commit/727013927f35ee06706259dee3739ed4b906258f), closes [#83](http://github.com/aurelia/binding/issues/83))
-* **SetterObserver:** change detection uses coercion ([71c7a299](http://github.com/aurelia/binding/commit/71c7a2993760e3ef438d3d7d48b91378fa63ddcb))
-* **bindingMode:** change the value of oneTime ([c1ee8ec7](http://github.com/aurelia/binding/commit/c1ee8ec76891dce1624181f39a9bdef5550a24f2))
-* **index:** typo in decorator parameter ([e3e9042b](http://github.com/aurelia/binding/commit/e3e9042b974d4ad0f42f00a4b19fc6e0035377e2))
-
-
-#### Features
-
-* **AccessKeyed:** fully observe access-keyed expressions ([0eb792cf](http://github.com/aurelia/binding/commit/0eb792cf05565f1eee7060021db7cb6002b7883e), closes [#75](http://github.com/aurelia/binding/issues/75), [#64](http://github.com/aurelia/binding/issues/64))
-* **CallExpression:** add $event to scope, use call args ([03bc3c62](http://github.com/aurelia/binding/commit/03bc3c6280bac4a1c06bfe1ca645fa0c85f1c913), closes [#46](http://github.com/aurelia/binding/issues/46))
-* **value-converter:** update to new metadata system ([2156dc74](http://github.com/aurelia/binding/commit/2156dc74804beec90339373aeb0f5962744b49ac))
-
-
-#### Breaking Changes
-
-* This is a breaking API change that moves the ONE_WAY, TWO_WAY, and ONE_TIME constants into a bindingMode object with oneWay, twoWay, and oneTime properties.
-
- ([28e70532](http://github.com/aurelia/binding/commit/28e70532e1036db6c3bd2e05f6442ca301cff427))
-
-
-## 0.5.0 (2015-04-09)
-
-
-#### Bug Fixes
-
-* **CompositeObserver:** initialize var i ([fbe42fa7](http://github.com/aurelia/binding/commit/fbe42fa70d48caeec4f96ecd57d4e97f37b9048b))
-* **evalList:** fix syntax error for evalListCache ([dfa1e114](http://github.com/aurelia/binding/commit/dfa1e114727efec23078cc4da6f8517cf4e3de4f))
-* **index:**
-  * fix export ComputedPropertyObserver ([142f093a](http://github.com/aurelia/binding/commit/142f093aa41d5712738cadf925d9ebfb9c969a00))
-  * incorrect import name ([3c88f272](http://github.com/aurelia/binding/commit/3c88f272658823e33b28b9b39a7020790b006ec0))
-* **map-observation:** remove missing import ([3f3a8e85](http://github.com/aurelia/binding/commit/3f3a8e8545b0823aeefa10c0e88c8d8d99ba8764))
-
-
-#### Features
-
-* **all:**
-  * update compile, decorators and core-js ([7c83df98](http://github.com/aurelia/binding/commit/7c83df98c0f87866c1e35e7c60d3c227ac8048ae))
-  * add decorators support ([ed0ff025](http://github.com/aurelia/binding/commit/ed0ff0258b3e764334cee9778a566ba526be18ee))
-
-
-### 0.4.1 (2015-03-30)
-
-
-#### Bug Fixes
-
-* **SelectValueObserver:** handle late bound option values ([8a6b8f00](http://github.com/aurelia/binding/commit/8a6b8f0006458ce77f3dbd4c3f1d975d6614175a), closes [#54](http://gith
+* **EventManager:** delegate and direct event subscription reversed ([11e36493](http://github.com/aur

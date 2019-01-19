@@ -147,7 +147,7 @@ export function connectable() {
 const queue = [];              // the connect queue
 const queued = {};             // tracks whether a binding with a particular id is in the queue
 let nextId = 0;                // next available id that can be assigned to a binding for queue tracking purposes
-const minimumImmediate = 100;  // number of bindings we should connect immediately before resorting to queueing
+let minimumImmediate = 100;    // number of bindings we should connect immediately before resorting to queueing
 const frameBudget = 15;        // milliseconds allotted to each frame for flushing queue
 
 let isFlushRequested = false;  // whether a flush of the connect queue has been requested
@@ -199,6 +199,22 @@ export function enqueueBindingConnect(binding) {
     isFlushRequested = true;
     PLATFORM.requestAnimationFrame(flush);
   }
+}
+
+export function setConnectQueueThreshold(value) {
+  minimumImmediate = value;
+}
+
+export function enableConnectQueue() {
+  setConnectQueueThreshold(100);
+}
+
+export function disableConnectQueue() {
+  setConnectQueueThreshold(Number.MAX_SAFE_INTEGER);
+}
+
+export function getConnectQueueSize() {
+  return queue.length;
 }
 
 function addSubscriber(context, callable) {

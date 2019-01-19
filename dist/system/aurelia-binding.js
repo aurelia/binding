@@ -200,6 +200,30 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
 
   _export('enqueueBindingConnect', enqueueBindingConnect);
 
+  function setConnectQueueThreshold(value) {
+    minimumImmediate = value;
+  }
+
+  _export('setConnectQueueThreshold', setConnectQueueThreshold);
+
+  function enableConnectQueue() {
+    setConnectQueueThreshold(100);
+  }
+
+  _export('enableConnectQueue', enableConnectQueue);
+
+  function disableConnectQueue() {
+    setConnectQueueThreshold(Number.MAX_SAFE_INTEGER);
+  }
+
+  _export('disableConnectQueue', disableConnectQueue);
+
+  function getConnectQueueSize() {
+    return queue.length;
+  }
+
+  _export('getConnectQueueSize', getConnectQueueSize);
+
   function addSubscriber(context, callable) {
     if (this.hasSubscriber(context, callable)) {
       return false;
