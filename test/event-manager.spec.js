@@ -1,6 +1,7 @@
 import './setup';
 import {DOM} from 'aurelia-pal';
 import {EventManager, delegationStrategy} from '../src/event-manager';
+import * as LogManager from 'aurelia-logging';
 
 describe('EventManager', () => {
   describe('getElementHandler', () => {
@@ -180,6 +181,14 @@ describe('EventManager', () => {
 
     let handlers = [];
 
+    let originalWarn;
+    beforeEach(() => {
+      originalWarn = LogManager.Logger.prototype.warn;
+      spyOn(LogManager.Logger.prototype, 'warn')
+    });
+    afterEach(() => {
+      LogManager.Logger.prototype.warn = originalWarn;
+    });
     it('dispose', () => {
       document.body.appendChild(one);
       one.appendChild(two);
@@ -208,6 +217,25 @@ describe('EventManager', () => {
       oneClick.calls.reset();
       threeClick.calls.reset();
 
+      let delegateBubblingCount = em.defaultEventStrategy.delegatedHandlers['delegate'].count;
+     
+      handlers.push(
+        em.addEventListener(one, 'delegate', oneDelegate, delegationStrategy.bubbling, true),
+        em.addEventListener(three, 'delegate', threeDelegate, delegationStrategy.bubbling, true)
+      );
+      let delegateBubblingCountAfterDoubleSubscription = em.defaultEventStrategy.delegatedHandlers['delegate'].count;
+      expect(delegateBubblingCountAfterDoubleSubscription).toEqual(delegateBubblingCount,"allows double subscription for bubbling");
+      expect(LogManager.Logger.prototype.warn).toHaveBeenCalled();
+      let delegateCaptureCount = em.defaultEventStrategy.delegatedHandlers['delegate'].count;
+     
+      handlers.push(
+        em.addEventListener(one, 'delegate', oneCapture, delegationStrategy.capturing, true),
+        em.addEventListener(three, 'delegate', threeCapture, delegationStrategy.capturing, true),
+      )
+      expect(LogManager.Logger.prototype.warn).toHaveBeenCalledTimes(2)
+      let delegateCaptureCountAfterDoubleSubscription = em.defaultEventStrategy.capturedHandlers['delegate'].count;
+      expect(delegateCaptureCountAfterDoubleSubscription).toEqual(delegateCaptureCount,"allows double subscription for capture");
+
       handlers[0].dispose();
       handlers[1].dispose();
 
@@ -229,10 +257,26 @@ describe('EventManager', () => {
       threeCapture.calls.reset();
       oneCapture.calls.reset();
 
-      handlers[2].dispose();
+      handlers[2].dispose();      
+      let delegateBubblingCountBeforeDisposingDisposed = em.defaultEventStrategy.delegatedHandlers['delegate'].count;
+      handlers[2].dispose();      
+      let delegateBubblingCountAfterDisposingDisposed = em.defaultEventStrategy.delegatedHandlers['delegate'].count;
+      expect(delegateBubblingCountAfterDisposingDisposed).toEqual(delegateBubblingCountBeforeDisposingDisposed,"allows double disposing for bubbling");
+      expect(LogManager.Logger.prototype.warn).toHaveBeenCalledTimes(3)
       handlers[3].dispose();
-      handlers[4].dispose();
+      
+      handlers[4].dispose();      
+      let delegateCaptureCountBeforeDisposingDisposed = em.defaultEventStrategy.capturedHandlers['delegate'].count;
+      handlers[4].dispose();      
+      let delegateCaptureCountAfterDisposingDisposed = em.defaultEventStrategy.capturedHandlers['delegate'].count;
+      expect(delegateCaptureCountAfterDisposingDisposed).toEqual(delegateCaptureCountBeforeDisposingDisposed,"allows double disposing for bubbling");
+      expect(LogManager.Logger.prototype.warn).toHaveBeenCalledTimes(4)
       handlers[5].dispose();
+
+      em.defaultEventStrategy.capturedHandlers['delegate'].decrement();
+      expect(LogManager.Logger.prototype.warn).toHaveBeenCalledTimes(5);
+      em.defaultEventStrategy.delegatedHandlers['delegate'].decrement();
+      expect(LogManager.Logger.prototype.warn).toHaveBeenCalledTimes(6)
 
       threeDelegateEvent = DOM.createCustomEvent('delegate', { bubbles: true });
       three.dispatchEvent(threeDelegateEvent);
