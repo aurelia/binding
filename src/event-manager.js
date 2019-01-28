@@ -1,6 +1,8 @@
 // @ts-check
 import {DOM} from 'aurelia-pal';
+import * as LogManager from 'aurelia-logging';
 
+let emLogger = LogManager.getLogger('event-manager');
 //Note: path and deepPath are designed to handle v0 and v1 shadow dom specs respectively
 function findOriginalEventTarget(event) {
   return (event.path && event.path[0]) || (event.deepPath && event.deepPath[0]) || event.target;
@@ -57,10 +59,10 @@ class CapturedHandlerEntry {
   }
 
   decrement() {
-    this.count--;
-
     if (this.count === 0) {
-      DOM.removeEventListener(this.eventName, handleCapturedEvent, true);
+      emLogger.warn('The same EventListener was disposed multiple times.');
+    } else if (--this.count === 0) {
+      DOM.removeEventListener(this.eventName, handleDelegatedEvent, false);
     }
   }
 }
@@ -104,9 +106,9 @@ class DelegateHandlerEntry {
   }
 
   decrement() {
-    this.count--;
-
     if (this.count === 0) {
+      emLogger.warn('The same EventListener was disposed multiple times.');
+    } else if (--this.count === 0) {
       DOM.removeEventListener(this.eventName, handleDelegatedEvent, false);
     }
   }
@@ -128,8 +130,12 @@ class DelegationEntryHandler {
   }
 
   dispose() {
-    this.entry.decrement();
-    this.lookup[this.targetEvent] = null;
+    if (this.lookup[this.targetEvent]) {
+      this.entry.decrement();
+      this.lookup[this.targetEvent] = null;
+    } else {
+      emLogger.warn('Calling .dispose() on already disposed eventListener');
+    }
   }
 }
 
@@ -173,8 +179,11 @@ class DefaultEventStrategy {
       delegatedHandlers = this.delegatedHandlers;
       handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent));
       let delegatedCallbacks = target.delegatedCallbacks || (target.delegatedCallbacks = {});
-
-      handlerEntry.increment();
+      if (!delegatedCallbacks[targetEvent]) {
+        handlerEntry.increment();
+      } else {
+        emLogger.warn('Overriding previous callback for event listener', {event: targetEvent, callback: callback, previousCallback: delegatedCallbacks[targetEvent]});
+      }
       delegatedCallbacks[targetEvent] = callback;
 
       if (disposable === true) {
@@ -190,8 +199,11 @@ class DefaultEventStrategy {
       capturedHandlers = this.capturedHandlers;
       handlerEntry = capturedHandlers[targetEvent] || (capturedHandlers[targetEvent] = new CapturedHandlerEntry(targetEvent));
       let capturedCallbacks = target.capturedCallbacks || (target.capturedCallbacks = {});
-
-      handlerEntry.increment();
+      if (!capturedCallbacks[targetEvent]) {
+        handlerEntry.increment();
+      } else {
+        emLogger.error('already have a callback for event', {event: targetEvent, callback: callback});
+      }
       capturedCallbacks[targetEvent] = callback;
 
       if (disposable === true) {
