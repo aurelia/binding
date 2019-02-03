@@ -1,3 +1,13 @@
+<a name="2.2.1"></a>
+## [2.2.1](https://github.com/aurelia/binding/compare/2.2.0...2.2.1) (2019-02-03)
+
+
+### Bug Fixes
+
+* **all:** change es2015 back to native-modules ([13dd661](https://github.com/aurelia/binding/commit/13dd661))
+
+
+
 <a name="2.2.0"></a>
 # [2.2.0](https://github.com/aurelia/binding/compare/2.1.7...2.2.0) (2019-01-18)
 
