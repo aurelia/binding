@@ -8,7 +8,9 @@
     "databinding"
   ],
   "scripts": {
-    "test": "karma start"
+    "test": "karma start --single-run",
+    "build": "gulp build",
+    "cut-release": "gulp prepare-release"
   },
   "homepage": "http://aurelia.io",
   "bugs": {
