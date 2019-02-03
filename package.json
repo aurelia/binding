@@ -23,6 +23,14 @@
     "type": "git",
     "url": "http://github.com/aurelia/binding"
   },
+  "files": [
+    "dist",
+    "doc",
+    "src",
+    "typings.json",
+    "README.md",
+    "LICENSE"
+  ],
   "jspm": {
     "registry": "npm",
     "main": "aurelia-binding",
