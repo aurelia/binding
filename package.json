@@ -17,12 +17,20 @@
   "license": "MIT",
   "author": "Rob Eisenberg <rob@bluespire.com> (http://robeisenberg.com/)",
   "main": "dist/commonjs/aurelia-binding.js",
-  "module": "dist/es2015/aurelia-binding.js",
+  "module": "dist/native-modules/aurelia-binding.js",
   "typings": "dist/aurelia-binding.d.ts",
   "repository": {
     "type": "git",
     "url": "http://github.com/aurelia/binding"
   },
+  "files": [
+    "dist",
+    "doc",
+    "src",
+    "typings.json",
+    "README.md",
+    "LICENSE"
+  ],
   "jspm": {
     "registry": "npm",
     "main": "aurelia-binding",
