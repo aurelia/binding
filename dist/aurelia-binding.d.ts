@@ -492,6 +492,7 @@ export declare class BindingEngine {
   parseExpression(expression?: any): any;
   registerAdapter(adapter?: any): any;
 }
+export declare function getSetObserver(taskQueue?: any, set?: any): any;
 export declare function observable(targetOrConfig: any, key: string, descriptor?: PropertyDescriptor): any;
 export declare function connectBindingToSignal(binding?: any, name?: any): any;
 export declare function signalBindings(name?: any): any;

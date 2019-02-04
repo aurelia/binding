@@ -56,8 +56,7 @@
     "aurelia-logging": "^1.0.0",
     "aurelia-metadata": "^1.0.0",
     "aurelia-pal": "^1.0.0",
-    "aurelia-task-queue": "^1.0.0",
-    "jspm": "^0.16.53"
+    "aurelia-task-queue": "^1.0.0"
   },
   "devDependencies": {
     "aurelia-dependency-injection": "^1.0.0",
