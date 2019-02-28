@@ -8,7 +8,7 @@
     "stripInternal": true,
     "preserveConstEnums": true,
     "listFiles": true,
-    "declaration": true,
+    "declaration": false,
     "removeComments": true,
     "lib": ["es2015", "dom"]
   },
