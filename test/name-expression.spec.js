@@ -125,4 +125,21 @@ describe('NameExpression', () => {
     binding.call();
     expect(scope.bindingContext.foo).toBe(element);
   });
+
+  it('does nothing when not bound + invoking call()', () => {
+    let sourceExpression = new AccessScope('foo');
+    let expression = new NameExpression(sourceExpression, 'element');
+    let scope = createScopeForTest({});
+    let binding = expression.createBinding(element);
+    binding.bind(scope);
+    expect(scope.bindingContext.foo).toBe(element);
+    scope.bindingContext.foo = null;
+    expect(binding.target).toBe(element);
+    binding.isBound = false;
+    binding.call();
+    expect(scope.bindingContext.foo).toBe(null);
+    binding.isBound = true;
+    binding.call();
+    expect(scope.bindingContext.foo).toBe(element);
+  });
 });

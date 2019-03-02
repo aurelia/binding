@@ -74,6 +74,9 @@ class NameBinder {
   }
 
   call() {
+    if (!this.isBound) {
+      return;
+    }
     this.sourceExpression.assign(this.source, this.target, this.lookupFunctions);
   }
 
