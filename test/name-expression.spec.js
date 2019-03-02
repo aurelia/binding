@@ -8,6 +8,7 @@ import {
 } from '../src/ast';
 import {createScopeForTest} from '../src/scope';
 import {NameExpression} from '../src/name-expression';
+import { bindingMode } from '../src/binding-mode';
 
 describe('NameExpression', () => {
   let element;
@@ -21,6 +22,13 @@ describe('NameExpression', () => {
         }
       }
     };
+  });
+
+  it('creates one time binding mode binding', () => {
+    let sourceExpression = new AccessScope('foo');
+    let expression = new NameExpression(sourceExpression, 'element');
+    let binding = expression.createBinding(element);
+    expect(binding.mode).toBe(bindingMode.oneTime);
   });
 
   it('binds element to scope', () => {
@@ -103,5 +111,18 @@ describe('NameExpression', () => {
     scope.bindingContext.foo = 'should remain';
     binding.unbind();
     expect(scope.bindingContext.foo).toBe('should remain');
+  });
+
+  it('re-assigns value when invoking call()', () => {
+    let sourceExpression = new AccessScope('foo');
+    let expression = new NameExpression(sourceExpression, 'element');
+    let scope = createScopeForTest({});
+    let binding = expression.createBinding(element);
+    binding.bind(scope);
+    expect(scope.bindingContext.foo).toBe(element);
+    scope.bindingContext.foo = null;
+    expect(binding.target).toBe(element);
+    binding.call();
+    expect(scope.bindingContext.foo).toBe(element);
   });
 });
