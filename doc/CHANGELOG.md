@@ -1,5 +1,5 @@
 <a name="2.2.1"></a>
-## [2.2.1](https://github.com/aurelia/binding/compare/2.2.0...2.2.1) (2019-02-28)
+## [2.2.1](https://github.com/aurelia/binding/compare/2.2.0...2.2.1) (2019-03-15)
 
 
 ### Bug Fixes
