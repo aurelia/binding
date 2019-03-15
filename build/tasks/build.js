@@ -121,7 +121,7 @@ gulp.task('build-ts', function(callback) {
     compileToModules
       .filter(function(moduleType) { return moduleType !== 'native-modules' })
       .map(function(moduleType) { return 'build-ts-' + moduleType })
-      .concat(paths.useTypeScriptForDTS ? ['build-dts'] : []),
+      .concat(['build-dts']),
     callback
   );
 });
