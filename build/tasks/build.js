@@ -107,8 +107,8 @@ gulp.task('build', function(callback) {
     'clean',
     'build-index',
     compileToModules
-      .map(function(moduleType) { return 'build-babel-' + moduleType })
-      .concat(['build-dts']),
+      .map(function(moduleType) { return 'build-babel-' + moduleType }),
+    'build-dts',
     callback
   );
 });
