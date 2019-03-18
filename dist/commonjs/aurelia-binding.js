@@ -117,11 +117,18 @@ function createScopeForTest(bindingContext, parentBindingContext) {
 
 var slotNames = [];
 var versionSlotNames = [];
-
-for (var i = 0; i < 100; i++) {
-  slotNames.push('_observer' + i);
-  versionSlotNames.push('_observerVersion' + i);
+var lastSlot = -1;
+function ensureEnoughSlotNames(currentSlot) {
+  if (currentSlot === lastSlot) {
+    lastSlot += 5;
+    var ii = slotNames.length = versionSlotNames.length = lastSlot + 1;
+    for (var i = currentSlot + 1; i < ii; ++i) {
+      slotNames[i] = '_observer' + i;
+      versionSlotNames[i] = '_observerVersion' + i;
+    }
+  }
 }
+ensureEnoughSlotNames(-1);
 
 function addObserver(observer) {
   var observerSlots = this._observerSlots === undefined ? 0 : this._observerSlots;
@@ -145,6 +152,7 @@ function addObserver(observer) {
     this._version = 0;
   }
   this[versionSlotNames[i]] = this._version;
+  ensureEnoughSlotNames(i);
 }
 
 function observeProperty(obj, propertyName) {
@@ -510,23 +518,23 @@ ArraySplice.prototype = {
     var north = void 0;
     var west = void 0;
 
-    for (var _i = 0; _i < rowCount; ++_i) {
-      distances[_i] = new Array(columnCount);
-      distances[_i][0] = _i;
+    for (var i = 0; i < rowCount; ++i) {
+      distances[i] = new Array(columnCount);
+      distances[i][0] = i;
     }
 
     for (var j = 0; j < columnCount; ++j) {
       distances[0][j] = j;
     }
 
-    for (var _i2 = 1; _i2 < rowCount; ++_i2) {
+    for (var _i = 1; _i < rowCount; ++_i) {
       for (var _j = 1; _j < columnCount; ++_j) {
-        if (this.equals(current[currentStart + _j - 1], old[oldStart + _i2 - 1])) {
-          distances[_i2][_j] = distances[_i2 - 1][_j - 1];
+        if (this.equals(current[currentStart + _j - 1], old[oldStart + _i - 1])) {
+          distances[_i][_j] = distances[_i - 1][_j - 1];
         } else {
-          north = distances[_i2 - 1][_j] + 1;
-          west = distances[_i2][_j - 1] + 1;
-          distances[_i2][_j] = north < west ? north : west;
+          north = distances[_i - 1][_j] + 1;
+          west = distances[_i][_j - 1] + 1;
+          distances[_i][_j] = north < west ? north : west;
         }
       }
     }
@@ -624,8 +632,8 @@ ArraySplice.prototype = {
     var splices = [];
     var index = currentStart;
     var oldIndex = oldStart;
-    for (var _i3 = 0; _i3 < ops.length; ++_i3) {
-      switch (ops[_i3]) {
+    for (var i = 0; i < ops.length; ++i) {
+      switch (ops[i]) {
         case EDIT_LEAVE:
           if (splice) {
             splices.push(splice);
@@ -672,9 +680,9 @@ ArraySplice.prototype = {
   },
 
   sharedPrefix: function sharedPrefix(current, old, searchLength) {
-    for (var _i4 = 0; _i4 < searchLength; ++_i4) {
-      if (!this.equals(current[_i4], old[_i4])) {
-        return _i4;
+    for (var i = 0; i < searchLength; ++i) {
+      if (!this.equals(current[i], old[i])) {
+        return i;
       }
     }
 
@@ -737,8 +745,8 @@ function mergeSplice(splices, index, removed, addedCount) {
   var inserted = false;
   var insertionOffset = 0;
 
-  for (var _i5 = 0; _i5 < splices.length; _i5++) {
-    var current = splices[_i5];
+  for (var i = 0; i < splices.length; i++) {
+    var current = splices[i];
     current.index += insertionOffset;
 
     if (inserted) {
@@ -749,8 +757,8 @@ function mergeSplice(splices, index, removed, addedCount) {
 
     if (intersectCount >= 0) {
 
-      splices.splice(_i5, 1);
-      _i5--;
+      splices.splice(i, 1);
+      i--;
 
       insertionOffset -= current.addedCount - current.removed.length;
 
@@ -782,8 +790,8 @@ function mergeSplice(splices, index, removed, addedCount) {
 
       inserted = true;
 
-      splices.splice(_i5, 0, splice);
-      _i5++;
+      splices.splice(i, 0, splice);
+      i++;
 
       var offset = splice.addedCount - splice.removed.length;
       current.index += offset;
@@ -799,8 +807,8 @@ function mergeSplice(splices, index, removed, addedCount) {
 function createInitialSplices(array, changeRecords) {
   var splices = [];
 
-  for (var _i6 = 0; _i6 < changeRecords.length; _i6++) {
-    var record = changeRecords[_i6];
+  for (var i = 0; i < changeRecords.length; i++) {
+    var record = changeRecords[i];
     switch (record.type) {
       case 'splice':
         mergeSplice(splices, record.index, record.removed.slice(), record.addedCount);
@@ -1597,9 +1605,9 @@ var CallMember = exports.CallMember = function (_Expression10) {
     var obj = this.object.evaluate(scope);
     if (getFunction(obj, this.name, false)) {
       var args = this.args;
-      var _i7 = args.length;
-      while (_i7--) {
-        args[_i7].connect(binding, scope);
+      var i = args.length;
+      while (i--) {
+        args[i].connect(binding, scope);
       }
     }
   };
@@ -1640,9 +1648,9 @@ var CallFunction = exports.CallFunction = function (_Expression11) {
     var func = this.func.evaluate(scope);
     if (typeof func === 'function') {
       var args = this.args;
-      var _i8 = args.length;
-      while (_i8--) {
-        args[_i8].connect(binding, scope);
+      var i = args.length;
+      while (i--) {
+        args[i].connect(binding, scope);
       }
     }
   };
@@ -1871,8 +1879,8 @@ var LiteralTemplate = exports.LiteralTemplate = function (_Expression16) {
 
   LiteralTemplate.prototype.evaluate = function evaluate(scope, lookupFunctions, mustEvaluate) {
     var results = new Array(this.length);
-    for (var _i9 = 0; _i9 < this.length; _i9++) {
-      results[_i9] = this.expressions[_i9].evaluate(scope, lookupFunctions);
+    for (var i = 0; i < this.length; i++) {
+      results[i] = this.expressions[i].evaluate(scope, lookupFunctions);
     }
     if (this.tagged) {
       var func = this.tag.evaluate(scope, lookupFunctions);
@@ -1886,8 +1894,8 @@ var LiteralTemplate = exports.LiteralTemplate = function (_Expression16) {
       throw new Error(this.tag + ' is not a function');
     }
     var result = this.cooked[0];
-    for (var _i10 = 0; _i10 < this.length; _i10++) {
-      result = String.prototype.concat(result, results[_i10], this.cooked[_i10 + 1]);
+    for (var _i2 = 0; _i2 < this.length; _i2++) {
+      result = String.prototype.concat(result, results[_i2], this.cooked[_i2 + 1]);
     }
     return result;
   };
@@ -1897,8 +1905,8 @@ var LiteralTemplate = exports.LiteralTemplate = function (_Expression16) {
   };
 
   LiteralTemplate.prototype.connect = function connect(binding, scope) {
-    for (var _i11 = 0; _i11 < this.length; _i11++) {
-      this.expressions[_i11].connect(binding, scope);
+    for (var i = 0; i < this.length; i++) {
+      this.expressions[i].connect(binding, scope);
     }
     if (this.tagged) {
       this.tag.connect(binding, scope);
@@ -1924,8 +1932,8 @@ var LiteralArray = exports.LiteralArray = function (_Expression17) {
     var elements = this.elements;
     var result = [];
 
-    for (var _i12 = 0, length = elements.length; _i12 < length; ++_i12) {
-      result[_i12] = elements[_i12].evaluate(scope, lookupFunctions);
+    for (var i = 0, length = elements.length; i < length; ++i) {
+      result[i] = elements[i].evaluate(scope, lookupFunctions);
     }
 
     return result;
@@ -1937,8 +1945,8 @@ var LiteralArray = exports.LiteralArray = function (_Expression17) {
 
   LiteralArray.prototype.connect = function connect(binding, scope) {
     var length = this.elements.length;
-    for (var _i13 = 0; _i13 < length; _i13++) {
-      this.elements[_i13].connect(binding, scope);
+    for (var i = 0; i < length; i++) {
+      this.elements[i].connect(binding, scope);
     }
   };
 
@@ -1963,8 +1971,8 @@ var LiteralObject = exports.LiteralObject = function (_Expression18) {
     var keys = this.keys;
     var values = this.values;
 
-    for (var _i14 = 0, length = keys.length; _i14 < length; ++_i14) {
-      instance[keys[_i14]] = values[_i14].evaluate(scope, lookupFunctions);
+    for (var i = 0, length = keys.length; i < length; ++i) {
+      instance[keys[i]] = values[i].evaluate(scope, lookupFunctions);
     }
 
     return instance;
@@ -1976,8 +1984,8 @@ var LiteralObject = exports.LiteralObject = function (_Expression18) {
 
   LiteralObject.prototype.connect = function connect(binding, scope) {
     var length = this.keys.length;
-    for (var _i15 = 0; _i15 < length; _i15++) {
-      this.values[_i15].connect(binding, scope);
+    for (var i = 0; i < length; i++) {
+      this.values[i].connect(binding, scope);
     }
   };
 
@@ -1987,8 +1995,8 @@ var LiteralObject = exports.LiteralObject = function (_Expression18) {
 function evalList(scope, list, lookupFunctions) {
   var length = list.length;
   var result = [];
-  for (var _i16 = 0; _i16 < length; _i16++) {
-    result[_i16] = list[_i16].evaluate(scope, lookupFunctions);
+  for (var i = 0; i < length; i++) {
+    result[i] = list[i].evaluate(scope, lookupFunctions);
   }
   return result;
 }
@@ -2083,12 +2091,12 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
     Unparser.prototype.writeArgs = function writeArgs(args) {
       this.write('(');
 
-      for (var _i17 = 0, length = args.length; _i17 < length; ++_i17) {
-        if (_i17 !== 0) {
+      for (var i = 0, length = args.length; i < length; ++i) {
+        if (i !== 0) {
           this.write(',');
         }
 
-        args[_i17].accept(this);
+        args[i].accept(this);
       }
 
       this.write(')');
@@ -2100,9 +2108,9 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
       behavior.expression.accept(this);
       this.write('&' + behavior.name);
 
-      for (var _i18 = 0, length = args.length; _i18 < length; ++_i18) {
+      for (var i = 0, length = args.length; i < length; ++i) {
         this.write(':');
-        args[_i18].accept(this);
+        args[i].accept(this);
       }
     };
 
@@ -2112,9 +2120,9 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
       converter.expression.accept(this);
       this.write('|' + converter.name);
 
-      for (var _i19 = 0, length = args.length; _i19 < length; ++_i19) {
+      for (var i = 0, length = args.length; i < length; ++i) {
         this.write(':');
-        args[_i19].accept(this);
+        args[i].accept(this);
       }
     };
 
@@ -2212,12 +2220,12 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
 
       this.write('[');
 
-      for (var _i20 = 0, length = elements.length; _i20 < length; ++_i20) {
-        if (_i20 !== 0) {
+      for (var i = 0, length = elements.length; i < length; ++i) {
+        if (i !== 0) {
           this.write(',');
         }
 
-        elements[_i20].accept(this);
+        elements[i].accept(this);
       }
 
       this.write(']');
@@ -2229,13 +2237,13 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
 
       this.write('{');
 
-      for (var _i21 = 0, length = keys.length; _i21 < length; ++_i21) {
-        if (_i21 !== 0) {
+      for (var i = 0, length = keys.length; i < length; ++i) {
+        if (i !== 0) {
           this.write(',');
         }
 
-        this.write('\'' + keys[_i21] + '\':');
-        values[_i21].accept(this);
+        this.write('\'' + keys[i] + '\':');
+        values[i].accept(this);
       }
 
       this.write('}');
@@ -2253,9 +2261,9 @@ if (typeof FEATURE_NO_UNPARSER === 'undefined') {
       var length = expressions.length;
       this.write('`');
       this.write(cooked[0]);
-      for (var _i22 = 0; _i22 < length; _i22++) {
-        expressions[_i22].accept(this);
-        this.write(cooked[_i22 + 1]);
+      for (var i = 0; i < length; i++) {
+        expressions[i].accept(this);
+        this.write(cooked[i + 1]);
       }
       this.write('`');
     };
@@ -3031,9 +3039,9 @@ var codes = {
 
 function decompress(lookup, set, compressed, value) {
   var rangeCount = compressed.length;
-  for (var _i23 = 0; _i23 < rangeCount; _i23 += 2) {
-    var start = compressed[_i23];
-    var end = compressed[_i23 + 1];
+  for (var i = 0; i < rangeCount; i += 2) {
+    var start = compressed[i];
+    var end = compressed[i + 1];
     end = end > 0 ? end : start + 1;
     if (lookup) {
       var j = start;
@@ -3285,8 +3293,8 @@ function handleCapturedEvent(event) {
     }
     target = target.parentNode;
   }
-  for (var _i24 = orderedCallbacks.length - 1; _i24 >= 0 && !event.propagationStopped; _i24--) {
-    var orderedCallback = orderedCallbacks[_i24];
+  for (var i = orderedCallbacks.length - 1; i >= 0 && !event.propagationStopped; i--) {
+    var orderedCallback = orderedCallbacks[i];
     if ('handleEvent' in orderedCallback) {
       orderedCallback.handleEvent(event);
     } else {
@@ -3594,8 +3602,8 @@ var EventSubscriber = exports.EventSubscriber = function () {
     this.handler = callbackOrListener;
 
     var events = this.events;
-    for (var _i25 = 0, ii = events.length; ii > _i25; ++_i25) {
-      element.addEventListener(events[_i25], callbackOrListener);
+    for (var i = 0, ii = events.length; ii > i; ++i) {
+      element.addEventListener(events[i], callbackOrListener);
     }
   };
 
@@ -3606,8 +3614,8 @@ var EventSubscriber = exports.EventSubscriber = function () {
     var element = this.element;
     var callbackOrListener = this.handler;
     var events = this.events;
-    for (var _i26 = 0, ii = events.length; ii > _i26; ++_i26) {
-      element.removeEventListener(events[_i26], callbackOrListener);
+    for (var i = 0, ii = events.length; ii > i; ++i) {
+      element.removeEventListener(events[i], callbackOrListener);
     }
     this.element = this.handler = null;
   };
@@ -4260,8 +4268,8 @@ var SelectValueObserver = exports.SelectValueObserver = (_dec9 = subscriberColle
     var count = 0;
     var value = [];
 
-    for (var _i27 = 0, ii = options.length; _i27 < ii; _i27++) {
-      var _option = options.item(_i27);
+    for (var i = 0, ii = options.length; i < ii; i++) {
+      var _option = options.item(i);
       if (!_option.selected) {
         continue;
       }
@@ -4399,8 +4407,8 @@ var ClassObserver = exports.ClassObserver = function () {
 
     if (newValue !== null && newValue !== undefined && newValue.length) {
       names = newValue.split(/\s+/);
-      for (var _i28 = 0, length = names.length; _i28 < length; _i28++) {
-        name = names[_i28];
+      for (var i = 0, length = names.length; i < length; i++) {
+        name = names[i];
         if (name === '') {
           continue;
         }
@@ -4493,9 +4501,9 @@ var ComputedExpression = exports.ComputedExpression = function (_Expression19) {
 function createComputedObserver(obj, propertyName, descriptor, observerLocator) {
   var dependencies = descriptor.get.dependencies;
   if (!(dependencies instanceof ComputedExpression)) {
-    var _i29 = dependencies.length;
-    while (_i29--) {
-      dependencies[_i29] = observerLocator.parser.parse(dependencies[_i29]);
+    var i = dependencies.length;
+    while (i--) {
+      dependencies[i] = observerLocator.parser.parse(dependencies[i]);
     }
     dependencies = descriptor.get.dependencies = new ComputedExpression(propertyName, dependencies);
   }
@@ -4814,8 +4822,8 @@ var ObserverLocator = exports.ObserverLocator = (_temp = _class12 = function () 
   };
 
   ObserverLocator.prototype.getAdapterObserver = function getAdapterObserver(obj, propertyName, descriptor) {
-    for (var _i30 = 0, ii = this.adapters.length; _i30 < ii; _i30++) {
-      var adapter = this.adapters[_i30];
+    for (var i = 0, ii = this.adapters.length; i < ii; i++) {
+      var adapter = this.adapters[i];
       var observer = adapter.getObserver(obj, propertyName, descriptor);
       if (observer) {
         return observer;

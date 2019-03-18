@@ -6,6 +6,7 @@
 
 * **all:** change es2015 back to native-modules ([13dd661](https://github.com/aurelia/binding/commit/13dd661))
 * **build:** don't build declaration ([d359e83](https://github.com/aurelia/binding/commit/d359e83))
+* **connectable-binding:** remove the silent limit of 100 observers per expression ([56ba36d](https://github.com/aurelia/binding/commit/56ba36d)), closes [#742](https://github.com/aurelia/binding/issues/742)
 
 
 

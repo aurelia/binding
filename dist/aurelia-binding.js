@@ -78,11 +78,18 @@ export function createScopeForTest(bindingContext: any, parentBindingContext?: a
 
 const slotNames = [];
 const versionSlotNames = [];
-
-for (let i = 0; i < 100; i++) {
-  slotNames.push(`_observer${i}`);
-  versionSlotNames.push(`_observerVersion${i}`);
+let lastSlot = -1;
+function ensureEnoughSlotNames(currentSlot) {
+  if (currentSlot === lastSlot) {
+    lastSlot += 5;
+    const ii = slotNames.length = versionSlotNames.length = lastSlot + 1;
+    for (let i = currentSlot + 1; i < ii; ++i) {
+      slotNames[i] = `_observer${i}`;
+      versionSlotNames[i] = `_observerVersion${i}`;
+    }
+  }
 }
+ensureEnoughSlotNames(-1);
 
 function addObserver(observer) {
   // find the observer.
@@ -110,6 +117,7 @@ function addObserver(observer) {
     this._version = 0;
   }
   this[versionSlotNames[i]] = this._version;
+  ensureEnoughSlotNames(i);
 }
 
 function observeProperty(obj, propertyName) {
