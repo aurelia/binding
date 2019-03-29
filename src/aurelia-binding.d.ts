@@ -959,6 +959,21 @@ export declare function connectable(): void;
 export declare function enqueueBindingConnect(binding: Binding): void;
 
 /**
+ * set the number of bindings that should connect immediately before resorting to queueing.
+ */
+export function setConnectQueueThreshold(value: number): void;
+
+/**
+ * Enables the connect queue.
+ */
+export function enableConnectQueue(): void;
+
+/**
+ * Disables the connect queue.
+ */
+export function disableConnectQueue(): void;
+
+/**
  * Connects a binding instance to a signal.
  * @param binding The binding instance that should be triggered to refresh by the signal.
  * @param name The signal to associate with the binding instance.
