@@ -1,3 +1,13 @@
+<a name="2.3.0"></a>
+# [2.3.0](https://github.com/aurelia/binding/compare/2.2.1...2.3.0) (2019-03-29)
+
+
+### Bug Fixes
+
+* **typings:** add recent commits typings to src ([808c484](https://github.com/aurelia/binding/commit/808c484))
+
+
+
 <a name="2.2.2"></a>
 ## [2.2.2](https://github.com/aurelia/binding/compare/2.2.0...2.2.2) (2019-03-19)
 
