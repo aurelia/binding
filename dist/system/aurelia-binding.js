@@ -3601,7 +3601,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
           if (this.count === 0) {
             emLogger.warn('The same EventListener was disposed multiple times.');
           } else if (--this.count === 0) {
-            DOM.removeEventListener(this.eventName, handleDelegatedEvent, false);
+            DOM.removeEventListener(this.eventName, handleCapturedEvent, true);
           }
         };
 

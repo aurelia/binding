@@ -3323,7 +3323,7 @@ var CapturedHandlerEntry = function () {
     if (this.count === 0) {
       emLogger.warn('The same EventListener was disposed multiple times.');
     } else if (--this.count === 0) {
-      _aureliaPal.DOM.removeEventListener(this.eventName, handleDelegatedEvent, false);
+      _aureliaPal.DOM.removeEventListener(this.eventName, handleCapturedEvent, true);
     }
   };
 
