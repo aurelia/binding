@@ -62,7 +62,7 @@ class CapturedHandlerEntry {
     if (this.count === 0) {
       emLogger.warn('The same EventListener was disposed multiple times.');
     } else if (--this.count === 0) {
-      DOM.removeEventListener(this.eventName, handleDelegatedEvent, false);
+      DOM.removeEventListener(this.eventName, handleCapturedEvent, true);
     }
   }
 }
