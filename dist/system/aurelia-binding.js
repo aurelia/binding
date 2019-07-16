@@ -796,7 +796,10 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         }
       }
 
-      target = target.parentNode;
+      var parent = target.parentNode;
+      var parentIsShadowRoot = parent && parent.toString() === '[object ShadowRoot]';
+
+      target = parentIsShadowRoot ? parent.host : parent;
     }
   }
 

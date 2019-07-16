@@ -3350,7 +3350,10 @@ function handleDelegatedEvent(event) {
       }
     }
 
-    target = target.parentNode;
+    var parent = target.parentNode;
+    var parentIsShadowRoot = parent && parent.toString() === '[object ShadowRoot]';
+
+    target = parentIsShadowRoot ? parent.host : parent;
   }
 }
 
