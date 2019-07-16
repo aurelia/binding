@@ -72,20 +72,28 @@ describe('EventManager', () => {
   });
 
   describe('addEventListener', () => {
-    const em = new EventManager();
-    const one = document.createElement('div');
-    const two = document.createElement('div');
-    const three = document.createElement('div');
-
-    const oneClick = jasmine.createSpy('one-click');
-    const threeClick = jasmine.createSpy('three-click');
-    const oneDelegate = jasmine.createSpy('one-delegate');
-    const threeDelegate = jasmine.createSpy('three-delegate');
+    let em, one, two, three, shadowHost, shadowRoot, shadowButton, oneClick, threeClick, oneDelegate, threeDelegate;
 
     beforeEach(() => {
+      em = new EventManager();
+      one = document.createElement('div');
+      two = document.createElement('div');
+      three = document.createElement('div');
+      shadowHost = document.createElement('div');
+      shadowButton = document.createElement('button');  
+
+      oneClick = jasmine.createSpy('one-click');
+      threeClick = jasmine.createSpy('three-click');
+      oneDelegate = jasmine.createSpy('one-delegate');
+      threeDelegate = jasmine.createSpy('three-delegate');
+    
       document.body.appendChild(one);
       one.appendChild(two);
       two.appendChild(three);
+      one.appendChild(shadowHost);
+  
+      shadowRoot = shadowHost.attachShadow({ mode: 'open' });
+      shadowRoot.appendChild(shadowButton);   
 
       em.addEventListener(one, 'click', oneClick, delegationStrategy.none);
       em.addEventListener(three, 'click', threeClick, delegationStrategy.none);
@@ -120,6 +128,20 @@ describe('EventManager', () => {
       threeClick.calls.reset();
     });
 
+    it('bubbles properly out of shadow dom when not delegated with composed flag', () => {
+      const shadowButtonClickEvent = DOM.createCustomEvent('click', { bubbles: true, composed: true });
+      shadowButton.dispatchEvent(shadowButtonClickEvent);
+      expect(oneClick).toHaveBeenCalledWith(shadowButtonClickEvent);
+      oneClick.calls.reset();
+    });
+    
+    it('should not bubble out of shadow dom when not delegated without composed flag', () => {
+      const shadowButtonClickEvent = DOM.createCustomEvent('click', { bubbles: true });
+      shadowButton.dispatchEvent(shadowButtonClickEvent);
+      expect(oneClick).not.toHaveBeenCalledWith(shadowButtonClickEvent);
+      oneClick.calls.reset();
+    });
+    
     it('bubbles properly when delegated', () => {
       const threeDelegateEvent = DOM.createCustomEvent('delegate', { bubbles: true });
       three.dispatchEvent(threeDelegateEvent);
@@ -143,6 +165,20 @@ describe('EventManager', () => {
       threeDelegate.calls.reset();
     });
 
+    it('bubbles properly out of shadow dom when delegated with composed flag', () => {
+      const shadowButtonDelegateEvent = DOM.createCustomEvent('delegate', { bubbles: true, composed: true });
+      shadowButton.dispatchEvent(shadowButtonDelegateEvent);
+      expect(oneDelegate).toHaveBeenCalledWith(shadowButtonDelegateEvent);
+      oneDelegate.calls.reset();
+    });
+    
+    it('should not bubble out of shadow dom when delegated without composed flag', () => {
+      const shadowButtonDelegateEvent = DOM.createCustomEvent('delegate', { bubbles: true });
+      shadowButton.dispatchEvent(shadowButtonDelegateEvent);
+      expect(oneDelegate).not.toHaveBeenCalledWith(shadowButtonDelegateEvent);
+      oneDelegate.calls.reset();
+    });
+    
     it('stops bubbling when asked', () => {
       let wasCalled = false;
       let stopDelegate = (event) => {
