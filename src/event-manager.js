@@ -86,8 +86,11 @@ function handleDelegatedEvent(event) {
         }
       }
     }
-    
-    target = (target.parentNode && target.parentNode.toString() === "[object ShadowRoot]") ? target.parentNode.host : target.parentNode;
+
+    const parent = target.parentNode;
+    const parentIsShadowRoot = parent && parent.toString() === '[object ShadowRoot]';
+
+    target = parentIsShadowRoot ? parent.host : parent;
   }
 }
 
