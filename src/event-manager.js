@@ -88,7 +88,7 @@ function handleDelegatedEvent(event) {
     }
 
     const parent = target.parentNode;
-    const parentIsShadowRoot = parent && parent.toString() === '[object ShadowRoot]';
+    const parentIsShadowRoot = parent && parent instanceof ShadowRoot;
 
     target = parentIsShadowRoot ? parent.host : parent;
   }
