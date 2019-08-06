@@ -6,7 +6,7 @@ import { Container } from 'aurelia-dependency-injection';
  * object take precedence over members of the bindingContext object.
  */
 export declare interface OverrideContext {
-  parentOverrideContext: OverrideContext;
+  parentOverrideContext?: OverrideContext;
   bindingContext: any;
 }
 
