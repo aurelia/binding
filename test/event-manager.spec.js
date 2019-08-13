@@ -5,11 +5,11 @@ import * as LogManager from 'aurelia-logging';
 
 describe('EventManager', () => {
   describe('getElementHandler', () => {
-    var em;
+    let em;
     beforeAll(() => em = new EventManager());
 
     it('handles input', () => {
-      var element = DOM.createElement('input');
+      let element = DOM.createElement('input');
 
       expect(em.getElementHandler(element, 'value')).not.toBeNull();
       expect(em.getElementHandler(element, 'checked')).not.toBeNull();
@@ -18,21 +18,21 @@ describe('EventManager', () => {
     });
 
     it('handles textarea', () => {
-      var element = DOM.createElement('textarea');
+      let element = DOM.createElement('textarea');
 
       expect(em.getElementHandler(element, 'value')).not.toBeNull();
       expect(em.getElementHandler(element, 'id')).toBeNull();
     });
 
     it('handles select', () => {
-      var element = DOM.createElement('select');
+      let element = DOM.createElement('select');
 
       expect(em.getElementHandler(element, 'value')).not.toBeNull();
       expect(em.getElementHandler(element, 'id')).toBeNull();
     });
 
     it('handles textContent and innerHTML properties', () => {
-      var element = DOM.createElement('div');
+      let element = DOM.createElement('div');
 
       expect(em.getElementHandler(element, 'textContent')).not.toBeNull();
       expect(em.getElementHandler(element, 'innerHTML')).not.toBeNull();
@@ -40,7 +40,7 @@ describe('EventManager', () => {
     });
 
     it('handles scrollTop and scrollLeft properties', () => {
-      var element = DOM.createElement('div');
+      let element = DOM.createElement('div');
 
       expect(em.getElementHandler(element, 'scrollTop')).not.toBeNull();
       expect(em.getElementHandler(element, 'scrollLeft')).not.toBeNull();
@@ -48,11 +48,11 @@ describe('EventManager', () => {
     });
 
     it('can subscribe', () => {
-      var element = DOM.createElement('input'),
-          handler = em.getElementHandler(element, 'value'),
-          dispose,
-          callback = jasmine.createSpy('callback'),
-          inputEvent = DOM.createCustomEvent('input');
+      let element = DOM.createElement('input'),
+        handler = em.getElementHandler(element, 'value'),
+        dispose,
+        callback = jasmine.createSpy('callback'),
+        inputEvent = DOM.createCustomEvent('input');
       element.value = 'foo';
       expect(handler).toBeDefined();
       expect(handler.subscribe).toBeDefined();
@@ -72,7 +72,7 @@ describe('EventManager', () => {
   });
 
   describe('addEventListener', () => {
-    let em, one, two, three, shadowHost, shadowRoot, shadowButton, oneClick, threeClick, oneDelegate, threeDelegate;
+    let em, one, two, three, shadowHost, shadowRoot, shadowButton, oneClick, threeClick, oneDelegate, threeDelegate, delegationEntryHandlers;
 
     beforeEach(() => {
       em = new EventManager();
@@ -80,29 +80,32 @@ describe('EventManager', () => {
       two = document.createElement('div');
       three = document.createElement('div');
       shadowHost = document.createElement('div');
-      shadowButton = document.createElement('button');  
+      shadowButton = document.createElement('button');
 
       oneClick = jasmine.createSpy('one-click');
       threeClick = jasmine.createSpy('three-click');
       oneDelegate = jasmine.createSpy('one-delegate');
       threeDelegate = jasmine.createSpy('three-delegate');
-    
+
       document.body.appendChild(one);
       one.appendChild(two);
       two.appendChild(three);
       one.appendChild(shadowHost);
-  
-      shadowRoot = shadowHost.attachShadow({ mode: 'open' });
-      shadowRoot.appendChild(shadowButton);   
 
-      em.addEventListener(one, 'click', oneClick, delegationStrategy.none);
-      em.addEventListener(three, 'click', threeClick, delegationStrategy.none);
-      em.addEventListener(one, 'delegate', oneDelegate, delegationStrategy.bubbling);
-      em.addEventListener(three, 'delegate', threeDelegate, delegationStrategy.bubbling);
+      shadowRoot = shadowHost.attachShadow({ mode: 'open' });
+      shadowRoot.appendChild(shadowButton);
+
+      delegationEntryHandlers = [
+        em.addEventListener(one, 'click', oneClick, delegationStrategy.none, true),
+        em.addEventListener(three, 'click', threeClick, delegationStrategy.none, true),
+        em.addEventListener(one, 'delegate', oneDelegate, delegationStrategy.bubbling, true),
+        em.addEventListener(three, 'delegate', threeDelegate, delegationStrategy.bubbling, true)
+      ];
     });
 
     afterEach(() => {
-      one.parentNode.removeChild(one);
+      delegationEntryHandlers.forEach(delegationEntryHandler => delegationEntryHandler.dispose());
+      one.remove();
     });
 
     it('bubbles properly when not delegated', () => {
@@ -124,24 +127,22 @@ describe('EventManager', () => {
       one.dispatchEvent(oneClickEvent);
       expect(threeClick).not.toHaveBeenCalledWith(threeClickEvent);
       expect(oneClick).toHaveBeenCalledWith(oneClickEvent);
-      oneClick.calls.reset();
-      threeClick.calls.reset();
     });
 
     it('bubbles properly out of shadow dom when not delegated with composed flag', () => {
+      em.escapeShadowRoot = true;
       const shadowButtonClickEvent = DOM.createCustomEvent('click', { bubbles: true, composed: true });
       shadowButton.dispatchEvent(shadowButtonClickEvent);
       expect(oneClick).toHaveBeenCalledWith(shadowButtonClickEvent);
-      oneClick.calls.reset();
     });
-    
+
     it('should not bubble out of shadow dom when not delegated without composed flag', () => {
+      em.escapeShadowRoot = true;
       const shadowButtonClickEvent = DOM.createCustomEvent('click', { bubbles: true });
       shadowButton.dispatchEvent(shadowButtonClickEvent);
       expect(oneClick).not.toHaveBeenCalledWith(shadowButtonClickEvent);
-      oneClick.calls.reset();
     });
-    
+
     it('bubbles properly when delegated', () => {
       const threeDelegateEvent = DOM.createCustomEvent('delegate', { bubbles: true });
       three.dispatchEvent(threeDelegateEvent);
@@ -161,24 +162,28 @@ describe('EventManager', () => {
       one.dispatchEvent(oneDelegateEvent);
       expect(threeDelegate).not.toHaveBeenCalledWith(threeDelegateEvent);
       expect(oneDelegate).toHaveBeenCalledWith(oneDelegateEvent);
-      oneDelegate.calls.reset();
-      threeDelegate.calls.reset();
+    });
+
+    it('should not bubble out of shadow dom when escapeShadowRoot is not explicitly set', () => {
+      const shadowButtonDelegateEvent = DOM.createCustomEvent('delegate', { bubbles: true, composed: true });
+      shadowButton.dispatchEvent(shadowButtonDelegateEvent);
+      expect(oneDelegate).not.toHaveBeenCalled();
     });
 
     it('bubbles properly out of shadow dom when delegated with composed flag', () => {
+      em.escapeShadowRoot = true;
       const shadowButtonDelegateEvent = DOM.createCustomEvent('delegate', { bubbles: true, composed: true });
       shadowButton.dispatchEvent(shadowButtonDelegateEvent);
       expect(oneDelegate).toHaveBeenCalledWith(shadowButtonDelegateEvent);
-      oneDelegate.calls.reset();
     });
-    
+
     it('should not bubble out of shadow dom when delegated without composed flag', () => {
+      em.escapeShadowRoot = true;
       const shadowButtonDelegateEvent = DOM.createCustomEvent('delegate', { bubbles: true });
       shadowButton.dispatchEvent(shadowButtonDelegateEvent);
       expect(oneDelegate).not.toHaveBeenCalledWith(shadowButtonDelegateEvent);
-      oneDelegate.calls.reset();
     });
-    
+
     it('stops bubbling when asked', () => {
       let wasCalled = false;
       let stopDelegate = (event) => {
@@ -220,7 +225,7 @@ describe('EventManager', () => {
     let originalWarn;
     beforeEach(() => {
       originalWarn = LogManager.Logger.prototype.warn;
-      spyOn(LogManager.Logger.prototype, 'warn')
+      spyOn(LogManager.Logger.prototype, 'warn');
     });
     afterEach(() => {
       LogManager.Logger.prototype.warn = originalWarn;
@@ -243,7 +248,7 @@ describe('EventManager', () => {
         em.addEventListener(one, 'delegate', oneDelegate, delegationStrategy.bubbling, true),
         em.addEventListener(three, 'delegate', threeDelegate, delegationStrategy.bubbling, true),
         em.addEventListener(one, 'delegate', oneCapture, delegationStrategy.capturing, true),
-        em.addEventListener(three, 'delegate', threeCapture, delegationStrategy.capturing, true),
+        em.addEventListener(three, 'delegate', threeCapture, delegationStrategy.capturing, true)
       ];
 
       let threeClickEvent = DOM.createCustomEvent('click', { bubbles: true });
@@ -253,24 +258,24 @@ describe('EventManager', () => {
       oneClick.calls.reset();
       threeClick.calls.reset();
 
-      let delegateBubblingCount = em.defaultEventStrategy.delegatedHandlers['delegate'].count;
-     
+      let delegateBubblingCount = em.defaultEventStrategy.delegatedHandlers.delegate.count;
+
       handlers.push(
         em.addEventListener(one, 'delegate', oneDelegate, delegationStrategy.bubbling, true),
         em.addEventListener(three, 'delegate', threeDelegate, delegationStrategy.bubbling, true)
       );
-      let delegateBubblingCountAfterDoubleSubscription = em.defaultEventStrategy.delegatedHandlers['delegate'].count;
-      expect(delegateBubblingCountAfterDoubleSubscription).toEqual(delegateBubblingCount,"allows double subscription for bubbling");
+      let delegateBubblingCountAfterDoubleSubscription = em.defaultEventStrategy.delegatedHandlers.delegate.count;
+      expect(delegateBubblingCountAfterDoubleSubscription).toEqual(delegateBubblingCount, 'allows double subscription for bubbling');
       expect(LogManager.Logger.prototype.warn).toHaveBeenCalled();
-      let delegateCaptureCount = em.defaultEventStrategy.delegatedHandlers['delegate'].count;
-     
+      let delegateCaptureCount = em.defaultEventStrategy.delegatedHandlers.delegate.count;
+
       handlers.push(
         em.addEventListener(one, 'delegate', oneCapture, delegationStrategy.capturing, true),
         em.addEventListener(three, 'delegate', threeCapture, delegationStrategy.capturing, true),
-      )
-      expect(LogManager.Logger.prototype.warn).toHaveBeenCalledTimes(2)
-      let delegateCaptureCountAfterDoubleSubscription = em.defaultEventStrategy.capturedHandlers['delegate'].count;
-      expect(delegateCaptureCountAfterDoubleSubscription).toEqual(delegateCaptureCount,"allows double subscription for capture");
+      );
+      expect(LogManager.Logger.prototype.warn).toHaveBeenCalledTimes(2);
+      let delegateCaptureCountAfterDoubleSubscription = em.defaultEventStrategy.capturedHandlers.delegate.count;
+      expect(delegateCaptureCountAfterDoubleSubscription).toEqual(delegateCaptureCount, 'allows double subscription for capture');
 
       handlers[0].dispose();
       handlers[1].dispose();
@@ -293,26 +298,26 @@ describe('EventManager', () => {
       threeCapture.calls.reset();
       oneCapture.calls.reset();
 
-      handlers[2].dispose();      
-      let delegateBubblingCountBeforeDisposingDisposed = em.defaultEventStrategy.delegatedHandlers['delegate'].count;
-      handlers[2].dispose();      
-      let delegateBubblingCountAfterDisposingDisposed = em.defaultEventStrategy.delegatedHandlers['delegate'].count;
-      expect(delegateBubblingCountAfterDisposingDisposed).toEqual(delegateBubblingCountBeforeDisposingDisposed,"allows double disposing for bubbling");
-      expect(LogManager.Logger.prototype.warn).toHaveBeenCalledTimes(3)
+      handlers[2].dispose();
+      let delegateBubblingCountBeforeDisposingDisposed = em.defaultEventStrategy.delegatedHandlers.delegate.count;
+      handlers[2].dispose();
+      let delegateBubblingCountAfterDisposingDisposed = em.defaultEventStrategy.delegatedHandlers.delegate.count;
+      expect(delegateBubblingCountAfterDisposingDisposed).toEqual(delegateBubblingCountBeforeDisposingDisposed, 'allows double disposing for bubbling');
+      expect(LogManager.Logger.prototype.warn).toHaveBeenCalledTimes(3);
       handlers[3].dispose();
-      
-      handlers[4].dispose();      
-      let delegateCaptureCountBeforeDisposingDisposed = em.defaultEventStrategy.capturedHandlers['delegate'].count;
-      handlers[4].dispose();      
-      let delegateCaptureCountAfterDisposingDisposed = em.defaultEventStrategy.capturedHandlers['delegate'].count;
-      expect(delegateCaptureCountAfterDisposingDisposed).toEqual(delegateCaptureCountBeforeDisposingDisposed,"allows double disposing for bubbling");
-      expect(LogManager.Logger.prototype.warn).toHaveBeenCalledTimes(4)
+
+      handlers[4].dispose();
+      let delegateCaptureCountBeforeDisposingDisposed = em.defaultEventStrategy.capturedHandlers.delegate.count;
+      handlers[4].dispose();
+      let delegateCaptureCountAfterDisposingDisposed = em.defaultEventStrategy.capturedHandlers.delegate.count;
+      expect(delegateCaptureCountAfterDisposingDisposed).toEqual(delegateCaptureCountBeforeDisposingDisposed, 'allows double disposing for bubbling');
+      expect(LogManager.Logger.prototype.warn).toHaveBeenCalledTimes(4);
       handlers[5].dispose();
 
-      em.defaultEventStrategy.capturedHandlers['delegate'].decrement();
+      em.defaultEventStrategy.capturedHandlers.delegate.decrement();
       expect(LogManager.Logger.prototype.warn).toHaveBeenCalledTimes(5);
-      em.defaultEventStrategy.delegatedHandlers['delegate'].decrement();
-      expect(LogManager.Logger.prototype.warn).toHaveBeenCalledTimes(6)
+      em.defaultEventStrategy.delegatedHandlers.delegate.decrement();
+      expect(LogManager.Logger.prototype.warn).toHaveBeenCalledTimes(6);
 
       threeDelegateEvent = DOM.createCustomEvent('delegate', { bubbles: true });
       three.dispatchEvent(threeDelegateEvent);
