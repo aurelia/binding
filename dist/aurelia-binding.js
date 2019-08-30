@@ -3289,7 +3289,7 @@ class DelegateHandlerEntry {
     this.eventManager = eventManager;
   }
 
-  handleDelegatedEvent = event => {
+  handleDelegatedEvent(event) {
     event.propagationStopped = false;
     let target = findOriginalEventTarget(event);
 

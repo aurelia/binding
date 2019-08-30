@@ -3,7 +3,7 @@
 System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aurelia-metadata'], function (_export, _context) {
   "use strict";
 
-  var LogManager, PLATFORM, DOM, TaskQueue, metadata, _createClass, _typeof, _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class6, _dec6, _class8, _dec7, _class9, _dec8, _class10, _dec9, _class11, _class13, _temp, _dec10, _class14, _class15, _temp2, targetContext, sourceContext, map, slotNames, versionSlotNames, lastSlot, queue, queued, nextId, minimumImmediate, frameBudget, isFlushRequested, immediate, arrayPool1, arrayPool2, poolUtilization, ExpressionObserver, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, arrayProto, pop, push, reverse, shift, sort, splice, unshift, ModifyArrayObserver, Expression, BindingBehavior, ValueConverter, Assign, Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, Unary, LiteralPrimitive, LiteralString, LiteralTemplate, LiteralArray, LiteralObject, _Unparser, ExpressionCloner, bindingMode, Parser, fromCharCode, ParserImplementation, C$This, C$Scope, C$Member, C$Keyed, C$Call, C$Primary, C$ShorthandProp, C$Tagged, C$Ancestor, T$TokenMask, T$PrecShift, T$Precedence, T$ExpressionTerminal, T$ClosingToken, T$OpeningToken, T$AccessScopeTerminal, T$Keyword, T$EOF, T$Identifier, T$IdentifierOrKeyword, T$Literal, T$NumericLiteral, T$StringLiteral, T$BinaryOp, T$UnaryOp, T$MemberExpression, T$MemberOrCallExpression, T$TemplateTail, T$TemplateContinuation, T$FalseKeyword, T$TrueKeyword, T$NullKeyword, T$UndefinedKeyword, T$ThisScope, T$ParentScope, T$LParen, T$LBrace, T$Period, T$RBrace, T$RParen, T$Comma, T$LBracket, T$RBracket, T$Colon, T$Question, T$Ampersand, T$Bar, T$BarBar, T$AmpersandAmpersand, T$Caret, T$EqEq, T$BangEq, T$EqEqEq, T$BangEqEq, T$Lt, T$Gt, T$LtEq, T$GtEq, T$InKeyword, T$InstanceOfKeyword, T$Plus, T$Minus, T$TypeofKeyword, T$VoidKeyword, T$Star, T$Percent, T$Slash, T$Eq, T$Bang, KeywordLookup, TokenValues, codes, AsciiIdParts, IdParts, CharScanners, ci, mapProto, ModifyMapObserver, emLogger, CapturedHandlerEntry, DelegateHandlerEntry, DelegationEntryHandler, EventHandler, DefaultEventStrategy, delegationStrategy, EventManager, EventSubscriber, DirtyChecker, DirtyCheckProperty, logger, propertyAccessor, PrimitiveObserver, SetterObserver, XLinkAttributeObserver, dataAttributeAccessor, DataAttributeObserver, StyleObserver, ValueAttributeObserver, checkedArrayContext, checkedValueContext, CheckedObserver, selectArrayContext, SelectValueObserver, ClassObserver, ComputedExpression, svgElements, svgPresentationElements, svgPresentationAttributes, svgAnalyzer, createElement, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, Binding, CallExpression, Call, ValueConverterResource, BindingBehaviorResource, ListenerExpression, Listener, NameExpression, NameBinder, LookupFunctions, BindingEngine, setProto, ModifySetObserver, signals;
+  var LogManager, PLATFORM, DOM, TaskQueue, metadata, _createClass, _typeof, _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class5, _dec6, _class7, _dec7, _class8, _dec8, _class9, _dec9, _class10, _class12, _temp, _dec10, _class13, _class14, _temp2, targetContext, sourceContext, map, slotNames, versionSlotNames, lastSlot, queue, queued, nextId, minimumImmediate, frameBudget, isFlushRequested, immediate, arrayPool1, arrayPool2, poolUtilization, ExpressionObserver, EDIT_LEAVE, EDIT_UPDATE, EDIT_ADD, EDIT_DELETE, arraySplice, ModifyCollectionObserver, CollectionLengthObserver, arrayProto, pop, push, reverse, shift, sort, splice, unshift, ModifyArrayObserver, Expression, BindingBehavior, ValueConverter, Assign, Conditional, AccessThis, AccessScope, AccessMember, AccessKeyed, CallScope, CallMember, CallFunction, Binary, Unary, LiteralPrimitive, LiteralString, LiteralTemplate, LiteralArray, LiteralObject, _Unparser, ExpressionCloner, bindingMode, Parser, fromCharCode, ParserImplementation, C$This, C$Scope, C$Member, C$Keyed, C$Call, C$Primary, C$ShorthandProp, C$Tagged, C$Ancestor, T$TokenMask, T$PrecShift, T$Precedence, T$ExpressionTerminal, T$ClosingToken, T$OpeningToken, T$AccessScopeTerminal, T$Keyword, T$EOF, T$Identifier, T$IdentifierOrKeyword, T$Literal, T$NumericLiteral, T$StringLiteral, T$BinaryOp, T$UnaryOp, T$MemberExpression, T$MemberOrCallExpression, T$TemplateTail, T$TemplateContinuation, T$FalseKeyword, T$TrueKeyword, T$NullKeyword, T$UndefinedKeyword, T$ThisScope, T$ParentScope, T$LParen, T$LBrace, T$Period, T$RBrace, T$RParen, T$Comma, T$LBracket, T$RBracket, T$Colon, T$Question, T$Ampersand, T$Bar, T$BarBar, T$AmpersandAmpersand, T$Caret, T$EqEq, T$BangEq, T$EqEqEq, T$BangEqEq, T$Lt, T$Gt, T$LtEq, T$GtEq, T$InKeyword, T$InstanceOfKeyword, T$Plus, T$Minus, T$TypeofKeyword, T$VoidKeyword, T$Star, T$Percent, T$Slash, T$Eq, T$Bang, KeywordLookup, TokenValues, codes, AsciiIdParts, IdParts, CharScanners, ci, mapProto, ModifyMapObserver, emLogger, CapturedHandlerEntry, DelegateHandlerEntry, DelegationEntryHandler, EventHandler, DefaultEventStrategy, delegationStrategy, EventManager, EventSubscriber, DirtyChecker, DirtyCheckProperty, logger, propertyAccessor, PrimitiveObserver, SetterObserver, XLinkAttributeObserver, dataAttributeAccessor, DataAttributeObserver, StyleObserver, ValueAttributeObserver, checkedArrayContext, checkedValueContext, CheckedObserver, selectArrayContext, SelectValueObserver, ClassObserver, ComputedExpression, svgElements, svgPresentationElements, svgPresentationAttributes, svgAnalyzer, createElement, elements, presentationElements, presentationAttributes, SVGAnalyzer, ObserverLocator, ObjectObservationAdapter, BindingExpression, Binding, CallExpression, Call, ValueConverterResource, BindingBehaviorResource, ListenerExpression, Listener, NameExpression, NameBinder, LookupFunctions, BindingEngine, setProto, ModifySetObserver, signals;
 
   function _possibleConstructorReturn(self, call) {
     if (!self) {
@@ -3586,41 +3586,39 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
 
       DelegateHandlerEntry = function () {
         function DelegateHandlerEntry(eventName, eventManager) {
-          var _this22 = this;
-
           
-
-          this.handleDelegatedEvent = function (event) {
-            event.propagationStopped = false;
-            var target = findOriginalEventTarget(event);
-
-            while (target && !event.propagationStopped) {
-              if (target.delegatedCallbacks) {
-                var callback = target.delegatedCallbacks[event.type];
-                if (callback) {
-                  if (event.stopPropagation !== stopPropagation) {
-                    event.standardStopPropagation = event.stopPropagation;
-                    event.stopPropagation = stopPropagation;
-                  }
-                  if ('handleEvent' in callback) {
-                    callback.handleEvent(event);
-                  } else {
-                    callback(event);
-                  }
-                }
-              }
-
-              var parent = target.parentNode;
-              var shouldEscapeShadowRoot = _this22.eventManager.escapeShadowRoot && parent && parent instanceof ShadowRoot;
-
-              target = shouldEscapeShadowRoot ? parent.host : parent;
-            }
-          };
 
           this.eventName = eventName;
           this.count = 0;
           this.eventManager = eventManager;
         }
+
+        DelegateHandlerEntry.prototype.handleDelegatedEvent = function handleDelegatedEvent(event) {
+          event.propagationStopped = false;
+          var target = findOriginalEventTarget(event);
+
+          while (target && !event.propagationStopped) {
+            if (target.delegatedCallbacks) {
+              var callback = target.delegatedCallbacks[event.type];
+              if (callback) {
+                if (event.stopPropagation !== stopPropagation) {
+                  event.standardStopPropagation = event.stopPropagation;
+                  event.stopPropagation = stopPropagation;
+                }
+                if ('handleEvent' in callback) {
+                  callback.handleEvent(event);
+                } else {
+                  callback(event);
+                }
+              }
+            }
+
+            var parent = target.parentNode;
+            var shouldEscapeShadowRoot = this.eventManager.escapeShadowRoot && parent && parent instanceof ShadowRoot;
+
+            target = shouldEscapeShadowRoot ? parent.host : parent;
+          }
+        };
 
         DelegateHandlerEntry.prototype.increment = function increment() {
           this.count++;
@@ -3918,10 +3916,10 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         };
 
         DirtyChecker.prototype.scheduleDirtyCheck = function scheduleDirtyCheck() {
-          var _this23 = this;
+          var _this22 = this;
 
           setTimeout(function () {
-            return _this23.check();
+            return _this22.check();
           }, this.checkDelay);
         };
 
@@ -3947,7 +3945,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
 
       _export('DirtyChecker', DirtyChecker);
 
-      _export('DirtyCheckProperty', DirtyCheckProperty = (_dec5 = subscriberCollection(), _dec5(_class6 = function () {
+      _export('DirtyCheckProperty', DirtyCheckProperty = (_dec5 = subscriberCollection(), _dec5(_class5 = function () {
         function DirtyCheckProperty(dirtyChecker, obj, propertyName) {
           
 
@@ -3992,7 +3990,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         };
 
         return DirtyCheckProperty;
-      }()) || _class6));
+      }()) || _class5));
 
       _export('DirtyCheckProperty', DirtyCheckProperty);
 
@@ -4037,7 +4035,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
 
       _export('PrimitiveObserver', PrimitiveObserver);
 
-      _export('SetterObserver', SetterObserver = (_dec6 = subscriberCollection(), _dec6(_class8 = function () {
+      _export('SetterObserver', SetterObserver = (_dec6 = subscriberCollection(), _dec6(_class7 = function () {
         function SetterObserver(taskQueue, obj, propertyName) {
           
 
@@ -4111,7 +4109,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         };
 
         return SetterObserver;
-      }()) || _class8));
+      }()) || _class7));
 
       _export('SetterObserver', SetterObserver);
 
@@ -4268,7 +4266,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
 
       _export('StyleObserver', StyleObserver);
 
-      _export('ValueAttributeObserver', ValueAttributeObserver = (_dec7 = subscriberCollection(), _dec7(_class9 = function () {
+      _export('ValueAttributeObserver', ValueAttributeObserver = (_dec7 = subscriberCollection(), _dec7(_class8 = function () {
         function ValueAttributeObserver(element, propertyName, handler) {
           
 
@@ -4321,14 +4319,14 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         };
 
         return ValueAttributeObserver;
-      }()) || _class9));
+      }()) || _class8));
 
       _export('ValueAttributeObserver', ValueAttributeObserver);
 
       checkedArrayContext = 'CheckedObserver:array';
       checkedValueContext = 'CheckedObserver:value';
 
-      _export('CheckedObserver', CheckedObserver = (_dec8 = subscriberCollection(), _dec8(_class10 = function () {
+      _export('CheckedObserver', CheckedObserver = (_dec8 = subscriberCollection(), _dec8(_class9 = function () {
         function CheckedObserver(element, handler, observerLocator) {
           
 
@@ -4466,13 +4464,13 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         };
 
         return CheckedObserver;
-      }()) || _class10));
+      }()) || _class9));
 
       _export('CheckedObserver', CheckedObserver);
 
       selectArrayContext = 'SelectValueObserver:array';
 
-      _export('SelectValueObserver', SelectValueObserver = (_dec9 = subscriberCollection(), _dec9(_class11 = function () {
+      _export('SelectValueObserver', SelectValueObserver = (_dec9 = subscriberCollection(), _dec9(_class10 = function () {
         function SelectValueObserver(element, handler, observerLocator) {
           
 
@@ -4552,7 +4550,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         };
 
         SelectValueObserver.prototype.synchronizeValue = function synchronizeValue() {
-          var _this24 = this;
+          var _this23 = this;
 
           var options = this.element.options;
           var count = 0;
@@ -4570,24 +4568,24 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
           if (this.element.multiple) {
             if (Array.isArray(this.value)) {
               var _ret2 = function () {
-                var matcher = _this24.element.matcher || function (a, b) {
+                var matcher = _this23.element.matcher || function (a, b) {
                   return a === b;
                 };
 
                 var i = 0;
 
                 var _loop2 = function _loop2() {
-                  var a = _this24.value[i];
+                  var a = _this23.value[i];
                   if (value.findIndex(function (b) {
                     return matcher(a, b);
                   }) === -1) {
-                    _this24.value.splice(i, 1);
+                    _this23.value.splice(i, 1);
                   } else {
                     i++;
                   }
                 };
 
-                while (i < _this24.value.length) {
+                while (i < _this23.value.length) {
                   _loop2();
                 }
 
@@ -4595,10 +4593,10 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
 
                 var _loop3 = function _loop3() {
                   var a = value[i];
-                  if (_this24.value.findIndex(function (b) {
+                  if (_this23.value.findIndex(function (b) {
                     return matcher(a, b);
                   }) === -1) {
-                    _this24.value.push(a);
+                    _this23.value.push(a);
                   }
                   i++;
                 };
@@ -4653,11 +4651,11 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         };
 
         SelectValueObserver.prototype.bind = function bind() {
-          var _this25 = this;
+          var _this24 = this;
 
           this.domObserver = DOM.createMutationObserver(function () {
-            _this25.synchronizeOptions();
-            _this25.synchronizeValue();
+            _this24.synchronizeOptions();
+            _this24.synchronizeValue();
           });
           this.domObserver.observe(this.element, { childList: true, subtree: true, characterData: true });
         };
@@ -4673,7 +4671,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         };
 
         return SelectValueObserver;
-      }()) || _class11));
+      }()) || _class10));
 
       _export('SelectValueObserver', SelectValueObserver);
 
@@ -4741,12 +4739,12 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         function ComputedExpression(name, dependencies) {
           
 
-          var _this26 = _possibleConstructorReturn(this, _Expression19.call(this));
+          var _this25 = _possibleConstructorReturn(this, _Expression19.call(this));
 
-          _this26.name = name;
-          _this26.dependencies = dependencies;
-          _this26.isAssignable = true;
-          return _this26;
+          _this25.name = name;
+          _this25.dependencies = dependencies;
+          _this25.isAssignable = true;
+          return _this25;
         }
 
         ComputedExpression.prototype.evaluate = function evaluate(scope, lookupFunctions) {
@@ -5024,20 +5022,20 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
       _export('presentationAttributes', presentationAttributes);
 
       _export('SVGAnalyzer', SVGAnalyzer = svgAnalyzer || function () {
-        function _class12() {
+        function _class11() {
           
         }
 
-        _class12.prototype.isStandardSvgAttribute = function isStandardSvgAttribute() {
+        _class11.prototype.isStandardSvgAttribute = function isStandardSvgAttribute() {
           return false;
         };
 
-        return _class12;
+        return _class11;
       }());
 
       _export('SVGAnalyzer', SVGAnalyzer);
 
-      _export('ObserverLocator', ObserverLocator = (_temp = _class13 = function () {
+      _export('ObserverLocator', ObserverLocator = (_temp = _class12 = function () {
         function ObserverLocator(taskQueue, eventManager, dirtyChecker, svgAnalyzer, parser) {
           
 
@@ -5210,7 +5208,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         };
 
         return ObserverLocator;
-      }(), _class13.inject = [TaskQueue, EventManager, DirtyChecker, SVGAnalyzer, Parser], _temp));
+      }(), _class12.inject = [TaskQueue, EventManager, DirtyChecker, SVGAnalyzer, Parser], _temp));
 
       _export('ObserverLocator', ObserverLocator);
 
@@ -5250,7 +5248,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
 
       _export('BindingExpression', BindingExpression);
 
-      _export('Binding', Binding = (_dec10 = connectable(), _dec10(_class14 = function () {
+      _export('Binding', Binding = (_dec10 = connectable(), _dec10(_class13 = function () {
         function Binding(observerLocator, sourceExpression, target, targetProperty, mode, lookupFunctions) {
           
 
@@ -5366,7 +5364,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         };
 
         return Binding;
-      }()) || _class14));
+      }()) || _class13));
 
       _export('Binding', Binding);
 
@@ -5413,7 +5411,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         };
 
         Call.prototype.bind = function bind(source) {
-          var _this27 = this;
+          var _this26 = this;
 
           if (this.isBound) {
             if (this.source === source) {
@@ -5428,7 +5426,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
             this.sourceExpression.bind(this, source, this.lookupFunctions);
           }
           this.targetProperty.setValue(function ($event) {
-            return _this27.callSource($event);
+            return _this26.callSource($event);
           });
         };
 
@@ -5680,7 +5678,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         }
       };
 
-      _export('BindingEngine', BindingEngine = (_temp2 = _class15 = function () {
+      _export('BindingEngine', BindingEngine = (_temp2 = _class14 = function () {
         function BindingEngine(observerLocator, parser) {
           
 
@@ -5696,11 +5694,11 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         };
 
         BindingEngine.prototype.propertyObserver = function propertyObserver(obj, propertyName) {
-          var _this28 = this;
+          var _this27 = this;
 
           return {
             subscribe: function subscribe(callback) {
-              var observer = _this28.observerLocator.getObserver(obj, propertyName);
+              var observer = _this27.observerLocator.getObserver(obj, propertyName);
               observer.subscribe(callback);
               return {
                 dispose: function dispose() {
@@ -5712,17 +5710,17 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         };
 
         BindingEngine.prototype.collectionObserver = function collectionObserver(collection) {
-          var _this29 = this;
+          var _this28 = this;
 
           return {
             subscribe: function subscribe(callback) {
               var observer = void 0;
               if (collection instanceof Array) {
-                observer = _this29.observerLocator.getArrayObserver(collection);
+                observer = _this28.observerLocator.getArrayObserver(collection);
               } else if (collection instanceof Map) {
-                observer = _this29.observerLocator.getMapObserver(collection);
+                observer = _this28.observerLocator.getMapObserver(collection);
               } else if (collection instanceof Set) {
-                observer = _this29.observerLocator.getSetObserver(collection);
+                observer = _this28.observerLocator.getSetObserver(collection);
               } else {
                 throw new Error('collection must be an instance of Array, Map or Set.');
               }
@@ -5750,7 +5748,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
         };
 
         return BindingEngine;
-      }(), _class15.inject = [ObserverLocator, Parser], _temp2));
+      }(), _class14.inject = [ObserverLocator, Parser], _temp2));
 
       _export('BindingEngine', BindingEngine);
 

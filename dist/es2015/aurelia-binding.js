@@ -1,4 +1,4 @@
-var _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class6, _dec6, _class8, _dec7, _class9, _dec8, _class10, _dec9, _class11, _class12, _temp, _dec10, _class13, _class14, _temp2;
+var _dec, _dec2, _class, _dec3, _class2, _dec4, _class3, _dec5, _class5, _dec6, _class7, _dec7, _class8, _dec8, _class9, _dec9, _class10, _class11, _temp, _dec10, _class12, _class13, _temp2;
 
 import * as LogManager from 'aurelia-logging';
 import { PLATFORM, DOM } from 'aurelia-pal';
@@ -3080,36 +3080,36 @@ let CapturedHandlerEntry = class CapturedHandlerEntry {
 };
 let DelegateHandlerEntry = class DelegateHandlerEntry {
   constructor(eventName, eventManager) {
-    this.handleDelegatedEvent = event => {
-      event.propagationStopped = false;
-      let target = findOriginalEventTarget(event);
-
-      while (target && !event.propagationStopped) {
-        if (target.delegatedCallbacks) {
-          let callback = target.delegatedCallbacks[event.type];
-          if (callback) {
-            if (event.stopPropagation !== stopPropagation) {
-              event.standardStopPropagation = event.stopPropagation;
-              event.stopPropagation = stopPropagation;
-            }
-            if ('handleEvent' in callback) {
-              callback.handleEvent(event);
-            } else {
-              callback(event);
-            }
-          }
-        }
-
-        const parent = target.parentNode;
-        const shouldEscapeShadowRoot = this.eventManager.escapeShadowRoot && parent && parent instanceof ShadowRoot;
-
-        target = shouldEscapeShadowRoot ? parent.host : parent;
-      }
-    };
-
     this.eventName = eventName;
     this.count = 0;
     this.eventManager = eventManager;
+  }
+
+  handleDelegatedEvent(event) {
+    event.propagationStopped = false;
+    let target = findOriginalEventTarget(event);
+
+    while (target && !event.propagationStopped) {
+      if (target.delegatedCallbacks) {
+        let callback = target.delegatedCallbacks[event.type];
+        if (callback) {
+          if (event.stopPropagation !== stopPropagation) {
+            event.standardStopPropagation = event.stopPropagation;
+            event.stopPropagation = stopPropagation;
+          }
+          if ('handleEvent' in callback) {
+            callback.handleEvent(event);
+          } else {
+            callback(event);
+          }
+        }
+      }
+
+      const parent = target.parentNode;
+      const shouldEscapeShadowRoot = this.eventManager.escapeShadowRoot && parent && parent instanceof ShadowRoot;
+
+      target = shouldEscapeShadowRoot ? parent.host : parent;
+    }
   }
 
   increment() {
@@ -3396,7 +3396,7 @@ export let DirtyChecker = class DirtyChecker {
   }
 };
 
-export let DirtyCheckProperty = (_dec5 = subscriberCollection(), _dec5(_class6 = class DirtyCheckProperty {
+export let DirtyCheckProperty = (_dec5 = subscriberCollection(), _dec5(_class5 = class DirtyCheckProperty {
   constructor(dirtyChecker, obj, propertyName) {
     this.dirtyChecker = dirtyChecker;
     this.obj = obj;
@@ -3437,7 +3437,7 @@ export let DirtyCheckProperty = (_dec5 = subscriberCollection(), _dec5(_class6 =
       this.dirtyChecker.removeProperty(this);
     }
   }
-}) || _class6);
+}) || _class5);
 
 const logger = LogManager.getLogger('property-observation');
 
@@ -3471,7 +3471,7 @@ export let PrimitiveObserver = class PrimitiveObserver {
   unsubscribe() {}
 };
 
-export let SetterObserver = (_dec6 = subscriberCollection(), _dec6(_class8 = class SetterObserver {
+export let SetterObserver = (_dec6 = subscriberCollection(), _dec6(_class7 = class SetterObserver {
   constructor(taskQueue, obj, propertyName) {
     this.taskQueue = taskQueue;
     this.obj = obj;
@@ -3541,7 +3541,7 @@ export let SetterObserver = (_dec6 = subscriberCollection(), _dec6(_class8 = cla
       logger.warn(`Cannot observe property '${this.propertyName}' of object`, this.obj);
     }
   }
-}) || _class8);
+}) || _class7);
 
 export let XLinkAttributeObserver = class XLinkAttributeObserver {
   constructor(element, propertyName, attributeName) {
@@ -3672,7 +3672,7 @@ export let StyleObserver = class StyleObserver {
   }
 };
 
-export let ValueAttributeObserver = (_dec7 = subscriberCollection(), _dec7(_class9 = class ValueAttributeObserver {
+export let ValueAttributeObserver = (_dec7 = subscriberCollection(), _dec7(_class8 = class ValueAttributeObserver {
   constructor(element, propertyName, handler) {
     this.element = element;
     this.propertyName = propertyName;
@@ -3721,12 +3721,12 @@ export let ValueAttributeObserver = (_dec7 = subscriberCollection(), _dec7(_clas
       this.handler.dispose();
     }
   }
-}) || _class9);
+}) || _class8);
 
 const checkedArrayContext = 'CheckedObserver:array';
 const checkedValueContext = 'CheckedObserver:value';
 
-export let CheckedObserver = (_dec8 = subscriberCollection(), _dec8(_class10 = class CheckedObserver {
+export let CheckedObserver = (_dec8 = subscriberCollection(), _dec8(_class9 = class CheckedObserver {
   constructor(element, handler, observerLocator) {
     this.element = element;
     this.handler = handler;
@@ -3852,11 +3852,11 @@ export let CheckedObserver = (_dec8 = subscriberCollection(), _dec8(_class10 = c
       this.valueObserver.unsubscribe(checkedValueContext, this);
     }
   }
-}) || _class10);
+}) || _class9);
 
 const selectArrayContext = 'SelectValueObserver:array';
 
-export let SelectValueObserver = (_dec9 = subscriberCollection(), _dec9(_class11 = class SelectValueObserver {
+export let SelectValueObserver = (_dec9 = subscriberCollection(), _dec9(_class10 = class SelectValueObserver {
   constructor(element, handler, observerLocator) {
     this.element = element;
     this.handler = handler;
@@ -4016,7 +4016,7 @@ export let SelectValueObserver = (_dec9 = subscriberCollection(), _dec9(_class11
       this.arrayObserver = null;
     }
   }
-}) || _class11);
+}) || _class10);
 
 export let ClassObserver = class ClassObserver {
   constructor(element) {
@@ -4371,7 +4371,7 @@ export const SVGAnalyzer = svgAnalyzer || class {
   }
 };
 
-export let ObserverLocator = (_temp = _class12 = class ObserverLocator {
+export let ObserverLocator = (_temp = _class11 = class ObserverLocator {
   constructor(taskQueue, eventManager, dirtyChecker, svgAnalyzer, parser) {
     this.taskQueue = taskQueue;
     this.eventManager = eventManager;
@@ -4540,7 +4540,7 @@ export let ObserverLocator = (_temp = _class12 = class ObserverLocator {
   getSetObserver(set) {
     return getSetObserver(this.taskQueue, set);
   }
-}, _class12.inject = [TaskQueue, EventManager, DirtyChecker, SVGAnalyzer, Parser], _temp);
+}, _class11.inject = [TaskQueue, EventManager, DirtyChecker, SVGAnalyzer, Parser], _temp);
 
 export let ObjectObservationAdapter = class ObjectObservationAdapter {
   getObserver(object, propertyName, descriptor) {
@@ -4564,7 +4564,7 @@ export let BindingExpression = class BindingExpression {
   }
 };
 
-export let Binding = (_dec10 = connectable(), _dec10(_class13 = class Binding {
+export let Binding = (_dec10 = connectable(), _dec10(_class12 = class Binding {
   constructor(observerLocator, sourceExpression, target, targetProperty, mode, lookupFunctions) {
     this.observerLocator = observerLocator;
     this.sourceExpression = sourceExpression;
@@ -4676,7 +4676,7 @@ export let Binding = (_dec10 = connectable(), _dec10(_class13 = class Binding {
     }
     this.sourceExpression.connect(this, this.source);
   }
-}) || _class13);
+}) || _class12);
 
 export let CallExpression = class CallExpression {
   constructor(observerLocator, targetProperty, sourceExpression, lookupFunctions) {
@@ -4965,7 +4965,7 @@ const LookupFunctions = {
   valueConverters: name => null
 };
 
-export let BindingEngine = (_temp2 = _class14 = class BindingEngine {
+export let BindingEngine = (_temp2 = _class13 = class BindingEngine {
 
   constructor(observerLocator, parser) {
     this.observerLocator = observerLocator;
@@ -5021,7 +5021,7 @@ export let BindingEngine = (_temp2 = _class14 = class BindingEngine {
   registerAdapter(adapter) {
     this.observerLocator.addAdapter(adapter);
   }
-}, _class14.inject = [ObserverLocator, Parser], _temp2);
+}, _class13.inject = [ObserverLocator, Parser], _temp2);
 
 let setProto = Set.prototype;
 
