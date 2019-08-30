@@ -105,7 +105,7 @@ class DelegateHandlerEntry {
     this.count++;
 
     if (this.count === 1) {
-      DOM.addEventListener(this.eventName, this.handleDelegatedEvent, false);
+      DOM.addEventListener(this.eventName, this.handleDelegatedEvent.bind(this), false);
     }
   }
 
@@ -113,7 +113,7 @@ class DelegateHandlerEntry {
     if (this.count === 0) {
       emLogger.warn('The same EventListener was disposed multiple times.');
     } else if (--this.count === 0) {
-      DOM.removeEventListener(this.eventName, this.handleDelegatedEvent, false);
+      DOM.removeEventListener(this.eventName, this.handleDelegatedEvent.bind(this), false);
     }
   }
 }
