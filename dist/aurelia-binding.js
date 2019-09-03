@@ -3282,45 +3282,41 @@ class CapturedHandlerEntry {
   }
 }
 
-class DelegateHandlerEntry {
-  constructor(eventName, eventManager) {
-    this.eventName = eventName;
-    this.count = 0;
-    this.eventManager = eventManager;
-  }
+function handleDelegatedEvent(event) {
+  event.propagationStopped = false;
+  let target = findOriginalEventTarget(event);
 
-  handleEvent(event) {
-    event.propagationStopped = false;
-    let target = findOriginalEventTarget(event);
-
-    while (target && !event.propagationStopped) {
-      if (target.delegatedCallbacks) {
-        let callback = target.delegatedCallbacks[event.type];
-        if (callback) {
-          if (event.stopPropagation !== stopPropagation) {
-            event.standardStopPropagation = event.stopPropagation;
-            event.stopPropagation = stopPropagation;
-          }
-          if ('handleEvent' in callback) {
-            callback.handleEvent(event);
-          } else {
-            callback(event);
-          }
+  while (target && !event.propagationStopped) {
+    if (target.delegatedCallbacks) {
+      let callback = target.delegatedCallbacks[event.type];
+      if (callback) {
+        if (event.stopPropagation !== stopPropagation) {
+          event.standardStopPropagation = event.stopPropagation;
+          event.stopPropagation = stopPropagation;
+        }
+        if ('handleEvent' in callback) {
+          callback.handleEvent(event);
+        } else {
+          callback(event);
         }
       }
-
-      const parent = target.parentNode;
-      const shouldEscapeShadowRoot = this.eventManager.escapeShadowRoot && parent instanceof ShadowRoot;
-
-      target = shouldEscapeShadowRoot ? parent.host : parent;
     }
+
+    target = target.parentNode;
+  }
+}
+
+class DelegateHandlerEntry {
+  constructor(eventName) {
+    this.eventName = eventName;
+    this.count = 0;
   }
 
   increment() {
     this.count++;
 
     if (this.count === 1) {
-      DOM.addEventListener(this.eventName, this, false);
+      DOM.addEventListener(this.eventName, handleDelegatedEvent, false);
     }
   }
 
@@ -3328,7 +3324,7 @@ class DelegateHandlerEntry {
     if (this.count === 0) {
       emLogger.warn('The same EventListener was disposed multiple times.');
     } else if (--this.count === 0) {
-      DOM.removeEventListener(this.eventName, this, false);
+      DOM.removeEventListener(this.eventName, handleDelegatedEvent, false);
     }
   }
 }
@@ -3382,10 +3378,6 @@ class DefaultEventStrategy {
   delegatedHandlers = {};
   capturedHandlers = {};
 
-  constructor(eventManager) {
-    this.eventManager = eventManager;
-  }
-
   /**
    * @param {Element} target
    * @param {string} targetEvent
@@ -3400,7 +3392,7 @@ class DefaultEventStrategy {
 
     if (strategy === delegationStrategy.bubbling) {
       delegatedHandlers = this.delegatedHandlers;
-      handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent, this.eventManager));
+      handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent));
       let delegatedCallbacks = target.delegatedCallbacks || (target.delegatedCallbacks = {});
       if (!delegatedCallbacks[targetEvent]) {
         handlerEntry.increment();
@@ -3458,10 +3450,9 @@ export const delegationStrategy = {
 };
 
 export class EventManager {
-  constructor(escapeShadowRoot = false) {
+  constructor() {
     this.elementHandlerLookup = {};
     this.eventStrategyLookup = {};
-    this.escapeShadowRoot = escapeShadowRoot;
 
     this.registerElementConfig({
       tagName: 'input',
@@ -3501,7 +3492,7 @@ export class EventManager {
       }
     });
 
-    this.defaultEventStrategy = new DefaultEventStrategy(this);
+    this.defaultEventStrategy = new DefaultEventStrategy();
   }
 
   registerElementConfig(config) {
