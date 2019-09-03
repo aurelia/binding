@@ -3386,7 +3386,7 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
       this.eventManager = eventManager;
     }
 
-    DelegateHandlerEntry.prototype.handleDelegatedEvent = function handleDelegatedEvent(event) {
+    DelegateHandlerEntry.prototype.handleEvent = function handleEvent(event) {
       event.propagationStopped = false;
       var target = findOriginalEventTarget(event);
 
@@ -3407,7 +3407,7 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
         }
 
         var parent = target.parentNode;
-        var shouldEscapeShadowRoot = this.eventManager.escapeShadowRoot && parent && parent instanceof ShadowRoot;
+        var shouldEscapeShadowRoot = this.eventManager.escapeShadowRoot && parent instanceof ShadowRoot;
 
         target = shouldEscapeShadowRoot ? parent.host : parent;
       }
@@ -3417,7 +3417,7 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
       this.count++;
 
       if (this.count === 1) {
-        _aureliaPal.DOM.addEventListener(this.eventName, this.handleDelegatedEvent, false);
+        _aureliaPal.DOM.addEventListener(this.eventName, this, false);
       }
     };
 
@@ -3425,7 +3425,7 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
       if (this.count === 0) {
         emLogger.warn('The same EventListener was disposed multiple times.');
       } else if (--this.count === 0) {
-        _aureliaPal.DOM.removeEventListener(this.eventName, this.handleDelegatedEvent, false);
+        _aureliaPal.DOM.removeEventListener(this.eventName, this, false);
       }
     };
 

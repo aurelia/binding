@@ -3593,7 +3593,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
           this.eventManager = eventManager;
         }
 
-        DelegateHandlerEntry.prototype.handleDelegatedEvent = function handleDelegatedEvent(event) {
+        DelegateHandlerEntry.prototype.handleEvent = function handleEvent(event) {
           event.propagationStopped = false;
           var target = findOriginalEventTarget(event);
 
@@ -3614,7 +3614,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
             }
 
             var parent = target.parentNode;
-            var shouldEscapeShadowRoot = this.eventManager.escapeShadowRoot && parent && parent instanceof ShadowRoot;
+            var shouldEscapeShadowRoot = this.eventManager.escapeShadowRoot && parent instanceof ShadowRoot;
 
             target = shouldEscapeShadowRoot ? parent.host : parent;
           }
@@ -3624,7 +3624,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
           this.count++;
 
           if (this.count === 1) {
-            DOM.addEventListener(this.eventName, this.handleDelegatedEvent, false);
+            DOM.addEventListener(this.eventName, this, false);
           }
         };
 
@@ -3632,7 +3632,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
           if (this.count === 0) {
             emLogger.warn('The same EventListener was disposed multiple times.');
           } else if (--this.count === 0) {
-            DOM.removeEventListener(this.eventName, this.handleDelegatedEvent, false);
+            DOM.removeEventListener(this.eventName, this, false);
           }
         };
 

@@ -3085,7 +3085,7 @@ let DelegateHandlerEntry = class DelegateHandlerEntry {
     this.eventManager = eventManager;
   }
 
-  handleDelegatedEvent(event) {
+  handleEvent(event) {
     event.propagationStopped = false;
     let target = findOriginalEventTarget(event);
 
@@ -3106,7 +3106,7 @@ let DelegateHandlerEntry = class DelegateHandlerEntry {
       }
 
       const parent = target.parentNode;
-      const shouldEscapeShadowRoot = this.eventManager.escapeShadowRoot && parent && parent instanceof ShadowRoot;
+      const shouldEscapeShadowRoot = this.eventManager.escapeShadowRoot && parent instanceof ShadowRoot;
 
       target = shouldEscapeShadowRoot ? parent.host : parent;
     }
@@ -3116,7 +3116,7 @@ let DelegateHandlerEntry = class DelegateHandlerEntry {
     this.count++;
 
     if (this.count === 1) {
-      DOM.addEventListener(this.eventName, this.handleDelegatedEvent, false);
+      DOM.addEventListener(this.eventName, this, false);
     }
   }
 
@@ -3124,7 +3124,7 @@ let DelegateHandlerEntry = class DelegateHandlerEntry {
     if (this.count === 0) {
       emLogger.warn('The same EventListener was disposed multiple times.');
     } else if (--this.count === 0) {
-      DOM.removeEventListener(this.eventName, this.handleDelegatedEvent, false);
+      DOM.removeEventListener(this.eventName, this, false);
     }
   }
 };
