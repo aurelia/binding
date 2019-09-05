@@ -108,7 +108,7 @@ export declare enum delegationStrategy {
  * This is an internal API and is subject to change without notice in future releases.
  */
 export declare class EventManager {
-  constructor(escapeShadowRoot?);
+  constructor(escapeShadowRoot?: boolean);
   escapeShadowRoot: boolean;
   registerElementConfig(config: { tagName: string; properties: { [propertyName: string]: string[] }; }): void;
   /**
