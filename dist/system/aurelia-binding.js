@@ -776,30 +776,6 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
     }
   }
 
-  function handleDelegatedEvent(event) {
-    event.propagationStopped = false;
-    var target = findOriginalEventTarget(event);
-
-    while (target && !event.propagationStopped) {
-      if (target.delegatedCallbacks) {
-        var callback = target.delegatedCallbacks[event.type];
-        if (callback) {
-          if (event.stopPropagation !== stopPropagation) {
-            event.standardStopPropagation = event.stopPropagation;
-            event.stopPropagation = stopPropagation;
-          }
-          if ('handleEvent' in callback) {
-            callback.handleEvent(event);
-          } else {
-            callback(event);
-          }
-        }
-      }
-
-      target = target.parentNode;
-    }
-  }
-
   function hasDeclaredDependencies(descriptor) {
     return !!(descriptor && descriptor.get && descriptor.get.dependencies);
   }
@@ -3609,18 +3585,46 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
       }();
 
       DelegateHandlerEntry = function () {
-        function DelegateHandlerEntry(eventName) {
+        function DelegateHandlerEntry(eventName, eventManager) {
           
 
           this.eventName = eventName;
           this.count = 0;
+          this.eventManager = eventManager;
         }
+
+        DelegateHandlerEntry.prototype.handleEvent = function handleEvent(event) {
+          event.propagationStopped = false;
+          var target = findOriginalEventTarget(event);
+
+          while (target && !event.propagationStopped) {
+            if (target.delegatedCallbacks) {
+              var callback = target.delegatedCallbacks[event.type];
+              if (callback) {
+                if (event.stopPropagation !== stopPropagation) {
+                  event.standardStopPropagation = event.stopPropagation;
+                  event.stopPropagation = stopPropagation;
+                }
+                if ('handleEvent' in callback) {
+                  callback.handleEvent(event);
+                } else {
+                  callback(event);
+                }
+              }
+            }
+
+            var parent = target.parentNode;
+            var shouldEscapeShadowRoot = this.eventManager.escapeShadowRoot && parent instanceof ShadowRoot;
+
+            target = shouldEscapeShadowRoot ? parent.host : parent;
+          }
+        };
 
         DelegateHandlerEntry.prototype.increment = function increment() {
           this.count++;
 
           if (this.count === 1) {
-            DOM.addEventListener(this.eventName, handleDelegatedEvent, false);
+            DOM.addEventListener(this.eventName, this, false);
           }
         };
 
@@ -3628,7 +3632,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
           if (this.count === 0) {
             emLogger.warn('The same EventListener was disposed multiple times.');
           } else if (--this.count === 0) {
-            DOM.removeEventListener(this.eventName, handleDelegatedEvent, false);
+            DOM.removeEventListener(this.eventName, this, false);
           }
         };
 
@@ -3673,11 +3677,13 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
       }();
 
       DefaultEventStrategy = function () {
-        function DefaultEventStrategy() {
+        function DefaultEventStrategy(eventManager) {
           
 
           this.delegatedHandlers = {};
           this.capturedHandlers = {};
+
+          this.eventManager = eventManager;
         }
 
         DefaultEventStrategy.prototype.subscribe = function subscribe(target, targetEvent, callback, strategy, disposable) {
@@ -3687,7 +3693,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
 
           if (strategy === delegationStrategy.bubbling) {
             delegatedHandlers = this.delegatedHandlers;
-            handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent));
+            handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent, this.eventManager));
             var delegatedCallbacks = target.delegatedCallbacks || (target.delegatedCallbacks = {});
             if (!delegatedCallbacks[targetEvent]) {
               handlerEntry.increment();
@@ -3750,10 +3756,13 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
 
       _export('EventManager', EventManager = function () {
         function EventManager() {
+          var escapeShadowRoot = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
           
 
           this.elementHandlerLookup = {};
           this.eventStrategyLookup = {};
+          this.escapeShadowRoot = escapeShadowRoot;
 
           this.registerElementConfig({
             tagName: 'input',
@@ -3793,7 +3802,7 @@ System.register(['aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aureli
             }
           });
 
-          this.defaultEventStrategy = new DefaultEventStrategy();
+          this.defaultEventStrategy = new DefaultEventStrategy(this);
         }
 
         EventManager.prototype.registerElementConfig = function registerElementConfig(config) {

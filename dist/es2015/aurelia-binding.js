@@ -3078,43 +3078,45 @@ let CapturedHandlerEntry = class CapturedHandlerEntry {
     }
   }
 };
-
-
-function handleDelegatedEvent(event) {
-  event.propagationStopped = false;
-  let target = findOriginalEventTarget(event);
-
-  while (target && !event.propagationStopped) {
-    if (target.delegatedCallbacks) {
-      let callback = target.delegatedCallbacks[event.type];
-      if (callback) {
-        if (event.stopPropagation !== stopPropagation) {
-          event.standardStopPropagation = event.stopPropagation;
-          event.stopPropagation = stopPropagation;
-        }
-        if ('handleEvent' in callback) {
-          callback.handleEvent(event);
-        } else {
-          callback(event);
-        }
-      }
-    }
-
-    target = target.parentNode;
-  }
-}
-
 let DelegateHandlerEntry = class DelegateHandlerEntry {
-  constructor(eventName) {
+  constructor(eventName, eventManager) {
     this.eventName = eventName;
     this.count = 0;
+    this.eventManager = eventManager;
+  }
+
+  handleEvent(event) {
+    event.propagationStopped = false;
+    let target = findOriginalEventTarget(event);
+
+    while (target && !event.propagationStopped) {
+      if (target.delegatedCallbacks) {
+        let callback = target.delegatedCallbacks[event.type];
+        if (callback) {
+          if (event.stopPropagation !== stopPropagation) {
+            event.standardStopPropagation = event.stopPropagation;
+            event.stopPropagation = stopPropagation;
+          }
+          if ('handleEvent' in callback) {
+            callback.handleEvent(event);
+          } else {
+            callback(event);
+          }
+        }
+      }
+
+      const parent = target.parentNode;
+      const shouldEscapeShadowRoot = this.eventManager.escapeShadowRoot && parent instanceof ShadowRoot;
+
+      target = shouldEscapeShadowRoot ? parent.host : parent;
+    }
   }
 
   increment() {
     this.count++;
 
     if (this.count === 1) {
-      DOM.addEventListener(this.eventName, handleDelegatedEvent, false);
+      DOM.addEventListener(this.eventName, this, false);
     }
   }
 
@@ -3122,7 +3124,7 @@ let DelegateHandlerEntry = class DelegateHandlerEntry {
     if (this.count === 0) {
       emLogger.warn('The same EventListener was disposed multiple times.');
     } else if (--this.count === 0) {
-      DOM.removeEventListener(this.eventName, handleDelegatedEvent, false);
+      DOM.removeEventListener(this.eventName, this, false);
     }
   }
 };
@@ -3154,9 +3156,12 @@ let EventHandler = class EventHandler {
   }
 };
 let DefaultEventStrategy = class DefaultEventStrategy {
-  constructor() {
+
+  constructor(eventManager) {
     this.delegatedHandlers = {};
     this.capturedHandlers = {};
+
+    this.eventManager = eventManager;
   }
 
   subscribe(target, targetEvent, callback, strategy, disposable) {
@@ -3166,7 +3171,7 @@ let DefaultEventStrategy = class DefaultEventStrategy {
 
     if (strategy === delegationStrategy.bubbling) {
       delegatedHandlers = this.delegatedHandlers;
-      handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent));
+      handlerEntry = delegatedHandlers[targetEvent] || (delegatedHandlers[targetEvent] = new DelegateHandlerEntry(targetEvent, this.eventManager));
       let delegatedCallbacks = target.delegatedCallbacks || (target.delegatedCallbacks = {});
       if (!delegatedCallbacks[targetEvent]) {
         handlerEntry.increment();
@@ -3225,9 +3230,10 @@ export const delegationStrategy = {
 };
 
 export let EventManager = class EventManager {
-  constructor() {
+  constructor(escapeShadowRoot = false) {
     this.elementHandlerLookup = {};
     this.eventStrategyLookup = {};
+    this.escapeShadowRoot = escapeShadowRoot;
 
     this.registerElementConfig({
       tagName: 'input',
@@ -3267,7 +3273,7 @@ export let EventManager = class EventManager {
       }
     });
 
-    this.defaultEventStrategy = new DefaultEventStrategy();
+    this.defaultEventStrategy = new DefaultEventStrategy(this);
   }
 
   registerElementConfig(config) {

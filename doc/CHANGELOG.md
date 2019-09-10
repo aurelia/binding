@@ -1,3 +1,14 @@
+<a name="2.5.0"></a>
+# [2.5.0](https://github.com/aurelia/binding/compare/2.4.0...2.5.0) (2019-09-10)
+
+
+### Bug Fixes
+
+* **event-manager:** shadow dom event bubbling ([7563566](https://github.com/aurelia/binding/commit/7563566)), closes [#755](https://github.com/aurelia/binding/issues/755)
+* **event-manager:** update d.ts ([a6e6330](https://github.com/aurelia/binding/commit/a6e6330)), closes [#758](https://github.com/aurelia/binding/issues/758) [#755](https://github.com/aurelia/binding/issues/755)
+
+
+
 <a name="2.4.1"></a>
 ## [2.4.1](https://github.com/aurelia/binding/compare/2.2.0...2.4.1) (2019-08-06)
 
