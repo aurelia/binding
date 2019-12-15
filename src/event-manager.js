@@ -5,7 +5,7 @@ import * as LogManager from 'aurelia-logging';
 let emLogger = LogManager.getLogger('event-manager');
 //Note: path and deepPath are designed to handle v0 and v1 shadow dom specs respectively
 function findOriginalEventTarget(event) {
-  return (event.path && event.path[0]) || (event.deepPath && event.deepPath[0]) || event.target;
+  return (event.composedPath && event.composedPath()[0]) || (event.deepPath && event.deepPath()[0]) || (event.path && event.path[0]) || event.target;
 }
 
 function stopPropagation() {
