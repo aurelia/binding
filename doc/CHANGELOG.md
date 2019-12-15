@@ -1,3 +1,13 @@
+<a name="2.5.2"></a>
+## [2.5.2](https://github.com/aurelia/binding/compare/2.5.0...2.5.2) (2019-12-15)
+
+
+### Bug Fixes
+
+* **event-manager:** Firefox shadow dom event handling ([7a6cc3b](https://github.com/aurelia/binding/commit/7a6cc3b)), closes [#765](https://github.com/aurelia/binding/issues/765)
+
+
+
 <a name="2.5.1"></a>
 ## [2.5.1](https://github.com/aurelia/binding/compare/2.2.0...2.5.1) (2019-09-10)
 
