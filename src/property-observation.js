@@ -75,6 +75,8 @@ export class SetterObserver {
     this.queued = false;
 
     this.callSubscribers(newValue, oldValue);
+
+    this.oldValue = null;
   }
 
   subscribe(context, callable) {
