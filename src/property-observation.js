@@ -71,12 +71,11 @@ export class SetterObserver {
   call() {
     let oldValue = this.oldValue;
     let newValue = this.currentValue;
+    this.oldValue = null;
 
     this.queued = false;
 
     this.callSubscribers(newValue, oldValue);
-
-    this.oldValue = null;
   }
 
   subscribe(context, callable) {
