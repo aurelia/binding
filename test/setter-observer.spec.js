@@ -23,7 +23,7 @@ describe('SetterObserver', () => {
       expect(oldValue).toBe('bar');
       expect(newValue).toBe('dur');
       queueMicrotask(() => {
-        expect(observer.oldValue).toBe(null);
+        expect(observer.oldValue).not.toBe('bar');
         done();
       });
     });
