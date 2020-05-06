@@ -17,4 +17,16 @@ describe('SetterObserver', () => {
   it('implements the property observer api', done => {
     executeSharedPropertyObserverTests(obj, observer, done);
   });
+
+  it('clears oldValue', done => {
+    observer.subscribe((newValue, oldValue) => {
+      expect(oldValue).toBe('bar');
+      expect(newValue).toBe('dur');
+      queueMicrotask(() => {
+        expect(observer.oldValue).not.toBe('bar');
+        done();
+      });
+    });
+    obj.foo = 'dur';
+  });
 });
