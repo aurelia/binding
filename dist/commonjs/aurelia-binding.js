@@ -3807,7 +3807,7 @@ var SetterObserver = exports.SetterObserver = (_dec6 = subscriberCollection(), _
 
   SetterObserver.prototype.call = function call() {
     var oldValue = this.oldValue;
-    var newValue = this.currentValue;
+    var newValue = this.oldValue = this.currentValue;
 
     this.queued = false;
 

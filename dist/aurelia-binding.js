@@ -3757,7 +3757,7 @@ export class SetterObserver {
 
   call() {
     let oldValue = this.oldValue;
-    let newValue = this.currentValue;
+    let newValue = this.oldValue = this.currentValue;
 
     this.queued = false;
 

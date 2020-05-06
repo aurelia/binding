@@ -3854,7 +3854,7 @@ define(['exports', 'aurelia-logging', 'aurelia-pal', 'aurelia-task-queue', 'aure
 
     SetterObserver.prototype.call = function call() {
       var oldValue = this.oldValue;
-      var newValue = this.currentValue;
+      var newValue = this.oldValue = this.currentValue;
 
       this.queued = false;
 

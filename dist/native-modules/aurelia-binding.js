@@ -3766,7 +3766,7 @@ export var SetterObserver = (_dec6 = subscriberCollection(), _dec6(_class7 = fun
 
   SetterObserver.prototype.call = function call() {
     var oldValue = this.oldValue;
-    var newValue = this.currentValue;
+    var newValue = this.oldValue = this.currentValue;
 
     this.queued = false;
 
