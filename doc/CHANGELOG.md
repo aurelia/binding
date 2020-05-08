@@ -1,3 +1,8 @@
+<a name="2.5.4"></a>
+## [2.5.4](https://github.com/aurelia/binding/compare/2.5.2...2.5.4) (2020-05-08)
+
+
+
 <a name="2.5.3"></a>
 ## [2.5.3](https://github.com/aurelia/binding/compare/2.2.0...2.5.3) (2020-05-06)
 
