@@ -1,3 +1,15 @@
+<a name="2.5.5"></a>
+## [2.5.5](https://github.com/aurelia/binding/compare/2.2.0...2.5.5) (2020-05-08)
+
+
+### Bug Fixes
+
+* **all:** change es2015 back to native-modules ([13dd661](https://github.com/aurelia/binding/commit/13dd661))
+* **build:** don't build declaration ([d359e83](https://github.com/aurelia/binding/commit/d359e83))
+* **connectable-binding:** remove the silent limit of 100 observers per expression ([56ba36d](https://github.com/aurelia/binding/commit/56ba36d)), closes [#742](https://github.com/aurelia/binding/issues/742)
+
+
+
 <a name="2.5.4"></a>
 ## [2.5.4](https://github.com/aurelia/binding/compare/2.5.2...2.5.4) (2020-05-08)
 
