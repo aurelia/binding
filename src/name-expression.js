@@ -1,3 +1,5 @@
+import { bindingMode } from './binding-mode';
+
 function getAU(element) {
   let au = element.au;
 
@@ -43,10 +45,17 @@ export class NameExpression {
 }
 
 class NameBinder {
+  /**
+   * Name binding for reference
+   * @param {Expression} sourceExpression
+   * @param {any} target
+   * @param {any} lookupFunctions
+   */
   constructor(sourceExpression, target, lookupFunctions) {
     this.sourceExpression = sourceExpression;
     this.target = target;
     this.lookupFunctions = lookupFunctions;
+    this.mode = bindingMode.oneTime;
   }
 
   bind(source) {
@@ -64,16 +73,24 @@ class NameBinder {
     this.sourceExpression.assign(this.source, this.target, this.lookupFunctions);
   }
 
+  call() {
+    if (!this.isBound) {
+      return;
+    }
+    this.sourceExpression.assign(this.source, this.target, this.lookupFunctions);
+  }
+
   unbind() {
     if (!this.isBound) {
       return;
     }
     this.isBound = false;
-    if (this.sourceExpression.evaluate(this.source, this.lookupFunctions) === this.target) {
-      this.sourceExpression.assign(this.source, null, this.lookupFunctions);
+    const { source, lookupFunctions, sourceExpression } = this;
+    if (sourceExpression.evaluate(source, lookupFunctions) === this.target) {
+      sourceExpression.assign(source, null, lookupFunctions);
     }
-    if (this.sourceExpression.unbind) {
-      this.sourceExpression.unbind(this, this.source);
+    if (sourceExpression.unbind) {
+      sourceExpression.unbind(this, source);
     }
     this.source = null;
   }
