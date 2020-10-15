@@ -1,16 +1,11 @@
 import './setup';
-import {
-  createElement,
-  checkDelay,
-  createObserverLocator,
-  getBinding
-} from './shared';
+import {createObserverLocator} from './shared';
 import {Parser} from '../src/parser';
 import {CallExpression} from '../src/call-expression';
 import {createScopeForTest} from '../src/scope';
 
 describe('CallExpression', () => {
-  let expression, viewModel, target = {}, binding;
+  let expression, viewModel, target = {}, binding, scope;
 
   beforeAll(() => {
     viewModel = {
@@ -32,7 +27,8 @@ describe('CallExpression', () => {
   it('binds', () => {
     expect(target.foo).toBeUndefined();
     binding = expression.createBinding(target);
-    binding.bind(createScopeForTest(viewModel));
+    scope = createScopeForTest(viewModel);
+    binding.bind(scope);
     expect(target.foo).toBeDefined();
   });
 
@@ -61,6 +57,13 @@ describe('CallExpression', () => {
     let result = target.foo();
     expect(result).toBe(viewModel.arg1);
     expect(viewModel.doSomething).toHaveBeenCalledWith(undefined, viewModel.arg1, viewModel.arg2);
+  });
+
+  it('shouldn\'t affect the overrideContext', () => {
+    let args = { arg1: 'hello' };
+    scope.overrideContext.arg1 = 'bar';
+    target.foo(args);
+    expect(scope.overrideContext.arg1).toBe('bar');
   });
 
   it('unbinds', () => {
